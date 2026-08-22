@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Saved Properties | StayNear</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            StayNear
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="search.html">
+                Explore
+            </a>
+
+            <a href="saved.html">
+                Saved
+            </a>
+
+            <a href="list-property.html">
+                List Property
+            </a>
+
+            <button id="navAuthBtn">
+                Log In / Sign Up
+            </button>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- SAVED PROPERTIES -->
+
+    <main class="saved-page">
+
+        <div class="saved-header">
+
+            <h1>
+                ❤️ Saved Properties
+            </h1>
+
+            <p>
+                Properties you have saved for later.
+            </p>
+
+        </div>
+
+
+        <!-- SAVED PROPERTY CONTAINER -->
+
+        <div
+            class="saved-properties-grid"
+            id="savedPropertiesContainer"
+        >
+
+        </div>
+
+
+        <!-- EMPTY STATE -->
+
+        <div
+            class="empty-saved"
+            id="emptySaved"
+        >
+
+            <div class="empty-icon">
+                ♡
+            </div>
+
+            <h2>
+                No saved properties
+            </h2>
+
+            <p>
+                Save properties you like and find them here later.
+            </p>
+
+            <a href="search.html">
+                Explore Properties
+            </a>
+
+        </div>
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="script.js"></script>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin">Log In</button>
+                <button class="auth-tab" id="tabSignup">Sign Up</button>
+            </div>
+
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

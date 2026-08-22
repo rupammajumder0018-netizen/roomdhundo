@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Find Accommodation | StayNear</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <div class="logo">
+            StayNear
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">Home</a>
+            <a href="search.html">Explore</a>
+            <a href="list-property.html">List Property</a>
+            <a href="saved.html">Saved</a>
+
+            <button id="navAuthBtn">
+                Log In / Sign Up
+            </button>
+
+        </div>
+
+    </nav>
+
+
+    <!-- SEARCH HEADER -->
+
+    <section class="search-header">
+
+        <div class="search-bar">
+
+            <input
+                type="text"
+                id="searchInput"
+                value=""
+                placeholder="Where do you want to stay?"
+            >
+
+            <button id="searchBtn">
+                Search
+            </button>
+
+        </div>
+
+
+        <!-- STAY TYPE -->
+
+        <div class="stay-selection">
+
+            <button
+                class="search-stay-btn active"
+                id="monthlyBtn"
+            >
+                Monthly
+            </button>
+
+            <button
+                class="search-stay-btn"
+                id="dailyBtn"
+            >
+                Daily / Nightly
+            </button>
+
+        </div>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="search-container">
+
+
+        <!-- FILTER SIDEBAR -->
+
+        <aside class="filters">
+
+            <div class="filter-header">
+
+                <h2>Filters</h2>
+
+                <button id="clearFiltersBtn">
+                    Clear all
+                </button>
+
+            </div>
+
+
+
+
+<!-- MONTHLY FILTERS -->
+
+            <div id="monthlyFilters">
+
+                <div class="filter-section">
+
+                    <h3>Budget / Month</h3>
+
+                    <div class="price-inputs">
+
+                        <input
+                            type="number"
+                            id="monthlyMin"
+                            placeholder="Min"
+                        >
+
+                        <span>–</span>
+
+                        <input
+                            type="number"
+                            id="monthlyMax"
+                            placeholder="Max"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Room Type</h3>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="Single">
+                        Single
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="Double Sharing">
+                        Double Sharing
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="Triple Sharing">
+                        Triple Sharing
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="4+ Sharing">
+                        4+ Sharing
+                    </label>
+
+                </div>
+
+            </div>
+
+<!-- DAILY / NIGHTLY FILTERS -->
+
+            <div id="dailyFilters" style="display: none;">
+
+                <div class="filter-section">
+
+                    <h3>Check-in</h3>
+
+                    <input
+                        type="date"
+                        class="date-input"
+                    >
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Check-out</h3>
+
+                    <input
+                        type="date"
+                        class="date-input"
+                    >
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Guests</h3>
+
+                    <div class="guest-counter">
+
+                        <button id="minusGuest">
+                            −
+                        </button>
+
+                        <span id="guestCount">
+                            1
+                        </span>
+
+                        <button id="plusGuest">
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Budget / Night</h3>
+
+                    <div class="price-inputs">
+
+                        <input
+                            type="number"
+                            id="dailyMin"
+                            placeholder="Min"
+                        >
+
+                        <span>–</span>
+
+                        <input
+                            type="number"
+                            id="dailyMax"
+                            placeholder="Max"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- PROPERTY TYPE -->
+
+            <div class="filter-section">
+
+                <h3>Property Type</h3>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="PG">
+                    PG
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Room">
+                    Room
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Mess">
+                    Mess
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Flat">
+                    Flat
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Guest House">
+                    Guest House
+                </label>
+
+            </div>
+
+            <!-- DISTANCE -->
+
+            <div class="filter-section">
+
+                <h3>Distance from MAKAUT</h3>
+
+                <label>
+                    <input type="radio" name="distance" class="distanceFilter" value="1">
+                    Within 1 km
+                </label>
+
+                <label>
+                    <input type="radio" name="distance" class="distanceFilter" value="5">
+                    Within 5 km
+                </label>
+
+                <label>
+                    <input type="radio" name="distance" class="distanceFilter" value="10">
+                    Within 10 km
+                </label>
+
+                <label>
+                    <input type="radio" name="distance" class="distanceFilter" value="15">
+                    Within 15 km
+                </label>
+
+            </div>
+
+
+            <!-- FACILITIES -->
+
+            <div class="filter-section">
+
+                <h3>Facilities</h3>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="wifi">
+                    Wi-Fi
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="food">
+                    Food
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="ac">
+                    AC
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="laundry">
+                    Laundry
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="parking">
+                    Parking
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="bathroom">
+                    Attached Bathroom
+                </label>
+
+            </div>
+
+
+            <button class="apply-filter" id="applyFiltersBtn">
+                Apply Filters
+            </button>
+
+        </aside>
+
+
+        <!-- RESULTS -->
+
+        <section class="results">
+
+
+            <div class="results-top">
+
+                <div>
+
+                    <h1>
+                        Accommodation near MAKAUT
+                    </h1>
+
+                    <p id="resultsCount">
+                        Loading properties...
+                    </p>
+
+                </div>
+
+
+                <select id="sortSelect">
+
+                    <option value="recommended">
+                        Recommended
+                    </option>
+
+                    <option value="price-asc">
+                        Price: Low to High
+                    </option>
+
+                    <option value="price-desc">
+                        Price: High to Low
+                    </option>
+
+                    <option value="distance">
+                        Distance
+                    </option>
+
+                    <option value="rating">
+                        Highest Rated
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="results-list" id="resultsList">
+                <!-- Property cards are rendered here by script.js -->
+            </div>
+
+            <p class="no-results" id="noResultsMessage" style="display:none;">
+                No properties match your filters. Try clearing some filters.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="script.js"></script>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin">Log In</button>
+                <button class="auth-tab" id="tabSignup">Sign Up</button>
+            </div>
+
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

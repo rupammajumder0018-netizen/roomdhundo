@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krishna PG | StayNear</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">
+            StayNear
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="search.html">Explore</a>
+            <a href="list-property.html">List Property</a>
+            <button class="nav-auth-btn" id="navAuthBtn">Log In / Sign Up</button>
+        </div>
+    </nav>
+
+    <!-- PROPERTY PAGE -->
+    <main class="property-page">
+
+        <!-- BREADCRUMB -->
+        <div class="breadcrumb">
+            <a href="search.html">← Back to search</a>
+        </div>
+
+        <!-- PROPERTY HEADER -->
+        <section class="property-header">
+            <div>
+                <h1 id="propertyName"></h1>
+                <p class="property-location" id="propertyLocation"></p>
+                <div class="property-rating">
+                    ⭐ <span id="propertyRating"></span>
+                    <span>(<span id="propertyReviews"></span> reviews)</span>
+                </div>
+            </div>
+
+            <button class="save-property" id="savePropertyBtn">
+                ♡ Save
+            </button>
+        </section>
+
+        <!-- IMAGE GALLERY -->
+        <section class="property-gallery">
+
+            <!-- MAIN IMAGE -->
+            <div class="main-property-image">
+                <img id="mainPropertyImage" src="images/krishna-pg-1.webp" alt="Property Image">
+                <button class="gallery-prev" id="galleryPrev">❮</button>
+                <button class="gallery-next" id="galleryNext">❯</button>
+            </div>
+
+            <!-- SMALL IMAGES (rendered dynamically by script.js from this property's actual photos) -->
+            <div class="small-property-images" id="smallPropertyImages"></div>
+
+        </section>
+
+        <!-- PROPERTY CONTENT -->
+        <section class="property-layout">
+
+            <!-- LEFT SIDE -->
+            <div class="property-main-content">
+
+                <!-- PRICE -->
+                <section class="property-section">
+                    <h2>Accommodation details</h2>
+                    <div class="price-display">
+                        <strong id="propertyPrice"></strong>
+                        <span id="propertyPriceUnit">/ month</span>
+                    </div>
+                </section>
+
+                <!-- ROOM TYPES -->
+                <section class="property-section">
+                    <h2>Available Room Types</h2>
+                    <div class="room-types-list" id="roomTypesList">
+                        <!-- One card per room type, rendered by script.js -->
+                    </div>
+                </section>
+
+                <!-- FACILITIES -->
+                <section class="property-section">
+                    <h2>Facilities</h2>
+                    <div class="facility-grid" id="facilityGrid"></div>
+                </section>
+
+                <!-- DESCRIPTION -->
+                <section class="property-section">
+                    <h2>About this property</h2>
+                    <p class="property-description" id="propertyDescription"></p>
+                </section>
+
+                <!-- PROPERTY RULES -->
+                <section class="property-section">
+                    <h2>Property rules</h2>
+                    <ul class="property-rules" id="propertyRules"></ul>
+                </section>
+
+                <!-- LOCATION -->
+                <section class="property-section">
+                    <h2>Location</h2>
+                    <p id="propertyLocationDetails"></p>
+                    <p id="propertyDistance"></p>
+                </section>
+
+                <!-- REVIEWS -->
+                <section class="property-section">
+                    <h2>Reviews</h2>
+                    <div id="reviewsContainer"></div>
+                </section>
+
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <aside class="property-sidebar">
+
+                <div class="booking-card">
+                    <div class="sidebar-price">
+                        <span id="sidebarPropertyPrice"></span>
+                        <span>/ month</span>
+                    </div>
+
+                    <div class="availability-status">
+                        🟢 <span id="propertyAvailability"></span>
+                    </div>
+
+                    <!-- CONTACT OWNER PANEL -->
+                    <div class="contact-panel" id="contactPanel">
+                        <h2>Contact Owner</h2>
+                        <p>👤 <span id="contactOwnerName"></span></p>
+                        <p>⭐ <span id="contactOwnerRating"></span></p>
+                        <button id="callOwnerBtn">📞 Call Owner</button>
+                        <button id="whatsappOwnerBtn">💬 WhatsApp</button>
+                        <button id="closeContactBtn">Close</button>
+                    </div>
+
+                    <button class="contact-owner" id="contactOwnerBtn">Contact Owner</button>
+                    <button class="directions-btn" id="directionsBtn">📍 Get Directions</button>
+                </div>
+
+                <!-- OWNER -->
+                <div class="owner-card" id="ownerCard"></div>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+    <!-- OWNER PROFILE MODAL -->
+    <div class="owner-modal" id="ownerModal">
+        <div class="owner-modal-content">
+            <button class="owner-modal-close" id="closeOwnerModal">×</button>
+            <div class="owner-profile-icon">👤</div>
+            <h2 id="modalOwnerName">Owner Name</h2>
+            <div class="modal-verification">✓ Verified Owner</div>
+            <div class="modal-owner-rating">⭐ <span id="modalOwnerRating"></span></div>
+            <p>Member since <span id="modalMemberSince"></span></p>
+            <div class="owner-modal-actions">
+                <button id="modalCallOwner">📞 Call Owner</button>
+                <button id="modalWhatsappOwner">💬 WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHOTO VIEWER (LIGHTBOX) -->
+    <div class="photo-viewer" id="photoViewer">
+        <button class="photo-viewer-close" id="photoViewerClose">×</button>
+        <button class="photo-viewer-prev" id="photoViewerPrev">❮</button>
+        <img id="photoViewerImage" src="" alt="Property photo">
+        <button class="photo-viewer-next" id="photoViewerNext">❯</button>
+    </div>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin">Log In</button>
+                <button class="auth-tab" id="tabSignup">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties.</p>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts.</p>
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,217 @@
+{`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayNear - Find Your Perfect Stay</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo">StayNear</div>
+
+        <div class="nav-links">
+            <a href="search.html">Explore</a>
+            <a href="list-property.html">List Property</a>
+            <a href="saved.html">Saved</a>
+            <button id="navAuthBtn">Log In / Sign Up</button>
+        </div>
+    </nav>
+
+
+    <section class="hero">
+
+        <h1>Find a place that feels right.</h1>
+
+        <p>
+            Discover PGs, rooms, messes, guest houses and flats
+            around MAKAUT, Jaguli and Haringhata.
+        </p>
+
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="heroSearchInput"
+                placeholder="Where do you want to stay?"
+            >
+
+            <div class="stay-options">
+
+                <button class="stay-btn active" id="heroMonthlyBtn">
+                    Monthly
+                </button>
+
+                <button class="stay-btn" id="heroDailyBtn">
+                    Daily / Nightly
+                </button>
+
+            </div>
+
+            <button class="search-btn" id="heroSearchBtn">
+                Search
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <section class="categories">
+
+        <h2>Explore accommodation</h2>
+
+        <div class="category-grid">
+
+            <div class="category-card">
+                <span>🏠</span>
+                <h3>PG</h3>
+            </div>
+
+            <div class="category-card">
+                <span>🛏️</span>
+                <h3>Room</h3>
+            </div>
+
+            <div class="category-card">
+                <span>🍛</span>
+                <h3>Mess</h3>
+            </div>
+
+            <div class="category-card">
+                <span>🏡</span>
+                <h3>Guest House</h3>
+            </div>
+
+            <div class="category-card">
+                <span>🏢</span>
+                <h3>Flat</h3>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="features">
+
+        <h2>Why StayNear?</h2>
+
+        <div class="feature-grid">
+
+            <div>
+                <h3>Easy Search</h3>
+                <p>Find accommodation based on your needs.</p>
+            </div>
+
+            <div>
+                <h3>Compare</h3>
+                <p>Compare rent, facilities and distance.</p>
+            </div>
+
+            <div>
+                <h3>Local</h3>
+                <p>Focused on the MAKAUT area.</p>
+            </div>
+
+            <div>
+                <h3>Contact Owners</h3>
+                <p>Send enquiries directly.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="owner-section">
+
+        <h2>Have a property?</h2>
+
+        <p>
+            List your PG, room or guest house and connect
+            with people looking for accommodation.
+        </p>
+
+        <button>
+            List Your Property
+        </button>
+
+    </section>
+
+
+    <footer>
+
+        <p>© 2026 StayNear</p>
+
+    </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="script.js"></script>
+
+    <!-- AUTHENTICATION MODAL -->
+    
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
+
+    <!-- Modal Header Tabs -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin">Log In</button>
+                <button class="auth-tab" id="tabSignup">Sign Up</button>
+            </div>
+
+    <!-- Login Form -->
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
+      
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                </div>
+      
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-options">
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+
+    <!-- Sign Up Form -->
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
+
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+                </div>
+
+                <button type="submit" class="auth-submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>`}
