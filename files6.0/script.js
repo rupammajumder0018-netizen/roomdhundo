@@ -788,6 +788,78 @@ async function initPropertyPage() {
             savePropertyBtn.innerHTML = nowSaved ? "♥ Saved" : "♡ Save";
         });
     }
+
+    // --- Write a review ---
+    wireReviewForm(building.id);
+}
+
+function wireReviewForm(buildingId) {
+    const stars = document.querySelectorAll("#starRatingInput .star");
+    const reviewComment = document.getElementById("reviewComment");
+    const submitReviewBtn = document.getElementById("submitReviewBtn");
+    if (!submitReviewBtn) return;
+
+    let selectedRating = 0;
+
+    function paintStars(upTo) {
+        stars.forEach(s => s.classList.toggle("selected", Number(s.dataset.value) <= upTo));
+    }
+
+    stars.forEach(star => {
+        star.addEventListener("click", () => {
+            selectedRating = Number(star.dataset.value);
+            paintStars(selectedRating);
+        });
+        star.addEventListener("mouseenter", () => {
+            stars.forEach(s => s.classList.toggle("hovered", Number(s.dataset.value) <= Number(star.dataset.value)));
+        });
+        star.addEventListener("mouseleave", () => {
+            stars.forEach(s => s.classList.remove("hovered"));
+        });
+    });
+
+    submitReviewBtn.addEventListener("click", async () => {
+        const user = await getCurrentUser();
+        if (!user) {
+            alert("Please log in to leave a review.");
+            openAuthModal();
+            return;
+        }
+        if (selectedRating === 0) {
+            alert("Please select a star rating first.");
+            return;
+        }
+
+        const comment = reviewComment.value.trim();
+        const reviewerName = (user.user_metadata && user.user_metadata.full_name)
+            ? user.user_metadata.full_name
+            : user.email.split("@")[0];
+
+        submitReviewBtn.disabled = true;
+        submitReviewBtn.textContent = "Submitting…";
+
+        const { error } = await supabaseClient.from("reviews").insert({
+            building_id: buildingId,
+            user_id: user.id,
+            reviewer_name: reviewerName,
+            rating: selectedRating,
+            comment
+        });
+
+        submitReviewBtn.disabled = false;
+        submitReviewBtn.textContent = "Submit Review";
+
+        if (error) {
+            alert(`Couldn't submit review: ${error.message}`);
+            return;
+        }
+
+        alert("Thanks for your review!");
+        reviewComment.value = "";
+        selectedRating = 0;
+        paintStars(0);
+        initPropertyPage(); // reloads reviews + updated average rating
+    });
 }
 
 // =====================================================

@@ -507,6 +507,61 @@ footer {
     background: #f5f4ff;
 }
 
+/* ==========================================================================
+   WRITE A REVIEW — property detail page
+   ========================================================================== */
+.write-review-box {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+}
+
+.write-review-box h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.star-rating-input {
+    display: flex;
+    gap: 4px;
+    font-size: 28px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.star-rating-input .star {
+    color: #d1d5db;
+    transition: color 0.1s ease;
+}
+
+.star-rating-input .star.selected,
+.star-rating-input .star.hovered {
+    color: #f59e0b;
+}
+
+.write-review-box textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 14px;
+    resize: vertical;
+}
+
+.write-review-box textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.write-review-box .lp-submit-btn {
+    width: auto;
+    padding: 10px 24px;
+}
+
 .rating {
     margin: 15px 0;
 }
