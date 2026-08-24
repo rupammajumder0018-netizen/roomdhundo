@@ -1184,3 +1184,232 @@ document.addEventListener("DOMContentLoaded", async () => {
         await initSavedPage();
     }
 });
+
+// =====================================
+// SIGN UP
+// =====================================
+
+const signupForm =
+    document.getElementById("signupForm");
+
+if (signupForm) {
+
+    signupForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        const name =
+            document.getElementById("signupName").value.trim();
+
+        const email =
+            document.getElementById("signupEmail").value.trim();
+
+        const password =
+            document.getElementById("signupPassword").value;
+
+        const confirmPassword =
+            document.getElementById("signupConfirmPassword").value;
+
+        const signupMessage =
+            document.getElementById("signupMessage");
+
+
+        // CHECK PASSWORDS
+
+        if (password !== confirmPassword) {
+
+            signupMessage.textContent =
+                "Passwords do not match.";
+
+            return;
+
+        }
+
+
+        // PASSWORD LENGTH
+
+        if (password.length < 6) {
+
+            signupMessage.textContent =
+                "Password must be at least 6 characters.";
+
+            return;
+
+        }
+
+
+        signupMessage.textContent =
+            "Creating your account...";
+
+
+        // CREATE SUPABASE ACCOUNT
+
+        const { data, error } =
+            await supabaseClient.auth.signUp({
+
+                email: email,
+
+                password: password,
+
+                options: {
+                    data: {
+                        full_name: name
+                    }
+                }
+
+            });
+
+
+        // ERROR
+
+        if (error) {
+
+            console.error(
+                "Signup error:",
+                error
+            );
+
+            signupMessage.textContent =
+                error.message;
+
+            return;
+
+        }
+
+
+        // SUCCESS
+
+        signupMessage.textContent =
+            "Account created successfully!";
+
+        signupForm.reset();
+
+    });
+
+}
+
+// =====================================
+// LOGIN
+// =====================================
+
+const loginForm =
+    document.getElementById("loginForm");
+
+if (loginForm) {
+
+    loginForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        const email =
+            document.getElementById("loginEmail").value.trim();
+
+        const password =
+            document.getElementById("loginPassword").value;
+
+        const loginMessage =
+            document.getElementById("loginMessage");
+
+
+        loginMessage.textContent =
+            "Logging in...";
+
+
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+
+                email: email,
+
+                password: password
+
+            });
+
+
+        if (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            loginMessage.textContent =
+                error.message;
+
+            return;
+
+        }
+
+
+        console.log(
+            "Logged in user:",
+            data.user
+        );
+
+
+        loginMessage.textContent =
+            "Login successful!";
+
+
+        // GO TO HOME PAGE
+
+        setTimeout(() => {
+
+            window.location.href =
+                "index.html";
+
+        }, 500);
+
+    });
+
+}
+
+// =====================================
+// CHECK CURRENT USER
+// =====================================
+
+async function checkLoggedInUser() {
+
+    const {
+        data: {
+            user
+        },
+        error
+    } = await supabaseClient.auth.getUser();
+
+
+    if (error) {
+
+        console.error(
+            "User check error:",
+            error
+        );
+
+        return null;
+
+    }
+
+
+    if (user) {
+
+        console.log(
+            "Current logged-in user:",
+            user
+        );
+
+        return user;
+
+    }
+
+
+    console.log(
+        "No user is currently logged in."
+    );
+
+    return null;
+
+}
+
+
+// RUN USER CHECK
+
+checkLoggedInUser();

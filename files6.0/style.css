@@ -1874,3 +1874,159 @@ footer {
     font-size: 13px;
     background: #fafafa;
 }
+
+/* =====================================
+   AUTHENTICATION PAGE
+===================================== */
+
+.auth-page {
+    min-height: calc(100vh - 80px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 50px 20px;
+
+    background: #f8fafc;
+}
+
+
+.auth-card {
+    width: 100%;
+    max-width: 460px;
+
+    background: white;
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+
+.auth-card h1 {
+    text-align: center;
+
+    font-size: 30px;
+
+    margin-bottom: 10px;
+}
+
+
+.auth-subtitle {
+    text-align: center;
+
+    color: #666;
+
+    margin-bottom: 30px;
+
+    line-height: 1.5;
+}
+
+
+.auth-field {
+    margin-bottom: 20px;
+}
+
+
+.auth-field label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-weight: 600;
+
+    color: #333;
+}
+
+
+.auth-field input {
+    width: 100%;
+
+    padding: 13px 15px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+
+.auth-field input:focus {
+    border-color: #6d28d9;
+
+    box-shadow:
+        0 0 0 3px rgba(109, 40, 217, 0.1);
+}
+
+
+.auth-submit-btn {
+    width: 100%;
+
+    padding: 14px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #4f46e5,
+        #7c3aed
+    );
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+}
+
+
+.auth-submit-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+
+.auth-switch {
+    text-align: center;
+
+    margin-top: 25px;
+
+    color: #666;
+}
+
+
+.auth-switch a {
+    color: #6d28d9;
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+#signupMessage {
+    margin-bottom: 15px;
+
+    text-align: center;
+
+    font-size: 14px;
+}
