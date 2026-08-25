@@ -2,85 +2,171 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Properties | RoomDhundo Admin</title>
 
-    <link rel="stylesheet" href="admin-properties.css">
+    <link
+        rel="stylesheet"
+        href="admin-properties.css"
+    >
+
 </head>
+
 
 <body>
 
-    <!-- SIDEBAR -->
+
+    <!-- =====================================================
+         SIDEBAR
+         ===================================================== -->
 
     <aside class="sidebar">
 
+
+        <!-- ADMIN LOGO -->
+
         <div class="admin-logo">
-            <h2>RoomDhundo</h2>
-            <span>Admin Panel</span>
+
+            <h2>
+                RoomDhundo
+            </h2>
+
+            <span>
+                Admin Panel
+            </span>
+
         </div>
 
 
+        <!-- NAVIGATION -->
+
         <nav class="admin-nav">
 
-            <a href="admin.html" class="nav-item">
+
+            <!-- DASHBOARD -->
+
+            <a
+                href="admin.html"
+                class="nav-item"
+            >
                 📊 Dashboard
             </a>
 
-            <a href="admin-properties.html" class="nav-item active">
+
+            <!-- PROPERTIES -->
+
+            <a
+                href="admin-properties.html"
+                class="nav-item active"
+            >
                 🏠 Properties
             </a>
 
-            <a href="#" class="nav-item">
+
+            <!-- USERS -->
+
+            <a
+                href="admin-users.html"
+                class="nav-item"
+            >
                 👤 Users
             </a>
 
-            <a href="#" class="nav-item">
+
+            <!-- OWNERS -->
+
+            <a
+                href="#"
+                class="nav-item"
+            >
                 👨‍💼 Owners
             </a>
 
-            <a href="#" class="nav-item">
+
+            <!-- ENQUIRIES -->
+
+            <a
+                href="#"
+                class="nav-item"
+            >
                 📩 Enquiries
             </a>
 
-            <a href="#" class="nav-item">
+
+            <!-- VERIFICATION -->
+
+            <a
+                href="#"
+                class="nav-item"
+            >
                 ✅ Verification
             </a>
 
-            <a href="#" class="nav-item">
+
+            <!-- REVIEWS -->
+
+            <a
+                href="#"
+                class="nav-item"
+            >
                 ⭐ Reviews
             </a>
 
-            <a href="#" class="nav-item">
+
+            <!-- SETTINGS -->
+
+            <a
+                href="#"
+                class="nav-item"
+            >
                 ⚙️ Settings
             </a>
+
 
         </nav>
 
 
+        <!-- LOGOUT -->
+
         <div class="sidebar-bottom">
 
             <button id="adminLogoutBtn">
+
                 🚪 Logout
+
             </button>
 
         </div>
 
+
     </aside>
 
 
-    <!-- MAIN CONTENT -->
+
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
 
     <main class="main-content">
+
 
         <!-- TOP BAR -->
 
         <header class="topbar">
 
+
             <div>
 
-                <h1>Properties</h1>
+                <h1>
+                    Properties
+                </h1>
 
                 <p>
                     Manage all RoomDhundo property listings.
@@ -89,15 +175,21 @@
             </div>
 
 
+            <!-- ADMIN PROFILE -->
+
             <div class="admin-profile">
+
 
                 <div class="profile-avatar">
                     A
                 </div>
 
+
                 <div>
 
-                    <strong>Administrator</strong>
+                    <strong>
+                        Administrator
+                    </strong>
 
                     <span>
                         Super Admin
@@ -105,20 +197,30 @@
 
                 </div>
 
+
             </div>
+
 
         </header>
 
 
-        <!-- PROPERTY STATISTICS -->
+
+        <!-- =================================================
+             PROPERTY STATISTICS
+             ================================================= -->
 
         <section class="stats-grid">
 
+
+            <!-- TOTAL PROPERTIES -->
+
             <div class="stat-card">
+
 
                 <div class="stat-icon">
                     🏠
                 </div>
+
 
                 <div>
 
@@ -132,14 +234,20 @@
 
                 </div>
 
+
             </div>
 
 
+
+            <!-- APPROVED -->
+
             <div class="stat-card">
+
 
                 <div class="stat-icon">
                     ✅
                 </div>
+
 
                 <div>
 
@@ -153,14 +261,20 @@
 
                 </div>
 
+
             </div>
 
 
+
+            <!-- PENDING -->
+
             <div class="stat-card">
+
 
                 <div class="stat-icon">
                     ⏳
                 </div>
+
 
                 <div>
 
@@ -174,14 +288,20 @@
 
                 </div>
 
+
             </div>
 
 
+
+            <!-- REJECTED -->
+
             <div class="stat-card">
+
 
                 <div class="stat-icon">
                     ❌
                 </div>
+
 
                 <div>
 
@@ -195,12 +315,17 @@
 
                 </div>
 
+
             </div>
+
 
         </section>
 
 
-        <!-- PROPERTY MANAGEMENT -->
+
+        <!-- =================================================
+             PROPERTY MANAGEMENT
+             ================================================= -->
 
         <section class="property-management">
 
@@ -209,7 +334,9 @@
 
             <div class="filter-card">
 
+
                 <div class="search-wrapper">
+
 
                     <input
                         type="text"
@@ -217,14 +344,20 @@
                         placeholder="Search property..."
                     >
 
+
                     <button id="searchBtn">
                         🔍 Search
                     </button>
 
+
                 </div>
 
 
+
                 <div class="filters">
+
+
+                    <!-- TYPE FILTER -->
 
                     <select id="propertyTypeFilter">
 
@@ -255,6 +388,9 @@
                     </select>
 
 
+
+                    <!-- STATUS FILTER -->
+
                     <select id="propertyStatusFilter">
 
                         <option value="all">
@@ -276,6 +412,9 @@
                     </select>
 
 
+
+                    <!-- SORT -->
+
                     <select id="propertySort">
 
                         <option value="newest">
@@ -296,16 +435,23 @@
 
                     </select>
 
+
                 </div>
+
 
             </div>
 
 
-            <!-- PROPERTY TABLE -->
+
+            <!-- =================================================
+                 PROPERTY TABLE
+                 ================================================= -->
 
             <div class="property-card">
 
+
                 <div class="card-header">
+
 
                     <div>
 
@@ -324,12 +470,16 @@
                         6 Properties
                     </span>
 
+
                 </div>
+
 
 
                 <div class="table-container">
 
+
                     <table>
+
 
                         <thead>
 
@@ -368,7 +518,11 @@
                         </thead>
 
 
+
                         <tbody id="propertyTableBody">
+
+
+                            <!-- PROPERTY 1 -->
 
                             <tr>
 
@@ -396,26 +550,21 @@
 
                                 </td>
 
-
                                 <td>
                                     PG
                                 </td>
-
 
                                 <td>
                                     Rahul Das
                                 </td>
 
-
                                 <td>
                                     Jaguli
                                 </td>
 
-
                                 <td>
                                     ₹5,000
                                 </td>
-
 
                                 <td>
 
@@ -424,7 +573,6 @@
                                     </span>
 
                                 </td>
-
 
                                 <td>
 
@@ -438,6 +586,9 @@
 
                             </tr>
 
+
+
+                            <!-- PROPERTY 2 -->
 
                             <tr>
 
@@ -465,26 +616,21 @@
 
                                 </td>
 
-
                                 <td>
                                     Room
                                 </td>
-
 
                                 <td>
                                     Amit Roy
                                 </td>
 
-
                                 <td>
                                     Haringhata
                                 </td>
 
-
                                 <td>
                                     ₹6,000
                                 </td>
-
 
                                 <td>
 
@@ -493,7 +639,6 @@
                                     </span>
 
                                 </td>
-
 
                                 <td>
 
@@ -507,6 +652,9 @@
 
                             </tr>
 
+
+
+                            <!-- PROPERTY 3 -->
 
                             <tr>
 
@@ -534,26 +682,21 @@
 
                                 </td>
 
-
                                 <td>
                                     Mess
                                 </td>
-
 
                                 <td>
                                     Suman Ghosh
                                 </td>
 
-
                                 <td>
                                     Jaguli
                                 </td>
 
-
                                 <td>
                                     ₹2,500
                                 </td>
-
 
                                 <td>
 
@@ -562,7 +705,6 @@
                                     </span>
 
                                 </td>
-
 
                                 <td>
 
@@ -576,6 +718,9 @@
 
                             </tr>
 
+
+
+                            <!-- PROPERTY 4 -->
 
                             <tr>
 
@@ -603,26 +748,21 @@
 
                                 </td>
 
-
                                 <td>
                                     Guest House
                                 </td>
-
 
                                 <td>
                                     Sanjay Paul
                                 </td>
 
-
                                 <td>
                                     Haringhata
                                 </td>
 
-
                                 <td>
                                     ₹900/night
                                 </td>
-
 
                                 <td>
 
@@ -631,7 +771,6 @@
                                     </span>
 
                                 </td>
-
 
                                 <td>
 
@@ -645,6 +784,9 @@
 
                             </tr>
 
+
+
+                            <!-- PROPERTY 5 -->
 
                             <tr>
 
@@ -672,26 +814,21 @@
 
                                 </td>
 
-
                                 <td>
                                     Flat
                                 </td>
-
 
                                 <td>
                                     Arindam Sen
                                 </td>
 
-
                                 <td>
                                     Haringhata
                                 </td>
 
-
                                 <td>
                                     ₹12,000
                                 </td>
-
 
                                 <td>
 
@@ -700,7 +837,6 @@
                                     </span>
 
                                 </td>
-
 
                                 <td>
 
@@ -714,6 +850,9 @@
 
                             </tr>
 
+
+
+                            <!-- PROPERTY 6 -->
 
                             <tr>
 
@@ -741,26 +880,21 @@
 
                                 </td>
 
-
                                 <td>
                                     Room
                                 </td>
-
 
                                 <td>
                                     Debashis Roy
                                 </td>
 
-
                                 <td>
                                     Jaguli
                                 </td>
 
-
                                 <td>
                                     ₹4,500
                                 </td>
-
 
                                 <td>
 
@@ -769,7 +903,6 @@
                                     </span>
 
                                 </td>
-
 
                                 <td>
 
@@ -783,156 +916,213 @@
 
                             </tr>
 
+
                         </tbody>
+
 
                     </table>
 
+
                 </div>
 
+
             </div>
+
 
         </section>
 
+
     </main>
+
+
+
     <!-- =====================================================
-     PROPERTY REVIEW MODAL
-     ===================================================== -->
+         PROPERTY REVIEW MODAL
+         ===================================================== -->
 
-<div class="property-modal" id="propertyModal">
+    <div
+        class="property-modal"
+        id="propertyModal"
+    >
 
-    <div class="property-modal-content">
 
-        <!-- MODAL HEADER -->
+        <div class="property-modal-content">
 
-        <div class="modal-header">
 
-            <div>
-                <h2 id="modalPropertyName">
-                    Property Details
-                </h2>
+            <!-- MODAL HEADER -->
 
-                <p id="modalPropertyType">
-                    Property Type
-                </p>
+            <div class="modal-header">
+
+
+                <div>
+
+                    <h2 id="modalPropertyName">
+                        Property Details
+                    </h2>
+
+                    <p id="modalPropertyType">
+                        Property Type
+                    </p>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    id="closePropertyModal"
+                    type="button"
+                >
+                    &times;
+                </button>
+
+
             </div>
 
-            <button
-                class="modal-close"
-                id="closePropertyModal"
-            >
-                &times;
-            </button>
+
+
+            <!-- PROPERTY DETAILS -->
+
+            <div class="modal-body">
+
+
+                <div
+                    class="modal-property-icon"
+                    id="modalPropertyIcon"
+                >
+                    🏠
+                </div>
+
+
+
+                <div class="property-details">
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Owner
+                        </span>
+
+                        <strong id="modalOwner">
+                            -
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Location
+                        </span>
+
+                        <strong id="modalLocation">
+                            -
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Rent
+                        </span>
+
+                        <strong id="modalRent">
+                            -
+                        </strong>
+
+                    </div>
+
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong id="modalStatus">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="modal-description">
+
+                    <h3>
+                        Description
+                    </h3>
+
+                    <p id="modalDescription">
+                        -
+                    </p>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- MODAL ACTIONS -->
+
+            <div class="modal-actions">
+
+
+                <button
+                    class="modal-btn reject-btn"
+                    id="rejectPropertyBtn"
+                    type="button"
+                >
+                    ❌ Reject
+                </button>
+
+
+                <button
+                    class="modal-btn close-btn"
+                    id="closePropertyBtn"
+                    type="button"
+                >
+                    Close
+                </button>
+
+
+                <button
+                    class="modal-btn approve-btn"
+                    id="approvePropertyBtn"
+                    type="button"
+                >
+                    ✅ Approve
+                </button>
+
+
+            </div>
+
 
         </div>
 
-
-        <!-- PROPERTY DETAILS -->
-
-        <div class="modal-body">
-
-            <div class="modal-property-icon" id="modalPropertyIcon">
-                🏠
-            </div>
-
-
-            <div class="property-details">
-
-                <div class="detail-item">
-
-                    <span>Owner</span>
-
-                    <strong id="modalOwner">
-                        -
-                    </strong>
-
-                </div>
-
-
-                <div class="detail-item">
-
-                    <span>Location</span>
-
-                    <strong id="modalLocation">
-                        -
-                    </strong>
-
-                </div>
-
-
-                <div class="detail-item">
-
-                    <span>Rent</span>
-
-                    <strong id="modalRent">
-                        -
-                    </strong>
-
-                </div>
-
-
-                <div class="detail-item">
-
-                    <span>Status</span>
-
-                    <strong id="modalStatus">
-                        -
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <!-- DESCRIPTION -->
-
-            <div class="modal-description">
-
-                <h3>
-                    Description
-                </h3>
-
-                <p id="modalDescription">
-                    -
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <!-- MODAL ACTIONS -->
-
-        <div class="modal-actions">
-
-            <button
-                class="modal-btn reject-btn"
-                id="rejectPropertyBtn"
-            >
-                ❌ Reject
-            </button>
-
-            <button
-                class="modal-btn close-btn"
-                id="closePropertyBtn"
-            >
-                Close
-            </button>
-
-            <button
-                class="modal-btn approve-btn"
-                id="approvePropertyBtn"
-            >
-                ✅ Approve
-            </button>
-
-        </div>
 
     </div>
 
-</div>
 
+
+    <!-- =====================================================
+         JAVASCRIPT
+         ===================================================== -->
 
     <script src="admin-properties.js"></script>
+
 
 </body>
 

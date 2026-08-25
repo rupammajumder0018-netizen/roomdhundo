@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Users | RoomDhundo Admin</title>
+
+    <link rel="stylesheet" href="admin-users.css">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="admin-logo">
+            <h2>RoomDhundo</h2>
+            <span>Admin Panel</span>
+        </div>
+
+        <nav class="admin-nav">
+
+            <a href="admin.html" class="nav-item">
+                📊 Dashboard
+            </a>
+
+            <a href="admin-properties.html" class="nav-item">
+                🏠 Properties
+            </a>
+
+            <a href="admin-users.html" class="nav-item active">
+                👤 Users
+            </a>
+
+            <a href="#" class="nav-item">
+                👨‍💼 Owners
+            </a>
+
+            <a href="#" class="nav-item">
+                📩 Enquiries
+            </a>
+
+            <a href="#" class="nav-item">
+                ✅ Verification
+            </a>
+
+            <a href="#" class="nav-item">
+                ⭐ Reviews
+            </a>
+
+            <a href="#" class="nav-item">
+                ⚙️ Settings
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <button id="adminLogoutBtn">
+                🚪 Logout
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <div>
+
+                <h1>Users</h1>
+
+                <p>
+                    Manage RoomDhundo users.
+                </p>
+
+            </div>
+
+            <div class="admin-profile">
+
+                <div class="profile-avatar">
+                    A
+                </div>
+
+                <div>
+
+                    <strong>Administrator</strong>
+
+                    <span>
+                        Super Admin
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- USER STATISTICS -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    👤
+                </div>
+
+                <div>
+
+                    <span>Total Users</span>
+
+                    <h2 id="totalUsers">
+                        142
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    🟢
+                </div>
+
+                <div>
+
+                    <span>Active Users</span>
+
+                    <h2 id="activeUsers">
+                        128
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ⏸️
+                </div>
+
+                <div>
+
+                    <span>Suspended</span>
+
+                    <h2 id="suspendedUsers">
+                        14
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    📅
+                </div>
+
+                <div>
+
+                    <span>New This Month</span>
+
+                    <h2 id="newUsers">
+                        27
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- USER MANAGEMENT -->
+
+        <section class="user-management">
+
+            <!-- FILTER BAR -->
+
+            <div class="filter-card">
+
+                <div class="search-wrapper">
+
+                    <input
+                        type="text"
+                        id="userSearch"
+                        placeholder="Search by name or email..."
+                    >
+
+                    <button id="searchBtn">
+                        🔍 Search
+                    </button>
+
+                </div>
+
+
+                <div class="filters">
+
+                    <select id="userStatusFilter">
+
+                        <option value="all">
+                            All Status
+                        </option>
+
+                        <option value="active">
+                            Active
+                        </option>
+
+                        <option value="suspended">
+                            Suspended
+                        </option>
+
+                    </select>
+
+
+                    <select id="userSort">
+
+                        <option value="newest">
+                            Newest
+                        </option>
+
+                        <option value="oldest">
+                            Oldest
+                        </option>
+
+                        <option value="name">
+                            Name A-Z
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- USERS TABLE -->
+
+            <div class="user-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            All Users
+                        </h2>
+
+                        <p>
+                            View and manage registered users.
+                        </p>
+
+                    </div>
+
+                    <span id="userCount">
+                        6 Users
+                    </span>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>User</th>
+
+                                <th>Email</th>
+
+                                <th>Location</th>
+
+                                <th>Joined</th>
+
+                                <th>Status</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="userTableBody">
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-info">
+
+                                        <div class="user-avatar">
+                                            R
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Rupam Majumder
+                                            </strong>
+
+                                            <span>
+                                                User #1001
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    rupam@example.com
+                                </td>
+
+                                <td>
+                                    Haringhata
+                                </td>
+
+                                <td>
+                                    Aug 20, 2026
+                                </td>
+
+                                <td>
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="action-btn view-btn"
+                                    >
+                                        View
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-info">
+
+                                        <div class="user-avatar">
+                                            A
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Ankit Roy
+                                            </strong>
+
+                                            <span>
+                                                User #1002
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    ankit@example.com
+                                </td>
+
+                                <td>
+                                    Jaguli
+                                </td>
+
+                                <td>
+                                    Aug 18, 2026
+                                </td>
+
+                                <td>
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="action-btn view-btn"
+                                    >
+                                        View
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-info">
+
+                                        <div class="user-avatar">
+                                            S
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Sayan Ghosh
+                                            </strong>
+
+                                            <span>
+                                                User #1003
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    sayan@example.com
+                                </td>
+
+                                <td>
+                                    Kalyani
+                                </td>
+
+                                <td>
+                                    Aug 15, 2026
+                                </td>
+
+                                <td>
+
+                                    <span class="status suspended">
+                                        Suspended
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="action-btn view-btn"
+                                    >
+                                        View
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-info">
+
+                                        <div class="user-avatar">
+                                            P
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Priya Sen
+                                            </strong>
+
+                                            <span>
+                                                User #1004
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    priya@example.com
+                                </td>
+
+                                <td>
+                                    Haringhata
+                                </td>
+
+                                <td>
+                                    Aug 12, 2026
+                                </td>
+
+                                <td>
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="action-btn view-btn"
+                                    >
+                                        View
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-info">
+
+                                        <div class="user-avatar">
+                                            D
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Debashis Das
+                                            </strong>
+
+                                            <span>
+                                                User #1005
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    debashis@example.com
+                                </td>
+
+                                <td>
+                                    Jaguli
+                                </td>
+
+                                <td>
+                                    Aug 10, 2026
+                                </td>
+
+                                <td>
+
+                                    <span class="status active">
+                                        Active
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="action-btn view-btn"
+                                    >
+                                        View
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="user-info">
+
+                                        <div class="user-avatar">
+                                            M
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                Manish Paul
+                                            </strong>
+
+                                            <span>
+                                                User #1006
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    manish@example.com
+                                </td>
+
+                                <td>
+                                    Kalyani
+                                </td>
+
+                                <td>
+                                    Aug 05, 2026
+                                </td>
+
+                                <td>
+
+                                    <span class="status suspended">
+                                        Suspended
+                                    </span>
+
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        class="action-btn view-btn"
+                                    >
+                                        View
+                                    </button>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- USER DETAILS MODAL -->
+
+<div id="userModal" class="user-modal">
+
+    <div class="user-modal-content">
+
+        <button id="closeUserModal" class="modal-close">
+            ✕
+        </button>
+
+        <div class="modal-header">
+
+            <div id="modalAvatar" class="modal-avatar">
+                R
+            </div>
+
+            <div>
+                <h2 id="modalName">
+                    Rupam Majumder
+                </h2>
+
+                <span id="modalUserId">
+                    User #1001
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="modal-details">
+
+            <div class="detail-item">
+
+                <span>Email</span>
+
+                <strong id="modalEmail">
+                    rupam@example.com
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span>Location</span>
+
+                <strong id="modalLocation">
+                    Haringhata
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span>Joined</span>
+
+                <strong id="modalJoined">
+                    Aug 20, 2026
+                </strong>
+
+            </div>
+
+
+            <div class="detail-item">
+
+                <span>Status</span>
+
+                <strong id="modalStatus">
+                    Active
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button id="modalCloseBtn" class="modal-secondary-btn">
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+    <script src="admin-users.js"></script>
+
+</body>
+
+</html>

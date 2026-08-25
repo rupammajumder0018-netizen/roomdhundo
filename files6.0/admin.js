@@ -8,10 +8,15 @@
 // ---------------------------------------------------------
 
 const adminStats = {
+
     users: 142,
+
     owners: 37,
+
     properties: 84,
+
     pendingEnquiries: 8
+
 };
 
 
@@ -21,41 +26,82 @@ const adminStats = {
 
 function loadDashboardStats() {
 
-    document.getElementById("totalUsers").textContent =
-        adminStats.users;
+    const totalUsers =
+        document.getElementById("totalUsers");
 
-    document.getElementById("totalOwners").textContent =
-        adminStats.owners;
+    const totalOwners =
+        document.getElementById("totalOwners");
 
-    document.getElementById("totalProperties").textContent =
-        adminStats.properties;
+    const totalProperties =
+        document.getElementById("totalProperties");
 
-    document.getElementById("pendingEnquiries").textContent =
-        adminStats.pendingEnquiries;
+    const pendingEnquiries =
+        document.getElementById("pendingEnquiries");
+
+
+    if (totalUsers) {
+
+        totalUsers.textContent =
+            adminStats.users;
+
+    }
+
+
+    if (totalOwners) {
+
+        totalOwners.textContent =
+            adminStats.owners;
+
+    }
+
+
+    if (totalProperties) {
+
+        totalProperties.textContent =
+            adminStats.properties;
+
+    }
+
+
+    if (pendingEnquiries) {
+
+        pendingEnquiries.textContent =
+            adminStats.pendingEnquiries;
+
+    }
+
 }
 
 
 // ---------------------------------------------------------
-// LOGOUT BUTTON
+// LOGOUT
 // ---------------------------------------------------------
 
-const logoutButton = document.getElementById("adminLogoutBtn");
+const logoutButton =
+    document.getElementById("adminLogoutBtn");
+
 
 if (logoutButton) {
 
-    logoutButton.addEventListener("click", function () {
+    logoutButton.addEventListener(
+        "click",
+        function () {
 
-        const confirmLogout = confirm(
-            "Are you sure you want to logout?"
-        );
+            const confirmLogout =
+                confirm(
+                    "Are you sure you want to logout?"
+                );
 
-        if (confirmLogout) {
 
-            // Temporary logout behavior
-            window.location.href = "index.html";
+            if (confirmLogout) {
+
+                window.location.href =
+                    "index.html";
+
+            }
+
         }
-
-    });
+    );
 
 }
 
@@ -67,51 +113,124 @@ if (logoutButton) {
 const reviewButtons =
     document.querySelectorAll(".review-btn");
 
+
 reviewButtons.forEach(function (button) {
 
-    button.addEventListener("click", function () {
+    button.addEventListener(
+        "click",
+        function () {
 
-        alert(
-            "Property review system will be connected to Supabase next."
-        );
+            alert(
+                "Property review system will be connected to Supabase next."
+            );
 
-    });
+        }
+    );
 
 });
 
 
 // ---------------------------------------------------------
-// NAVIGATION
+// ADMIN PAGE NAVIGATION
 // ---------------------------------------------------------
 
 const navItems =
     document.querySelectorAll(".nav-item");
 
+
 navItems.forEach(function (item) {
 
-    item.addEventListener("click", function (event) {
+    item.addEventListener(
+        "click",
+        function (event) {
 
-        event.preventDefault();
+            const page =
+                this.getAttribute("data-page");
 
-        // Remove active state
-        navItems.forEach(function (nav) {
-            nav.classList.remove("active");
-        });
 
-        // Add active state
-        this.classList.add("active");
+            // Only handle Dashboard,
+            // Properties and Users.
 
-    });
+            if (page === "dashboard") {
+
+                event.preventDefault();
+
+                window.location.href =
+                    "./admin.html";
+
+                return;
+
+            }
+
+
+            if (page === "properties") {
+
+                event.preventDefault();
+
+                window.location.href =
+                    "./admin-properties.html";
+
+                return;
+
+            }
+
+
+            if (page === "users") {
+
+                event.preventDefault();
+
+                window.location.href =
+                    "./admin-users.html";
+
+                return;
+
+            }
+
+        }
+    );
 
 });
 
 
 // ---------------------------------------------------------
-// INITIALIZE DASHBOARD
+// VIEW ALL PROPERTIES
 // ---------------------------------------------------------
 
-document.addEventListener("DOMContentLoaded", function () {
+const viewAllButton =
+    document.querySelector(".view-all-btn");
 
-    loadDashboardStats();
 
-});
+if (viewAllButton) {
+
+    viewAllButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+
+            window.location.href =
+                "./admin-properties.html";
+
+        }
+    );
+
+}
+
+
+// ---------------------------------------------------------
+// INITIALIZE
+// ---------------------------------------------------------
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        loadDashboardStats();
+
+    }
+);
+
+
+console.log(
+    "RoomDhundo Admin Dashboard loaded successfully."
+);
