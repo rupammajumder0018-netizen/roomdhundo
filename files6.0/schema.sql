@@ -1,5 +1,5 @@
 -- =====================================================
--- STAYNEAR DATABASE SCHEMA (v2 — buildings + room types)
+-- ROOMDHUNDO DATABASE SCHEMA (v2 — buildings + room types)
 -- Paste this whole file into Supabase SQL Editor and run it.
 -- This REPLACES the old single "properties" table structure.
 -- Safe to re-run: it drops and recreates these tables only.

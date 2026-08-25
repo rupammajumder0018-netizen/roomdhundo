@@ -194,7 +194,7 @@ function wireAuthUI() {
         updateNavForUser(data.user);
         closeAuthModal();
         alert(`Welcome back, ${data.user.email.split("@")[0]}!`);
-        window.dispatchEvent(new CustomEvent("staynear:auth-changed"));
+         window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
     });
 
     signupForm?.addEventListener("submit", async (e) => {
@@ -231,7 +231,7 @@ function wireAuthUI() {
             updateNavForUser(data.user);
             closeAuthModal();
             alert(`Welcome, ${name}!`);
-            window.dispatchEvent(new CustomEvent("staynear:auth-changed"));
+             window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
         } else {
             closeAuthModal();
             alert("Account created! Check your email to confirm it, then log in.");
@@ -539,7 +539,13 @@ async function initSearchPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const qParam = urlParams.get("q");
     const stayParam = urlParams.get("stay");
+    const typeParam = urlParams.get("type");
     if (qParam && searchInput) searchInput.value = qParam;
+    if (typeParam) {
+        document.querySelectorAll(".propertyTypeFilter").forEach(cb => {
+            cb.checked = cb.value === typeParam;
+        });
+    }
     if (stayParam === "daily") {
         const dailyBtnEl = document.getElementById("dailyBtn");
         const monthlyBtnEl = document.getElementById("monthlyBtn");
@@ -599,6 +605,7 @@ async function initPropertyPage() {
             ? `${building.totalAvailable} rooms available across ${building.room_types.length} room types`
             : (building.room_types[0]?.availability || "Room available");
     document.getElementById("propertyName").textContent = building.name;
+    document.title = `${building.name} | RoomDhundo`;
     document.getElementById("propertyLocation").textContent = `📍 ${building.distance_km} km from MAKAUT, ${building.location}`;
     document.getElementById("propertyRating").textContent = building.avgRating || "New";
     document.getElementById("propertyReviews").textContent = building.reviewCount;

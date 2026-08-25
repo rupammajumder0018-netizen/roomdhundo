@@ -40,6 +40,8 @@ footer {
 .logo {
     font-size: 24px;
     font-weight: bold;
+    color: #222;
+    text-decoration: none;
 }
 
 .nav-links {
@@ -159,6 +161,17 @@ footer {
     border-radius: 14px;
 }
 
+a.category-card {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+a.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
 .category-card span {
     font-size: 40px;
 }
@@ -173,12 +186,16 @@ footer {
     color: #666;
 }
 
-.owner-section button {
+.owner-section button,
+.owner-cta {
+    display: inline-block;
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
     background: #222;
     color: white;
+    text-decoration: none;
+    font-size: 16px;
 }
 
 /* ==========================================================================
