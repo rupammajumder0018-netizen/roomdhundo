@@ -77,11 +77,16 @@ function loadDashboardStats() {
 // LOGOUT
 // ---------------------------------------------------------
 
-const logoutButton =
-    document.getElementById("adminLogoutBtn");
+function setupLogout() {
+
+    const logoutButton =
+        document.getElementById("adminLogoutBtn");
 
 
-if (logoutButton) {
+    if (!logoutButton) {
+        return;
+    }
+
 
     logoutButton.addEventListener(
         "click",
@@ -110,106 +115,62 @@ if (logoutButton) {
 // REVIEW BUTTONS
 // ---------------------------------------------------------
 
-const reviewButtons =
-    document.querySelectorAll(".review-btn");
+function setupReviewButtons() {
+
+    const reviewButtons =
+        document.querySelectorAll(".review-btn");
 
 
-reviewButtons.forEach(function (button) {
+    reviewButtons.forEach(function (button) {
 
-    button.addEventListener(
-        "click",
-        function () {
+        button.addEventListener(
+            "click",
+            function () {
 
-            alert(
-                "Property review system will be connected to Supabase next."
-            );
-
-        }
-    );
-
-});
-
-
-// ---------------------------------------------------------
-// ADMIN PAGE NAVIGATION
-// ---------------------------------------------------------
-
-const navItems =
-    document.querySelectorAll(".nav-item");
-
-
-navItems.forEach(function (item) {
-
-    item.addEventListener(
-        "click",
-        function (event) {
-
-            const page =
-                this.getAttribute("data-page");
-
-
-            // Only handle Dashboard,
-            // Properties and Users.
-
-            if (page === "dashboard") {
-
-                event.preventDefault();
-
-                window.location.href =
-                    "./admin.html";
-
-                return;
+                alert(
+                    "Property review system will be connected to Supabase next."
+                );
 
             }
+        );
 
+    });
 
-            if (page === "properties") {
-
-                event.preventDefault();
-
-                window.location.href =
-                    "./admin-properties.html";
-
-                return;
-
-            }
-
-
-            if (page === "users") {
-
-                event.preventDefault();
-
-                window.location.href =
-                    "./admin-users.html";
-
-                return;
-
-            }
-
-        }
-    );
-
-});
+}
 
 
 // ---------------------------------------------------------
 // VIEW ALL PROPERTIES
 // ---------------------------------------------------------
 
-const viewAllButton =
-    document.querySelector(".view-all-btn");
+function setupViewAllButton() {
+
+    const viewAllButton =
+        document.querySelector(".view-all-btn");
 
 
-if (viewAllButton) {
+    if (!viewAllButton) {
+        return;
+    }
+
+
+    // HTML href will normally handle navigation.
+    // This is only a backup.
 
     viewAllButton.addEventListener(
         "click",
-        function (event) {
+        function () {
 
-            event.preventDefault();
+            const targetPage =
+                this.getAttribute("href");
 
-            window.location.href =
-                "./admin-properties.html";
+
+            if (targetPage) {
+
+                window.location.href =
+                    targetPage;
+
+            }
 
         }
     );
@@ -218,7 +179,7 @@ if (viewAllButton) {
 
 
 // ---------------------------------------------------------
-// INITIALIZE
+// INITIALIZE DASHBOARD
 // ---------------------------------------------------------
 
 document.addEventListener(
@@ -227,9 +188,19 @@ document.addEventListener(
 
         loadDashboardStats();
 
+        setupLogout();
+
+        setupReviewButtons();
+
+        setupViewAllButton();
+
     }
 );
 
+
+// ---------------------------------------------------------
+// CONFIRM JAVASCRIPT LOADED
+// ---------------------------------------------------------
 
 console.log(
     "RoomDhundo Admin Dashboard loaded successfully."
