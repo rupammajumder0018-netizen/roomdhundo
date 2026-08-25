@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>RoomDhundo Admin Dashboard</title>
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="admin-logo">
+            <h2>RoomDhundo</h2>
+            <span>Admin Panel</span>
+        </div>
+
+        <nav class="admin-nav">
+
+            <a href="#" class="nav-item active">
+                📊 Dashboard
+            </a>
+
+            <a href="#" class="nav-item">
+                🏠 Properties
+            </a>
+
+            <a href="#" class="nav-item">
+                👤 Users
+            </a>
+
+            <a href="#" class="nav-item">
+                👨‍💼 Owners
+            </a>
+
+            <a href="#" class="nav-item">
+                📩 Enquiries
+            </a>
+
+            <a href="#" class="nav-item">
+                ✅ Verification
+            </a>
+
+            <a href="#" class="nav-item">
+                ⭐ Reviews
+            </a>
+
+            <a href="#" class="nav-item">
+                ⚙️ Settings
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button id="adminLogoutBtn">
+                🚪 Logout
+            </button>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <div>
+                <h1>Dashboard</h1>
+                <p>Welcome back, Admin.</p>
+            </div>
+
+            <div class="admin-profile">
+                <div class="profile-avatar">
+                    A
+                </div>
+
+                <div>
+                    <strong>Administrator</strong>
+                    <span>Super Admin</span>
+                </div>
+            </div>
+
+        </header>
+
+
+        <!-- STATISTICS -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+
+                <div>
+                    <span>Total Users</span>
+                    <h2 id="totalUsers">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">👨‍💼</div>
+
+                <div>
+                    <span>Total Owners</span>
+                    <h2 id="totalOwners">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+
+                <div>
+                    <span>Total Properties</span>
+                    <h2 id="totalProperties">0</h2>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-icon">📩</div>
+
+                <div>
+                    <span>Pending Enquiries</span>
+                    <h2 id="pendingEnquiries">0</h2>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- DASHBOARD CONTENT -->
+        <section class="dashboard-grid">
+
+            <!-- RECENT PROPERTIES -->
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Recent Properties</h2>
+                        <p>Latest properties submitted by owners</p>
+                    </div>
+
+                    <button class="view-all-btn">
+                        View All
+                    </button>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Owner</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="recentProperties">
+
+                            <tr>
+                                <td>Jaguli PG</td>
+                                <td>Owner Name</td>
+                                <td>Jaguli</td>
+
+                                <td>
+                                    <span class="status pending">
+                                        Pending
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Haringhata Room</td>
+                                <td>Owner Name</td>
+                                <td>Haringhata</td>
+
+                                <td>
+                                    <span class="status approved">
+                                        Approved
+                                    </span>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- VERIFICATION -->
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Pending Verification</h2>
+                        <p>Properties waiting for approval</p>
+                    </div>
+
+                    <span class="notification-count">
+                        0
+                    </span>
+
+                </div>
+
+
+                <div class="verification-list">
+
+                    <div class="verification-item">
+
+                        <div>
+                            <strong>Jaguli PG</strong>
+                            <span>Submitted recently</span>
+                        </div>
+
+                        <button class="review-btn">
+                            Review
+                        </button>
+
+                    </div>
+
+
+                    <div class="verification-item">
+
+                        <div>
+                            <strong>MAKAUT Room</strong>
+                            <span>Submitted recently</span>
+                        </div>
+
+                        <button class="review-btn">
+                            Review
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="admin.js"></script>
+
+</body>
+</html>
