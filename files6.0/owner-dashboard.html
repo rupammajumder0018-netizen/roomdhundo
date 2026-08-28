@@ -1,0 +1,730 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Owner Dashboard | RoomDhundo</title>
+
+    <link rel="stylesheet" href="owner-dashboard.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <!-- ================= SIDEBAR ================= -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fa-solid fa-house"></i>
+            </div>
+
+            <div>
+                <h2>RoomDhundo</h2>
+                <span>Owner Panel</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a href="#" class="nav-link active">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="#properties" class="nav-link">
+                <i class="fa-solid fa-building"></i>
+                <span>My Properties</span>
+            </a>
+
+            <a href="#rooms" class="nav-link">
+                <i class="fa-solid fa-door-open"></i>
+                <span>Rooms</span>
+            </a>
+
+            <a href="#enquiries" class="nav-link">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Enquiries</span>
+                <span class="notification-count">4</span>
+            </a>
+
+            <a href="#bookings" class="nav-link">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Bookings</span>
+            </a>
+
+            <a href="#reviews" class="nav-link">
+                <i class="fa-solid fa-star"></i>
+                <span>Reviews</span>
+            </a>
+
+            <a href="#profile" class="nav-link">
+                <i class="fa-solid fa-user"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a href="#settings" class="nav-link">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="help-box">
+                <i class="fa-solid fa-circle-question"></i>
+
+                <div>
+                    <strong>Need Help?</strong>
+                    <p>Contact RoomDhundo support.</p>
+                </div>
+            </div>
+
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Logout
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+
+        <header class="topbar">
+
+            <button class="menu-btn" id="menuBtn">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="page-title">
+                <h1>Owner Dashboard</h1>
+                <p>Manage your properties and rooms</p>
+            </div>
+
+            <div class="topbar-right">
+
+                <button class="icon-btn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+
+                <div class="owner-profile">
+
+                    <div class="owner-avatar">
+                        RM
+                    </div>
+
+                    <div class="owner-info">
+                        <strong>Rupam Majumder</strong>
+                        <span>Property Owner</span>
+                    </div>
+
+                    <i class="fa-solid fa-chevron-down"></i>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= CONTENT ================= -->
+
+        <section class="dashboard-content">
+
+            <!-- WELCOME -->
+
+            <div class="welcome-section">
+
+                <div>
+                    <h2>Welcome back, Rupam 👋</h2>
+                    <p>Here's what's happening with your properties today.</p>
+                </div>
+
+                <button class="add-property-btn" id="addPropertyBtn">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Property
+                </button>
+
+            </div>
+
+
+            <!-- ================= STAT CARDS ================= -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon properties-icon">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+
+                    <div>
+                        <span>Total Properties</span>
+                        <h3 id="totalProperties">2</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon rooms-icon">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+
+                    <div>
+                        <span>Total Rooms</span>
+                        <h3 id="totalRooms">6</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon available-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <div>
+                        <span>Available Rooms</span>
+                        <h3 id="availableRooms">4</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon occupied-icon">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+
+                    <div>
+                        <span>Occupied Rooms</span>
+                        <h3 id="occupiedRooms">2</h3>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================= PROPERTIES ================= -->
+
+            <section class="section-block" id="properties">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>My Properties</h2>
+                        <p>Manage your listed properties</p>
+                    </div>
+
+                    <button class="view-all-btn">
+                        View All
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+
+                <div class="property-grid">
+
+
+                    <!-- PROPERTY 1 -->
+
+                    <article class="property-card">
+
+                        <div class="property-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80"
+                                alt="Krishna PG"
+                            >
+
+                            <span class="property-status active-status">
+                                Active
+                            </span>
+
+                        </div>
+
+
+                        <div class="property-body">
+
+                            <div class="property-heading">
+
+                                <div>
+                                    <h3>Krishna PG</h3>
+
+                                    <p>
+                                        <i class="fa-solid fa-location-dot"></i>
+                                        Near MAKAUT, Haringhata
+                                    </p>
+                                </div>
+
+                                <button class="more-btn">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+
+                            </div>
+
+
+                            <div class="property-details">
+
+                                <span>
+                                    <i class="fa-solid fa-door-open"></i>
+                                    3 Rooms
+                                </span>
+
+                                <span>
+                                    <i class="fa-solid fa-star"></i>
+                                    4.8
+                                </span>
+
+                                <strong>₹6,000 <small>/ month</small></strong>
+
+                            </div>
+
+
+                            <div class="property-actions">
+
+                                <button class="secondary-btn">
+                                    <i class="fa-solid fa-eye"></i>
+                                    View
+                                </button>
+
+                                <button class="secondary-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="primary-btn manage-btn"
+                                    data-property="Krishna PG"
+                                >
+                                    Manage Rooms
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <!-- PROPERTY 2 -->
+
+                    <article class="property-card">
+
+                        <div class="property-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80"
+                                alt="Green Residence"
+                            >
+
+                            <span class="property-status active-status">
+                                Active
+                            </span>
+
+                        </div>
+
+
+                        <div class="property-body">
+
+                            <div class="property-heading">
+
+                                <div>
+                                    <h3>Green Residence</h3>
+
+                                    <p>
+                                        <i class="fa-solid fa-location-dot"></i>
+                                        Haringhata, Nadia
+                                    </p>
+                                </div>
+
+                                <button class="more-btn">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+
+                            </div>
+
+
+                            <div class="property-details">
+
+                                <span>
+                                    <i class="fa-solid fa-door-open"></i>
+                                    3 Rooms
+                                </span>
+
+                                <span>
+                                    <i class="fa-solid fa-star"></i>
+                                    4.6
+                                </span>
+
+                                <strong>₹5,500 <small>/ month</small></strong>
+
+                            </div>
+
+
+                            <div class="property-actions">
+
+                                <button class="secondary-btn">
+                                    <i class="fa-solid fa-eye"></i>
+                                    View
+                                </button>
+
+                                <button class="secondary-btn">
+                                    <i class="fa-solid fa-pen"></i>
+                                    Edit
+                                </button>
+
+                                <button
+                                    class="primary-btn manage-btn"
+                                    data-property="Green Residence"
+                                >
+                                    Manage Rooms
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================= ROOM MANAGEMENT ================= -->
+
+            <section class="section-block" id="rooms">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Room Availability</h2>
+                        <p>Quickly manage your room status</p>
+                    </div>
+
+                    <select id="propertyFilter" class="property-filter">
+
+                        <option value="all">All Properties</option>
+                        <option value="Krishna PG">Krishna PG</option>
+                        <option value="Green Residence">Green Residence</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="room-table-wrapper">
+
+                    <table class="room-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>Property</th>
+                                <th>Room</th>
+                                <th>Rent</th>
+                                <th>People</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="roomTableBody">
+
+                            <tr data-property="Krishna PG">
+
+                                <td>
+                                    <strong>Krishna PG</strong>
+                                </td>
+
+                                <td>Room 101</td>
+
+                                <td>₹6,000</td>
+
+                                <td>1 / 2</td>
+
+                                <td>
+                                    <span class="room-status available">
+                                        Available
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        class="status-btn occupied-action"
+                                        data-status="occupied"
+                                    >
+                                        Mark Occupied
+                                    </button>
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-property="Krishna PG">
+
+                                <td>
+                                    <strong>Krishna PG</strong>
+                                </td>
+
+                                <td>Room 102</td>
+
+                                <td>₹6,000</td>
+
+                                <td>2 / 2</td>
+
+                                <td>
+                                    <span class="room-status occupied">
+                                        Occupied
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        class="status-btn available-action"
+                                        data-status="available"
+                                    >
+                                        Mark Available
+                                    </button>
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-property="Krishna PG">
+
+                                <td>
+                                    <strong>Krishna PG</strong>
+                                </td>
+
+                                <td>Room 103</td>
+
+                                <td>₹6,500</td>
+
+                                <td>0 / 2</td>
+
+                                <td>
+                                    <span class="room-status available">
+                                        Available
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        class="status-btn occupied-action"
+                                        data-status="occupied"
+                                    >
+                                        Mark Occupied
+                                    </button>
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-property="Green Residence">
+
+                                <td>
+                                    <strong>Green Residence</strong>
+                                </td>
+
+                                <td>Room 201</td>
+
+                                <td>₹5,500</td>
+
+                                <td>2 / 2</td>
+
+                                <td>
+                                    <span class="room-status occupied">
+                                        Occupied
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        class="status-btn available-action"
+                                        data-status="available"
+                                    >
+                                        Mark Available
+                                    </button>
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-property="Green Residence">
+
+                                <td>
+                                    <strong>Green Residence</strong>
+                                </td>
+
+                                <td>Room 202</td>
+
+                                <td>₹5,500</td>
+
+                                <td>1 / 2</td>
+
+                                <td>
+                                    <span class="room-status available">
+                                        Available
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        class="status-btn occupied-action"
+                                        data-status="occupied"
+                                    >
+                                        Mark Occupied
+                                    </button>
+                                </td>
+
+                            </tr>
+
+
+                            <tr data-property="Green Residence">
+
+                                <td>
+                                    <strong>Green Residence</strong>
+                                </td>
+
+                                <td>Room 203</td>
+
+                                <td>₹6,000</td>
+
+                                <td>0 / 2</td>
+
+                                <td>
+                                    <span class="room-status available">
+                                        Available
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <button
+                                        class="status-btn occupied-action"
+                                        data-status="occupied"
+                                    >
+                                        Mark Occupied
+                                    </button>
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================= QUICK ACTIONS ================= -->
+
+            <section class="quick-actions">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Quick Actions</h2>
+                        <p>Manage your account quickly</p>
+                    </div>
+
+                </div>
+
+
+                <div class="quick-grid">
+
+                    <button class="quick-card">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        <div>
+                            <strong>Add Property</strong>
+                            <span>List a new property</span>
+                        </div>
+
+                    </button>
+
+
+                    <button class="quick-card">
+
+                        <i class="fa-solid fa-envelope"></i>
+
+                        <div>
+                            <strong>View Enquiries</strong>
+                            <span>4 new enquiries</span>
+                        </div>
+
+                    </button>
+
+
+                    <button class="quick-card">
+
+                        <i class="fa-solid fa-calendar-check"></i>
+
+                        <div>
+                            <strong>Bookings</strong>
+                            <span>Manage booking requests</span>
+                        </div>
+
+                    </button>
+
+
+                    <button class="quick-card">
+
+                        <i class="fa-solid fa-user-gear"></i>
+
+                        <div>
+                            <strong>Profile</strong>
+                            <span>Update your information</span>
+                        </div>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= OVERLAY ================= -->
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script src="owner-dashboard.js"></script>
+
+</body>
+
+</html>
+```
