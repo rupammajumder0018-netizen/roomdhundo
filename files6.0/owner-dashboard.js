@@ -1,42 +1,91 @@
 /* =========================================================
-   ROOMDHUNDO — OWNER DASHBOARD
-   SUPABASE OWNER DATA
-   ========================================================= */
-
-const SUPABASE_URL =
-    "https://vyusxdilgwrcgmqqvzsp.supabase.co";
-
-/*
-   IMPORTANT:
-   Paste the SAME anon key that you already use
-   in your main script.js.
-*/
-const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dXN4ZGlsZ3dyY2dtcXF2enNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNjYyNTYsImV4cCI6MjEwMjc0MjI1Nn0.X6FbzDad06d5-kj1aK4zQkPSPrrLUW_O7CdfZ-ghwrM";
-
-
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_ANON_KEY
-    );
-
-
-let currentUser = null;
-let ownerProperties = [];
+   ROOMDHUNDO OWNER DASHBOARD
+   Supabase Version
+========================================================= */
 
 
 /* =========================================================
-   PAGE START
-   ========================================================= */
+   SUPABASE CONFIG
+========================================================= */
+
+/*
+   IMPORTANT:
+
+   Yahan apne Supabase project ki values daalo.
+
+   Agar tumhare project me already supabase.js file hai,
+   to is section ko uske according adjust kar sakte ho.
+*/
+
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+
+const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
+
+
+/* =========================================================
+   TABLE CONFIGURATION
+========================================================= */
+
+const TABLES = {
+
+    properties: "properties",
+
+    rooms: "rooms",
+
+    reviews: "reviews",
+
+    profile: "profile"
+
+};
+
+
+/* =========================================================
+   COLUMN CONFIGURATION
+========================================================= */
+
+const COLUMNS = {
+
+    propertyOwnerId: "owner_id",
+
+    roomPropertyId: "property_id",
+
+    reviewPropertyId: "property_id",
+
+    reviewUserId: "user_id"
+
+};
+
+
+/* =========================================================
+   GLOBAL DATA
+========================================================= */
+
+let currentUser = null;
+
+let currentOwner = null;
+
+let properties = [];
+
+let rooms = [];
+
+let reviews = [];
+
+
+/* =========================================================
+   DOM READY
+========================================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
-    async () => {
+    () => {
 
-        setupDashboardButtons();
-
-        await initializeOwnerDashboard();
+        initializeDashboard();
 
     }
 );
@@ -44,14 +93,83 @@ document.addEventListener(
 
 /* =========================================================
    INITIALIZE
-   ========================================================= */
+========================================================= */
 
-async function initializeOwnerDashboard() {
+async function initializeDashboard() {
+
+    try {
+
+        console.log(
+            "RoomDhundo Owner Dashboard initializing..."
+        );
+
+
+        setupNavigation();
+
+        setupSidebar();
+
+        setupModals();
+
+        setupQuickActions();
+
+        setupPropertyFilter();
+
+        setupLogout();
+
+
+        await checkAuthentication();
+
+
+        if (!currentUser) {
+
+            return;
+
+        }
+
+
+        await loadOwnerProfile();
+
+        await loadProperties();
+
+        await loadRooms();
+
+        await loadReviews();
+
+
+        updateDashboardStatistics();
+
+
+        console.log(
+            "Owner Dashboard initialized successfully."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Dashboard initialization error:",
+            error
+        );
+
+        showToast(
+            "Unable to load dashboard."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+async function checkAuthentication() {
 
     const {
         data,
         error
-    } = await supabaseClient.auth.getUser();
+    } = await supabaseClient.auth.getSession();
 
 
     if (error) {
@@ -61,180 +179,317 @@ async function initializeOwnerDashboard() {
             error
         );
 
-        showDashboardError(
-            error.message
+        return;
+
+    }
+
+
+    const session = data.session;
+
+
+    if (!session) {
+
+        console.warn(
+            "No active session."
         );
+
+        /*
+            Change this URL according to your project.
+        */
+
+        window.location.href = "login.html";
 
         return;
 
     }
 
 
-    currentUser = data.user;
-
-
-    if (!currentUser) {
-
-        alert(
-            "Please login as an owner first."
-        );
-
-        window.location.href =
-            "index.html";
-
-        return;
-
-    }
+    currentUser = session.user;
 
 
     console.log(
-        "Logged in owner:",
+        "Authenticated owner:",
         currentUser.id
     );
 
-
-    updateOwnerName(
-        currentUser
-    );
-
-
-    await loadOwnerProperties();
-
 }
 
 
 /* =========================================================
-   LOAD ONLY LOGGED-IN OWNER'S PROPERTIES
-   ========================================================= */
+   OWNER PROFILE
+========================================================= */
 
-async function loadOwnerProperties() {
+async function loadOwnerProfile() {
 
-    const {
-        data,
-        error
-    } = await supabaseClient
-
-        .from("buildings")
-
-        .select(`
-            *,
-            room_types(*)
-        `)
-
-        .eq(
-            "created_by",
-            currentUser.id
-        )
-
-        .order(
-            "created_at",
-            {
-                ascending: false
-            }
-        );
-
-
-    if (error) {
-
-        console.error(
-            "Property loading error:",
-            error
-        );
-
-        showDashboardError(
-            error.message
-        );
+    if (!currentUser) {
 
         return;
 
     }
 
 
-    ownerProperties =
-        data || [];
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from(TABLES.profile)
+
+            .select("*")
+
+            .eq("id", currentUser.id)
+
+            .maybeSingle();
 
 
-    console.log(
-        "Owner properties:",
-        ownerProperties
-    );
+        if (error) {
+
+            console.warn(
+                "Profile load error:",
+                error
+            );
+
+            setDefaultOwnerProfile();
+
+            return;
+
+        }
 
 
-    renderProperties();
+        currentOwner = data;
 
-    renderRoomAvailability();
 
-    updateDashboardStats();
+        const name =
+            getProfileName(data) ||
+            currentUser.user_metadata?.name ||
+            currentUser.user_metadata?.full_name ||
+            "Owner";
 
-    populatePropertyFilter();
+
+        updateOwnerUI(name);
+
+
+    } catch (error) {
+
+        console.error(
+            "Owner profile error:",
+            error
+        );
+
+        setDefaultOwnerProfile();
+
+    }
 
 }
 
 
 /* =========================================================
-   UPDATE OWNER NAME
-   ========================================================= */
+   PROFILE NAME
+========================================================= */
 
-function updateOwnerName(user) {
+function getProfileName(profile) {
+
+    if (!profile) {
+
+        return null;
+
+    }
+
+
+    return (
+        profile.name ||
+        profile.full_name ||
+        profile.username ||
+        profile.display_name ||
+        null
+    );
+
+}
+
+
+/* =========================================================
+   DEFAULT PROFILE
+========================================================= */
+
+function setDefaultOwnerProfile() {
 
     const name =
-        user.user_metadata?.full_name ||
-        user.user_metadata?.name ||
-        user.email?.split("@")[0] ||
+        currentUser?.user_metadata?.name ||
+        currentUser?.user_metadata?.full_name ||
         "Owner";
 
 
-    const firstName =
-        name.split(" ")[0];
+    updateOwnerUI(name);
+
+}
 
 
-    const welcome =
-        document.querySelector(
-            ".welcome-section h2"
-        );
+/* =========================================================
+   UPDATE OWNER UI
+========================================================= */
+
+function updateOwnerUI(name) {
+
+    const ownerName =
+        document.getElementById("ownerName");
+
+    const welcomeText =
+        document.getElementById("welcomeText");
+
+    const ownerAvatar =
+        document.getElementById("ownerAvatar");
 
 
-    if (welcome) {
+    if (ownerName) {
 
-        welcome.textContent =
-            `Welcome back, ${firstName} 👋`;
-
-    }
-
-
-    const profileName =
-        document.querySelector(
-            ".owner-info strong"
-        );
-
-
-    if (profileName) {
-
-        profileName.textContent =
-            name;
+        ownerName.textContent = name;
 
     }
 
 
-    const avatar =
-        document.querySelector(
-            ".owner-avatar"
+    if (welcomeText) {
+
+        welcomeText.textContent =
+            `Welcome back, ${name} 👋`;
+
+    }
+
+
+    if (ownerAvatar) {
+
+        ownerAvatar.textContent =
+            getInitials(name);
+
+    }
+
+}
+
+
+/* =========================================================
+   INITIALS
+========================================================= */
+
+function getInitials(name) {
+
+    if (!name) {
+
+        return "OW";
+
+    }
+
+
+    const words =
+        name
+            .trim()
+            .split(/\s+/);
+
+
+    if (words.length === 1) {
+
+        return words[0]
+            .substring(0, 2)
+            .toUpperCase();
+
+    }
+
+
+    return (
+        words[0][0] +
+        words[words.length - 1][0]
+    ).toUpperCase();
+
+}
+
+
+/* =========================================================
+   LOAD PROPERTIES
+========================================================= */
+
+async function loadProperties() {
+
+    if (!currentUser) {
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "ownerProperties"
         );
 
 
-    if (avatar) {
+    try {
 
-        const initials =
-            name
-                .split(" ")
-                .map(word => word[0])
-                .join("")
-                .substring(0, 2)
-                .toUpperCase();
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from(TABLES.properties)
+
+            .select("*")
+
+            .eq(
+                COLUMNS.propertyOwnerId,
+                currentUser.id
+            )
+
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
 
-        avatar.textContent =
-            initials;
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        properties = data || [];
+
+
+        renderProperties();
+
+        populatePropertyFilter();
+
+
+    } catch (error) {
+
+        console.error(
+            "Properties error:",
+            error
+        );
+
+
+        if (container) {
+
+            container.innerHTML = `
+
+                <div class="empty-properties">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <h3>
+                        Unable to load properties
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(error.message || "Database error")}
+                    </p>
+
+                </div>
+
+            `;
+
+        }
 
     }
 
@@ -243,7 +498,7 @@ function updateOwnerName(user) {
 
 /* =========================================================
    RENDER PROPERTIES
-   ========================================================= */
+========================================================= */
 
 function renderProperties() {
 
@@ -255,46 +510,26 @@ function renderProperties() {
 
     if (!container) {
 
-        console.error(
-            "#ownerProperties not found"
-        );
-
         return;
 
     }
 
 
-    container.innerHTML = "";
-
-
-    if (
-        ownerProperties.length === 0
-    ) {
+    if (!properties.length) {
 
         container.innerHTML = `
 
             <div class="empty-properties">
 
-                <div class="empty-icon">
-                    🏠
-                </div>
+                <i class="fa-solid fa-building"></i>
 
                 <h3>
-                    No properties listed yet
+                    No properties yet
                 </h3>
 
                 <p>
-                    List your first property
-                    to manage it here.
+                    Add your first property to get started.
                 </p>
-
-                <button
-                    class="add-property-btn"
-                    onclick="goToAddProperty()"
-                >
-                    <i class="fa-solid fa-plus"></i>
-                    List My Property
-                </button>
 
             </div>
 
@@ -305,525 +540,248 @@ function renderProperties() {
     }
 
 
-    ownerProperties.forEach(
-        property => {
-
-            container.appendChild(
-                createPropertyCard(
-                    property
-                )
-            );
-
-        }
-    );
+    container.innerHTML =
+        properties
+            .map(
+                property =>
+                    createPropertyCard(property)
+            )
+            .join("");
 
 }
 
 
 /* =========================================================
-   CREATE PROPERTY CARD
-   ========================================================= */
+   PROPERTY CARD
+========================================================= */
 
-function createPropertyCard(
-    property
-) {
+function createPropertyCard(property) {
 
-    const card =
-        document.createElement(
-            "article"
-        );
+    const name =
+        property.name ||
+        property.property_name ||
+        "Unnamed Property";
 
 
-    card.className =
-        "owner-property-card";
+    const city =
+        property.city ||
+        "";
 
 
-    const rooms =
-        property.room_types || [];
+    const area =
+        property.area ||
+        property.locality ||
+        "";
 
 
-    const availableRooms =
-        rooms.reduce(
-            (
-                total,
-                room
-            ) => {
-
-                return total +
-                    Number(
-                        room.available_rooms || 0
-                    );
-
-            },
-            0
-        );
+    const address =
+        property.address ||
+        property.location ||
+        "";
 
 
-    const roomTypeCount =
-        rooms.length;
+    const type =
+        property.property_type ||
+        property.type ||
+        "Property";
 
 
-    const prices =
-        rooms
-            .map(
-                room =>
-                    Number(
-                        room.price_value || 0
-                    )
-            )
-            .filter(
-                price =>
-                    price > 0
-            );
-
-
-    const minimumPrice =
-        prices.length
-            ? Math.min(...prices)
-            : 0;
-
-
-    /*
-       Property is considered available
-       when at least one room is available.
-    */
-
-    const isAvailable =
-        availableRooms > 0;
+    const rent =
+        property.rent ||
+        property.price ||
+        property.monthly_rent ||
+        0;
 
 
     const image =
-        property.images &&
-        property.images.length
-            ? property.images[0]
-            : "";
+        property.image ||
+        property.image_url ||
+        property.cover_image ||
+        "https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80";
 
 
-    const imageHTML =
-        image
-
-            ? `
-                <img
-                    src="${escapeHtml(image)}"
-                    alt="${escapeHtml(property.name)}"
-                >
-              `
-
-            : `
-                <div class="property-no-image">
-                    <i class="fa-solid fa-building"></i>
-                </div>
-              `;
+    const location =
+        [area, city]
+            .filter(Boolean)
+            .join(", ") ||
+        address ||
+        "Location not available";
 
 
-    card.innerHTML = `
+    return `
 
-        <div class="owner-property-image">
+        <article class="property-card">
 
-            ${imageHTML}
-
-            <span
-                class="
-                    property-status-badge
-                    ${isAvailable
-                        ? "available"
-                        : "occupied"}
-                "
+            <img
+                class="property-image"
+                src="${escapeAttribute(image)}"
+                alt="${escapeAttribute(name)}"
+                onerror="this.src='https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80'"
             >
 
-                ${
-                    isAvailable
-                        ? "🟢 Available"
-                        : "🔴 Occupied"
-                }
 
-            </span>
+            <div class="property-body">
 
-        </div>
+                <h3>
+                    ${escapeHTML(name)}
+                </h3>
 
 
-        <div class="owner-property-content">
+                <div class="property-location">
 
+                    <i class="fa-solid fa-location-dot"></i>
 
-            <div class="property-header">
-
-                <div>
-
-                    <h3>
-                        ${escapeHtml(
-                            property.name
-                        )}
-                    </h3>
-
-                    <p class="property-location">
-
-                        <i class="fa-solid fa-location-dot"></i>
-
-                        ${escapeHtml(
-                            property.location ||
-                            "Location not provided"
-                        )}
-
-                    </p>
+                    ${escapeHTML(location)}
 
                 </div>
 
 
-                <span class="property-type">
+                <div class="property-meta">
 
-                    ${escapeHtml(
-                        property.type ||
-                        "Property"
-                    )}
+                    <span class="property-type">
 
-                </span>
+                        ${escapeHTML(type)}
+
+                    </span>
+
+
+                    <span class="property-rent">
+
+                        ₹${formatNumber(rent)}
+
+                        <small>
+                            / month
+                        </small>
+
+                    </span>
+
+                </div>
 
             </div>
 
-
-            <div class="property-summary">
-
-
-                <div>
-
-                    <span>
-                        Room Types
-                    </span>
-
-                    <strong>
-                        ${roomTypeCount}
-                    </strong>
-
-                </div>
-
-
-                <div>
-
-                    <span>
-                        Available Rooms
-                    </span>
-
-                    <strong>
-                        ${availableRooms}
-                    </strong>
-
-                </div>
-
-
-                <div>
-
-                    <span>
-                        Starting From
-                    </span>
-
-                    <strong>
-
-                        ${
-                            minimumPrice
-                                ? "₹" +
-                                  minimumPrice.toLocaleString(
-                                      "en-IN"
-                                  )
-                                : "—"
-                        }
-
-                    </strong>
-
-                </div>
-
-
-            </div>
-
-
-            <!-- =============================================
-                 INDIVIDUAL PROPERTY MANAGE SECTION
-                 ============================================= -->
-
-            <div class="property-manage-section">
-
-                <div class="manage-title">
-
-                    <h4>
-                        Manage Property
-                    </h4>
-
-                    <span>
-                        Availability
-                    </span>
-
-                </div>
-
-
-                <div class="availability-buttons">
-
-
-                    <button
-                        type="button"
-                        class="
-                            availability-btn
-                            available-btn
-                            ${isAvailable
-                                ? "active"
-                                : ""}
-                        "
-                        data-property-id="${property.id}"
-                        onclick="
-                            changePropertyStatus(
-                                '${property.id}',
-                                'Available'
-                            )
-                        "
-                    >
-
-                        🟢 Available
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="
-                            availability-btn
-                            occupied-btn
-                            ${!isAvailable
-                                ? "active"
-                                : ""}
-                        "
-                        data-property-id="${property.id}"
-                        onclick="
-                            changePropertyStatus(
-                                '${property.id}',
-                                'Occupied'
-                            )
-                        "
-                    >
-
-                        🔴 Occupied
-
-                    </button>
-
-
-                </div>
-
-
-                <div class="property-actions">
-
-
-                    <button
-                        type="button"
-                        class="view-btn"
-                        onclick="
-                            viewProperty(
-                                '${property.id}'
-                            )
-                        "
-                    >
-
-                        <i class="fa-solid fa-eye"></i>
-                        View
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="edit-btn"
-                        onclick="
-                            editProperty(
-                                '${property.id}'
-                            )
-                        "
-                    >
-
-                        <i class="fa-solid fa-pen"></i>
-                        Edit
-
-                    </button>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
+        </article>
 
     `;
 
-
-    return card;
-
 }
 
 
 /* =========================================================
-   CHANGE PROPERTY STATUS
-   ========================================================= */
+   LOAD ROOMS
+========================================================= */
 
-async function changePropertyStatus(
-    buildingId,
-    newStatus
-) {
+async function loadRooms() {
 
-    const property =
-        ownerProperties.find(
-            item =>
-                item.id === buildingId
-        );
+    try {
 
-
-    if (!property) {
-
-        alert(
-            "Property not found."
-        );
-
-        return;
-
-    }
-
-
-    const rooms =
-        property.room_types || [];
-
-
-    if (rooms.length === 0) {
-
-        alert(
-            "This property does not have any room types."
-        );
-
-        return;
-
-    }
-
-
-    const confirmed =
-        confirm(
-            `Set "${property.name}" as ${newStatus}?`
-        );
-
-
-    if (!confirmed) {
-
-        return;
-
-    }
-
-
-    /*
-       OCCUPIED
-
-       Every room type belonging to THIS
-       property becomes occupied.
-
-       We use building_id, so another
-       owner's property is untouched.
-    */
-
-    if (
-        newStatus === "Occupied"
-    ) {
-
-        const {
-            error
-        } = await supabaseClient
-
-            .from("room_types")
-
-            .update({
-
-                available_rooms: 0,
-
-                availability: "Occupied"
-
-            })
-
-            .eq(
-                "building_id",
-                buildingId
-            );
-
-
-        if (error) {
-
-            console.error(
-                error
-            );
-
-            alert(
-                `Could not update property: ${error.message}`
-            );
+        if (!currentUser) {
 
             return;
 
         }
 
-    }
 
+        if (!properties.length) {
 
-    /*
-       AVAILABLE
+            rooms = [];
 
-       We change the room status to Available.
+            renderRooms();
 
-       We do NOT change the owner's original
-       room quantity here.
-    */
-
-    if (
-        newStatus === "Available"
-    ) {
-
-        const {
-            error
-        } = await supabaseClient
-
-            .from("room_types")
-
-            .update({
-
-                availability: "Available"
-
-            })
-
-            .eq(
-                "building_id",
-                buildingId
-            );
-
-
-        if (error) {
-
-            console.error(
-                error
-            );
-
-            alert(
-                `Could not update property: ${error.message}`
-            );
+            updateDashboardStatistics();
 
             return;
 
         }
 
+
+        const propertyIds =
+            properties.map(
+                property => property.id
+            );
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from(TABLES.rooms)
+
+            .select("*")
+
+            .in(
+                COLUMNS.roomPropertyId,
+                propertyIds
+            )
+
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        rooms = data || [];
+
+
+        renderRooms();
+
+        updateDashboardStatistics();
+
+
+    } catch (error) {
+
+        console.error(
+            "Rooms error:",
+            error
+        );
+
+
+        const body =
+            document.getElementById(
+                "roomTableBody"
+            );
+
+
+        if (body) {
+
+            body.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="table-loading"
+                    >
+
+                        Unable to load rooms.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+
     }
-
-
-    await loadOwnerProperties();
-
 
 }
 
 
 /* =========================================================
-   ROOM AVAILABILITY TABLE
-   ========================================================= */
+   RENDER ROOMS
+========================================================= */
 
-function renderRoomAvailability(
-    filter = "all"
-) {
+function renderRooms() {
 
     const body =
         document.getElementById(
@@ -831,53 +789,39 @@ function renderRoomAvailability(
         );
 
 
-    if (!body) return;
+    if (!body) {
+
+        return;
+
+    }
 
 
-    body.innerHTML = "";
+    const selectedProperty =
+        document.getElementById(
+            "propertyFilter"
+        )?.value || "all";
 
 
-    const rows = [];
+    let filteredRooms = rooms;
 
 
-    ownerProperties.forEach(
-        property => {
+    if (selectedProperty !== "all") {
 
-            const rooms =
-                property.room_types || [];
-
-
-            rooms.forEach(
-                room => {
-
-                    if (
-                        filter !== "all" &&
-                        property.id !== filter
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    rows.push({
-
-                        property,
-
-                        room
-
-                    });
-
-                }
+        filteredRooms =
+            rooms.filter(
+                room =>
+                    String(
+                        room.property_id
+                    ) ===
+                    String(
+                        selectedProperty
+                    )
             );
 
-        }
-    );
+    }
 
 
-    if (
-        rows.length === 0
-    ) {
+    if (!filteredRooms.length) {
 
         body.innerHTML = `
 
@@ -885,7 +829,7 @@ function renderRoomAvailability(
 
                 <td
                     colspan="6"
-                    style="text-align:center;"
+                    class="table-loading"
                 >
 
                     No rooms found.
@@ -901,124 +845,334 @@ function renderRoomAvailability(
     }
 
 
-    rows.forEach(
-        ({
-            property,
-            room
-        }) => {
+    body.innerHTML =
+        filteredRooms
+            .map(
+                room =>
+                    createRoomRow(room)
+            )
+            .join("");
 
-            const available =
-                Number(
-                    room.available_rooms || 0
-                );
-
-
-            const status =
-                available > 0
-                    ? "Available"
-                    : "Occupied";
+}
 
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+/* =========================================================
+   CREATE ROOM ROW
+========================================================= */
+
+function createRoomRow(room) {
+
+    const property =
+        properties.find(
+            property =>
+                String(property.id) ===
+                String(room.property_id)
+        );
 
 
-            row.innerHTML = `
-
-                <td>
-
-                    <strong>
-                        ${escapeHtml(
-                            property.name
-                        )}
-                    </strong>
-
-                </td>
+    const propertyName =
+        property?.name ||
+        property?.property_name ||
+        "Unknown Property";
 
 
-                <td>
-
-                    ${escapeHtml(
-                        room.room_type ||
-                        "Room"
-                    )}
-
-                </td>
+    const roomNumber =
+        room.room_number ||
+        room.room_name ||
+        room.number ||
+        room.name ||
+        `Room ${room.id}`;
 
 
-                <td>
-
-                    ₹${Number(
-                        room.price_value || 0
-                    ).toLocaleString(
-                        "en-IN"
-                    )}
-
-                </td>
+    const rent =
+        room.rent ||
+        room.price ||
+        room.monthly_rent ||
+        property?.rent ||
+        0;
 
 
-                <td>
-
-                    ${
-                        room.room_people ||
-                        "—"
-                    }
-
-                </td>
+    const people =
+        room.capacity ||
+        room.people ||
+        room.max_people ||
+        room.occupancy ||
+        1;
 
 
-                <td>
+    const status =
+        normalizeRoomStatus(
+            room.status
+        );
 
-                    <span
-                        class="
-                            room-status
-                            ${
-                                status === "Available"
-                                    ? "available"
-                                    : "occupied"
-                            }
-                        "
+
+    const statusClass =
+        getStatusClass(status);
+
+
+    return `
+
+        <tr>
+
+            <td>
+
+                <span class="room-property-name">
+
+                    ${escapeHTML(propertyName)}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="room-number">
+
+                    ${escapeHTML(String(roomNumber))}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="room-rent">
+
+                    ₹${formatNumber(rent)}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                ${escapeHTML(String(people))}
+
+            </td>
+
+
+            <td>
+
+                <span
+                    class="status-badge ${statusClass}"
+                >
+
+                    <i class="fa-solid fa-circle"></i>
+
+                    ${escapeHTML(capitalize(status))}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <select
+                    class="status-select"
+                    onchange="changeRoomStatus('${escapeAttribute(String(room.id))}', this.value)"
+                >
+
+                    <option
+                        value="available"
+                        ${status === "available" ? "selected" : ""}
                     >
+                        Available
+                    </option>
 
-                        ${status}
-
-                    </span>
-
-                </td>
-
-
-                <td>
-
-                    <button
-                        type="button"
-                        class="status-btn"
-                        onclick="
-                            toggleRoomStatus(
-                                '${room.id}',
-                                ${available},
-                                '${property.id}'
-                            )
-                        "
+                    <option
+                        value="occupied"
+                        ${status === "occupied" ? "selected" : ""}
                     >
+                        Occupied
+                    </option>
 
-                        ${
-                            available > 0
-                                ? "Mark Occupied"
-                                : "Mark Available"
-                        }
+                    <option
+                        value="maintenance"
+                        ${status === "maintenance" ? "selected" : ""}
+                    >
+                        Maintenance
+                    </option>
 
-                    </button>
+                </select>
 
-                </td>
+            </td>
 
-            `;
+        </tr>
+
+    `;
+
+}
 
 
-            body.appendChild(
-                row
+/* =========================================================
+   ROOM STATUS
+========================================================= */
+
+function normalizeRoomStatus(status) {
+
+    const value =
+        String(
+            status || "available"
+        )
+        .toLowerCase()
+        .trim();
+
+
+    if (
+        value === "occupied" ||
+        value === "booked"
+    ) {
+
+        return "occupied";
+
+    }
+
+
+    if (
+        value === "maintenance" ||
+        value === "unavailable"
+    ) {
+
+        return "maintenance";
+
+    }
+
+
+    return "available";
+
+}
+
+
+/* =========================================================
+   STATUS CLASS
+========================================================= */
+
+function getStatusClass(status) {
+
+    if (status === "occupied") {
+
+        return "status-occupied";
+
+    }
+
+
+    if (status === "maintenance") {
+
+        return "status-maintenance";
+
+    }
+
+
+    return "status-available";
+
+}
+
+
+/* =========================================================
+   CHANGE ROOM STATUS
+========================================================= */
+
+async function changeRoomStatus(
+    roomId,
+    newStatus
+) {
+
+    try {
+
+        const {
+            error
+        } = await supabaseClient
+
+            .from(TABLES.rooms)
+
+            .update({
+                status: newStatus
+            })
+
+            .eq(
+                "id",
+                roomId
             );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        const room =
+            rooms.find(
+                item =>
+                    String(item.id) ===
+                    String(roomId)
+            );
+
+
+        if (room) {
+
+            room.status =
+                newStatus;
+
+        }
+
+
+        renderRooms();
+
+        updateDashboardStatistics();
+
+
+        showToast(
+            "Room status updated."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Room status error:",
+            error
+        );
+
+
+        showToast(
+            "Unable to update room status."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PROPERTY FILTER
+========================================================= */
+
+function setupPropertyFilter() {
+
+    const filter =
+        document.getElementById(
+            "propertyFilter"
+        );
+
+
+    if (!filter) {
+
+        return;
+
+    }
+
+
+    filter.addEventListener(
+        "change",
+        () => {
+
+            renderRooms();
 
         }
     );
@@ -1027,77 +1181,8 @@ function renderRoomAvailability(
 
 
 /* =========================================================
-   INDIVIDUAL ROOM STATUS
-   ========================================================= */
-
-async function toggleRoomStatus(
-    roomId,
-    currentAvailable,
-    buildingId
-) {
-
-    const newStatus =
-        currentAvailable > 0
-            ? "Occupied"
-            : "Available";
-
-
-    const newAvailable =
-        newStatus === "Occupied"
-            ? 0
-            : 1;
-
-
-    const {
-        error
-    } = await supabaseClient
-
-        .from("room_types")
-
-        .update({
-
-            available_rooms:
-                newAvailable,
-
-            availability:
-                newStatus
-
-        })
-
-        .eq(
-            "id",
-            roomId
-        )
-
-        .eq(
-            "building_id",
-            buildingId
-        );
-
-
-    if (error) {
-
-        console.error(
-            error
-        );
-
-        alert(
-            error.message
-        );
-
-        return;
-
-    }
-
-
-    await loadOwnerProperties();
-
-}
-
-
-/* =========================================================
-   PROPERTY FILTER
-   ========================================================= */
+   POPULATE PROPERTY FILTER
+========================================================= */
 
 function populatePropertyFilter() {
 
@@ -1107,7 +1192,11 @@ function populatePropertyFilter() {
         );
 
 
-    if (!filter) return;
+    if (!filter) {
+
+        return;
+
+    }
 
 
     filter.innerHTML = `
@@ -1119,96 +1208,1077 @@ function populatePropertyFilter() {
     `;
 
 
-    ownerProperties.forEach(
+    properties.forEach(
         property => {
 
-            const option =
-                document.createElement(
-                    "option"
-                );
+            const name =
+                property.name ||
+                property.property_name ||
+                "Unnamed Property";
 
 
-            option.value =
-                property.id;
-
-
-            option.textContent =
-                property.name;
-
-
-            filter.appendChild(
-                option
+            filter.insertAdjacentHTML(
+                "beforeend",
+                `
+                    <option value="${escapeAttribute(String(property.id))}">
+                        ${escapeHTML(name)}
+                    </option>
+                `
             );
 
         }
-    );
-
-
-    filter.onchange =
-        () => {
-
-            renderRoomAvailability(
-                filter.value
-            );
-
-        };
-
-
-    renderRoomAvailability(
-        "all"
     );
 
 }
 
 
 /* =========================================================
-   DASHBOARD STATISTICS
-   ========================================================= */
+   STATISTICS
+========================================================= */
 
-function updateDashboardStats() {
+function updateDashboardStatistics() {
 
-    let totalRooms = 0;
-
-    let availableRooms = 0;
-
-    let occupiedRooms = 0;
-
-
-    ownerProperties.forEach(
-        property => {
-
-            const rooms =
-                property.room_types || [];
+    const totalProperties =
+        document.getElementById(
+            "totalProperties"
+        );
 
 
-            rooms.forEach(
-                room => {
+    const totalRooms =
+        document.getElementById(
+            "totalRooms"
+        );
 
-                    const available =
-                        Number(
-                            room.available_rooms || 0
+
+    const availableRooms =
+        document.getElementById(
+            "availableRooms"
+        );
+
+
+    const occupiedRooms =
+        document.getElementById(
+            "occupiedRooms"
+        );
+
+
+    const available =
+        rooms.filter(
+            room =>
+                normalizeRoomStatus(
+                    room.status
+                ) === "available"
+        ).length;
+
+
+    const occupied =
+        rooms.filter(
+            room =>
+                normalizeRoomStatus(
+                    room.status
+                ) === "occupied"
+        ).length;
+
+
+    if (totalProperties) {
+
+        totalProperties.textContent =
+            properties.length;
+
+    }
+
+
+    if (totalRooms) {
+
+        totalRooms.textContent =
+            rooms.length;
+
+    }
+
+
+    if (availableRooms) {
+
+        availableRooms.textContent =
+            available;
+
+    }
+
+
+    if (occupiedRooms) {
+
+        occupiedRooms.textContent =
+            occupied;
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD REVIEWS
+========================================================= */
+
+async function loadReviews() {
+
+    const container =
+        document.getElementById(
+            "ownerReviews"
+        );
+
+
+    try {
+
+        if (!properties.length) {
+
+            reviews = [];
+
+            renderReviews();
+
+            return;
+
+        }
+
+
+        const propertyIds =
+            properties.map(
+                property =>
+                    property.id
+            );
+
+
+        /*
+            We load reviews only for
+            the owner's properties.
+
+            This is the important part
+            that keeps one owner's reviews
+            separate from another owner's reviews.
+        */
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from(TABLES.reviews)
+
+            .select("*")
+
+            .in(
+                COLUMNS.reviewPropertyId,
+                propertyIds
+            )
+
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        reviews = data || [];
+
+
+        /*
+            Load user/profile details
+            separately so that the code
+            does not depend on a Supabase
+            foreign-key relationship.
+        */
+
+        await attachReviewUserDetails();
+
+
+        renderReviews();
+
+        updateReviewStatistics();
+
+
+    } catch (error) {
+
+        console.error(
+            "Reviews error:",
+            error
+        );
+
+
+        if (container) {
+
+            container.innerHTML = `
+
+                <div class="empty-properties">
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <h3>
+                        Unable to load reviews
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(error.message || "Database error")}
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   ATTACH USER DETAILS
+========================================================= */
+
+async function attachReviewUserDetails() {
+
+    if (!reviews.length) {
+
+        return;
+
+    }
+
+
+    const userIds =
+        [
+            ...new Set(
+                reviews
+                    .map(
+                        review =>
+                            review.user_id ||
+                            review.customer_id ||
+                            review.userId
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+    if (!userIds.length) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from(TABLES.profile)
+
+            .select("*")
+
+            .in(
+                "id",
+                userIds
+            );
+
+
+        if (error) {
+
+            console.warn(
+                "Review profile loading error:",
+                error
+            );
+
+            return;
+
+        }
+
+
+        const profiles =
+            data || [];
+
+
+        reviews =
+            reviews.map(
+                review => {
+
+                    const userId =
+                        review.user_id ||
+                        review.customer_id ||
+                        review.userId;
+
+
+                    const profile =
+                        profiles.find(
+                            item =>
+                                String(item.id) ===
+                                String(userId)
                         );
 
 
-                    /*
-                       Each room type row is counted
-                       as one room entry for now.
-                    */
+                    return {
 
-                    totalRooms += 1;
+                        ...review,
+
+                        reviewerProfile:
+                            profile || null
+
+                    };
+
+                }
+            );
 
 
-                    if (
-                        available > 0
-                    ) {
+    } catch (error) {
 
-                        availableRooms += 1;
+        console.warn(
+            "Could not attach review users:",
+            error
+        );
 
-                    } else {
+    }
 
-                        occupiedRooms += 1;
+}
+
+
+/* =========================================================
+   RENDER REVIEWS
+========================================================= */
+
+function renderReviews() {
+
+    const container =
+        document.getElementById(
+            "ownerReviews"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (!reviews.length) {
+
+        container.innerHTML = `
+
+            <div class="empty-properties">
+
+                <i class="fa-regular fa-star"></i>
+
+                <h3>
+                    No reviews yet
+                </h3>
+
+                <p>
+                    When users review your properties,
+                    their reviews will appear here.
+                </p>
+
+            </div>
+
+        `;
+
+        updateReviewStatistics();
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        reviews
+            .map(
+                review =>
+                    createReviewCard(review)
+            )
+            .join("");
+
+
+    updateReviewStatistics();
+
+}
+
+
+/* =========================================================
+   CREATE REVIEW CARD
+========================================================= */
+
+function createReviewCard(review) {
+
+    const property =
+        properties.find(
+            item =>
+                String(item.id) ===
+                String(
+                    review.property_id
+                )
+        );
+
+
+    const propertyName =
+        property?.name ||
+        property?.property_name ||
+        "Unknown Property";
+
+
+    const propertyImage =
+        property?.image ||
+        property?.image_url ||
+        property?.cover_image ||
+        "https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80";
+
+
+    const propertyLocation =
+        [
+            property?.area ||
+            property?.locality,
+
+            property?.city
+        ]
+        .filter(Boolean)
+        .join(", ") ||
+        property?.address ||
+        "Location not available";
+
+
+    const propertyType =
+        property?.property_type ||
+        property?.type ||
+        "Property";
+
+
+    const rent =
+        property?.rent ||
+        property?.price ||
+        property?.monthly_rent ||
+        0;
+
+
+    const profile =
+        review.reviewerProfile;
+
+
+    const reviewerName =
+        getProfileName(profile) ||
+        review.user_name ||
+        review.customer_name ||
+        "RoomDhundo User";
+
+
+    const rating =
+        Number(
+            review.rating ||
+            review.stars ||
+            0
+        );
+
+
+    const reviewText =
+        review.review ||
+        review.comment ||
+        review.message ||
+        "No written review.";
+
+
+    const date =
+        formatDate(
+            review.created_at
+        );
+
+
+    const stars =
+        createStars(rating);
+
+
+    return `
+
+        <article class="review-card">
+
+            <div class="review-top">
+
+                <div class="reviewer">
+
+                    <div class="reviewer-avatar">
+
+                        ${escapeHTML(
+                            getInitials(reviewerName)
+                        )}
+
+                    </div>
+
+
+                    <div class="reviewer-info">
+
+                        <strong>
+                            ${escapeHTML(reviewerName)}
+                        </strong>
+
+                        <span>
+                            Customer
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <div class="review-stars">
+
+                        ${stars}
+
+                    </div>
+
+
+                    <div class="review-date">
+
+                        ${escapeHTML(date)}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROPERTY DETAILS -->
+
+            <div class="review-property">
+
+                <img
+                    class="review-property-image"
+                    src="${escapeAttribute(propertyImage)}"
+                    alt="${escapeAttribute(propertyName)}"
+                    onerror="this.src='https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80'"
+                >
+
+
+                <div class="review-property-info">
+
+                    <strong>
+
+                        ${escapeHTML(propertyName)}
+
+                    </strong>
+
+
+                    <span>
+
+                        <i class="fa-solid fa-location-dot"></i>
+
+                        ${escapeHTML(propertyLocation)}
+
+                    </span>
+
+
+                    <span>
+
+                        Type:
+                        ${escapeHTML(propertyType)}
+
+                    </span>
+
+
+                    <span class="property-rent-line">
+
+                        ₹${formatNumber(rent)}
+                        / month
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- REVIEW -->
+
+            <p class="review-text">
+
+                ${escapeHTML(reviewText)}
+
+            </p>
+
+
+            <div class="review-footer">
+
+                <span
+                    style="
+                        color:#6b7280;
+                        font-size:10px;
+                    "
+                >
+
+                    Review for:
+                    <strong>
+                        ${escapeHTML(propertyName)}
+                    </strong>
+
+                </span>
+
+
+                <button
+                    class="view-review-btn"
+                    type="button"
+                    onclick="openReviewDetails('${escapeAttribute(String(review.id))}')"
+                >
+
+                    View Details
+
+                </button>
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CREATE STARS
+========================================================= */
+
+function createStars(rating) {
+
+    const rounded =
+        Math.round(
+            Number(rating)
+        );
+
+
+    let html = "";
+
+
+    for (
+        let i = 1;
+        i <= 5;
+        i++
+    ) {
+
+        if (i <= rounded) {
+
+            html +=
+                `<i class="fa-solid fa-star"></i>`;
+
+        } else {
+
+            html +=
+                `<i class="fa-regular fa-star"></i>`;
+
+        }
+
+    }
+
+
+    return html;
+
+}
+
+
+/* =========================================================
+   REVIEW STATISTICS
+========================================================= */
+
+function updateReviewStatistics() {
+
+    const averageElement =
+        document.getElementById(
+            "averageRating"
+        );
+
+
+    const totalText =
+        document.getElementById(
+            "totalReviewText"
+        );
+
+
+    const badge =
+        document.getElementById(
+            "reviewBadge"
+        );
+
+
+    if (!reviews.length) {
+
+        if (averageElement) {
+
+            averageElement.textContent =
+                "0.0";
+
+        }
+
+
+        if (totalText) {
+
+            totalText.textContent =
+                "0 reviews";
+
+        }
+
+
+        if (badge) {
+
+            badge.textContent =
+                "0";
+
+        }
+
+        return;
+
+    }
+
+
+    const total =
+        reviews.reduce(
+            (
+                sum,
+                review
+            ) =>
+                sum +
+                Number(
+                    review.rating ||
+                    review.stars ||
+                    0
+                ),
+            0
+        );
+
+
+    const average =
+        total /
+        reviews.length;
+
+
+    if (averageElement) {
+
+        averageElement.textContent =
+            average.toFixed(1);
+
+    }
+
+
+    if (totalText) {
+
+        totalText.textContent =
+            `${reviews.length} ${
+                reviews.length === 1
+                    ? "review"
+                    : "reviews"
+            }`;
+
+    }
+
+
+    if (badge) {
+
+        badge.textContent =
+            reviews.length;
+
+    }
+
+}
+
+
+/* =========================================================
+   REVIEW DETAIL MODAL
+========================================================= */
+
+function openReviewDetails(reviewId) {
+
+    const review =
+        reviews.find(
+            item =>
+                String(item.id) ===
+                String(reviewId)
+        );
+
+
+    if (!review) {
+
+        return;
+
+    }
+
+
+    const property =
+        properties.find(
+            item =>
+                String(item.id) ===
+                String(review.property_id)
+        );
+
+
+    const propertyName =
+        property?.name ||
+        property?.property_name ||
+        "Unknown Property";
+
+
+    const propertyImage =
+        property?.image ||
+        property?.image_url ||
+        property?.cover_image ||
+        "https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80";
+
+
+    const location =
+        [
+            property?.area ||
+            property?.locality,
+
+            property?.city
+        ]
+        .filter(Boolean)
+        .join(", ") ||
+        property?.address ||
+        "Location not available";
+
+
+    const reviewerName =
+        getProfileName(
+            review.reviewerProfile
+        ) ||
+        review.user_name ||
+        review.customer_name ||
+        "RoomDhundo User";
+
+
+    const rating =
+        Number(
+            review.rating ||
+            review.stars ||
+            0
+        );
+
+
+    const reviewText =
+        review.review ||
+        review.comment ||
+        review.message ||
+        "No written review.";
+
+
+    const propertyRent =
+        property?.rent ||
+        property?.price ||
+        property?.monthly_rent ||
+        0;
+
+
+    const propertyType =
+        property?.property_type ||
+        property?.type ||
+        "Property";
+
+
+    const content =
+        document.getElementById(
+            "reviewModalContent"
+        );
+
+
+    if (!content) {
+
+        return;
+
+    }
+
+
+    content.innerHTML = `
+
+        <div class="review-detail-property">
+
+            <img
+                src="${escapeAttribute(propertyImage)}"
+                alt="${escapeAttribute(propertyName)}"
+                onerror="this.src='https://images.unsplash.com/photo-1560185008-b033106af5c3?auto=format&fit=crop&w=900&q=80'"
+            >
+
+
+            <div>
+
+                <h3>
+                    ${escapeHTML(propertyName)}
+                </h3>
+
+
+                <p>
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                    ${escapeHTML(location)}
+
+                </p>
+
+
+                <p>
+
+                    Property Type:
+                    ${escapeHTML(propertyType)}
+
+                </p>
+
+
+                <p>
+
+                    Rent:
+                    <strong>
+                        ₹${formatNumber(propertyRent)}
+                    </strong>
+                    / month
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="detail-row">
+
+            <strong>
+                Reviewer
+            </strong>
+
+            <span>
+                ${escapeHTML(reviewerName)}
+            </span>
+
+        </div>
+
+
+        <div class="detail-row">
+
+            <strong>
+                Rating
+            </strong>
+
+            <span>
+
+                <span class="review-stars">
+
+                    ${createStars(rating)}
+
+                </span>
+
+                ${rating}/5
+
+            </span>
+
+        </div>
+
+
+        <div class="detail-row">
+
+            <strong>
+                Review Date
+            </strong>
+
+            <span>
+                ${escapeHTML(
+                    formatDate(
+                        review.created_at
+                    )
+                )}
+            </span>
+
+        </div>
+
+
+        <div class="detail-row">
+
+            <strong>
+                Property ID
+            </strong>
+
+            <span>
+                ${escapeHTML(
+                    String(
+                        review.property_id
+                    )
+                )}
+            </span>
+
+        </div>
+
+
+        <div class="detail-review-text">
+
+            <strong>
+                Customer Review
+            </strong>
+
+            <p style="margin-top:8px;">
+
+                ${escapeHTML(reviewText)}
+
+            </p>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById("reviewModal")
+        ?.classList.add("show");
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function setupNavigation() {
+
+    const navLinks =
+        document.querySelectorAll(
+            ".nav-link"
+        );
+
+
+    navLinks.forEach(
+        link => {
+
+            link.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+
+
+                    const sectionId =
+                        link.dataset.section;
+
+
+                    if (!sectionId) {
+
+                        return;
 
                     }
+
+
+                    switchSection(
+                        sectionId
+                    );
+
+
+                    closeSidebarMobile();
 
                 }
             );
@@ -1216,140 +2286,760 @@ function updateDashboardStats() {
         }
     );
 
+}
 
-    setText(
-        "totalProperties",
-        ownerProperties.length
+
+/* =========================================================
+   SWITCH SECTION
+========================================================= */
+
+function switchSection(sectionId) {
+
+    const sections =
+        document.querySelectorAll(
+            ".content-section"
+        );
+
+
+    sections.forEach(
+        section => {
+
+            section.classList.remove(
+                "active-section"
+            );
+
+        }
     );
 
 
-    setText(
-        "totalRooms",
-        totalRooms
+    const target =
+        document.getElementById(
+            sectionId
+        );
+
+
+    if (target) {
+
+        target.classList.add(
+            "active-section"
+        );
+
+    }
+
+
+    const navLinks =
+        document.querySelectorAll(
+            ".nav-link"
+        );
+
+
+    navLinks.forEach(
+        link => {
+
+            link.classList.remove(
+                "active"
+            );
+
+
+            if (
+                link.dataset.section ===
+                sectionId
+            ) {
+
+                link.classList.add(
+                    "active"
+                );
+
+            }
+
+        }
     );
 
 
-    setText(
-        "availableRooms",
-        availableRooms
+    updatePageTitle(
+        sectionId
     );
 
 
-    setText(
-        "occupiedRooms",
-        occupiedRooms
-    );
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 
 }
 
 
 /* =========================================================
-   VIEW PROPERTY
-   ========================================================= */
+   PAGE TITLE
+========================================================= */
 
-function viewProperty(
-    buildingId
-) {
+function updatePageTitle(sectionId) {
 
-    window.location.href =
-        `property.html?id=${encodeURIComponent(
-            buildingId
-        )}`;
+    const title =
+        document.getElementById(
+            "pageTitle"
+        );
+
+
+    const subtitle =
+        document.getElementById(
+            "pageSubtitle"
+        );
+
+
+    const pages = {
+
+        dashboard: [
+            "Owner Dashboard",
+            "Manage your properties and rooms"
+        ],
+
+        enquiries: [
+            "Enquiries",
+            "Manage customer enquiries"
+        ],
+
+        bookings: [
+            "Bookings",
+            "Manage booking requests"
+        ],
+
+        profile: [
+            "My Profile",
+            "Manage your owner profile"
+        ],
+
+        settings: [
+            "Settings",
+            "Manage dashboard settings"
+        ]
+
+    };
+
+
+    const data =
+        pages[sectionId] ||
+        pages.dashboard;
+
+
+    if (title) {
+
+        title.textContent =
+            data[0];
+
+    }
+
+
+    if (subtitle) {
+
+        subtitle.textContent =
+            data[1];
+
+    }
 
 }
 
 
 /* =========================================================
-   EDIT PROPERTY
-   ========================================================= */
+   SIDEBAR
+========================================================= */
 
-function editProperty(
-    buildingId
-) {
+function setupSidebar() {
 
-    window.location.href =
-        `edit-property.html?id=${encodeURIComponent(
-            buildingId
-        )}`;
+    const menuBtn =
+        document.getElementById(
+            "menuBtn"
+        );
+
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+
+    const overlay =
+        document.getElementById(
+            "sidebarOverlay"
+        );
+
+
+    menuBtn?.addEventListener(
+        "click",
+        () => {
+
+            sidebar?.classList.toggle(
+                "open"
+            );
+
+            overlay?.classList.toggle(
+                "show"
+            );
+
+        }
+    );
+
+
+    overlay?.addEventListener(
+        "click",
+        closeSidebarMobile
+    );
+
+}
+
+
+function closeSidebarMobile() {
+
+    document
+        .getElementById("sidebar")
+        ?.classList.remove("open");
+
+
+    document
+        .getElementById("sidebarOverlay")
+        ?.classList.remove("show");
+
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function setupModals() {
+
+    const propertyModal =
+        document.getElementById(
+            "propertyModal"
+        );
+
+
+    const reviewModal =
+        document.getElementById(
+            "reviewModal"
+        );
+
+
+    document
+        .getElementById(
+            "addPropertyBtn"
+        )
+        ?.addEventListener(
+            "click",
+            openPropertyModal
+        );
+
+
+    document
+        .getElementById(
+            "addPropertyBtn2"
+        )
+        ?.addEventListener(
+            "click",
+            openPropertyModal
+        );
+
+
+    document
+        .getElementById(
+            "quickAddProperty"
+        )
+        ?.addEventListener(
+            "click",
+            openPropertyModal
+        );
+
+
+    document
+        .getElementById(
+            "closePropertyModal"
+        )
+        ?.addEventListener(
+            "click",
+            closePropertyModal
+        );
+
+
+    document
+        .getElementById(
+            "cancelPropertyBtn"
+        )
+        ?.addEventListener(
+            "click",
+            closePropertyModal
+        );
+
+
+    document
+        .getElementById(
+            "closeReviewModal"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                reviewModal?.classList.remove(
+                    "show"
+                );
+
+            }
+        );
+
+
+    propertyModal?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                propertyModal
+            ) {
+
+                closePropertyModal();
+
+            }
+
+        }
+    );
+
+
+    reviewModal?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                reviewModal
+            ) {
+
+                reviewModal.classList.remove(
+                    "show"
+                );
+
+            }
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "propertyForm"
+        )
+        ?.addEventListener(
+            "submit",
+            handleAddProperty
+        );
+
+}
+
+
+function openPropertyModal() {
+
+    document
+        .getElementById(
+            "propertyModal"
+        )
+        ?.classList.add("show");
+
+}
+
+
+function closePropertyModal() {
+
+    const modal =
+        document.getElementById(
+            "propertyModal"
+        );
+
+
+    modal?.classList.remove(
+        "show"
+    );
+
+
+    const form =
+        document.getElementById(
+            "propertyForm"
+        );
+
+
+    form?.reset();
+
+
+    const error =
+        document.getElementById(
+            "propertyFormError"
+        );
+
+
+    error?.classList.remove(
+        "show"
+    );
 
 }
 
 
 /* =========================================================
    ADD PROPERTY
-   ========================================================= */
+========================================================= */
 
-function goToAddProperty() {
+async function handleAddProperty(event) {
 
-    window.location.href =
-        "list-property.html";
+    event.preventDefault();
+
+
+    if (!currentUser) {
+
+        showToast(
+            "You are not logged in."
+        );
+
+        return;
+
+    }
+
+
+    const name =
+        document.getElementById(
+            "propertyName"
+        )?.value.trim();
+
+
+    const city =
+        document.getElementById(
+            "propertyCity"
+        )?.value.trim();
+
+
+    const area =
+        document.getElementById(
+            "propertyArea"
+        )?.value.trim();
+
+
+    const address =
+        document.getElementById(
+            "propertyAddress"
+        )?.value.trim();
+
+
+    const type =
+        document.getElementById(
+            "propertyType"
+        )?.value;
+
+
+    const rent =
+        document.getElementById(
+            "propertyRent"
+        )?.value;
+
+
+    const image =
+        document.getElementById(
+            "propertyImage"
+        )?.value.trim();
+
+
+    const errorBox =
+        document.getElementById(
+            "propertyFormError"
+        );
+
+
+    const saveBtn =
+        document.getElementById(
+            "savePropertyBtn"
+        );
+
+
+    if (!name || !city || !address) {
+
+        showFormError(
+            "Please fill all required fields."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        saveBtn.disabled = true;
+
+        saveBtn.innerHTML = `
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            Saving...
+
+        `;
+
+
+        /*
+            IMPORTANT:
+
+            If your properties table uses different
+            column names, change this object.
+        */
+
+        const propertyData = {
+
+            owner_id:
+                currentUser.id,
+
+            name:
+                name,
+
+            city:
+                city,
+
+            area:
+                area,
+
+            address:
+                address,
+
+            property_type:
+                type,
+
+            rent:
+                rent
+                    ? Number(rent)
+                    : null,
+
+            image:
+                image || null
+
+        };
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+
+            .from(TABLES.properties)
+
+            .insert(
+                propertyData
+            )
+
+            .select()
+            .single();
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        if (data) {
+
+            properties.unshift(
+                data
+            );
+
+        }
+
+
+        renderProperties();
+
+        populatePropertyFilter();
+
+        updateDashboardStatistics();
+
+
+        closePropertyModal();
+
+
+        showToast(
+            "Property added successfully."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Add property error:",
+            error
+        );
+
+
+        showFormError(
+            error.message ||
+            "Unable to add property."
+        );
+
+
+    } finally {
+
+        saveBtn.disabled = false;
+
+        saveBtn.innerHTML = `
+
+            <i class="fa-solid fa-plus"></i>
+
+            Add Property
+
+        `;
+
+    }
 
 }
 
 
 /* =========================================================
-   DASHBOARD BUTTONS
-   ========================================================= */
+   FORM ERROR
+========================================================= */
 
-function setupDashboardButtons() {
+function showFormError(message) {
 
-    const addButton =
+    const errorBox =
         document.getElementById(
-            "addPropertyBtn"
+            "propertyFormError"
         );
 
 
-    if (addButton) {
+    if (!errorBox) {
 
-        addButton.addEventListener(
-            "click",
-            goToAddProperty
-        );
+        return;
 
     }
 
 
-    const logoutButton =
-        document.getElementById(
-            "logoutBtn"
-        );
+    errorBox.textContent =
+        message;
 
 
-    if (logoutButton) {
+    errorBox.classList.add(
+        "show"
+    );
 
-        logoutButton.addEventListener(
-            "click",
-            logoutOwner
-        );
-
-    }
+}
 
 
-    /*
-       Quick Add Property button
-    */
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+function setupQuickActions() {
 
     document
-        .querySelectorAll(
-            ".quick-card"
+        .getElementById(
+            "quickReviews"
         )
-        .forEach(
-            card => {
+        ?.addEventListener(
+            "click",
+            () => {
 
-                const title =
-                    card.querySelector(
-                        "strong"
-                    )?.textContent;
+                switchSection(
+                    "dashboard"
+                );
 
 
-                if (
-                    title ===
-                    "Add Property"
-                ) {
+                setTimeout(
+                    () => {
 
-                    card.addEventListener(
-                        "click",
-                        goToAddProperty
+                        document
+                            .getElementById(
+                                "reviews"
+                            )
+                            ?.scrollIntoView({
+                                behavior: "smooth"
+                            });
+
+                    },
+                    100
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "quickBookings"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                switchSection(
+                    "bookings"
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "quickProfile"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                switchSection(
+                    "profile"
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function setupLogout() {
+
+    document
+        .getElementById(
+            "logoutBtn"
+        )
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                try {
+
+                    const {
+                        error
+                    } =
+                        await supabaseClient
+                            .auth
+                            .signOut();
+
+
+                    if (error) {
+
+                        throw error;
+
+                    }
+
+
+                    window.location.href =
+                        "login.html";
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
+
+
+                    showToast(
+                        "Logout failed."
                     );
 
                 }
@@ -1361,132 +3051,208 @@ function setupDashboardButtons() {
 
 
 /* =========================================================
-   LOGOUT
-   ========================================================= */
+   TOAST
+========================================================= */
 
-async function logoutOwner() {
+let toastTimer = null;
 
-    const confirmed =
-        confirm(
-            "Are you sure you want to logout?"
+
+function showToast(message) {
+
+    const toast =
+        document.getElementById(
+            "toast"
         );
 
 
-    if (!confirmed) return;
-
-
-    const {
-        error
-    } = await supabaseClient.auth.signOut();
-
-
-    if (error) {
-
-        alert(
-            error.message
+    const text =
+        document.getElementById(
+            "toastMessage"
         );
+
+
+    if (!toast || !text) {
 
         return;
 
     }
 
 
-    window.location.href =
-        "index.html";
+    text.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
 
 }
 
 
 /* =========================================================
-   HELPERS
-   ========================================================= */
+   DATE FORMAT
+========================================================= */
 
-function setText(
-    id,
-    value
-) {
+function formatDate(dateValue) {
 
-    const element =
-        document.getElementById(
-            id
-        );
+    if (!dateValue) {
 
-
-    if (element) {
-
-        element.textContent =
-            value;
+        return "Date unavailable";
 
     }
 
-}
 
-
-function showDashboardError(
-    message
-) {
-
-    const container =
-        document.getElementById(
-            "ownerProperties"
+    const date =
+        new Date(
+            dateValue
         );
 
 
-    if (!container) return;
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "Date unavailable";
+
+    }
 
 
-    container.innerHTML = `
-
-        <div class="dashboard-error">
-
-            <h3>
-                Unable to load your properties
-            </h3>
-
-            <p>
-                ${escapeHtml(message)}
-            </p>
-
-            <button
-                type="button"
-                onclick="location.reload()"
-            >
-                Try Again
-            </button>
-
-        </div>
-
-    `;
+    return date.toLocaleDateString(
+        "en-IN",
+        {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        }
+    );
 
 }
 
 
-function escapeHtml(
-    value
-) {
+/* =========================================================
+   NUMBER FORMAT
+========================================================= */
 
-    return String(
-        value ?? ""
-    )
-        .replaceAll(
-            "&",
+function formatNumber(value) {
+
+    const number =
+        Number(value || 0);
+
+
+    return number.toLocaleString(
+        "en-IN"
+    );
+
+}
+
+
+/* =========================================================
+   CAPITALIZE
+========================================================= */
+
+function capitalize(value) {
+
+    if (!value) {
+
+        return "";
+
+    }
+
+
+    return (
+        value.charAt(0).toUpperCase() +
+        value.slice(1)
+    );
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function escapeHTML(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    return String(value)
+
+        .replace(
+            /&/g,
             "&amp;"
         )
-        .replaceAll(
-            "<",
+
+        .replace(
+            /</g,
             "&lt;"
         )
-        .replaceAll(
-            ">",
+
+        .replace(
+            />/g,
             "&gt;"
         )
-        .replaceAll(
-            '"',
+
+        .replace(
+            /"/g,
             "&quot;"
         )
-        .replaceAll(
-            "'",
+
+        .replace(
+            /'/g,
             "&#039;"
         );
 
 }
+
+
+/* =========================================================
+   ATTRIBUTE ESCAPE
+========================================================= */
+
+function escapeAttribute(value) {
+
+    return escapeHTML(
+        value
+    );
+
+}
+
+
+/* =========================================================
+   GLOBAL FUNCTIONS
+========================================================= */
+
+window.changeRoomStatus =
+    changeRoomStatus;
+
+
+window.openReviewDetails =
+    openReviewDetails;
