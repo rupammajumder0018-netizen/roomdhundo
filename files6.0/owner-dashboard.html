@@ -17,147 +17,78 @@
 
 <body>
 
-    <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
+    <!-- ================= SIDEBAR ================= -->
 
     <aside class="sidebar" id="sidebar">
 
         <div class="logo">
-
             <div class="logo-icon">
-                <i class="fa-solid fa-house" aria-hidden="true"></i>
+                <i class="fa-solid fa-house"></i>
             </div>
 
-            <div class="logo-text">
+            <div>
                 <h2>RoomDhundo</h2>
                 <span>Owner Panel</span>
             </div>
-
         </div>
 
+        <nav class="sidebar-nav">
 
-        <nav class="sidebar-nav" aria-label="Owner dashboard navigation">
-
-            <a
-                href="#dashboard"
-                class="nav-link active"
-                data-section="dashboard"
-            >
-                <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+            <a href="#top" class="nav-link active" data-section="top">
+                <i class="fa-solid fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
 
-
-            <a
-                href="#properties"
-                class="nav-link"
-                data-section="properties"
-            >
-                <i class="fa-solid fa-building" aria-hidden="true"></i>
+            <a href="#properties" class="nav-link" data-section="properties">
+                <i class="fa-solid fa-building"></i>
                 <span>My Properties</span>
             </a>
 
-
-            <a
-                href="#rooms"
-                class="nav-link"
-                data-section="rooms"
-            >
-                <i class="fa-solid fa-door-open" aria-hidden="true"></i>
+            <a href="#rooms" class="nav-link" data-section="rooms">
+                <i class="fa-solid fa-door-open"></i>
                 <span>Rooms</span>
             </a>
 
-
-            <a
-                href="#enquiries"
-                class="nav-link"
-                data-section="enquiries"
-            >
-                <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+            <a href="#enquiries" class="nav-link" data-section="enquiries">
+                <i class="fa-solid fa-envelope"></i>
                 <span>Enquiries</span>
-
-                <span
-                    class="notification-count"
-                    id="enquiryBadge"
-                >0</span>
             </a>
 
-
-            <a
-                href="#bookings"
-                class="nav-link"
-                data-section="bookings"
-            >
-                <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+            <a href="#bookings" class="nav-link" data-section="bookings">
+                <i class="fa-solid fa-calendar-check"></i>
                 <span>Bookings</span>
             </a>
 
-
-            <a
-                href="#reviews"
-                class="nav-link"
-                data-section="reviews"
-            >
-                <i class="fa-solid fa-star" aria-hidden="true"></i>
+            <a href="#reviews" class="nav-link" data-section="reviews">
+                <i class="fa-solid fa-star"></i>
                 <span>Reviews</span>
-
-                <span
-                    class="notification-count review-badge"
-                    id="reviewBadge"
-                >0</span>
             </a>
 
-
-            <a
-                href="#profile"
-                class="nav-link"
-                data-section="profile"
-            >
-                <i class="fa-solid fa-user" aria-hidden="true"></i>
+            <a href="#profile" class="nav-link" data-section="profile">
+                <i class="fa-solid fa-user"></i>
                 <span>My Profile</span>
             </a>
 
-
-            <a
-                href="#settings"
-                class="nav-link"
-                data-section="settings"
-            >
-                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+            <a href="#settings" class="nav-link" data-section="settings">
+                <i class="fa-solid fa-gear"></i>
                 <span>Settings</span>
             </a>
 
         </nav>
 
-
         <div class="sidebar-bottom">
 
             <div class="help-box">
-
-                <i
-                    class="fa-solid fa-circle-question"
-                    aria-hidden="true"
-                ></i>
+                <i class="fa-solid fa-circle-question"></i>
 
                 <div>
                     <strong>Need Help?</strong>
                     <p>Contact RoomDhundo support.</p>
                 </div>
-
             </div>
 
-
-            <button
-                class="logout-btn"
-                id="logoutBtn"
-                type="button"
-            >
-                <i
-                    class="fa-solid fa-right-from-bracket"
-                    aria-hidden="true"
-                ></i>
-
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fa-solid fa-right-from-bracket"></i>
                 Logout
             </button>
 
@@ -166,881 +97,457 @@
     </aside>
 
 
-    <!-- =====================================================
-         OVERLAY
-    ====================================================== -->
-
-    <div
-        class="sidebar-overlay"
-        id="sidebarOverlay"
-    ></div>
-
-
-    <!-- =====================================================
-         MAIN CONTENT
-    ====================================================== -->
+    <!-- ================= MAIN CONTENT ================= -->
 
     <main class="main-content">
 
-        <!-- =================================================
-             TOPBAR
-        ================================================== -->
+        <!-- TOPBAR -->
 
         <header class="topbar">
 
-            <button
-                class="menu-btn"
-                id="menuBtn"
-                type="button"
-                aria-label="Open navigation menu"
-                title="Open navigation menu"
-            >
-                <i
-                    class="fa-solid fa-bars"
-                    aria-hidden="true"
-                ></i>
+            <button class="menu-btn" id="menuBtn">
+                <i class="fa-solid fa-bars"></i>
             </button>
 
-
             <div class="page-title">
-
-                <h1 id="pageTitle">
-                    Owner Dashboard
-                </h1>
-
-                <p id="pageSubtitle">
-                    Manage your properties and rooms
-                </p>
-
+                <h1>Owner Dashboard</h1>
+                <p>Manage your properties and rooms</p>
             </div>
-
 
             <div class="topbar-right">
 
-                <button
-                    class="icon-btn"
-                    id="notificationBtn"
-                    type="button"
-                    aria-label="View notifications"
-                    title="View notifications"
-                >
-                    <i
-                        class="fa-regular fa-bell"
-                        aria-hidden="true"
-                    ></i>
-
-                    <span
-                        class="notification-dot"
-                        id="notificationDot"
-                        aria-hidden="true"
-                    ></span>
+                <button class="icon-btn" id="notificationBtn">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notification-dot"></span>
                 </button>
 
+                <div class="owner-profile" id="ownerProfileBtn">
 
-                <button
-                    class="owner-profile"
-                    id="ownerProfileBtn"
-                    type="button"
-                    aria-label="Open owner profile"
-                    title="Open owner profile"
-                >
-
-                    <div
-                        class="owner-avatar"
-                        id="ownerAvatar"
-                    >
-                        OW
+                    <div class="owner-avatar">
+                        RM
                     </div>
-
 
                     <div class="owner-info">
-
-                        <strong id="ownerName">
-                            Owner
-                        </strong>
-
-                        <span>
-                            Property Owner
-                        </span>
-
+                        <strong>Rupam Majumder</strong>
+                        <span>Property Owner</span>
                     </div>
 
+                    <i class="fa-solid fa-chevron-down"></i>
 
-                    <i
-                        class="fa-solid fa-chevron-down"
-                        aria-hidden="true"
-                    ></i>
-
-                </button>
+                </div>
 
             </div>
 
         </header>
 
 
-        <!-- =================================================
-             CONTENT
-        ================================================== -->
+        <!-- ================= CONTENT ================= -->
 
-        <section class="dashboard-content">
+        <section class="dashboard-content" id="top">
+
+            <!-- WELCOME -->
+
+            <div class="welcome-section">
+
+                <div>
+                    <h2>Welcome back, Rupam 👋</h2>
+                    <p>Here's what's happening with your properties today.</p>
+                </div>
+
+                <button class="add-property-btn" id="addPropertyBtn">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Property
+                </button>
+
+            </div>
 
 
-            <!-- =================================================
-                 DASHBOARD
-            ================================================== -->
+            <!-- ================= STAT CARDS ================= -->
 
-            <section
-                id="dashboard"
-                class="content-section active-section"
-                aria-labelledby="dashboardHeading"
-            >
+            <div class="stats-grid">
 
-                <div class="welcome-section">
+                <div class="stat-card">
 
-                    <div>
-
-                        <h2 id="welcomeText">
-                            Welcome back 👋
-                        </h2>
-
-                        <p>
-                            Here's what's happening with your
-                            properties today.
-                        </p>
-
+                    <div class="stat-icon properties-icon">
+                        <i class="fa-solid fa-building"></i>
                     </div>
 
+                    <div>
+                        <span>Total Properties</span>
+                        <h3 id="totalProperties">0</h3>
+                    </div>
 
-                    <button
-                        class="add-property-btn"
-                        id="addPropertyBtn"
-                        type="button"
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon rooms-icon">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+
+                    <div>
+                        <span>Total Rooms</span>
+                        <h3 id="totalRooms">0</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon available-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+
+                    <div>
+                        <span>Available Rooms</span>
+                        <h3 id="availableRooms">0</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon occupied-icon">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+
+                    <div>
+                        <span>Occupied Rooms</span>
+                        <h3 id="occupiedRooms">0</h3>
+                    </div>
+
+                </div>
+
+            </div>
+
+<!-- ================= PROPERTIES ================= -->
+
+<section
+    class="section-block"
+    id="properties"
+>
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                My Properties
+            </h2>
+
+            <p>
+                Manage your listed properties
+            </p>
+
+        </div>
+
+        <button
+            class="view-all-btn"
+            type="button"
+            onclick="goToAddProperty()"
+        >
+
+            <i class="fa-solid fa-plus"></i>
+
+            Add Property
+
+        </button>
+
+    </div>
+
+
+    <!--
+        IMPORTANT:
+        JavaScript fills this container
+        from Supabase.
+    -->
+
+    <div
+        id="ownerProperties"
+        class="owner-properties-grid"
+    >
+
+        <div class="loading-properties">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            Loading your properties...
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= ROOM MANAGEMENT ================= -->
+
+<section
+    class="section-block"
+    id="rooms"
+>
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Room Availability
+            </h2>
+
+            <p>
+                Quickly manage your room status
+            </p>
+
+        </div>
+
+
+        <!--
+            This filter is populated
+            automatically from Supabase.
+        -->
+
+        <select
+            id="propertyFilter"
+            class="property-filter"
+        >
+
+            <option value="all">
+                All Properties
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="room-table-wrapper">
+
+        <table class="room-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Property
+                    </th>
+
+                    <th>
+                        Room
+                    </th>
+
+                    <th>
+                        Rent
+                    </th>
+
+                    <th>
+                        People
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Action
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <!--
+                NO HARD-CODED ROOMS HERE.
+                JavaScript creates them.
+            -->
+
+            <tbody id="roomTableBody">
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        style="text-align:center;"
                     >
-                        <i
-                            class="fa-solid fa-plus"
-                            aria-hidden="true"
-                        ></i>
 
-                        Add Property
+                        Loading rooms...
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+            <!-- ================= ENQUIRIES ================= -->
+
+            <section class="section-block" id="enquiries">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Enquiries</h2>
+                        <p>Messages from interested tenants</p>
+                    </div>
+                </div>
+
+                <div class="loading-properties">
+                    <i class="fa-solid fa-envelope"></i>
+                    Enquiry management is coming soon.
+                </div>
+
+            </section>
+
+
+            <!-- ================= BOOKINGS ================= -->
+
+            <section class="section-block" id="bookings">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Bookings</h2>
+                        <p>Manage booking requests</p>
+                    </div>
+                </div>
+
+                <div class="loading-properties">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    Booking management is coming soon.
+                </div>
+
+            </section>
+
+
+            <!-- ================= REVIEWS ================= -->
+
+            <section class="section-block" id="reviews">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Reviews</h2>
+                        <p>What tenants are saying about your properties</p>
+                    </div>
+                </div>
+
+                <div class="loading-properties">
+                    <i class="fa-solid fa-star"></i>
+                    Reviews will show up here soon.
+                </div>
+
+            </section>
+
+
+            <!-- ================= PROFILE ================= -->
+
+            <section class="section-block" id="profile">
+
+                <div class="section-header">
+                    <div>
+                        <h2>My Profile</h2>
+                        <p>Your account details</p>
+                    </div>
+                </div>
+
+                <div class="loading-properties">
+                    <i class="fa-solid fa-user"></i>
+                    <span id="profileNameText">Loading profile...</span>
+                    <br>
+                    <span id="profileEmailText"></span>
+                </div>
+
+            </section>
+
+
+            <!-- ================= SETTINGS ================= -->
+
+            <section class="section-block" id="settings">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Settings</h2>
+                        <p>Account and notification preferences</p>
+                    </div>
+                </div>
+
+                <div class="loading-properties">
+                    <i class="fa-solid fa-gear"></i>
+                    Settings are coming soon.
+                </div>
+
+            </section>
+
+            <!-- ================= QUICK ACTIONS ================= -->
+
+            <section class="quick-actions">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Quick Actions</h2>
+                        <p>Manage your account quickly</p>
+                    </div>
+
+                </div>
+
+
+                <div class="quick-grid">
+
+                    <button class="quick-card" data-target="add-property">
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        <div>
+                            <strong>Add Property</strong>
+                            <span>List a new property</span>
+                        </div>
+
                     </button>
 
-                </div>
 
+                    <button class="quick-card" data-target="enquiries">
 
-                <!-- STATISTICS -->
-
-                <div class="stats-grid">
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon properties-icon">
-                            <i
-                                class="fa-solid fa-building"
-                                aria-hidden="true"
-                            ></i>
-                        </div>
+                        <i class="fa-solid fa-envelope"></i>
 
                         <div>
-                            <span>Total Properties</span>
-
-                            <h3 id="totalProperties">
-                                0
-                            </h3>
+                            <strong>View Enquiries</strong>
+                            <span>Messages from tenants</span>
                         </div>
 
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon rooms-icon">
-                            <i
-                                class="fa-solid fa-door-open"
-                                aria-hidden="true"
-                            ></i>
-                        </div>
-
-                        <div>
-                            <span>Total Rooms</span>
-
-                            <h3 id="totalRooms">
-                                0
-                            </h3>
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon available-icon">
-                            <i
-                                class="fa-solid fa-circle-check"
-                                aria-hidden="true"
-                            ></i>
-                        </div>
-
-                        <div>
-                            <span>Available Rooms</span>
-
-                            <h3 id="availableRooms">
-                                0
-                            </h3>
-                        </div>
-
-                    </div>
-
-
-                    <div class="stat-card">
-
-                        <div class="stat-icon occupied-icon">
-                            <i
-                                class="fa-solid fa-user-group"
-                                aria-hidden="true"
-                            ></i>
-                        </div>
-
-                        <div>
-                            <span>Occupied Rooms</span>
-
-                            <h3 id="occupiedRooms">
-                                0
-                            </h3>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- DASHBOARD PROPERTY PREVIEW -->
-
-                <section class="section-block">
-
-                    <div class="section-header">
-
-                        <div>
-                            <h2>My Properties</h2>
-
-                            <p>
-                                Your recently listed properties
-                            </p>
-                        </div>
-
-
-                        <button
-                            class="view-all-btn"
-                            id="dashboardPropertiesBtn"
-                            type="button"
-                        >
-                            View All
-                            <i
-                                class="fa-solid fa-arrow-right"
-                                aria-hidden="true"
-                            ></i>
-                        </button>
-
-                    </div>
-
-
-                    <div
-                        id="dashboardProperties"
-                        class="owner-properties-grid"
-                    >
-
-                        <div class="loading-properties">
-
-                            <i
-                                class="fa-solid fa-spinner fa-spin"
-                                aria-hidden="true"
-                            ></i>
-
-                            Loading your properties...
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- QUICK ACTIONS -->
-
-                <section class="quick-actions">
-
-                    <div class="section-header">
-
-                        <div>
-                            <h2>Quick Actions</h2>
-
-                            <p>
-                                Manage your account quickly
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <div class="quick-grid">
-
-
-                        <button
-                            class="quick-card"
-                            id="quickAddProperty"
-                            type="button"
-                        >
-
-                            <i
-                                class="fa-solid fa-plus"
-                                aria-hidden="true"
-                            ></i>
-
-                            <div>
-                                <strong>Add Property</strong>
-                                <span>List a new property</span>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            class="quick-card"
-                            id="quickReviews"
-                            type="button"
-                        >
-
-                            <i
-                                class="fa-solid fa-star"
-                                aria-hidden="true"
-                            ></i>
-
-                            <div>
-                                <strong>View Reviews</strong>
-                                <span>See customer feedback</span>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            class="quick-card"
-                            id="quickBookings"
-                            type="button"
-                        >
-
-                            <i
-                                class="fa-solid fa-calendar-check"
-                                aria-hidden="true"
-                            ></i>
-
-                            <div>
-                                <strong>Bookings</strong>
-                                <span>Manage booking requests</span>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            class="quick-card"
-                            id="quickProfile"
-                            type="button"
-                        >
-
-                            <i
-                                class="fa-solid fa-user-gear"
-                                aria-hidden="true"
-                            ></i>
-
-                            <div>
-                                <strong>Profile</strong>
-                                <span>Update your information</span>
-                            </div>
-
-                        </button>
-
-                    </div>
-
-                </section>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 MY PROPERTIES
-            ================================================== -->
-
-            <section
-                id="properties"
-                class="content-section"
-                aria-labelledby="propertiesHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-                        <h2 id="propertiesHeading">
-                            My Properties
-                        </h2>
-
-                        <p>
-                            Manage all properties listed by you.
-                        </p>
-                    </div>
-
-
-                    <button
-                        class="add-property-btn"
-                        id="addPropertyBtnProperties"
-                        type="button"
-                    >
-                        <i
-                            class="fa-solid fa-plus"
-                            aria-hidden="true"
-                        ></i>
-
-                        Add Property
                     </button>
 
-                </div>
 
+                    <button class="quick-card" data-target="bookings">
 
-                <div
-                    id="allOwnerProperties"
-                    class="owner-properties-grid"
-                >
-
-                    <div class="loading-properties">
-
-                        <i
-                            class="fa-solid fa-spinner fa-spin"
-                            aria-hidden="true"
-                        ></i>
-
-                        Loading properties...
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 ROOMS
-            ================================================== -->
-
-            <section
-                id="rooms"
-                class="content-section"
-                aria-labelledby="roomsHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-                        <h2 id="roomsHeading">
-                            Rooms
-                        </h2>
-
-                        <p>
-                            Manage room availability and status.
-                        </p>
-                    </div>
-
-
-                    <div class="filter-wrapper">
-
-                        <label
-                            for="propertyFilter"
-                            class="sr-only"
-                        >
-                            Filter rooms by property
-                        </label>
-
-                        <select
-                            id="propertyFilter"
-                            class="property-filter"
-                            aria-label="Filter rooms by property"
-                        >
-
-                            <option value="all">
-                                All Properties
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <div class="room-table-wrapper">
-
-                    <table class="room-table">
-
-                        <thead>
-
-                            <tr>
-                                <th>Property</th>
-                                <th>Room</th>
-                                <th>Rent</th>
-                                <th>People</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody id="roomTableBody">
-
-                            <tr>
-
-                                <td
-                                    colspan="6"
-                                    class="table-loading"
-                                >
-                                    Loading rooms...
-                                </td>
-
-                            </tr>
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 ENQUIRIES
-            ================================================== -->
-
-            <section
-                id="enquiries"
-                class="content-section"
-                aria-labelledby="enquiriesHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-                        <h2 id="enquiriesHeading">
-                            Enquiries
-                        </h2>
-
-                        <p>
-                            Manage enquiries from people interested
-                            in your properties.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div
-                    id="ownerEnquiries"
-                    class="data-container"
-                >
-
-                    <div class="empty-section">
-
-                        <i
-                            class="fa-solid fa-envelope"
-                            aria-hidden="true"
-                        ></i>
-
-                        <h3>No Enquiries Yet</h3>
-
-                        <p>
-                            New property enquiries will appear here.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 BOOKINGS
-            ================================================== -->
-
-            <section
-                id="bookings"
-                class="content-section"
-                aria-labelledby="bookingsHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-                        <h2 id="bookingsHeading">
-                            Bookings
-                        </h2>
-
-                        <p>
-                            Manage booking requests for your rooms.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div
-                    id="ownerBookings"
-                    class="data-container"
-                >
-
-                    <div class="empty-section">
-
-                        <i
-                            class="fa-solid fa-calendar-check"
-                            aria-hidden="true"
-                        ></i>
-
-                        <h3>No Bookings Yet</h3>
-
-                        <p>
-                            Booking requests will appear here.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 REVIEWS
-            ================================================== -->
-
-            <section
-                id="reviews"
-                class="content-section"
-                aria-labelledby="reviewsHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-
-                        <h2 id="reviewsHeading">
-                            Customer Reviews
-                        </h2>
-
-                        <p>
-                            Reviews received on your properties.
-                        </p>
-
-                    </div>
-
-
-                    <div class="review-summary">
-
-                        <div class="average-rating">
-
-                            <i
-                                class="fa-solid fa-star"
-                                aria-hidden="true"
-                            ></i>
-
-                            <strong id="averageRating">
-                                0.0
-                            </strong>
-
-                        </div>
-
-                        <span id="totalReviewText">
-                            0 reviews
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div
-                    id="ownerReviews"
-                    class="reviews-container"
-                >
-
-                    <div class="loading-properties">
-
-                        <i
-                            class="fa-solid fa-spinner fa-spin"
-                            aria-hidden="true"
-                        ></i>
-
-                        Loading reviews...
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 PROFILE
-            ================================================== -->
-
-            <section
-                id="profile"
-                class="content-section"
-                aria-labelledby="profileHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-
-                        <h2 id="profileHeading">
-                            My Profile
-                        </h2>
-
-                        <p>
-                            View and manage your owner account.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="profile-card">
-
-                    <div
-                        class="large-owner-avatar"
-                        id="profileAvatar"
-                    >
-                        OW
-                    </div>
-
-
-                    <div class="profile-details">
-
-                        <h3 id="profileName">
-                            Owner
-                        </h3>
-
-                        <p id="profileEmail">
-                            Loading email...
-                        </p>
-
-                        <span class="profile-role">
-                            Property Owner
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-
-            <!-- =================================================
-                 SETTINGS
-            ================================================== -->
-
-            <section
-                id="settings"
-                class="content-section"
-                aria-labelledby="settingsHeading"
-            >
-
-                <div class="section-page-header">
-
-                    <div>
-
-                        <h2 id="settingsHeading">
-                            Settings
-                        </h2>
-
-                        <p>
-                            Manage your dashboard preferences.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="settings-card">
-
-                    <div class="setting-row">
+                        <i class="fa-solid fa-calendar-check"></i>
 
                         <div>
-
-                            <strong>
-                                Email Notifications
-                            </strong>
-
-                            <p>
-                                Receive notifications about enquiries
-                                and bookings.
-                            </p>
-
+                            <strong>Bookings</strong>
+                            <span>Manage booking requests</span>
                         </div>
 
-
-                        <label class="switch">
-
-                            <input
-                                type="checkbox"
-                                id="emailNotifications"
-                                checked
-                            >
-
-                            <span class="slider"></span>
-
-                        </label>
-
-                    </div>
+                    </button>
 
 
-                    <div class="setting-row">
+                    <button class="quick-card" data-target="profile">
+
+                        <i class="fa-solid fa-user-gear"></i>
 
                         <div>
-
-                            <strong>
-                                Review Notifications
-                            </strong>
-
-                            <p>
-                                Get notified when someone reviews
-                                your property.
-                            </p>
-
+                            <strong>Profile</strong>
+                            <span>Update your information</span>
                         </div>
 
-
-                        <label class="switch">
-
-                            <input
-                                type="checkbox"
-                                id="reviewNotifications"
-                                checked
-                            >
-
-                            <span class="slider"></span>
-
-                        </label>
-
-                    </div>
+                    </button>
 
                 </div>
 
@@ -1051,319 +558,13 @@
     </main>
 
 
+    <!-- ================= OVERLAY ================= -->
 
-    <!-- =====================================================
-         ADD PROPERTY MODAL
-    ====================================================== -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div
-        class="modal-overlay"
-        id="propertyModal"
-        aria-hidden="true"
-    >
 
-        <div
-            class="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="propertyModalTitle"
-        >
-
-            <div class="modal-header">
-
-                <div>
-
-                    <h2 id="propertyModalTitle">
-                        Add New Property
-                    </h2>
-
-                    <p>
-                        Add your property to RoomDhundo.
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="modal-close"
-                    id="closePropertyModal"
-                    type="button"
-                    aria-label="Close add property window"
-                    title="Close"
-                >
-
-                    <i
-                        class="fa-solid fa-xmark"
-                        aria-hidden="true"
-                    ></i>
-
-                </button>
-
-            </div>
-
-
-            <form id="propertyForm">
-
-
-                <div class="form-group">
-
-                    <label for="propertyName">
-                        Property Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="propertyName"
-                        placeholder="e.g. Green View PG"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label for="propertyCity">
-                            City
-                        </label>
-
-                        <input
-                            type="text"
-                            id="propertyCity"
-                            placeholder="Kolkata"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="propertyArea">
-                            Area
-                        </label>
-
-                        <input
-                            type="text"
-                            id="propertyArea"
-                            placeholder="Salt Lake"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="propertyAddress">
-                        Full Address
-                    </label>
-
-                    <textarea
-                        id="propertyAddress"
-                        rows="3"
-                        placeholder="Enter full property address"
-                        required
-                    ></textarea>
-
-                </div>
-
-
-                <div class="form-row">
-
-                    <div class="form-group">
-
-                        <label for="propertyType">
-                            Property Type
-                        </label>
-
-                        <select
-                            id="propertyType"
-                            aria-label="Property type"
-                        >
-
-                            <option value="PG">PG</option>
-                            <option value="Hostel">Hostel</option>
-                            <option value="Flat">Flat</option>
-                            <option value="Room">Room</option>
-                            <option value="Apartment">Apartment</option>
-
-                        </select>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label for="propertyRent">
-                            Starting Rent
-                        </label>
-
-                        <input
-                            type="number"
-                            id="propertyRent"
-                            placeholder="5000"
-                            min="0"
-                        >
-
-                    </div>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="propertyImage">
-                        Property Image URL
-                    </label>
-
-                    <input
-                        type="url"
-                        id="propertyImage"
-                        placeholder="https://..."
-                    >
-
-                    <small>
-                        You can add a Supabase Storage image URL.
-                    </small>
-
-                </div>
-
-
-                <div
-                    class="form-error"
-                    id="propertyFormError"
-                    role="alert"
-                ></div>
-
-
-                <div class="modal-actions">
-
-                    <button
-                        type="button"
-                        class="cancel-btn"
-                        id="cancelPropertyBtn"
-                    >
-                        Cancel
-                    </button>
-
-
-                    <button
-                        type="submit"
-                        class="save-property-btn"
-                        id="savePropertyBtn"
-                    >
-
-                        <i
-                            class="fa-solid fa-plus"
-                            aria-hidden="true"
-                        ></i>
-
-                        Add Property
-
-                    </button>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- =====================================================
-         REVIEW DETAIL MODAL
-    ====================================================== -->
-
-    <div
-        class="modal-overlay"
-        id="reviewModal"
-        aria-hidden="true"
-    >
-
-        <div
-            class="modal review-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reviewModalTitle"
-        >
-
-            <div class="modal-header">
-
-                <div>
-
-                    <h2 id="reviewModalTitle">
-                        Review Details
-                    </h2>
-
-                    <p>
-                        Property and customer information.
-                    </p>
-
-                </div>
-
-
-                <button
-                    class="modal-close"
-                    id="closeReviewModal"
-                    type="button"
-                    aria-label="Close review details"
-                    title="Close"
-                >
-
-                    <i
-                        class="fa-solid fa-xmark"
-                        aria-hidden="true"
-                    ></i>
-
-                </button>
-
-            </div>
-
-
-            <div id="reviewModalContent"></div>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- =====================================================
-         TOAST
-    ====================================================== -->
-
-    <div
-        class="toast"
-        id="toast"
-        role="status"
-        aria-live="polite"
-    >
-
-        <i
-            class="fa-solid fa-circle-check"
-            aria-hidden="true"
-        ></i>
-
-        <span id="toastMessage">
-            Success
-        </span>
-
-    </div>
-
-
-
-    <!-- =====================================================
-         SUPABASE
-    ====================================================== -->
-
+    <!-- ================= JAVASCRIPT ================= -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
     <script src="owner-dashboard.js"></script>
 
 </body>

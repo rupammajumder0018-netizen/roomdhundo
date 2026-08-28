@@ -1,929 +1,203 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>List Your Property | RoomDhundo</title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+    <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
-
-    <!-- =====================================================
-         NAVBAR
-    ====================================================== -->
-
+    <!-- NAVBAR -->
     <nav class="navbar">
-
-        <a
-            href="index.html"
-            class="logo"
-            aria-label="RoomDhundo Home"
-        >
-            RoomDhundo
-        </a>
-
-
+        <a href="index.html" class="logo">RoomDhundo</a>
         <div class="nav-links">
-
-            <a href="index.html">
-                Home
-            </a>
-
-            <a href="search.html">
-                Explore
-            </a>
-
-            <a
-                href="list-property.html"
-                aria-current="page"
-            >
-                List Property
-            </a>
-
-            <a href="saved.html">
-                Saved
-            </a>
-
-
-            <button
-                id="navAuthBtn"
-                type="button"
-                aria-label="Log in or sign up"
-            >
-                Log In / Sign Up
-            </button>
-
+            <a href="index.html">Home</a>
+            <a href="search.html">Explore</a>
+            <a href="list-property.html">List Property</a>
+            <a href="saved.html">Saved</a>
+            <button id="navAuthBtn" type="button" aria-label="Log in or sign up">Log In / Sign Up</button>
         </div>
-
     </nav>
 
-
-
-    <!-- =====================================================
-         MAIN CONTENT
-    ====================================================== -->
-
+    <!-- LIST PROPERTY FORM -->
     <main class="list-property-page">
 
-
-        <!-- =================================================
-             PAGE HEADER
-        ================================================== -->
-
         <div class="list-property-header">
-
-            <h1>
-                List Your Property
-            </h1>
-
-            <p>
-                Fill in your building's details once, then add
-                each room type it offers.
-            </p>
-
+            <h1>List Your Property</h1>
+            <p>Fill in your building's details once, then add each room type it offers.</p>
         </div>
 
+        <form class="list-property-form" id="listPropertyForm">
 
-
-        <!-- =================================================
-             PROPERTY FORM
-        ================================================== -->
-
-        <form
-            class="list-property-form"
-            id="listPropertyForm"
-        >
-
-
-            <!-- =================================================
-                 BUILDING DETAILS
-            ================================================== -->
-
-            <h2 class="lp-section-title">
-                Building Details
-            </h2>
-
-
-            <!-- PROPERTY NAME -->
+            <h2 class="lp-section-title lp-first-section-title">Building Details</h2>
 
             <div class="form-group">
-
-                <label for="lpName">
-                    Property Name
-                </label>
-
-                <input
-                    type="text"
-                    id="lpName"
-                    name="propertyName"
-                    placeholder="e.g. Sunrise PG"
-                    autocomplete="organization"
-                    required
-                >
-
+                <label for="lpName">Property Name</label>
+                <input type="text" id="lpName" placeholder="e.g. Sunrise PG" required>
             </div>
 
-
-
-            <!-- LOCATION -->
-
             <div class="form-group">
-
-                <label for="lpLocation">
-                    Location / Area
-                </label>
-
-                <input
-                    type="text"
-                    id="lpLocation"
-                    name="location"
-                    placeholder="e.g. Jaguli, near MAKAUT"
-                    autocomplete="street-address"
-                    required
-                >
-
+                <label for="lpLocation">Location / Area</label>
+                <input type="text" id="lpLocation" placeholder="e.g. Jaguli, near MAKAUT" required>
             </div>
 
-
-
-            <!-- DISTANCE -->
-
             <div class="form-group">
-
-                <label for="lpDistance">
-                    Distance from MAKAUT (km)
-                </label>
-
-                <input
-                    type="number"
-                    id="lpDistance"
-                    name="distance"
-                    step="0.1"
-                    min="0"
-                    placeholder="e.g. 2.5"
-                    inputmode="decimal"
-                    required
-                >
-
+                <label for="lpDistance">Distance from MAKAUT (km)</label>
+                <input type="number" id="lpDistance" step="0.1" min="0" placeholder="e.g. 2.5" required>
             </div>
 
-
-
-            <!-- PROPERTY TYPE -->
-
             <div class="form-group">
-
-                <label for="lpType">
-                    Property Type
-                </label>
-
-                <select
-                    id="lpType"
-                    name="propertyType"
-                    required
-                    aria-label="Select property type"
-                >
-
-                    <option value="">
-                        Select type
-                    </option>
-
-                    <option value="PG">
-                        PG
-                    </option>
-
-                    <option value="Room">
-                        Room
-                    </option>
-
-                    <option value="Mess">
-                        Mess
-                    </option>
-
-                    <option value="Flat">
-                        Flat
-                    </option>
-
-                    <option value="Guest House">
-                        Guest House
-                    </option>
-
+                <label for="lpType">Property Type</label>
+                <select id="lpType" required>
+                    <option value="">Select type</option>
+                    <option value="PG">PG</option>
+                    <option value="Room">Room</option>
+                    <option value="Mess">Mess</option>
+                    <option value="Flat">Flat</option>
+                    <option value="Guest House">Guest House</option>
                 </select>
-
             </div>
 
-
-
-            <!-- PROPERTY IMAGES -->
-
             <div class="form-group">
-
-                <label for="lpImages">
-                    Property Photos (up to 5)
-                </label>
-
-                <input
-                    type="file"
-                    id="lpImages"
-                    name="propertyImages"
-                    accept="image/jpeg,image/png,image/webp"
-                    multiple
-                >
-
-                <p class="lp-hint">
-                    JPG, PNG or WebP, up to 5MB each.
-                    Photos are shared across all room types
-                    in this building.
-                </p>
-
+                <label for="lpImages">Property Photos (up to 5)</label>
+                <input type="file" id="lpImages" accept="image/*" multiple>
+                <p class="lp-hint">JPG or PNG, up to 5MB each. Shared across all room types in this building.</p>
             </div>
 
-
-
-            <!-- =================================================
-                 FACILITIES
-            ================================================== -->
-
             <div class="form-group">
-
-                <span class="form-label">
-                    Facilities
-                </span>
-
-
+                <label>Facilities</label>
                 <div class="lp-facility-grid">
-
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="lpFacility"
-                            value="wifi"
-                            data-label="📶 Wi-Fi"
-                        >
-
-                        Wi-Fi
-                    </label>
-
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="lpFacility"
-                            value="food"
-                            data-label="🍛 Food"
-                        >
-
-                        Food
-                    </label>
-
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="lpFacility"
-                            value="ac"
-                            data-label="❄️ AC"
-                        >
-
-                        AC
-                    </label>
-
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="lpFacility"
-                            value="laundry"
-                            data-label="🧺 Laundry"
-                        >
-
-                        Laundry
-                    </label>
-
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="lpFacility"
-                            value="parking"
-                            data-label="🚗 Parking"
-                        >
-
-                        Parking
-                    </label>
-
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            class="lpFacility"
-                            value="bathroom"
-                            data-label="🚿 Attached Bathroom"
-                        >
-
-                        Attached Bathroom
-                    </label>
-
-
+                    <label><input type="checkbox" class="lpFacility" value="wifi" data-label="📶 Wi-Fi"> Wi-Fi</label>
+                    <label><input type="checkbox" class="lpFacility" value="food" data-label="🍛 Food"> Food</label>
+                    <label><input type="checkbox" class="lpFacility" value="ac" data-label="❄️ AC"> AC</label>
+                    <label><input type="checkbox" class="lpFacility" value="laundry" data-label="🧺 Laundry"> Laundry</label>
+                    <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
+                    <label><input type="checkbox" class="lpFacility" value="bathroom" data-label="🚿 Attached Bathroom"> Attached Bathroom</label>
                 </div>
-
             </div>
-
-
-
-            <!-- =================================================
-                 DESCRIPTION
-            ================================================== -->
 
             <div class="form-group">
-
-                <label for="lpDescription">
-                    Description
-                </label>
-
-                <textarea
-                    id="lpDescription"
-                    name="description"
-                    rows="4"
-                    placeholder="Tell renters what makes this place a good fit..."
-                    required
-                ></textarea>
-
+                <label for="lpDescription">Description</label>
+                <textarea id="lpDescription" rows="4" placeholder="Tell renters what makes this place a good fit..." required></textarea>
             </div>
-
-
-
-            <!-- =================================================
-                 PROPERTY RULES
-            ================================================== -->
 
             <div class="form-group">
-
-                <label for="lpRules">
-                    Property Rules (one per line)
-                </label>
-
-                <textarea
-                    id="lpRules"
-                    name="rules"
-                    rows="3"
-                    placeholder="No smoking inside rooms&#10;Visitors allowed until 9 PM"
-                ></textarea>
-
+                <label for="lpRules">Property Rules (one per line)</label>
+                <textarea id="lpRules" rows="3" placeholder="No smoking inside rooms&#10;Visitors allowed until 9 PM"></textarea>
             </div>
 
-
-
-            <!-- =================================================
-                 OWNER CONTACT
-            ================================================== -->
-
-            <h2 class="lp-section-title">
-                Owner Contact
-            </h2>
-
-
-            <!-- OWNER NAME -->
+            <h2 class="lp-section-title">Owner Contact</h2>
 
             <div class="form-group">
-
-                <label for="lpOwnerName">
-                    Owner / Business Name
-                </label>
-
-                <input
-                    type="text"
-                    id="lpOwnerName"
-                    name="ownerName"
-                    placeholder="e.g. Raj Properties"
-                    autocomplete="name"
-                    required
-                >
-
+                <label for="lpOwnerName">Owner / Business Name</label>
+                <input type="text" id="lpOwnerName" placeholder="e.g. Raj Properties" required>
             </div>
-
-
-
-            <!-- OWNER PHONE -->
 
             <div class="form-group">
-
-                <label for="lpOwnerPhone">
-                    Phone Number
-                </label>
-
-                <input
-                    type="tel"
-                    id="lpOwnerPhone"
-                    name="ownerPhone"
-                    placeholder="10-digit mobile number"
-                    pattern="[0-9]{10}"
-                    maxlength="10"
-                    minlength="10"
-                    inputmode="numeric"
-                    autocomplete="tel"
-                    required
-                >
-
+                <label for="lpOwnerPhone">Phone Number</label>
+                <input type="tel" id="lpOwnerPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
             </div>
 
-
-
-            <!-- =================================================
-                 ROOM TYPES
-            ================================================== -->
-
-            <h2 class="lp-section-title">
-                Room Types
-            </h2>
-
-
-            <p class="lp-hint lp-room-hint">
-                Add every room option this building offers.
-                You need at least one room type.
-            </p>
-
-
-            <!--
-                JavaScript adds room type blocks here.
-            -->
+            <h2 class="lp-section-title">Room Types</h2>
+            <p class="lp-hint lp-room-hint">Add every room option this building offers — you need at least one.</p>
 
             <div id="roomTypesContainer"></div>
 
+            <button type="button" id="addRoomTypeBtn" class="lp-secondary-btn">+ Add Another Room Type</button>
 
-            <!-- ADD ROOM TYPE -->
+            <button type="submit" class="lp-submit-btn lp-submit-margin">List My Property</button>
 
-            <button
-                type="button"
-                id="addRoomTypeBtn"
-                class="lp-secondary-btn"
-                aria-label="Add another room type"
-            >
-                + Add Another Room Type
-            </button>
-
-
-
-            <!-- SUBMIT -->
-
-            <button
-                type="submit"
-                class="lp-submit-btn lp-submit-margin"
-            >
-                List My Property
-            </button>
-
-
-            <!-- NOTE -->
-
-            <p class="lp-note">
-                Note: photos and listing data are saved to your
-                Supabase database and can be visible to everyone.
-            </p>
-
+            <p class="lp-note">Note: photos and listing data are saved to your real Supabase database now, visible to everyone.</p>
 
         </form>
 
     </main>
 
-
-
-    <!-- =====================================================
-         ROOM TYPE TEMPLATE
-    ====================================================== -->
-
+    <!-- Template for one room type block, cloned by JS -->
     <template id="roomTypeTemplate">
-
-
         <div class="room-type-block">
-
-
-            <!-- REMOVE ROOM TYPE -->
-
-            <button
-                type="button"
-                class="remove-room-type-btn"
-                title="Remove this room type"
-                aria-label="Remove this room type"
-            >
-
-                <span aria-hidden="true">
-                    &times;
-                </span>
-
-            </button>
-
-
-
-            <!-- ROOM TYPE -->
+            <button type="button" class="remove-room-type-btn" title="Remove this room type">&times;</button>
 
             <div class="form-group">
-
-                <label>
-                    Room Type
-                </label>
-
-                <select
-                    class="rtRoomType"
-                    required
-                    aria-label="Room type"
-                >
-
-                    <option value="">
-                        Select room type
-                    </option>
-
-                    <option value="Single">
-                        Single
-                    </option>
-
-                    <option value="Double Sharing">
-                        Double Sharing
-                    </option>
-
-                    <option value="Triple Sharing">
-                        Triple Sharing
-                    </option>
-
-                    <option value="4+ Sharing">
-                        4+ Sharing
-                    </option>
-
+                <label>Room Type</label>
+                <select class="rtRoomType" required>
+                    <option value="">Select room type</option>
+                    <option value="Single">Single</option>
+                    <option value="Double Sharing">Double Sharing</option>
+                    <option value="Triple Sharing">Triple Sharing</option>
+                    <option value="4+ Sharing">4+ Sharing</option>
                 </select>
-
             </div>
-
-
-
-            <!-- MONTHLY RENT -->
 
             <div class="form-group">
-
-                <label>
-                    Monthly Rent (₹)
-                </label>
-
-                <input
-                    type="number"
-                    class="rtRent"
-                    min="0"
-                    placeholder="e.g. 6000"
-                    inputmode="numeric"
-                    required
-                    aria-label="Monthly rent"
-                >
-
+                <label>Monthly Rent (₹)</label>
+                <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
             </div>
-
-
-
-            <!-- PEOPLE SHARING -->
 
             <div class="form-group">
-
-                <label>
-                    People Sharing the Room
-                </label>
-
-                <input
-                    type="number"
-                    class="rtPeople"
-                    min="1"
-                    value="1"
-                    inputmode="numeric"
-                    required
-                    aria-label="People sharing the room"
-                >
-
+                <label>People Sharing the Room</label>
+                <input type="number" class="rtPeople" min="1" value="1" required>
             </div>
-
-
-
-            <!-- AVAILABLE ROOMS -->
 
             <div class="form-group">
-
-                <label>
-                    Rooms/Beds Available
-                </label>
-
-                <input
-                    type="number"
-                    class="rtAvailable"
-                    min="1"
-                    value="1"
-                    inputmode="numeric"
-                    required
-                    aria-label="Rooms or beds available"
-                >
-
+                <label>Rooms/Beds Available</label>
+                <input type="number" class="rtAvailable" min="1" value="1" required>
             </div>
-
-
         </div>
-
-
     </template>
 
-
-
-    <!-- =====================================================
-         SUPABASE
-    ====================================================== -->
-
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
-    ></script>
-
-
-    <!-- =====================================================
-         MAIN JAVASCRIPT
-    ====================================================== -->
-
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="script.js"></script>
 
+    <!-- AUTHENTICATION MODAL -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn" type="button" aria-label="Close authentication window" title="Close">&times;</button>
 
-
-    <!-- =====================================================
-         AUTHENTICATION MODAL
-    ====================================================== -->
-
-    <div
-        class="auth-modal"
-        id="authModal"
-        aria-hidden="true"
-    >
-
-
-        <div
-            class="auth-modal-content"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="authModalTitle"
-        >
-
-
-            <!-- CLOSE -->
-
-            <button
-                class="auth-close-btn"
-                id="closeAuthBtn"
-                type="button"
-                aria-label="Close login and signup window"
-                title="Close"
-            >
-
-                <span aria-hidden="true">
-                    &times;
-                </span>
-
-            </button>
-
-
-
-            <!-- AUTH TABS -->
-
-            <div
-                class="auth-tabs"
-                role="tablist"
-                aria-label="Authentication options"
-            >
-
-
-                <button
-                    class="auth-tab active"
-                    id="tabLogin"
-                    type="button"
-                    role="tab"
-                    aria-selected="true"
-                    aria-controls="loginForm"
-                >
-                    Log In
-                </button>
-
-
-                <button
-                    class="auth-tab"
-                    id="tabSignup"
-                    type="button"
-                    role="tab"
-                    aria-selected="false"
-                    aria-controls="signupForm"
-                >
-                    Sign Up
-                </button>
-
-
+            <div class="auth-tabs" role="tablist" aria-label="Authentication options">
+                <button class="auth-tab active" id="tabLogin" type="button" role="tab" aria-selected="true">Log In</button>
+                <button class="auth-tab" id="tabSignup" type="button" role="tab" aria-selected="false">Sign Up</button>
             </div>
 
-
-
-            <!-- =================================================
-                 LOGIN FORM
-            ================================================== -->
-
-            <form
-                class="auth-form active"
-                id="loginForm"
-            >
-
-                <h2 id="authModalTitle">
-                    Welcome Back
-                </h2>
-
-                <p class="auth-subtitle">
-                    Log in to manage your saved properties
-                    and bookings.
-                </p>
-
-
-
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
                 <div class="form-group">
-
-                    <label for="loginEmail">
-                        Email Address
-                    </label>
-
-                    <input
-                        type="email"
-                        id="loginEmail"
-                        name="loginEmail"
-                        placeholder="name@example.com"
-                        autocomplete="email"
-                        required
-                    >
-
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
                 </div>
-
-
-
                 <div class="form-group">
-
-                    <label for="loginPassword">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="loginPassword"
-                        name="loginPassword"
-                        placeholder="••••••••"
-                        autocomplete="current-password"
-                        required
-                    >
-
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
                 </div>
-
-
-
                 <div class="form-options">
-
-                    <label>
-
-                        <input
-                            type="checkbox"
-                            name="rememberMe"
-                        >
-
-                        Remember me
-
-                    </label>
-
-
-                    <a
-                        href="#"
-                        class="forgot-link"
-                    >
-                        Forgot password?
-                    </a>
-
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
                 </div>
-
-
-
-                <button
-                    type="submit"
-                    class="auth-submit-btn"
-                >
-                    Log In
-                </button>
-
-
+                <button type="submit" class="auth-submit-btn">Log In</button>
             </form>
 
-
-
-            <!-- =================================================
-                 SIGNUP FORM
-            ================================================== -->
-
-            <form
-                class="auth-form"
-                id="signupForm"
-            >
-
-                <h2>
-                    Create an Account
-                </h2>
-
-                <p class="auth-subtitle">
-                    Join us to save properties and contact
-                    hosts directly.
-                </p>
-
-
-
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
                 <div class="form-group">
-
-                    <label for="signupName">
-                        Full Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="signupName"
-                        name="signupName"
-                        placeholder="John Doe"
-                        autocomplete="name"
-                        required
-                    >
-
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
                 </div>
-
-
-
                 <div class="form-group">
-
-                    <label for="signupEmail">
-                        Email Address
-                    </label>
-
-                    <input
-                        type="email"
-                        id="signupEmail"
-                        name="signupEmail"
-                        placeholder="name@example.com"
-                        autocomplete="email"
-                        required
-                    >
-
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
                 </div>
-
-
-
                 <div class="form-group">
-
-                    <label for="signupPassword">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="signupPassword"
-                        name="signupPassword"
-                        placeholder="Create a strong password"
-                        autocomplete="new-password"
-                        required
-                    >
-
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
                 </div>
-
-
-
-                <button
-                    type="submit"
-                    class="auth-submit-btn"
-                >
-                    Create Account
-                </button>
-
-
+                <button type="submit" class="auth-submit-btn">Create Account</button>
             </form>
-
-
         </div>
-
     </div>
 
-
 </body>
-
 </html>
-```
