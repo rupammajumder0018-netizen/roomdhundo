@@ -1139,3 +1139,396 @@ body {
 
 }
 
+/* =========================================================
+   OWNER PROPERTY CARDS
+   ========================================================= */
+
+.owner-properties-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(320px, 1fr)
+    );
+    gap: 24px;
+    margin-top: 20px;
+}
+
+
+/* PROPERTY CARD */
+
+.owner-property-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: 0.25s ease;
+}
+
+
+.owner-property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+
+/* PROPERTY IMAGE */
+
+.owner-property-image {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+
+.owner-property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+
+.property-no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 45px;
+    color: #6366f1;
+}
+
+
+/* STATUS BADGE */
+
+.property-status-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    padding: 7px 13px;
+
+    border-radius: 30px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    background: #ffffff;
+}
+
+
+.property-status-badge.available {
+    color: #16a34a;
+}
+
+
+.property-status-badge.occupied {
+    color: #dc2626;
+}
+
+
+/* CONTENT */
+
+.owner-property-content {
+    padding: 20px;
+}
+
+
+.property-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+
+.property-header h3 {
+    margin: 0 0 7px;
+
+    font-size: 21px;
+    font-weight: 700;
+
+    color: #111827;
+}
+
+
+.property-location {
+    margin: 0;
+
+    font-size: 14px;
+    color: #64748b;
+}
+
+
+.property-location i {
+    margin-right: 5px;
+    color: #4f46e5;
+}
+
+
+.property-type {
+    padding: 6px 10px;
+
+    border-radius: 8px;
+
+    background: #eef2ff;
+
+    color: #4f46e5;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+
+/* SUMMARY */
+
+.property-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 10px;
+
+    margin-top: 20px;
+
+    padding: 15px 0;
+
+    border-top: 1px solid #eef0f4;
+    border-bottom: 1px solid #eef0f4;
+}
+
+
+.property-summary div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+.property-summary span {
+    font-size: 11px;
+
+    color: #94a3b8;
+
+    text-transform: uppercase;
+
+    font-weight: 600;
+}
+
+
+.property-summary strong {
+    font-size: 15px;
+
+    color: #172554;
+}
+
+
+/* =========================================================
+   MANAGE PROPERTY
+   ========================================================= */
+
+.property-manage-section {
+    margin-top: 18px;
+}
+
+
+.manage-title {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 12px;
+}
+
+
+.manage-title h4 {
+    margin: 0;
+
+    font-size: 15px;
+
+    color: #111827;
+}
+
+
+.manage-title span {
+    font-size: 13px;
+
+    color: #64748b;
+}
+
+
+/* AVAILABILITY BUTTONS */
+
+.availability-buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-bottom: 14px;
+}
+
+
+.availability-btn {
+    flex: 1;
+
+    border: 1px solid #e5e7eb;
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    transition: 0.2s ease;
+}
+
+
+.available-btn {
+    color: #16a34a;
+}
+
+
+.available-btn:hover,
+.available-btn.active {
+    background: #dcfce7;
+
+    border-color: #86efac;
+}
+
+
+.occupied-btn {
+    color: #dc2626;
+}
+
+
+.occupied-btn:hover,
+.occupied-btn.active {
+    background: #fee2e2;
+
+    border-color: #fca5a5;
+}
+
+
+/* PROPERTY ACTIONS */
+
+.property-actions {
+    display: flex;
+
+    gap: 10px;
+}
+
+
+.property-actions button {
+    flex: 1;
+
+    padding: 10px;
+
+    border-radius: 9px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    transition: 0.2s ease;
+}
+
+
+.view-btn {
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    color: #334155;
+}
+
+
+.view-btn:hover {
+    background: #f1f5f9;
+}
+
+
+.edit-btn {
+    background: #4f46e5;
+
+    border: 1px solid #4f46e5;
+
+    color: white;
+}
+
+
+.edit-btn:hover {
+    background: #4338ca;
+}
+
+
+/* =========================================================
+   EMPTY / LOADING
+   ========================================================= */
+
+.loading-properties,
+.empty-properties {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    padding: 50px;
+
+    text-align: center;
+
+    color: #64748b;
+}
+
+
+.empty-properties h3 {
+    margin: 12px 0 6px;
+
+    color: #111827;
+}
+
+
+.empty-icon {
+    font-size: 40px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .owner-properties-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .property-summary {
+        grid-template-columns: 1fr;
+    }
+
+
+    .property-header {
+        flex-direction: column;
+    }
+
+}

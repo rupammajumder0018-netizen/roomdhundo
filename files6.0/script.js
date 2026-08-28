@@ -72,172 +72,542 @@ async function getCurrentUser() {
     return data.user || null;
 }
 
+
 // =====================================================
-// AUTH MODAL + NAV BUTTON (shared across every page)
+// AUTH MODAL + NAV BUTTON
 // =====================================================
-function updateNavForUser(user) {
+
+async function getCurrentUserProfile() {
+
+    const user = await getCurrentUser();
+
+    if (!user) return null;
+
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id, full_name, role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Profile fetch error:", error);
+    }
+
+    return {
+        user,
+        profile: data
+    };
+}
+
+
+// =====================================================
+// NAVBAR UPDATE
+// =====================================================
+
+async function updateNavForUser(user) {
+
     const navAuthBtn = document.getElementById("navAuthBtn");
+
     if (!navAuthBtn) return;
 
-    if (user) {
-        const label = (user.user_metadata && user.user_metadata.full_name)
-            ? user.user_metadata.full_name
-            : user.email.split("@")[0];
-        navAuthBtn.textContent = `Hi, ${label} (Logout)`;
-    } else {
+    // NOT LOGGED IN
+    if (!user) {
+
         navAuthBtn.textContent = "Log In / Sign Up";
+
+        navAuthBtn.onclick = () => {
+            openAuthModal();
+        };
+
+        return;
     }
+
+
+    // FETCH PROFILE
+    const { data: profile, error } = await supabaseClient
+        .from("profiles")
+        .select("full_name, role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error(error);
+    }
+
+    const name =
+        profile?.full_name ||
+        user.user_metadata?.full_name ||
+        user.email.split("@")[0];
+
+    const role = profile?.role || "user";
+
+    navAuthBtn.textContent = `Hi, ${name}`;
+
+    navAuthBtn.onclick = () => {
+
+        if (role === "owner") {
+
+            window.location.href = "owner-dashboard.html";
+
+        } else {
+
+            window.location.href = "account.html";
+
+        }
+
+    };
 }
+
+
+// =====================================================
+// AUTH MODAL
+// =====================================================
 
 function openAuthModal() {
+
     const authModal = document.getElementById("authModal");
-    if (authModal) authModal.style.display = "flex";
+
+    if (authModal) {
+        authModal.style.display = "flex";
+    }
 }
+
 
 function closeAuthModal() {
+
     const authModal = document.getElementById("authModal");
-    if (authModal) authModal.style.display = "none";
-    const loginForm = document.getElementById("loginForm");
-    const signupForm = document.getElementById("signupForm");
-    loginForm?.reset();
-    signupForm?.reset();
-}
 
-function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function wireAuthUI() {
-    const authModal = document.getElementById("authModal");
-    const closeAuthBtn = document.getElementById("closeAuthBtn");
-    const tabLogin = document.getElementById("tabLogin");
-    const tabSignup = document.getElementById("tabSignup");
-    const loginForm = document.getElementById("loginForm");
-    const signupForm = document.getElementById("signupForm");
-    const navAuthBtn = document.getElementById("navAuthBtn");
-
-    if (navAuthBtn) {
-        navAuthBtn.addEventListener("click", async () => {
-            const user = await getCurrentUser();
-            if (user) {
-                if (confirm("Are you sure you want to log out?")) {
-                    await supabaseClient.auth.signOut();
-                    updateNavForUser(null);
-                }
-            } else {
-                openAuthModal();
-            }
-        });
+    if (authModal) {
+        authModal.style.display = "none";
     }
 
+    document.getElementById("loginForm")?.reset();
+    document.getElementById("signupForm")?.reset();
+}
+
+
+function validateEmail(email) {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+}
+
+
+// =====================================================
+// AUTH UI
+// =====================================================
+
+function wireAuthUI() {
+
+    const authModal = document.getElementById("authModal");
+    const closeAuthBtn = document.getElementById("closeAuthBtn");
+
+    const tabLogin = document.getElementById("tabLogin");
+    const tabSignup = document.getElementById("tabSignup");
+
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+
+
+    // CLOSE MODAL
     closeAuthBtn?.addEventListener("click", closeAuthModal);
 
     window.addEventListener("click", (e) => {
-        if (e.target === authModal) closeAuthModal();
+
+        if (e.target === authModal) {
+            closeAuthModal();
+        }
+
     });
 
+
+    // SWITCH TAB
     function switchTab(activeTab, inactiveTab, showForm, hideForm) {
-        activeTab.classList.add("active");
-        inactiveTab.classList.remove("active");
-        showForm.classList.add("active");
-        hideForm.classList.remove("active");
+
+        activeTab?.classList.add("active");
+        inactiveTab?.classList.remove("active");
+
+        showForm?.classList.add("active");
+        hideForm?.classList.remove("active");
+
     }
 
-    tabLogin?.addEventListener("click", () => switchTab(tabLogin, tabSignup, loginForm, signupForm));
-    tabSignup?.addEventListener("click", () => switchTab(tabSignup, tabLogin, signupForm, loginForm));
 
-    // --- Forgot password ---
-    document.querySelectorAll(".forgot-link").forEach(link => {
-        link.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const loginEmailInput = document.getElementById("loginEmail");
-            let email = loginEmailInput && loginEmailInput.value.trim();
-            if (!email) {
-                email = prompt("Enter the email address for your account:");
-            }
-            if (!email || !validateEmail(email)) {
-                alert("Please enter a valid email address.");
-                return;
-            }
+    tabLogin?.addEventListener("click", () => {
 
-            const redirectTo = new URL("reset-password.html", window.location.href).href;
-            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo });
+        switchTab(
+            tabLogin,
+            tabSignup,
+            loginForm,
+            signupForm
+        );
 
-            if (error) {
-                alert(`Couldn't send reset email: ${error.message}`);
-                return;
-            }
-            alert("Password reset link sent! Check your email (and spam folder).");
-            closeAuthModal();
-        });
     });
 
+
+    tabSignup?.addEventListener("click", () => {
+
+        switchTab(
+            tabSignup,
+            tabLogin,
+            signupForm,
+            loginForm
+        );
+
+    });
+
+
+    // LOGIN
     loginForm?.addEventListener("submit", async (e) => {
+
         e.preventDefault();
-        const email = document.getElementById("loginEmail").value.trim();
-        const password = document.getElementById("loginPassword").value;
+
+        const email =
+            document.getElementById("loginEmail")?.value.trim();
+
+        const password =
+            document.getElementById("loginPassword")?.value;
+
+        const loginMessage =
+            document.getElementById("loginMessage");
+
+
+        if (!email || !password) {
+
+            if (loginMessage) {
+                loginMessage.textContent =
+                    "Please enter email and password.";
+            }
+
+            return;
+        }
+
 
         if (!validateEmail(email)) {
-            alert("Please enter a valid email address.");
-            return;
-        }
-        if (password.length < 6) {
-            alert("Password must be at least 6 characters long.");
+
+            if (loginMessage) {
+                loginMessage.textContent =
+                    "Please enter a valid email.";
+            }
+
             return;
         }
 
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-            alert(`Login failed: ${error.message}`);
-            return;
-        }
-        updateNavForUser(data.user);
-        closeAuthModal();
-        alert(`Welcome back, ${data.user.email.split("@")[0]}!`);
-         window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
-    });
 
-    signupForm?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const name = document.getElementById("signupName").value.trim();
-        const email = document.getElementById("signupEmail").value.trim();
-        const password = document.getElementById("signupPassword").value;
-
-        if (name.length < 2) {
-            alert("Please enter your full name.");
-            return;
-        }
-        if (!validateEmail(email)) {
-            alert("Please enter a valid email address.");
-            return;
-        }
-        if (password.length < 6) {
-            alert("Password must be at least 6 characters long.");
-            return;
+        if (loginMessage) {
+            loginMessage.textContent = "Logging in...";
         }
 
-        const { data, error } = await supabaseClient.auth.signUp({
-            email,
-            password,
-            options: { data: { full_name: name } }
-        });
+
+        const { data, error } =
+            await supabaseClient.auth.signInWithPassword({
+
+                email,
+                password
+
+            });
+
 
         if (error) {
-            alert(`Sign up failed: ${error.message}`);
+
+            console.error("Login error:", error);
+
+            if (loginMessage) {
+                loginMessage.textContent = error.message;
+            }
+
             return;
         }
 
-        if (data.session) {
-            updateNavForUser(data.user);
-            closeAuthModal();
-            alert(`Welcome, ${name}!`);
-             window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
+
+        if (loginMessage) {
+            loginMessage.textContent =
+                "Login successful!";
+        }
+
+
+        await updateNavForUser(data.user);
+
+
+        alert("Login successful!");
+
+
+        window.dispatchEvent(
+            new CustomEvent("roomdhundo:auth-changed")
+        );
+
+
+        const result =
+            await getCurrentUserProfile();
+
+
+        if (result?.profile?.role === "owner") {
+
+            window.location.href =
+                "owner-dashboard.html";
+
         } else {
-            closeAuthModal();
-            alert("Account created! Check your email to confirm it, then log in.");
+
+            window.location.href =
+                "search.html";
+
         }
+
     });
+
+
+    // SIGNUP
+    signupForm?.addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+
+        const name =
+            document.getElementById("signupName")?.value.trim();
+
+        const email =
+            document.getElementById("signupEmail")?.value.trim();
+
+        const password =
+            document.getElementById("signupPassword")?.value;
+
+        const confirmPassword =
+            document.getElementById("signupConfirmPassword")?.value;
+
+        const signupMessage =
+            document.getElementById("signupMessage");
+
+
+        // VALIDATION
+
+        if (!name || name.length < 2) {
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    "Please enter your full name.";
+            }
+
+            return;
+        }
+
+
+        if (!validateEmail(email)) {
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    "Please enter a valid email.";
+            }
+
+            return;
+        }
+
+
+        if (password.length < 6) {
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    "Password must be at least 6 characters.";
+            }
+
+            return;
+        }
+
+
+        if (password !== confirmPassword) {
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    "Passwords do not match.";
+            }
+
+            return;
+        }
+
+
+        // SHOW LOADING
+
+        if (signupMessage) {
+            signupMessage.textContent =
+                "Creating your account...";
+        }
+
+
+        // SUPABASE SIGNUP
+
+        const { data, error } =
+            await supabaseClient.auth.signUp({
+
+                email,
+                password,
+
+                options: {
+                    data: {
+                        full_name: name
+                    }
+                }
+
+            });
+
+
+        // ERROR
+
+        if (error) {
+
+            console.error(
+                "Signup error:",
+                error
+            );
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    error.message;
+            }
+
+            return;
+        }
+
+
+        if (!data.user) {
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    "Something went wrong.";
+            }
+
+            return;
+        }
+
+
+        console.log(
+            "Supabase user created:",
+            data.user
+        );
+
+
+        // CREATE PROFILE
+
+        const { error: profileError } =
+            await supabaseClient
+                .from("profiles")
+                .upsert({
+
+                    id: data.user.id,
+                    full_name: name,
+                    role: "user"
+
+                });
+
+
+        if (profileError) {
+
+            console.error(
+                "Profile creation error:",
+                profileError
+            );
+
+            if (signupMessage) {
+                signupMessage.textContent =
+                    "Account created, but profile creation failed.";
+            }
+
+            return;
+        }
+
+
+        // =================================================
+        // AUTO LOGIN
+        //
+        // signUp() only comes back with an active session if
+        // "Confirm email" is OFF in the Supabase project's
+        // Auth settings (Authentication -> Providers -> Email).
+        // If it's ON, data.session is null and the user genuinely
+        // isn't authenticated yet — no client-side trick can skip
+        // that server-side check.
+        //
+        // We handle both cases honestly instead of always
+        // showing "success" and redirecting to a page that
+        // would just look logged-out.
+        // =================================================
+
+        let session = data.session;
+
+
+        if (!session) {
+
+            // Fallback attempt — covers edge cases where a
+            // session wasn't returned but the account can
+            // still sign in right away.
+
+            const signInResult =
+                await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+
+            if (!signInResult.error) {
+                session = signInResult.data.session;
+            }
+
+        }
+
+
+        if (!session) {
+
+            // Confirmation is genuinely required — be honest
+            // about it rather than faking a logged-in redirect.
+
+            if (signupMessage) {
+
+                signupMessage.textContent =
+                    "Account created! Please check your email " +
+                    "to confirm your account before logging in.";
+
+            }
+
+            alert(
+                `Account created, ${name}!\n\n` +
+                `We've sent a confirmation link to ${email}. ` +
+                `Please confirm your email, then log in.`
+            );
+
+            closeAuthModal();
+
+            return;
+
+        }
+
+
+        // SUCCESS — genuinely logged in
+
+        if (signupMessage) {
+
+            signupMessage.textContent =
+                "🎉 Account created successfully!";
+
+        }
+
+
+        alert(
+            `🎉 Account created successfully!\n\nWelcome to RoomDhundo, ${name}!`
+        );
+
+        await updateNavForUser(session.user);
+
+
+        window.dispatchEvent(
+            new CustomEvent("roomdhundo:auth-changed")
+        );
+
+
+        // REDIRECT
+
+        window.location.href =
+            "search.html";
+
+    });
+
 }
+
 
 // =====================================================
 // HOME PAGE - STAY TYPE TOGGLE
@@ -1167,7 +1537,9 @@ function wireResetPasswordForm() {
 // =====================================================
 // PAGE ROUTER
 // =====================================================
+
 document.addEventListener("DOMContentLoaded", async () => {
+
     wireAuthUI();
     wireHomeStayButtons();
     wireHeroSearch();
@@ -1175,6 +1547,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireResetPasswordForm();
 
     const currentUser = await getCurrentUser();
+
     updateNavForUser(currentUser);
 
     supabaseClient.auth.onAuthStateChange((_event, session) => {
@@ -1184,239 +1557,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (document.getElementById("resultsList")) {
         await initSearchPage();
     }
+
     if (document.getElementById("propertyName")) {
         await initPropertyPage();
     }
+
     if (document.getElementById("savedPropertiesContainer")) {
         await initSavedPage();
     }
+
 });
-
-// =====================================
-// SIGN UP
-// =====================================
-
-const signupForm =
-    document.getElementById("signupForm");
-
-if (signupForm) {
-
-    signupForm.addEventListener("submit", async (event) => {
-
-        event.preventDefault();
-
-        const name =
-            document.getElementById("signupName").value.trim();
-
-        const email =
-            document.getElementById("signupEmail").value.trim();
-
-        const password =
-            document.getElementById("signupPassword").value;
-
-        const confirmPassword =
-            document.getElementById("signupConfirmPassword").value;
-
-        const signupMessage =
-            document.getElementById("signupMessage");
-
-
-        // CHECK PASSWORDS
-
-        if (password !== confirmPassword) {
-
-            signupMessage.textContent =
-                "Passwords do not match.";
-
-            return;
-
-        }
-
-
-        // PASSWORD LENGTH
-
-        if (password.length < 6) {
-
-            signupMessage.textContent =
-                "Password must be at least 6 characters.";
-
-            return;
-
-        }
-
-
-        signupMessage.textContent =
-            "Creating your account...";
-
-
-        // CREATE SUPABASE ACCOUNT
-
-        const { data, error } =
-            await supabaseClient.auth.signUp({
-
-                email: email,
-
-                password: password,
-
-                options: {
-                    data: {
-                        full_name: name
-                    }
-                }
-
-            });
-
-
-        // ERROR
-
-        if (error) {
-
-            console.error(
-                "Signup error:",
-                error
-            );
-
-            signupMessage.textContent =
-                error.message;
-
-            return;
-
-        }
-
-
-        // SUCCESS
-
-        signupMessage.textContent =
-            "Account created successfully!";
-
-        signupForm.reset();
-
-    });
-
-}
-
-// =====================================
-// LOGIN
-// =====================================
-
-const loginForm =
-    document.getElementById("loginForm");
-
-if (loginForm) {
-
-    loginForm.addEventListener("submit", async (event) => {
-
-        event.preventDefault();
-
-        const email =
-            document.getElementById("loginEmail").value.trim();
-
-        const password =
-            document.getElementById("loginPassword").value;
-
-        const loginMessage =
-            document.getElementById("loginMessage");
-
-
-        loginMessage.textContent =
-            "Logging in...";
-
-
-        const { data, error } =
-            await supabaseClient.auth.signInWithPassword({
-
-                email: email,
-
-                password: password
-
-            });
-
-
-        if (error) {
-
-            console.error(
-                "Login error:",
-                error
-            );
-
-            loginMessage.textContent =
-                error.message;
-
-            return;
-
-        }
-
-
-        console.log(
-            "Logged in user:",
-            data.user
-        );
-
-
-        loginMessage.textContent =
-            "Login successful!";
-
-
-        // GO TO HOME PAGE
-
-        setTimeout(() => {
-
-            window.location.href =
-                "index.html";
-
-        }, 500);
-
-    });
-
-}
-
-// =====================================
-// CHECK CURRENT USER
-// =====================================
-
-async function checkLoggedInUser() {
-
-    const {
-        data: {
-            user
-        },
-        error
-    } = await supabaseClient.auth.getUser();
-
-
-    if (error) {
-
-        console.error(
-            "User check error:",
-            error
-        );
-
-        return null;
-
-    }
-
-
-    if (user) {
-
-        console.log(
-            "Current logged-in user:",
-            user
-        );
-
-        return user;
-
-    }
-
-
-    console.log(
-        "No user is currently logged in."
-    );
-
-    return null;
-
-}
-
-
-// RUN USER CHECK
-
-checkLoggedInUser();
