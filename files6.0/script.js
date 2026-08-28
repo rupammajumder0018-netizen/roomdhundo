@@ -151,7 +151,7 @@ async function updateNavForUser(user) {
 
         } else {
 
-            window.location.href = "account.html";
+            window.location.href = "search.html";
 
         }
 
@@ -347,9 +347,7 @@ function wireAuthUI() {
                 "owner-dashboard.html";
 
         } else {
-
-            window.location.href =
-                "search.html";
+        openRoleChoice();
 
         }
 
@@ -600,9 +598,7 @@ function wireAuthUI() {
 
 
         // REDIRECT
-
-        window.location.href =
-            "search.html";
+openRoleChoice();
 
     });
 
@@ -1545,6 +1541,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireHeroSearch();
     wireListPropertyForm();
     wireResetPasswordForm();
+    wireRoleChoice();
 
     const currentUser = await getCurrentUser();
 
@@ -1567,3 +1564,145 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
 });
+
+// =====================================================
+// ROLE / PURPOSE SELECTION
+// =====================================================
+
+function openRoleChoice() {
+
+    const modal = document.getElementById("roleChoiceModal");
+
+    if (modal) {
+        modal.style.display = "flex";
+    }
+
+}
+
+
+function closeRoleChoice() {
+
+    const modal = document.getElementById("roleChoiceModal");
+
+    if (modal) {
+        modal.style.display = "none";
+    }
+
+}
+
+
+async function selectUserRole(role) {
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+
+        alert("Please log in first.");
+
+        return;
+
+    }
+
+
+    // Show loading state
+
+    const renterOption = document.getElementById("renterOption");
+    const ownerOption = document.getElementById("ownerOption");
+
+    if (renterOption) renterOption.disabled = true;
+    if (ownerOption) ownerOption.disabled = true;
+
+
+    // Update profile role
+
+    const { error } = await supabaseClient
+        .from("profiles")
+        .update({
+            role: role
+        })
+        .eq("id", user.id);
+
+
+    if (error) {
+
+        console.error("Role update error:", error);
+
+        alert(
+            "We couldn't save your selection. Please try again."
+        );
+
+        if (renterOption) renterOption.disabled = false;
+        if (ownerOption) ownerOption.disabled = false;
+
+        return;
+
+    }
+
+
+    // Save locally too
+
+    localStorage.setItem("roomdhundo_role", role);
+
+
+    // Redirect
+
+    if (role === "owner") {
+
+        window.location.href = "owner-dashboard.html";
+
+    } else {
+
+        window.location.href = "search.html";
+
+    }
+
+}
+
+
+function wireRoleChoice() {
+
+    const renterOption =
+        document.getElementById("renterOption");
+
+    const ownerOption =
+        document.getElementById("ownerOption");
+
+    const closeButton =
+        document.getElementById("closeRoleChoice");
+
+    const modal =
+        document.getElementById("roleChoiceModal");
+
+
+    renterOption?.addEventListener("click", () => {
+
+        selectUserRole("user");
+
+    });
+
+
+    ownerOption?.addEventListener("click", () => {
+
+        selectUserRole("owner");
+
+    });
+
+
+    closeButton?.addEventListener("click", () => {
+
+        closeRoleChoice();
+
+    });
+
+
+    modal?.addEventListener("click", (event) => {
+
+        if (event.target === modal) {
+
+            closeRoleChoice();
+
+        }
+
+    });
+
+}

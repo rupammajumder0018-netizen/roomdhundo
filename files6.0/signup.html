@@ -173,6 +173,76 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
 
+<!-- =====================================================
+     ROLE / PURPOSE SELECTION MODAL
+===================================================== -->
+
+<div id="roleChoiceModal" class="role-choice-overlay">
+
+    <div class="role-choice-box">
+
+        <button id="closeRoleChoice" class="role-close-btn">
+            ×
+        </button>
+
+        <h2>How do you want to use RoomDhundo?</h2>
+
+        <p>
+            Choose an option to continue
+        </p>
+
+        <div class="role-choice-options">
+
+            <!-- RENTER -->
+            <button id="renterOption" class="role-option">
+
+                <div class="role-icon">
+                    🏠
+                </div>
+
+                <div class="role-option-text">
+                    <h3>I'm a Renter</h3>
+
+                    <span>
+                        Find PGs, rooms and places to stay
+                    </span>
+                </div>
+
+                <div class="role-arrow">
+                    →
+                </div>
+
+            </button>
+
+
+            <!-- OWNER -->
+            <button id="ownerOption" class="role-option">
+
+                <div class="role-icon">
+                    🏢
+                </div>
+
+                <div class="role-option-text">
+
+                    <h3>List My Property</h3>
+
+                    <span>
+                        List and manage your property
+                    </span>
+
+                </div>
+
+                <div class="role-arrow">
+                    →
+                </div>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 </body>
 
 </html>
