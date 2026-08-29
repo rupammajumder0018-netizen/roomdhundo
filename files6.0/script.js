@@ -110,7 +110,11 @@ async function updateNavForUser(user) {
 
     if (!navAuthBtn) return;
 
+
+    // =================================================
     // NOT LOGGED IN
+    // =================================================
+
     if (!user) {
 
         navAuthBtn.textContent = "Log In / Sign Up";
@@ -123,41 +127,77 @@ async function updateNavForUser(user) {
     }
 
 
-    // FETCH PROFILE
+    // =================================================
+    // GET USER PROFILE
+    // =================================================
+
     const { data: profile, error } = await supabaseClient
         .from("profiles")
         .select("full_name, role")
         .eq("id", user.id)
         .maybeSingle();
 
+
     if (error) {
-        console.error(error);
+
+        console.error(
+            "Profile fetch error:",
+            error
+        );
+
     }
+
+
+    // =================================================
+    // USER NAME
+    // =================================================
 
     const name =
         profile?.full_name ||
         user.user_metadata?.full_name ||
         user.email.split("@")[0];
 
-    const role = profile?.role || "user";
 
-    navAuthBtn.textContent = `Hi, ${name}`;
+    // =================================================
+    // USER TYPE
+    // =================================================
+
+    const userType =
+        profile?.user_type ||
+        profile?.role ||
+        "renter";
+
+
+    // =================================================
+    // PROFILE BUTTON
+    // =================================================
+
+    navAuthBtn.textContent = `My Profile`;
+
 
     navAuthBtn.onclick = () => {
 
-        if (role === "owner") {
+        // OWNER
+        if (
+            userType === "owner" ||
+            profile?.role === "owner"
+        ) {
 
-            window.location.href = "owner-dashboard.html";
+            window.location.href =
+                "owner-dashboard.html";
 
-        } else {
+        }
 
-            window.location.href = "search.html";
+        // RENTER
+        else {
+
+            window.location.href = "search.html?dashboard=renter";
 
         }
 
     };
-}
 
+}
 
 // =====================================================
 // AUTH MODAL
@@ -340,15 +380,14 @@ function wireAuthUI() {
         const result =
             await getCurrentUserProfile();
 
-
         if (result?.profile?.role === "owner") {
 
             window.location.href =
                 "owner-dashboard.html";
 
         } else {
-        openRoleChoice();
-
+        
+            window.location.href = "search.html";
         }
 
     });
@@ -1531,6 +1570,189 @@ function wireResetPasswordForm() {
 }
 
 // =====================================================
+// RENTER DASHBOARD
+//
+// Used in two places:
+//   1. Embedded inside search.html, hidden unless the URL
+//      has ?dashboard=renter (e.g. linked from the navbar).
+//   2. Its own standalone page, user-dashboard.html — always
+//      treated as dashboard mode since the whole page IS the
+//      dashboard.
+// =====================================================
+
+async function initRenterDashboard() {
+
+    const params = new URLSearchParams(
+        window.location.search
+    );
+
+    const onOwnPage =
+        window.location.pathname.endsWith("user-dashboard.html");
+
+    const isDashboard =
+        params.get("dashboard") === "renter" ||
+        onOwnPage;
+
+    const dashboard =
+        document.getElementById("renterDashboard");
+
+    const searchHeader =
+        document.querySelector(".search-header");
+
+    const searchContainer =
+        document.querySelector(".search-container");
+
+    if (!dashboard) return;
+
+    // NORMAL SEARCH PAGE (dashboard section not requested)
+
+    if (!isDashboard) {
+
+        dashboard.style.display = "none";
+
+        return;
+
+    }
+
+    // SHOW DASHBOARD
+
+    dashboard.style.display = "block";
+
+    if (searchHeader) {
+        searchHeader.style.display = "none";
+    }
+
+    if (searchContainer) {
+        searchContainer.style.display = "none";
+    }
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+
+        window.location.href = "index.html";
+
+        return;
+
+    }
+
+    // GET PROFILE
+
+    const { data: profile, error: profileError } =
+        await supabaseClient
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+    if (profileError) {
+        console.error("Profile error:", profileError);
+    }
+
+    // OWNER ACCOUNTS BELONG ON THE OWNER DASHBOARD
+
+    if (profile?.role === "owner") {
+
+        window.location.href = "owner-dashboard.html";
+
+        return;
+
+    }
+
+    // USER INFO
+
+    const displayName =
+        profile?.full_name ||
+        user.user_metadata?.full_name ||
+        user.email.split("@")[0];
+
+    const renterNameEl = document.getElementById("renterName");
+    const renterFullNameEl = document.getElementById("renterFullName");
+    const renterEmailEl = document.getElementById("renterEmail");
+
+    if (renterNameEl) renterNameEl.textContent = displayName;
+    if (renterFullNameEl) renterFullNameEl.textContent = displayName;
+    if (renterEmailEl) renterEmailEl.textContent = user.email;
+
+    // SAVED PROPERTIES COUNT
+
+    const { data: saved, error: savedError } =
+        await supabaseClient
+            .from("saved_buildings")
+            .select("id")
+            .eq("user_id", user.id);
+
+    if (savedError) {
+        console.error("Saved property count error:", savedError);
+    }
+
+    const savedCountEl = document.getElementById("savedPropertyCount");
+    if (savedCountEl) savedCountEl.textContent = saved?.length || 0;
+
+    // TEMPORARY ENQUIRY COUNT
+
+    const enquiryCountEl = document.getElementById("enquiryCount");
+    if (enquiryCountEl) enquiryCountEl.textContent = "0";
+
+    // EXPLORE BUTTONS
+
+    document.getElementById(
+        "dashboardExploreBtn"
+    )?.addEventListener("click", () => {
+
+        window.location.href = "search.html";
+
+    });
+
+    document.getElementById(
+        "dashboardExploreMainBtn"
+    )?.addEventListener("click", () => {
+
+        window.location.href = "search.html";
+
+    });
+
+    // SAVED PROPERTIES BUTTON
+
+    document.getElementById(
+        "dashboardSavedBtn"
+    )?.addEventListener("click", () => {
+
+        window.location.href = "saved.html";
+
+    });
+
+    // ENQUIRIES BUTTON (not built yet)
+
+    document.getElementById(
+        "dashboardEnquiriesBtn"
+    )?.addEventListener("click", () => {
+
+        alert("My Enquiries will be available here.");
+
+    });
+
+    // LOGOUT BUTTON
+
+    document.getElementById(
+        "dashboardLogoutBtn"
+    )?.addEventListener("click", async () => {
+
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+            console.error("Logout error:", error);
+            alert("Unable to log out. Please try again.");
+            return;
+        }
+
+        window.location.href = "index.html";
+
+    });
+
+}
+
+// =====================================================
 // PAGE ROUTER
 // =====================================================
 
@@ -1546,6 +1768,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const currentUser = await getCurrentUser();
 
     updateNavForUser(currentUser);
+
+    await initRenterDashboard();
 
     supabaseClient.auth.onAuthStateChange((_event, session) => {
         updateNavForUser(session ? session.user : null);

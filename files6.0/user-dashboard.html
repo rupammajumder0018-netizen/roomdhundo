@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Profile | RoomDhundo</title>
+
+    <link rel="stylesheet" href="user-dashboard.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         RENTER DASHBOARD
+         ===================================================== -->
+
+    <section id="renterDashboard" class="renter-dashboard">
+
+        <div class="renter-dashboard-container">
+
+            <!-- =================================================
+                 HEADER
+                 ================================================= -->
+
+            <div class="renter-dashboard-header">
+
+                <div>
+
+                    <span class="dashboard-label">
+                        RENTER DASHBOARD
+                    </span>
+
+                    <h1>
+                        Welcome back,
+                        <span id="renterName">Renter</span> 👋
+                    </h1>
+
+                    <p>
+                        Manage your RoomDhundo account and find your next place.
+                    </p>
+
+                </div>
+
+                <div class="account-status">
+                    <span class="status-dot"></span>
+                    Account Active
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 STAT CARDS
+                 ================================================= -->
+
+            <div class="renter-dashboard-cards">
+
+                <!-- SAVED -->
+
+                <div class="renter-stat-card">
+
+                    <div class="stat-icon">
+                        ❤️
+                    </div>
+
+                    <div>
+                        <span>Saved Properties</span>
+
+                        <strong id="savedPropertyCount">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <!-- ENQUIRIES -->
+
+                <div class="renter-stat-card">
+
+                    <div class="stat-icon">
+                        📩
+                    </div>
+
+                    <div>
+                        <span>My Enquiries</span>
+
+                        <strong id="enquiryCount">
+                            0
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <!-- ACCOUNT TYPE -->
+
+                <div class="renter-stat-card">
+
+                    <div class="stat-icon">
+                        🏠
+                    </div>
+
+                    <div>
+                        <span>Account Type</span>
+
+                        <strong>
+                            Renter
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 QUICK ACTIONS
+                 ================================================= -->
+
+            <div class="renter-dashboard-section">
+
+                <div class="dashboard-section-title">
+
+                    <div>
+
+                        <h2>
+                            Quick Actions
+                        </h2>
+
+                        <p>
+                            Everything you need to find your next stay.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="renter-quick-actions">
+
+                    <!-- EXPLORE -->
+
+                    <button
+                        class="renter-action-card"
+                        id="dashboardExploreBtn"
+                        type="button"
+                    >
+
+                        <span class="action-icon">
+                            🔎
+                        </span>
+
+                        <span class="action-content">
+
+                            <strong>
+                                Explore Properties
+                            </strong>
+
+                            <small>
+                                Find rooms, PGs and other stays
+                            </small>
+
+                        </span>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    <!-- SAVED -->
+
+                    <button
+                        class="renter-action-card"
+                        id="dashboardSavedBtn"
+                        type="button"
+                    >
+
+                        <span class="action-icon">
+                            ❤️
+                        </span>
+
+                        <span class="action-content">
+
+                            <strong>
+                                Saved Properties
+                            </strong>
+
+                            <small>
+                                View properties you've saved
+                            </small>
+
+                        </span>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    <!-- ENQUIRIES -->
+
+                    <button
+                        class="renter-action-card"
+                        id="dashboardEnquiriesBtn"
+                        type="button"
+                    >
+
+                        <span class="action-icon">
+                            📩
+                        </span>
+
+                        <span class="action-content">
+
+                            <strong>
+                                My Enquiries
+                            </strong>
+
+                            <small>
+                                Track your property enquiries
+                            </small>
+
+                        </span>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 ACCOUNT INFORMATION
+                 ================================================= -->
+
+            <div class="renter-dashboard-section">
+
+                <div class="dashboard-section-title">
+
+                    <div>
+
+                        <h2>
+                            My Account
+                        </h2>
+
+                        <p>
+                            Your RoomDhundo account information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="renter-account-card">
+
+                    <!-- NAME -->
+
+                    <div class="account-info-row">
+
+                        <span>
+                            Full Name
+                        </span>
+
+                        <strong id="renterFullName">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="account-info-row">
+
+                        <span>
+                            Email
+                        </span>
+
+                        <strong id="renterEmail">
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <!-- TYPE -->
+
+                    <div class="account-info-row">
+
+                        <span>
+                            Account Type
+                        </span>
+
+                        <strong>
+                            Renter
+                        </strong>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="account-info-row">
+
+                        <span>
+                            Status
+                        </span>
+
+                        <strong class="active-account">
+                            ● Active
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 EXPLORE BOX
+                 ================================================= -->
+
+            <div class="renter-explore-box">
+
+                <div>
+
+                    <span class="dashboard-label">
+                        READY TO FIND A PLACE?
+                    </span>
+
+                    <h2>
+                        Find a room that feels like home.
+                    </h2>
+
+                    <p>
+                        Explore verified rooms, PGs and other
+                        accommodation options around MAKAUT.
+                    </p>
+
+                </div>
+
+
+                <button
+                    id="dashboardExploreMainBtn"
+                    type="button"
+                >
+                    Explore Properties →
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 LOGOUT
+                 ================================================= -->
+
+            <div class="renter-logout-area">
+
+                <button
+                    id="dashboardLogoutBtn"
+                    type="button"
+                >
+                    Log Out
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SUPABASE
+         ===================================================== -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+    <!-- YOUR MAIN SCRIPT -->
+    <!-- script.js handles auth check, profile fetch, and wiring
+         every button on this page via initRenterDashboard() -->
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
