@@ -72,6 +72,14 @@ async function getCurrentUser() {
     return data.user || null;
 }
 
+// Fast, local-only check (no network round trip) — reads the
+// session Supabase already cached in localStorage. Used just for
+// the navbar's very first paint so it doesn't flash "Log In /
+// Sign Up" while getCurrentUser()'s server round trip is pending.
+async function getCurrentUserFast() {
+    const { data } = await supabaseClient.auth.getSession();
+    return data.session?.user || null;
+}
 
 // =====================================================
 // AUTH MODAL + NAV BUTTON
@@ -99,16 +107,57 @@ async function getCurrentUserProfile() {
     };
 }
 
-
 // =====================================================
 // NAVBAR UPDATE
 // =====================================================
+
+// Only bind the "click outside closes the menu" listener once,
+// no matter how many times updateNavForUser() runs.
+let navProfileOutsideClickBound = false;
+
+// Remembers which user we last rendered the nav for for, so a
+// repeat auth event (Supabase fires TOKEN_REFRESHED etc. for the
+// same session) doesn't rebuild the button and cause a flicker.
+let lastRenderedNavUserId = "__unset__";
 
 async function updateNavForUser(user) {
 
     const navAuthBtn = document.getElementById("navAuthBtn");
 
     if (!navAuthBtn) return;
+
+    const currentUserId = user ? user.id : null;
+
+    // Same user as last time and already fully rendered — skip.
+    if (
+        currentUserId === lastRenderedNavUserId &&
+        navAuthBtn.dataset.navReady === "true"
+    ) {
+        return;
+    }
+
+    lastRenderedNavUserId = currentUserId;
+
+    // Wrap the button once so the dropdown has a positioned parent.
+    // (Safe to call every time — it's a no-op once the wrap exists.)
+    let navProfileWrap = navAuthBtn.closest(".nav-profile-wrap");
+
+    if (!navProfileWrap) {
+
+        navProfileWrap = document.createElement("div");
+        navProfileWrap.className = "nav-profile-wrap";
+
+        navAuthBtn.parentNode.insertBefore(navProfileWrap, navAuthBtn);
+        navProfileWrap.appendChild(navAuthBtn);
+
+    }
+
+    // Clear anything left over from a previous render (e.g. logout
+    // right after login, or an auth state change firing twice).
+    navProfileWrap.querySelector("#navProfileMenu")?.remove();
+    navAuthBtn.classList.remove("nav-profile-toggle");
+    navAuthBtn.removeAttribute("aria-haspopup");
+    navAuthBtn.onclick = null;
 
 
     // =================================================
@@ -122,6 +171,9 @@ async function updateNavForUser(user) {
         navAuthBtn.onclick = () => {
             openAuthModal();
         };
+
+        navAuthBtn.dataset.navReady = "true";
+        navAuthBtn.classList.add("nav-ready");
 
         return;
     }
@@ -152,7 +204,7 @@ async function updateNavForUser(user) {
     // USER NAME
     // =================================================
 
-    const name =
+    const displayName =
         profile?.full_name ||
         user.user_metadata?.full_name ||
         user.email.split("@")[0];
@@ -162,40 +214,153 @@ async function updateNavForUser(user) {
     // USER TYPE
     // =================================================
 
-    const userType =
-        profile?.user_type ||
-        profile?.role ||
-        "renter";
+    const isOwner =
+        profile?.user_type === "owner" ||
+        profile?.role === "owner";
+
+    const roleLabel = isOwner ? "Owner" : "Renter";
 
 
     // =================================================
-    // PROFILE BUTTON
+    // PROFILE BUTTON (name + role + three dots)
     // =================================================
 
-    navAuthBtn.textContent = `My Profile`;
+    navAuthBtn.innerHTML = `
+        <span class="nav-profile-info">
+            <span class="nav-profile-name">${displayName}</span>
+            <span class="nav-profile-role ${isOwner ? "owner" : "renter"}">${roleLabel}</span>
+        </span>
+        <span class="nav-profile-dots">⋮</span>
+    `;
+    navAuthBtn.classList.add("nav-profile-toggle");
+    navAuthBtn.setAttribute("aria-label", "Account menu");
+    navAuthBtn.setAttribute("aria-haspopup", "true");
+    navAuthBtn.removeAttribute("href");
 
 
-    navAuthBtn.onclick = () => {
+    // =================================================
+    // BUILD DROPDOWN MENU
+    // =================================================
 
-        // OWNER
-        if (
-            userType === "owner" ||
-            profile?.role === "owner"
-        ) {
+    const menu = document.createElement("div");
+    menu.id = "navProfileMenu";
+    menu.className = "nav-profile-menu";
 
-            window.location.href =
-                "owner-dashboard.html";
+    const menuItems = [];
 
+    if (isOwner) {
+
+        menuItems.push({
+            icon: "👤",
+            title: "My Profile",
+            subtitle: "Owner Dashboard",
+            action: () => {
+                window.location.href = "owner-dashboard.html";
+            }
+        });
+
+    } else {
+
+        menuItems.push({
+            icon: "👤",
+            title: "My Profile",
+            subtitle: "User Dashboard",
+            action: () => {
+                window.location.href = "user-dashboard.html";
+            }
+        });
+
+    }
+
+    menuItems.push({
+        icon: "👥",
+        title: "Add Another Account",
+        subtitle: "Sign in with another account",
+        action: () => {
+            window.location.href = "login.html";
         }
+    });
 
-        // RENTER
-        else {
+    menuItems.push({
+        icon: "🚪",
+        title: "Logout",
+        subtitle: "Sign out of RoomDhundo",
+        danger: true,
+        action: async () => {
 
-            window.location.href = "search.html?dashboard=renter";
+            const { error: signOutError } =
+                await supabaseClient.auth.signOut();
 
+            if (signOutError) {
+                console.error("Logout error:", signOutError);
+                alert("Unable to log out. Please try again.");
+                return;
+            }
+
+            window.location.href = "index.html";
         }
+    });
 
+    menuItems.forEach((item) => {
+
+        const menuItem = document.createElement("button");
+        menuItem.type = "button";
+        menuItem.className =
+            "nav-profile-menu-item" + (item.danger ? " danger" : "");
+
+        menuItem.innerHTML = `
+            <span class="nav-profile-menu-icon">${item.icon}</span>
+            <span class="nav-profile-menu-text">
+                <strong>${item.title}</strong>
+                <span>${item.subtitle}</span>
+            </span>
+        `;
+
+        menuItem.addEventListener("click", (e) => {
+            e.stopPropagation();
+            menu.classList.remove("open");
+            item.action();
+        });
+
+        menu.appendChild(menuItem);
+
+    });
+
+    navProfileWrap.appendChild(menu);
+
+
+    // =================================================
+    // TOGGLE + OUTSIDE CLICK TO CLOSE
+    // =================================================
+
+    navAuthBtn.onclick = (e) => {
+        e.preventDefault?.();
+        e.stopPropagation();
+        menu.classList.toggle("open");
     };
+
+    if (!navProfileOutsideClickBound) {
+
+        document.addEventListener("click", (e) => {
+
+            const openMenu = document.getElementById("navProfileMenu");
+
+            if (!openMenu) return;
+
+            const wrap = openMenu.closest(".nav-profile-wrap");
+
+            if (wrap && !wrap.contains(e.target)) {
+                openMenu.classList.remove("open");
+            }
+
+        });
+
+        navProfileOutsideClickBound = true;
+
+    }
+
+    navAuthBtn.dataset.navReady = "true";
+    navAuthBtn.classList.add("nav-ready");
 
 }
 
@@ -1765,9 +1930,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireResetPasswordForm();
     wireRoleChoice();
 
-    const currentUser = await getCurrentUser();
+   const currentUser = await getCurrentUserFast();
 
-    updateNavForUser(currentUser);
+updateNavForUser(currentUser);
 
     await initRenterDashboard();
 
