@@ -997,203 +997,151 @@ a.category-card:hover {
     color: #555;
 }
 
-/* SIDEBAR & OWNER CARD */
-.property-sidebar {
-    position: relative;
+/* =====================================================
+   PROPERTY OWNER CARD
+   ===================================================== */
+
+.property-owner-card {
+    width: 100%;
+    margin-top: 28px;
+    padding: 26px;
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #e5e7eb;
+    box-sizing: border-box;
 }
 
-.booking-card,
-.owner-card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    color: #111;
+
+/* HEADER */
+
+.owner-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
 }
 
-.owner-card h2,
-.owner-card p,
-.owner-card div {
-    color: #111;
+.owner-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+    background: #f3f0ff;
+
+    font-size: 22px;
 }
 
-.booking-card {
-    position: sticky;
-    top: 20px;
+.owner-label {
+    display: block;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    color: #7c3aed;
+
+    margin-bottom: 4px;
 }
 
-.sidebar-price {
-    font-size: 25px;
-    font-weight: bold;
-    margin-bottom: 15px;
+.owner-card-header h3 {
+    margin: 0;
+
+    font-size: 21px;
+    font-weight: 700;
+
+    color: #111827;
 }
 
-.sidebar-price span {
+
+/* OWNER DETAILS */
+
+.owner-details {
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+
+    margin-bottom: 22px;
+}
+
+.owner-detail {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
     font-size: 14px;
-    font-weight: normal;
-    color: #777;
+    color: #4b5563;
 }
 
-.availability-status {
-    margin-bottom: 20px;
-}
+.detail-icon {
+    width: 24px;
+    height: 24px;
 
-.contact-owner {
-    width: 100%;
-    padding: 14px 20px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 13px;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    box-shadow: 0 7px 20px rgba(79, 70, 229, 0.25);
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-.contact-owner:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.35);
-}
+    border-radius: 50%;
 
-.contact-owner:active {
-    transform: translateY(-1px) scale(0.98);
-}
-
-.directions-btn {
-    width: 100%;
-    padding: 13px 20px;
-    margin-top: 10px;
-    border: 1px solid #dbeafe;
-    border-radius: 13px;
-    background: #eff6ff;
-    color: #2563eb;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-.directions-btn:hover {
-    background: #dbeafe;
-    border-color: #bfdbfe;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(37, 99, 235, 0.12);
-}
-
-.owner-card h2 {
-    margin-bottom: 15px;
-}
-
-.owner-name {
-    font-weight: bold;
-    font-size: 18px;
-    margin-bottom: 10px;
-}
-
-.verification {
-    margin-bottom: 10px;
-}
-
-.owner-card p {
-    color: #666;
-    margin: 8px 0;
-}
-
-.owner-card button {
-    width: 100%;
-    padding: 12px 18px;
-    margin-top: 14px;
-    border: 1px solid #ddd6fe;
-    border-radius: 11px;
     background: #f5f3ff;
     color: #6d28d9;
-    font-size: 15px;
-    font-weight: 600;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
-.owner-card button:hover {
-    background: #ede9fe;
+
+/* VIEW PROFILE BUTTON */
+
+.view-owner-profile-btn {
+    width: 100%;
+
+    min-height: 48px;
+
+    border: 1px solid #ddd6fe;
+    border-radius: 11px;
+
+    background: #faf8ff;
+
+    color: #6d28d9;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    transition: all 0.2s ease;
+}
+
+.view-owner-profile-btn:hover {
+    background: #f3efff;
+
     border-color: #c4b5fd;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(109, 40, 217, 0.12);
+
+    transform: translateY(-1px);
 }
 
-/* ==========================================================================
-   7. CONTACT PANEL & OWNER MODAL
-   ========================================================================== */
-.contact-panel {
-    display: none;
-    margin-top: 20px;
-    padding: 24px;
-    border-radius: 16px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+.view-owner-profile-btn span {
+    font-size: 18px;
 }
 
-.contact-panel h2 {
-    margin-top: 0;
-    margin-bottom: 18px;
-}
 
-.contact-panel p {
-    margin: 10px 0;
-}
+/* =====================================================
+   OWNER PROFILE MODAL (fixes crash: was referenced by
+   script.js but never defined in HTML/CSS)
+   ===================================================== */
 
-#callOwnerBtn {
-    width: 100%;
-    padding: 13px 18px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 11px;
-    background: #111827;
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-#callOwnerBtn:hover {
-    background: #1f2937;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(17, 24, 39, 0.22);
-}
-
-#whatsappOwnerBtn {
-    width: 100%;
-    padding: 13px 18px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 11px;
-    background: #22c55e;
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-#whatsappOwnerBtn:hover {
-    background: #16a34a;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(34, 197, 94, 0.25);
-}
-
-#closeContactBtn {
-    width: 100%;
-    padding: 12px 18px;
-    margin-top: 10px;
-    border: 1px solid #e5e7eb;
-    border-radius: 11px;
-    background: #f9fafb;
-    color: #374151;
-    font-size: 15px;
-    font-weight: 600;
-}
-
-#closeContactBtn:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-    transform: translateY(-2px);
-}
-
-/* OWNER PROFILE MODAL */
 .owner-modal {
     display: none;
     position: fixed;
@@ -1201,102 +1149,483 @@ a.category-card:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 10000;
     align-items: center;
-    z-index: 9999;
+    justify-content: center;
+    padding: 20px;
 }
 
 .owner-modal-content {
     position: relative;
-    width: 400px;
-    max-width: 90%;
-    padding: 30px;
+    width: 380px;
+    max-width: 100%;
     background: white;
-    border-radius: 18px;
+    padding: 40px 30px 30px;
+    border-radius: 20px;
     text-align: center;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
     animation: ownerModalShow 0.25s ease;
 }
 
-.owner-modal-close {
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    width: 35px;
-    height: 35px;
-    border: none;
-    border-radius: 50%;
-    background: #f3f4f6;
-    color: #333;
-    font-size: 24px;
-}
-
-.owner-modal-close:hover {
-    background: #e5e7eb;
-}
-
-.owner-profile-icon {
-    width: 70px;
-    height: 70px;
-    margin: 0 auto 15px;
+.owner-modal-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #ede9fe;
-    font-size: 32px;
+    background: #f3f0ff;
+    font-size: 26px;
 }
 
 .owner-modal-content h2 {
+    font-size: 21px;
     margin-bottom: 8px;
-    font-size: 24px;
+    color: #111827;
 }
 
-.modal-verification {
-    margin-bottom: 12px;
-    color: #16a34a;
-    font-weight: 600;
-}
-
-.modal-owner-rating {
-    margin: 10px 0;
-    font-size: 17px;
-    font-weight: 600;
-}
-
-.owner-modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 22px;
-}
-
-.owner-modal-actions button {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: #6d28d9;
-    color: white;
+.owner-modal-content p {
+    color: #6b7280;
     font-size: 14px;
-    font-weight: 600;
-    transition: 0.2s;
+    margin-bottom: 4px;
 }
 
-.owner-modal-actions button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(109, 40, 217, 0.2);
+.owner-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    border: none;
+    background: none;
+    font-size: 26px;
+    color: #666;
+    cursor: pointer;
 }
 
 @keyframes ownerModalShow {
     from {
         opacity: 0;
-        transform: translateY(15px) scale(0.96);
+        transform: translateY(15px) scale(0.97);
     }
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    .property-owner-card {
+        padding: 22px;
+        margin-top: 20px;
+    }
+
+    .owner-card-header h3 {
+        font-size: 19px;
+    }
+
+}
+/* =====================================================
+   ROOMDHUNDO CONNECT PANEL
+   ===================================================== */
+
+.contact-panel {
+    display: none; /* hidden until #contactOwnerBtn opens it via JS */
+    width: 100%;
+    max-width: 340px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+    font-family: inherit;
+    position: relative;
+}
+
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.connect-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.connect-label {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    color: #555;
+}
+
+.close-contact-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e5e7eb;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #555;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.close-contact-btn:hover {
+    background: #f1f5f9;
+    color: #111827;
+    transform: rotate(90deg);
+}
+
+
+/* =====================================================
+   TITLE
+   ===================================================== */
+
+.contact-panel h2 {
+    margin: 0 0 22px;
+    font-size: 28px;
+    line-height: 1.15;
+    color: #111827;
+    font-weight: 700;
+}
+
+.connect-divider {
+    height: 1px;
+    background: #e5e7eb;
+    margin-bottom: 22px;
+}
+
+
+/* =====================================================
+   CONNECT MESSAGE
+   ===================================================== */
+
+.connect-message {
+    margin-bottom: 20px;
+}
+
+.connect-icon {
+    font-size: 25px;
+    margin-bottom: 5px;
+}
+
+.connect-message h3 {
+    margin: 0 0 8px;
+    font-size: 19px;
+    color: #111827;
+}
+
+.connect-message p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #4b5563;
+}
+
+
+/* =====================================================
+   PROPERTY NAME
+   ===================================================== */
+
+.enquiry-property {
+    background: #f8f7ff;
+    border: 1px solid #e8e4ff;
+    border-radius: 12px;
+    padding: 13px 14px;
+    margin-bottom: 20px;
+}
+
+.enquiry-property p {
+    margin: 0 0 4px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.enquiry-property strong {
+    font-size: 16px;
+    color: #111827;
+}
+
+
+/* =====================================================
+   PHONE FIELD
+   ===================================================== */
+
+.phone-field {
+    margin-bottom: 16px;
+}
+
+.phone-field label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.phone-field input {
+    width: 100%;
+    height: 46px;
+    padding: 0 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.phone-field input::placeholder {
+    color: #9ca3af;
+}
+
+.phone-field input:focus {
+    border-color: #6d4aff;
+    box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.12);
+}
+
+.phone-field small {
+    display: block;
+    margin-top: 7px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #6b7280;
+}
+
+
+/* =====================================================
+   REQUEST CONNECTION BUTTON
+   ===================================================== */
+
+.request-owner-btn {
+    width: 100%;
+    min-height: 46px;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 15px;
+    background: linear-gradient(
+        135deg,
+        #4f46e5,
+        #7c3aed
+    );
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.request-owner-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.25);
+}
+
+.request-owner-btn:active {
+    transform: translateY(0);
+}
+
+.enquiry-success {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+
+/* =====================================================
+   DIRECT CONTACT SECTION
+   ===================================================== */
+
+.roomdhundo-contact {
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.contact-or {
+    display: block;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+}
+
+.roomdhundo-contact > p {
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+
+/* =====================================================
+   CALL / WHATSAPP BUTTONS
+   ===================================================== */
+
+.roomdhundo-contact-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+}
+
+.roomdhundo-contact-buttons button {
+    min-height: 42px;
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+/* CALL */
+
+.call-roomdhundo-btn {
+    border: 1px solid #dbeafe;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.call-roomdhundo-btn:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+}
+
+
+/* WHATSAPP */
+
+.whatsapp-roomdhundo-btn {
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.whatsapp-roomdhundo-btn:hover {
+    background: #dcfce7;
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   PRIVACY MESSAGE
+   ===================================================== */
+
+.privacy-message {
+    margin-top: 18px;
+    padding: 13px;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #374151;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.privacy-message strong {
+    color: #111827;
+}
+
+.privacy-message p {
+    margin: 4px 0 0;
+    color: #6b7280;
+}
+
+
+/* =====================================================
+   MAIN CONTACT OWNER BUTTON
+   ===================================================== */
+
+.contact-owner {
+    width: 100%;
+    min-height: 56px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(
+        135deg,
+        #4f46e5,
+        #7c3aed
+    );
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.22);
+    transition: all 0.25s ease;
+}
+
+.contact-owner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(79, 70, 229, 0.3);
+}
+
+.contact-owner:active {
+    transform: translateY(0);
+}
+
+
+/* =====================================================
+   DIRECTIONS BUTTON
+   ===================================================== */
+
+.directions-btn {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 10px;
+    border: 1px solid #dbeafe;
+    border-radius: 15px;
+    background: #eff6ff;
+    color: #2563eb;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.directions-btn:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    .contact-panel {
+        max-width: none;
+        padding: 22px;
+        border-radius: 18px;
+    }
+
+    .contact-panel h2 {
+        font-size: 25px;
+    }
+
+    .roomdhundo-contact-buttons {
+        grid-template-columns: 1fr;
+    }
+
 }
 
 /* ==========================================================================

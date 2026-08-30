@@ -142,22 +142,186 @@
                         🟢 <span id="propertyAvailability"></span>
                     </div>
 
-                    <!-- CONTACT OWNER PANEL -->
-                    <div class="contact-panel" id="contactPanel">
-                        <h2>Contact Owner</h2>
-                        <p>👤 <span id="contactOwnerName"></span></p>
-                        <p>⭐ <span id="contactOwnerRating"></span></p>
-                        <button id="callOwnerBtn">📞 Call Owner</button>
-                        <button id="whatsappOwnerBtn">💬 WhatsApp</button>
-                        <button id="closeContactBtn">Close</button>
-                    </div>
+                   <!-- =====================================================
+     ROOMDHUNDO CONNECT PANEL
+     (hidden by default via CSS; toggled open by #contactOwnerBtn)
+     ===================================================== -->
 
-                    <button class="contact-owner" id="contactOwnerBtn">Contact Owner</button>
-                    <button class="directions-btn" id="directionsBtn">📍 Get Directions</button>
-                </div>
+<div class="contact-panel" id="contactPanel">
 
-                <!-- OWNER -->
-                <div class="owner-card" id="ownerCard"></div>
+    <div class="connect-header">
+
+        <span class="connect-label">
+            ROOMDHUNDO CONNECT
+        </span>
+
+        <button
+            type="button"
+            id="closeContactBtn"
+            class="close-contact-btn"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <h2>
+        Contact<br>
+        RoomDhundo
+    </h2>
+
+
+    <div class="connect-divider"></div>
+
+
+    <div class="connect-message">
+
+        <div class="connect-icon">
+            📞
+        </div>
+
+        <h3>
+            We'll help you connect
+        </h3>
+
+        <p>
+            Our team will help you connect
+            with the property owner.
+        </p>
+
+    </div>
+
+
+    <!-- PROPERTY -->
+
+    <div class="enquiry-property">
+
+        <p>
+            You're enquiring about
+        </p>
+
+        <strong id="contactPropertyName">
+            Property
+        </strong>
+
+    </div>
+
+
+    <!-- PHONE -->
+
+    <div class="phone-field">
+
+        <label for="renterPhone">
+            Your Phone Number
+        </label>
+
+        <input
+            type="tel"
+            id="renterPhone"
+            placeholder="Enter your phone number"
+            maxlength="10"
+            inputmode="numeric"
+        >
+
+        <small>
+            RoomDhundo will use this number to contact you
+            regarding this property.
+        </small>
+
+    </div>
+
+
+    <!-- REQUEST -->
+
+    <button
+        type="button"
+        id="submitEnquiryBtn"
+        class="request-owner-btn"
+    >
+        📩 Request Owner Connection
+    </button>
+
+    <!-- SUCCESS MESSAGE (shown after a successful enquiry) -->
+    <p class="enquiry-success" id="enquirySuccess" style="display:none;">
+        ✅ Request sent! RoomDhundo will reach out to you shortly.
+    </p>
+
+
+    <!-- DIRECT ROOMDHUNDO CONTACT -->
+
+    <div class="roomdhundo-contact">
+
+        <span class="contact-or">
+            OR
+        </span>
+
+        <p>
+            Want to talk to us directly?
+        </p>
+
+
+        <div class="roomdhundo-contact-buttons">
+
+            <button
+                type="button"
+                id="callRoomDhundoBtn"
+                class="call-roomdhundo-btn"
+            >
+                📞 Call RoomDhundo
+            </button>
+
+
+            <button
+                type="button"
+                id="whatsappRoomDhundoBtn"
+                class="whatsapp-roomdhundo-btn"
+            >
+                💬 WhatsApp
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- PRIVACY -->
+
+    <div class="privacy-message">
+
+        🔐
+        <strong>Your privacy matters.</strong>
+
+        <p>
+            The property owner's contact details
+            are not displayed directly.
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- MAIN BUTTON -->
+
+<button
+    class="contact-owner"
+    id="contactOwnerBtn"
+    type="button"
+>
+    📞 Contact Owner
+</button>
+
+
+<button
+    class="directions-btn"
+    id="directionsBtn"
+    type="button"
+>
+    📍 Get Directions
+</button>
+                <!-- OWNER (rendered dynamically by script.js) -->
+                <div class="owner-card property-owner-card" id="ownerCard"></div>
 
             </aside>
 
@@ -168,16 +332,11 @@
     <!-- OWNER PROFILE MODAL -->
     <div class="owner-modal" id="ownerModal">
         <div class="owner-modal-content">
-            <button class="owner-modal-close" id="closeOwnerModal">×</button>
-            <div class="owner-profile-icon">👤</div>
-            <h2 id="modalOwnerName">Owner Name</h2>
-            <div class="modal-verification">✓ Verified Owner</div>
-            <div class="modal-owner-rating">⭐ <span id="modalOwnerRating"></span></div>
-            <p>Member since <span id="modalMemberSince"></span></p>
-            <div class="owner-modal-actions">
-                <button id="modalCallOwner">📞 Call Owner</button>
-                <button id="modalWhatsappOwner">💬 WhatsApp</button>
-            </div>
+            <button class="owner-modal-close" id="closeOwnerModal">&times;</button>
+            <div class="owner-modal-icon">👤</div>
+            <h2 id="modalOwnerName">Property Owner</h2>
+            <p id="modalOwnerRating">New</p>
+            <p id="modalMemberSince">Member since —</p>
         </div>
     </div>
 

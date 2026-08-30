@@ -1238,54 +1238,396 @@ async function initPropertyPage() {
 
     const ownerCard = document.getElementById("ownerCard");
     ownerCard.innerHTML = `
-        <h2>Property Owner</h2>
-        <div class="owner-name">${building.owner_name}</div>
-        <div class="verification">${building.owner_verified ? "✓ Verified Owner" : "Owner"}</div>
-        <p>Member since ${building.owner_member_since || "—"}</p>
-        <button id="viewOwnerProfileBtn">View Owner Profile</button>
+        <div class="owner-card-header">
+            <span class="owner-icon">👤</span>
+            <div>
+                <span class="owner-label">PROPERTY OWNER</span>
+                <h3>${building.owner_name}</h3>
+            </div>
+        </div>
+        <div class="owner-details">
+            <div class="owner-detail">
+                <span class="detail-icon">✓</span>
+                <span>${building.owner_verified ? "Verified Owner" : "Owner"}</span>
+            </div>
+            <div class="owner-detail">
+                <span class="detail-icon">📅</span>
+                <span>Member since ${building.owner_member_since || "—"}</span>
+            </div>
+        </div>
+        <button class="view-owner-profile-btn" id="viewOwnerProfileBtn">
+            View Owner Profile <span>→</span>
+        </button>
     `;
 
     const viewOwnerProfileBtn = document.getElementById("viewOwnerProfileBtn");
     const ownerModal = document.getElementById("ownerModal");
     viewOwnerProfileBtn?.addEventListener("click", () => {
-        document.getElementById("modalOwnerName").textContent = building.owner_name;
-        document.getElementById("modalOwnerRating").textContent = building.owner_verified ? "Verified" : "New";
-        document.getElementById("modalMemberSince").textContent = building.owner_member_since || "—";
+        const modalOwnerName = document.getElementById("modalOwnerName");
+        const modalOwnerRating = document.getElementById("modalOwnerRating");
+        const modalMemberSince = document.getElementById("modalMemberSince");
+
+        if (modalOwnerName) modalOwnerName.textContent = building.owner_name;
+        if (modalOwnerRating) modalOwnerRating.textContent = building.owner_verified ? "✓ Verified Owner" : "New";
+        if (modalMemberSince) modalMemberSince.textContent = `Member since ${building.owner_member_since || "—"}`;
+
         if (ownerModal) ownerModal.style.display = "flex";
     });
 
     const closeOwnerModal = document.getElementById("closeOwnerModal");
     closeOwnerModal?.addEventListener("click", () => { if (ownerModal) ownerModal.style.display = "none"; });
+    ownerModal?.addEventListener("click", (e) => { if (e.target === ownerModal) ownerModal.style.display = "none"; });
 
-    // --- Contact owner panel ---
-    const contactOwnerBtn = document.getElementById("contactOwnerBtn");
-    const contactPanel = document.getElementById("contactPanel");
-    const closeContactBtn = document.getElementById("closeContactBtn");
+    // =====================================================
+    // CONTACT ROOMDHUNDO / OWNER CONNECTION
+    // =====================================================
 
-    contactOwnerBtn?.addEventListener("click", () => {
-        document.getElementById("contactOwnerName").textContent = building.owner_name;
-        document.getElementById("contactOwnerRating").textContent = building.owner_verified ? "Verified Owner" : "New Owner";
-        if (contactPanel) contactPanel.style.display = "block";
-    });
-    closeContactBtn?.addEventListener("click", () => { if (contactPanel) contactPanel.style.display = "none"; });
+    const contactOwnerBtn =
+        document.getElementById("contactOwnerBtn");
 
-    document.getElementById("callOwnerBtn")?.addEventListener("click", () => {
-        window.location.href = `tel:${building.owner_phone}`;
-    });
-    document.getElementById("whatsappOwnerBtn")?.addEventListener("click", () => {
-        window.open(`https://wa.me/91${building.owner_whatsapp || building.owner_phone}`, "_blank");
-    });
-    document.getElementById("modalCallOwner")?.addEventListener("click", () => {
-        window.location.href = `tel:${building.owner_phone}`;
-    });
-    document.getElementById("modalWhatsappOwner")?.addEventListener("click", () => {
-        window.open(`https://wa.me/91${building.owner_whatsapp || building.owner_phone}`, "_blank");
+    const contactPanel =
+        document.getElementById("contactPanel");
+
+    const closeContactBtn =
+        document.getElementById("closeContactBtn");
+
+    const submitEnquiryBtn =
+        document.getElementById("submitEnquiryBtn");
+
+    const renterPhone =
+        document.getElementById("renterPhone");
+
+    const enquirySuccess =
+        document.getElementById("enquirySuccess");
+
+    const contactPropertyName =
+        document.getElementById("contactPropertyName");
+
+    // -----------------------------------------------
+    // Direct RoomDhundo contact (call / WhatsApp).
+    // Wired up unconditionally at page load so these
+    // buttons work regardless of whether an enquiry was
+    // ever submitted.
+    // -----------------------------------------------
+
+    const ROOMDHUNDO_PHONE = "6295456503";
+    const ROOMDHUNDO_WHATSAPP = "6295456503";
+
+    document
+        .getElementById("callRoomDhundoBtn")
+        ?.addEventListener("click", () => {
+
+            window.location.href =
+                `tel:${ROOMDHUNDO_PHONE}`;
+
+        });
+
+    document
+        .getElementById("whatsappRoomDhundoBtn")
+        ?.addEventListener("click", () => {
+
+            const propertyName =
+                building?.name ||
+                building?.property_name ||
+                "this property";
+
+            const message =
+                `Hello RoomDhundo, I am interested in ${propertyName}. I would like to connect with the property owner.`;
+
+            const whatsappUrl =
+                `https://wa.me/91${ROOMDHUNDO_WHATSAPP}?text=${encodeURIComponent(message)}`;
+
+            window.open(
+                whatsappUrl,
+                "_blank"
+            );
+
+        });
+
+
+    // =====================================================
+    // OPEN CONTACT PANEL
+    // =====================================================
+
+    contactOwnerBtn?.addEventListener("click", async () => {
+
+        // -----------------------------------------------
+        // Check whether renter is logged in
+        // -----------------------------------------------
+
+        const {
+            data: {
+                user
+            }
+        } = await supabaseClient.auth.getUser();
+
+
+        if (!user) {
+
+            alert(
+                "Please log in or create an account before contacting the owner."
+            );
+
+            return;
+        }
+
+
+        // -----------------------------------------------
+        // Display property name
+        // -----------------------------------------------
+
+        if (contactPropertyName) {
+
+            contactPropertyName.textContent =
+                building.name || "Selected Property";
+
+        }
+
+
+        // -----------------------------------------------
+        // Reset previous form
+        // -----------------------------------------------
+
+        if (renterPhone) {
+            renterPhone.value = "";
+        }
+
+        if (enquirySuccess) {
+            enquirySuccess.style.display = "none";
+        }
+
+        if (submitEnquiryBtn) {
+            submitEnquiryBtn.style.display = "block";
+            submitEnquiryBtn.disabled = false;
+            submitEnquiryBtn.textContent = "📩 Request Owner Connection";
+        }
+
+
+        // -----------------------------------------------
+        // Show panel
+        // -----------------------------------------------
+
+        if (contactPanel) {
+
+            contactPanel.style.display = "block";
+
+        }
+
     });
 
-    document.getElementById("directionsBtn")?.addEventListener("click", () => {
-        const loc = `${building.location}, ${building.distance_km} km from MAKAUT`;
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, "_blank");
-    });
+
+    // =====================================================
+    // CLOSE CONTACT PANEL
+    // =====================================================
+
+    closeContactBtn?.addEventListener(
+        "click",
+        () => {
+
+            if (contactPanel) {
+
+                contactPanel.style.display = "none";
+
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // SUBMIT ENQUIRY
+    // =====================================================
+
+    submitEnquiryBtn?.addEventListener(
+        "click",
+        async () => {
+
+            // ---------------------------------------------
+            // Get logged-in user
+            // ---------------------------------------------
+
+            const {
+                data: {
+                    user
+                },
+                error: authError
+            } =
+                await supabaseClient.auth.getUser();
+
+
+            if (authError || !user) {
+
+                alert(
+                    "Please log in before submitting an enquiry."
+                );
+
+                return;
+
+            }
+
+
+            // ---------------------------------------------
+            // Get phone number
+            // ---------------------------------------------
+
+            const phone =
+                renterPhone?.value.trim();
+
+
+            // ---------------------------------------------
+            // Validate phone
+            // ---------------------------------------------
+
+            if (!phone) {
+
+                alert(
+                    "Please enter your phone number."
+                );
+
+                renterPhone?.focus();
+
+                return;
+
+            }
+
+
+            if (!/^[6-9]\d{9}$/.test(phone)) {
+
+                alert(
+                    "Please enter a valid 10-digit Indian mobile number."
+                );
+
+                renterPhone?.focus();
+
+                return;
+
+            }
+
+
+            // ---------------------------------------------
+            // Disable button
+            // ---------------------------------------------
+
+            submitEnquiryBtn.disabled = true;
+
+            submitEnquiryBtn.textContent =
+                "Submitting...";
+
+
+            try {
+
+                // =========================================
+                // CREATE ENQUIRY
+                // =========================================
+
+                const {
+                    error: enquiryError
+                } =
+                    await supabaseClient
+                        .from("enquiries")
+                        .insert({
+
+                            user_id: user.id,
+
+                            building_id: building.id,
+
+                            renter_phone: phone,
+
+                            status: "pending"
+
+                        });
+
+
+                // =========================================
+                // HANDLE ERROR
+                // =========================================
+
+                if (enquiryError) {
+
+                    console.error(
+                        "Enquiry error:",
+                        enquiryError
+                    );
+
+                    alert(
+                        "Unable to submit your enquiry. Please try again."
+                    );
+
+                    submitEnquiryBtn.disabled = false;
+
+                    submitEnquiryBtn.textContent =
+                        "📩 Request Owner Connection";
+
+                    return;
+
+                }
+
+
+                // =========================================
+                // SUCCESS
+                // =========================================
+
+                submitEnquiryBtn.style.display =
+                    "none";
+
+
+                if (enquirySuccess) {
+
+                    enquirySuccess.style.display =
+                        "block";
+
+                }
+
+
+                console.log(
+                    "ENQUIRY CREATED SUCCESSFULLY"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Unexpected enquiry error:",
+                    error
+                );
+
+                alert(
+                    "Something went wrong. Please try again."
+                );
+
+
+                submitEnquiryBtn.disabled =
+                    false;
+
+                submitEnquiryBtn.textContent =
+                    "📩 Request Owner Connection";
+
+            }
+
+        }
+    );
+
+
+    // =====================================================
+    // DIRECTIONS
+    // =====================================================
+
+    document.getElementById(
+        "directionsBtn"
+    )?.addEventListener(
+        "click",
+        () => {
+
+            const loc =
+                `${building.location}, ${building.distance_km} km from MAKAUT`;
+
+            window.open(
+                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`,
+                "_blank"
+            );
+
+        }
+    );
 
     // --- Image gallery ---
     const mainPropertyImage = document.getElementById("mainPropertyImage");
