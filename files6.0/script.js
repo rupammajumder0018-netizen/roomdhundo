@@ -1860,6 +1860,7 @@ async function uploadPropertyMedia(files, userId) {
 
         if (!isImage && !isVideo) {
             console.warn("Unsupported file:", file.name);
+            alert(`${file.name} isn't a supported image or video type and was skipped.`);
             continue;
         }
 
@@ -1916,6 +1917,13 @@ async function uploadPropertyMedia(files, userId) {
                 uploadError
             );
 
+            // Surface the failure instead of silently dropping the
+            // file — otherwise an owner has no way to know why their
+            // photo/video never showed up on the listing.
+            alert(
+                `Couldn't upload ${file.name}: ${uploadError.message}`
+            );
+
             continue;
         }
 
@@ -1934,6 +1942,13 @@ async function uploadPropertyMedia(files, userId) {
             publicUrlData?.publicUrl;
 
         if (!publicUrl) {
+            console.error(
+                "Couldn't get a public URL for uploaded file:",
+                file.name
+            );
+            alert(
+                `${file.name} uploaded, but no public URL was returned — it won't show up on the listing.`
+            );
             continue;
         }
 
@@ -1968,7 +1983,7 @@ async function prefillEditForm(buildingId) {
     if (!user) {
         alert("Please log in to edit your property.");
         window.location.href = "owner-dashboard.html";
-        return [];
+        return { images: [], videos: [] };
     }
 
     const { data: building, error } = await supabaseClient
@@ -1980,13 +1995,13 @@ async function prefillEditForm(buildingId) {
     if (error || !building) {
         alert("Couldn't load this property to edit it.");
         window.location.href = "owner-dashboard.html";
-        return [];
+        return { images: [], videos: [] };
     }
 
     if (building.created_by && building.created_by !== user.id) {
         alert("You can only edit properties you listed yourself.");
         window.location.href = "owner-dashboard.html";
-        return [];
+        return { images: [], videos: [] };
     }
 
     const heading = document.querySelector(".list-property-header h1");
@@ -1997,7 +2012,7 @@ async function prefillEditForm(buildingId) {
     if (heading) heading.textContent = "Edit Property";
     if (subheading) subheading.textContent = "Update your building's details and room types below.";
     if (submitBtn) submitBtn.textContent = "Save Changes";
-    if (note) note.textContent = "Leave photos empty to keep your current property photos.";
+    if (note) note.textContent = "Leave photos/videos empty to keep your current property media.";
 
     if (submitBtn && !document.getElementById("lpCancelEditBtn")) {
         const cancelLink = document.createElement("a");
@@ -2049,7 +2064,14 @@ async function prefillEditForm(buildingId) {
         addRoomTypeBlock();
     }
 
-    return building.images || [];
+    // Return BOTH existing images and videos so the submit handler
+    // can preserve whichever type of media the owner doesn't
+    // re-upload (previously only images were returned, which meant
+    // any existing videos were silently dropped on every edit).
+    return {
+        images: building.images || [],
+        videos: building.videos || []
+    };
 }
 
 function wireListPropertyForm() {
@@ -2061,12 +2083,12 @@ function wireListPropertyForm() {
     const params = new URLSearchParams(window.location.search);
     const editingBuildingId = params.get("edit");
 
-    // In edit mode this resolves to the building's current images,
-    // used as a fallback when the owner doesn't pick new photos.
-    let existingImagesPromise = Promise.resolve([]);
+    // In edit mode this resolves to the building's current media,
+    // used as a fallback when the owner doesn't pick new files.
+    let existingMediaPromise = Promise.resolve({ images: [], videos: [] });
 
     if (editingBuildingId) {
-        existingImagesPromise = prefillEditForm(editingBuildingId);
+        existingMediaPromise = prefillEditForm(editingBuildingId);
     } else {
         // Start with one empty room type block for a brand new listing.
         addRoomTypeBlock();
@@ -2115,36 +2137,47 @@ function wireListPropertyForm() {
         const rulesRaw = document.getElementById("lpRules").value.trim();
         const ownerName = document.getElementById("lpOwnerName").value.trim();
         const ownerPhone = document.getElementById("lpOwnerPhone").value.trim();
-        const imageFiles = document.getElementById("lpImages").files;
 
         const facilityCheckboxes = Array.from(document.querySelectorAll(".lpFacility:checked"));
         const facilityTags = facilityCheckboxes.map(cb => cb.value);
         const facilities = facilityCheckboxes.map(cb => cb.dataset.label);
         const rules = rulesRaw ? rulesRaw.split("\n").map(r => r.trim()).filter(Boolean) : [];
 
-const mediaFiles =
-    document.getElementById("lpImages").files;
+        const mediaFiles =
+            document.getElementById("lpImages").files;
 
-let images = [];
-let videos = [];
+        let images = [];
+        let videos = [];
 
-if (mediaFiles.length > 0) {
-    submitBtn.textContent = "Uploading photos…";
-    const uploadedMedia =
-        await uploadPropertyMedia(
-            mediaFiles,
-            user.id
-        );
+        if (mediaFiles.length > 0) {
+            submitBtn.textContent = "Uploading photos & videos…";
+            const uploadedMedia =
+                await uploadPropertyMedia(
+                    mediaFiles,
+                    user.id
+                );
 
-    images = uploadedMedia.images || [];
-    videos = uploadedMedia.videos || [];
-}
+            images = uploadedMedia.images || [];
+            videos = uploadedMedia.videos || [];
+        }
 
+        // Fall back to existing media (edit mode) or placeholder
+        // images (brand-new listing) only for whichever media type
+        // the owner didn't upload anything new for. Previously this
+        // only handled images, so videos were wiped out on every
+        // edit that didn't re-upload a video.
+        const existingMedia = editingBuildingId
+            ? await existingMediaPromise
+            : { images: [], videos: [] };
 
         if (images.length === 0) {
             images = editingBuildingId
-                ? await existingImagesPromise
+                ? existingMedia.images
                 : ["images/krishna-pg-1.webp", "images/krishna-pg-2.webp"];
+        }
+
+        if (videos.length === 0 && editingBuildingId) {
+            videos = existingMedia.videos;
         }
 
 
@@ -2168,6 +2201,7 @@ if (mediaFiles.length > 0) {
                     facilities,
                     facility_tags: facilityTags,
                     images,
+                    videos,
                     owner_name: ownerName,
                     owner_phone: ownerPhone,
                     owner_whatsapp: ownerPhone
