@@ -7,6 +7,13 @@
 
     <title>Owner Dashboard | RoomDhundo</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
     <link rel="stylesheet" href="owner-dashboard.css">
 
     <link
@@ -78,7 +85,7 @@
 
         <div class="sidebar-bottom">
 
-            <div class="help-box">
+            <div class="help-box" id="helpBox">
                 <i class="fa-solid fa-circle-question"></i>
 
                 <div>
@@ -86,6 +93,11 @@
                     <p>Contact RoomDhundo support.</p>
                 </div>
             </div>
+
+            <a href="index.html" class="back-home-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Home
+            </a>
 
             <button class="logout-btn" id="logoutBtn">
                 <i class="fa-solid fa-right-from-bracket"></i>
@@ -116,11 +128,6 @@
 
             <div class="topbar-right">
 
-                <button class="icon-btn" id="notificationBtn">
-                    <i class="fa-regular fa-bell"></i>
-                    <span class="notification-dot"></span>
-                </button>
-
                 <div class="owner-profile" id="ownerProfileBtn">
 
                     <div class="owner-avatar">
@@ -131,8 +138,6 @@
                         <strong>Rupam Majumder</strong>
                         <span>Property Owner</span>
                     </div>
-
-                    <i class="fa-solid fa-chevron-down"></i>
 
                 </div>
 
@@ -460,11 +465,63 @@
                     </div>
                 </div>
 
-                <div class="loading-properties">
-                    <i class="fa-solid fa-user"></i>
-                    <span id="profileNameText">Loading profile...</span>
-                    <br>
-                    <span id="profileEmailText"></span>
+                <div class="profile-card">
+
+                    <!-- VIEW MODE -->
+                    <div class="profile-view" id="profileView">
+
+                        <div class="profile-avatar-lg" id="profileAvatarLg">
+                            RM
+                        </div>
+
+                        <div class="profile-info-block">
+
+                            <h3 id="profileNameText">Loading profile...</h3>
+
+                            <div class="profile-detail-row">
+                                <i class="fa-solid fa-envelope"></i>
+                                <span id="profileEmailText">—</span>
+                            </div>
+
+                            <div class="profile-detail-row">
+                                <i class="fa-solid fa-phone"></i>
+                                <span id="profilePhoneText">Not added yet</span>
+                            </div>
+
+                            <div class="profile-detail-row">
+                                <i class="fa-solid fa-building"></i>
+                                <span id="profilePropertyCountText">0 properties listed</span>
+                            </div>
+
+                        </div>
+
+                        <button type="button" class="edit-profile-btn" id="editProfileBtn">
+                            <i class="fa-solid fa-pen"></i>
+                            Edit Profile
+                        </button>
+
+                    </div>
+
+                    <!-- EDIT MODE (hidden until Edit Profile is clicked) -->
+                    <div class="profile-edit-form" id="profileEditForm" style="display: none;">
+
+                        <div class="form-group">
+                            <label for="profileEditName">Full Name</label>
+                            <input type="text" id="profileEditName" placeholder="Your full name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profileEditPhone">Phone Number</label>
+                            <input type="tel" id="profileEditPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
+                        </div>
+
+                        <div class="profile-edit-actions">
+                            <button type="button" class="profile-cancel-btn" id="cancelProfileEditBtn">Cancel</button>
+                            <button type="button" class="edit-profile-btn" id="saveProfileEditBtn">Save Changes</button>
+                        </div>
+
+                    </div>
+
                 </div>
 
             </section>
