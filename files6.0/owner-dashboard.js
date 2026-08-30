@@ -168,6 +168,8 @@ async function loadOwnerProperties() {
 
     populatePropertyFilter();
 
+    updateProfileDetails();
+
 }
 
 
@@ -270,6 +272,193 @@ function updateOwnerName(user) {
             user.email || "";
 
     }
+
+}
+
+
+/* =========================================================
+   UPDATE "MY PROFILE" DETAILS
+   (phone + property count depend on ownerProperties,
+   so this runs again after properties finish loading)
+   ========================================================= */
+
+function updateProfileDetails() {
+
+    const profilePhoneText =
+        document.getElementById(
+            "profilePhoneText"
+        );
+
+    if (profilePhoneText) {
+
+        // There's no dedicated "profile phone" field in the
+        // database — the phone number lives on each listing.
+        // Use whichever the owner entered most recently.
+        const latestPhone =
+            ownerProperties.find(
+                property => property.owner_phone
+            )?.owner_phone;
+
+        profilePhoneText.textContent =
+            latestPhone || "Not added yet";
+
+    }
+
+
+    const profilePropertyCountText =
+        document.getElementById(
+            "profilePropertyCountText"
+        );
+
+    if (profilePropertyCountText) {
+
+        const count =
+            ownerProperties.length;
+
+        profilePropertyCountText.textContent =
+            count === 1
+                ? "1 property listed"
+                : `${count} properties listed`;
+
+    }
+
+
+    const profileAvatarLg =
+        document.getElementById(
+            "profileAvatarLg"
+        );
+
+    const smallAvatar =
+        document.querySelector(
+            ".owner-avatar"
+        );
+
+    if (profileAvatarLg && smallAvatar) {
+
+        profileAvatarLg.textContent =
+            smallAvatar.textContent;
+
+    }
+
+}
+
+
+/* =========================================================
+   EDIT PROFILE (name + phone)
+   ========================================================= */
+
+function setupProfileEditing() {
+
+    const editBtn =
+        document.getElementById("editProfileBtn");
+
+    const cancelBtn =
+        document.getElementById("cancelProfileEditBtn");
+
+    const saveBtn =
+        document.getElementById("saveProfileEditBtn");
+
+    const viewBlock =
+        document.getElementById("profileView");
+
+    const editForm =
+        document.getElementById("profileEditForm");
+
+    if (!editBtn || !viewBlock || !editForm) return;
+
+    editBtn.addEventListener("click", () => {
+
+        const currentName =
+            document.getElementById("profileNameText")?.textContent || "";
+
+        const currentPhoneText =
+            document.getElementById("profilePhoneText")?.textContent || "";
+
+        document.getElementById("profileEditName").value =
+            currentName;
+
+        document.getElementById("profileEditPhone").value =
+            currentPhoneText === "Not added yet" ? "" : currentPhoneText;
+
+        viewBlock.style.display = "none";
+        editForm.style.display = "flex";
+
+    });
+
+    cancelBtn?.addEventListener("click", () => {
+        editForm.style.display = "none";
+        viewBlock.style.display = "flex";
+    });
+
+    saveBtn?.addEventListener("click", async () => {
+
+        const newName =
+            document.getElementById("profileEditName").value.trim();
+
+        const newPhone =
+            document.getElementById("profileEditPhone").value.trim();
+
+        if (!newName) {
+            alert("Please enter your name.");
+            return;
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving…";
+
+        const { error: nameError } =
+            await supabaseClient.auth.updateUser({
+                data: { full_name: newName }
+            });
+
+        if (nameError) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Changes";
+            alert(`Couldn't update your name: ${nameError.message}`);
+            return;
+        }
+
+        // Phone isn't stored on the account itself — it's kept
+        // per listing, so keep every one of the owner's listings
+        // in sync with whatever they enter here.
+        if (newPhone && ownerProperties.length > 0) {
+
+            const { error: phoneError } =
+                await supabaseClient
+                    .from("buildings")
+                    .update({
+                        owner_phone: newPhone,
+                        owner_whatsapp: newPhone
+                    })
+                    .eq("created_by", currentUser.id);
+
+            if (phoneError) {
+                console.error("Phone update error:", phoneError);
+            } else {
+                ownerProperties.forEach(property => {
+                    property.owner_phone = newPhone;
+                    property.owner_whatsapp = newPhone;
+                });
+            }
+
+        }
+
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Changes";
+
+        currentUser.user_metadata =
+            currentUser.user_metadata || {};
+        currentUser.user_metadata.full_name = newName;
+
+        updateOwnerName(currentUser);
+        updateProfileDetails();
+
+        editForm.style.display = "none";
+        viewBlock.style.display = "flex";
+
+        alert("Profile updated!");
+
+    });
 
 }
 
@@ -670,6 +859,23 @@ function createPropertyCard(
 
                         <i class="fa-solid fa-pen"></i>
                         Edit
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="remove-btn"
+                        onclick="
+                            removeProperty(
+                                '${property.id}',
+                                '${escapeHtml(property.name)}'
+                            )
+                        "
+                    >
+
+                        <i class="fa-solid fa-trash"></i>
+                        Remove
 
                     </button>
 
@@ -1301,9 +1507,63 @@ function editProperty(
 ) {
 
     window.location.href =
-        `edit-property.html?id=${encodeURIComponent(
+        `list-property.html?edit=${encodeURIComponent(
             buildingId
         )}`;
+
+}
+
+
+/* =========================================================
+   REMOVE PROPERTY
+   ========================================================= */
+
+async function removeProperty(
+    buildingId,
+    propertyName
+) {
+
+    const confirmed = window.confirm(
+        `Remove "${propertyName || "this property"}"? ` +
+        "This will permanently delete it along with its room " +
+        "types, and cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    // Delete room types first (they reference the building),
+    // then the building itself.
+    const { error: roomTypesError } =
+        await supabaseClient
+            .from("room_types")
+            .delete()
+            .eq("building_id", buildingId);
+
+    if (roomTypesError) {
+        alert(`Couldn't remove this property: ${roomTypesError.message}`);
+        return;
+    }
+
+    const { error: buildingError } =
+        await supabaseClient
+            .from("buildings")
+            .delete()
+            .eq("id", buildingId);
+
+    if (buildingError) {
+        alert(`Couldn't remove this property: ${buildingError.message}`);
+        return;
+    }
+
+    ownerProperties =
+        ownerProperties.filter(
+            property => property.id !== buildingId
+        );
+
+    renderProperties();
+    updateDashboardStats();
+    populatePropertyFilter();
+    renderRoomAvailability();
 
 }
 
@@ -1538,26 +1798,9 @@ function setupDashboardButtons() {
 
 
     /*
-       TOPBAR: notification bell
-       jumps to Enquiries, profile
-       avatar jumps to My Profile.
+       TOPBAR: profile area jumps to
+       My Profile section.
     */
-
-    const notificationBtn =
-        document.getElementById(
-            "notificationBtn"
-        );
-
-
-    if (notificationBtn) {
-
-        notificationBtn.addEventListener(
-            "click",
-            () => scrollToSection("enquiries")
-        );
-
-    }
-
 
     const ownerProfileBtn =
         document.getElementById(
@@ -1573,6 +1816,79 @@ function setupDashboardButtons() {
         );
 
     }
+
+
+    /*
+       SIDEBAR: "Need Help?" box opens a
+       small popup with WhatsApp / SMS /
+       Call options for RoomDhundo support.
+    */
+
+    setupHelpBox();
+
+
+    /*
+       PROFILE: Edit Profile toggle.
+    */
+
+    setupProfileEditing();
+
+}
+
+
+// TODO: replace with RoomDhundo's real support number (with country code, no + or spaces).
+const SUPPORT_PHONE = "917980000000";
+
+function setupHelpBox() {
+
+    const helpBox =
+        document.getElementById("helpBox");
+
+    if (!helpBox) return;
+
+    let helpMenu = null;
+
+    function closeHelpMenu() {
+        helpMenu?.remove();
+        helpMenu = null;
+    }
+
+    helpBox.addEventListener("click", (e) => {
+
+        e.stopPropagation();
+
+        if (helpMenu) {
+            closeHelpMenu();
+            return;
+        }
+
+        helpMenu = document.createElement("div");
+        helpMenu.className = "help-menu";
+
+        helpMenu.innerHTML = `
+            <a href="https://wa.me/${SUPPORT_PHONE}" target="_blank" rel="noopener" class="help-menu-item">
+                <i class="fa-brands fa-whatsapp"></i>
+                WhatsApp Support
+            </a>
+            <a href="sms:+${SUPPORT_PHONE}" class="help-menu-item">
+                <i class="fa-solid fa-comment-sms"></i>
+                Send an SMS
+            </a>
+            <a href="tel:+${SUPPORT_PHONE}" class="help-menu-item">
+                <i class="fa-solid fa-phone"></i>
+                Call Support
+            </a>
+        `;
+
+        helpBox.appendChild(helpMenu);
+
+    });
+
+    document.addEventListener("click", (e) => {
+        if (helpMenu && !helpBox.contains(e.target)) {
+            closeHelpMenu();
+        }
+    });
 
 }
 

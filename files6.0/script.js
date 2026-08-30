@@ -81,6 +81,7 @@ async function getCurrentUserFast() {
     return data.session?.user || null;
 }
 
+
 // =====================================================
 // AUTH MODAL + NAV BUTTON
 // =====================================================
@@ -106,6 +107,7 @@ async function getCurrentUserProfile() {
         profile: data
     };
 }
+
 
 // =====================================================
 // NAVBAR UPDATE
@@ -1311,396 +1313,54 @@ if (
 
     const ownerCard = document.getElementById("ownerCard");
     ownerCard.innerHTML = `
-        <div class="owner-card-header">
-            <span class="owner-icon">👤</span>
-            <div>
-                <span class="owner-label">PROPERTY OWNER</span>
-                <h3>${building.owner_name}</h3>
-            </div>
-        </div>
-        <div class="owner-details">
-            <div class="owner-detail">
-                <span class="detail-icon">✓</span>
-                <span>${building.owner_verified ? "Verified Owner" : "Owner"}</span>
-            </div>
-            <div class="owner-detail">
-                <span class="detail-icon">📅</span>
-                <span>Member since ${building.owner_member_since || "—"}</span>
-            </div>
-        </div>
-        <button class="view-owner-profile-btn" id="viewOwnerProfileBtn">
-            View Owner Profile <span>→</span>
-        </button>
+        <h2>Property Owner</h2>
+        <div class="owner-name">${building.owner_name}</div>
+        <div class="verification">${building.owner_verified ? "✓ Verified Owner" : "Owner"}</div>
+        <p>Member since ${building.owner_member_since || "—"}</p>
+        <button id="viewOwnerProfileBtn">View Owner Profile</button>
     `;
 
     const viewOwnerProfileBtn = document.getElementById("viewOwnerProfileBtn");
     const ownerModal = document.getElementById("ownerModal");
     viewOwnerProfileBtn?.addEventListener("click", () => {
-        const modalOwnerName = document.getElementById("modalOwnerName");
-        const modalOwnerRating = document.getElementById("modalOwnerRating");
-        const modalMemberSince = document.getElementById("modalMemberSince");
-
-        if (modalOwnerName) modalOwnerName.textContent = building.owner_name;
-        if (modalOwnerRating) modalOwnerRating.textContent = building.owner_verified ? "✓ Verified Owner" : "New";
-        if (modalMemberSince) modalMemberSince.textContent = `Member since ${building.owner_member_since || "—"}`;
-
+        document.getElementById("modalOwnerName").textContent = building.owner_name;
+        document.getElementById("modalOwnerRating").textContent = building.owner_verified ? "Verified" : "New";
+        document.getElementById("modalMemberSince").textContent = building.owner_member_since || "—";
         if (ownerModal) ownerModal.style.display = "flex";
     });
 
     const closeOwnerModal = document.getElementById("closeOwnerModal");
     closeOwnerModal?.addEventListener("click", () => { if (ownerModal) ownerModal.style.display = "none"; });
-    ownerModal?.addEventListener("click", (e) => { if (e.target === ownerModal) ownerModal.style.display = "none"; });
 
-    // =====================================================
-    // CONTACT ROOMDHUNDO / OWNER CONNECTION
-    // =====================================================
+    // --- Contact owner panel ---
+    const contactOwnerBtn = document.getElementById("contactOwnerBtn");
+    const contactPanel = document.getElementById("contactPanel");
+    const closeContactBtn = document.getElementById("closeContactBtn");
 
-    const contactOwnerBtn =
-        document.getElementById("contactOwnerBtn");
+    contactOwnerBtn?.addEventListener("click", () => {
+        document.getElementById("contactOwnerName").textContent = building.owner_name;
+        document.getElementById("contactOwnerRating").textContent = building.owner_verified ? "Verified Owner" : "New Owner";
+        if (contactPanel) contactPanel.style.display = "block";
+    });
+    closeContactBtn?.addEventListener("click", () => { if (contactPanel) contactPanel.style.display = "none"; });
 
-    const contactPanel =
-        document.getElementById("contactPanel");
-
-    const closeContactBtn =
-        document.getElementById("closeContactBtn");
-
-    const submitEnquiryBtn =
-        document.getElementById("submitEnquiryBtn");
-
-    const renterPhone =
-        document.getElementById("renterPhone");
-
-    const enquirySuccess =
-        document.getElementById("enquirySuccess");
-
-    const contactPropertyName =
-        document.getElementById("contactPropertyName");
-
-    // -----------------------------------------------
-    // Direct RoomDhundo contact (call / WhatsApp).
-    // Wired up unconditionally at page load so these
-    // buttons work regardless of whether an enquiry was
-    // ever submitted.
-    // -----------------------------------------------
-
-    const ROOMDHUNDO_PHONE = "6295456503";
-    const ROOMDHUNDO_WHATSAPP = "6295456503";
-
-    document
-        .getElementById("callRoomDhundoBtn")
-        ?.addEventListener("click", () => {
-
-            window.location.href =
-                `tel:${ROOMDHUNDO_PHONE}`;
-
-        });
-
-    document
-        .getElementById("whatsappRoomDhundoBtn")
-        ?.addEventListener("click", () => {
-
-            const propertyName =
-                building?.name ||
-                building?.property_name ||
-                "this property";
-
-            const message =
-                `Hello RoomDhundo, I am interested in ${propertyName}. I would like to connect with the property owner.`;
-
-            const whatsappUrl =
-                `https://wa.me/91${ROOMDHUNDO_WHATSAPP}?text=${encodeURIComponent(message)}`;
-
-            window.open(
-                whatsappUrl,
-                "_blank"
-            );
-
-        });
-
-
-    // =====================================================
-    // OPEN CONTACT PANEL
-    // =====================================================
-
-    contactOwnerBtn?.addEventListener("click", async () => {
-
-        // -----------------------------------------------
-        // Check whether renter is logged in
-        // -----------------------------------------------
-
-        const {
-            data: {
-                user
-            }
-        } = await supabaseClient.auth.getUser();
-
-
-        if (!user) {
-
-            alert(
-                "Please log in or create an account before contacting the owner."
-            );
-
-            return;
-        }
-
-
-        // -----------------------------------------------
-        // Display property name
-        // -----------------------------------------------
-
-        if (contactPropertyName) {
-
-            contactPropertyName.textContent =
-                building.name || "Selected Property";
-
-        }
-
-
-        // -----------------------------------------------
-        // Reset previous form
-        // -----------------------------------------------
-
-        if (renterPhone) {
-            renterPhone.value = "";
-        }
-
-        if (enquirySuccess) {
-            enquirySuccess.style.display = "none";
-        }
-
-        if (submitEnquiryBtn) {
-            submitEnquiryBtn.style.display = "block";
-            submitEnquiryBtn.disabled = false;
-            submitEnquiryBtn.textContent = "📩 Request Owner Connection";
-        }
-
-
-        // -----------------------------------------------
-        // Show panel
-        // -----------------------------------------------
-
-        if (contactPanel) {
-
-            contactPanel.style.display = "block";
-
-        }
-
+    document.getElementById("callOwnerBtn")?.addEventListener("click", () => {
+        window.location.href = `tel:${building.owner_phone}`;
+    });
+    document.getElementById("whatsappOwnerBtn")?.addEventListener("click", () => {
+        window.open(`https://wa.me/91${building.owner_whatsapp || building.owner_phone}`, "_blank");
+    });
+    document.getElementById("modalCallOwner")?.addEventListener("click", () => {
+        window.location.href = `tel:${building.owner_phone}`;
+    });
+    document.getElementById("modalWhatsappOwner")?.addEventListener("click", () => {
+        window.open(`https://wa.me/91${building.owner_whatsapp || building.owner_phone}`, "_blank");
     });
 
-
-    // =====================================================
-    // CLOSE CONTACT PANEL
-    // =====================================================
-
-    closeContactBtn?.addEventListener(
-        "click",
-        () => {
-
-            if (contactPanel) {
-
-                contactPanel.style.display = "none";
-
-            }
-
-        }
-    );
-
-
-    // =====================================================
-    // SUBMIT ENQUIRY
-    // =====================================================
-
-    submitEnquiryBtn?.addEventListener(
-        "click",
-        async () => {
-
-            // ---------------------------------------------
-            // Get logged-in user
-            // ---------------------------------------------
-
-            const {
-                data: {
-                    user
-                },
-                error: authError
-            } =
-                await supabaseClient.auth.getUser();
-
-
-            if (authError || !user) {
-
-                alert(
-                    "Please log in before submitting an enquiry."
-                );
-
-                return;
-
-            }
-
-
-            // ---------------------------------------------
-            // Get phone number
-            // ---------------------------------------------
-
-            const phone =
-                renterPhone?.value.trim();
-
-
-            // ---------------------------------------------
-            // Validate phone
-            // ---------------------------------------------
-
-            if (!phone) {
-
-                alert(
-                    "Please enter your phone number."
-                );
-
-                renterPhone?.focus();
-
-                return;
-
-            }
-
-
-            if (!/^[6-9]\d{9}$/.test(phone)) {
-
-                alert(
-                    "Please enter a valid 10-digit Indian mobile number."
-                );
-
-                renterPhone?.focus();
-
-                return;
-
-            }
-
-
-            // ---------------------------------------------
-            // Disable button
-            // ---------------------------------------------
-
-            submitEnquiryBtn.disabled = true;
-
-            submitEnquiryBtn.textContent =
-                "Submitting...";
-
-
-            try {
-
-                // =========================================
-                // CREATE ENQUIRY
-                // =========================================
-
-                const {
-                    error: enquiryError
-                } =
-                    await supabaseClient
-                        .from("enquiries")
-                        .insert({
-
-                            user_id: user.id,
-
-                            building_id: building.id,
-
-                            renter_phone: phone,
-
-                            status: "pending"
-
-                        });
-
-
-                // =========================================
-                // HANDLE ERROR
-                // =========================================
-
-                if (enquiryError) {
-
-                    console.error(
-                        "Enquiry error:",
-                        enquiryError
-                    );
-
-                    alert(
-                        "Unable to submit your enquiry. Please try again."
-                    );
-
-                    submitEnquiryBtn.disabled = false;
-
-                    submitEnquiryBtn.textContent =
-                        "📩 Request Owner Connection";
-
-                    return;
-
-                }
-
-
-                // =========================================
-                // SUCCESS
-                // =========================================
-
-                submitEnquiryBtn.style.display =
-                    "none";
-
-
-                if (enquirySuccess) {
-
-                    enquirySuccess.style.display =
-                        "block";
-
-                }
-
-
-                console.log(
-                    "ENQUIRY CREATED SUCCESSFULLY"
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Unexpected enquiry error:",
-                    error
-                );
-
-                alert(
-                    "Something went wrong. Please try again."
-                );
-
-
-                submitEnquiryBtn.disabled =
-                    false;
-
-                submitEnquiryBtn.textContent =
-                    "📩 Request Owner Connection";
-
-            }
-
-        }
-    );
-
-
-    // =====================================================
-    // DIRECTIONS
-    // =====================================================
-
-    document.getElementById(
-        "directionsBtn"
-    )?.addEventListener(
-        "click",
-        () => {
-
-            const loc =
-                `${building.location}, ${building.distance_km} km from MAKAUT`;
-
-            window.open(
-                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`,
-                "_blank"
-            );
-
-        }
-    );
+    document.getElementById("directionsBtn")?.addEventListener("click", () => {
+        const loc = `${building.location}, ${building.distance_km} km from MAKAUT`;
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`, "_blank");
+    });
 
 // =====================================================
 // IMAGE GALLERY
@@ -2295,13 +1955,122 @@ async function uploadPropertyMedia(files, userId) {
         videos
     };
 }
+
+
+// Loads an existing building + its room types into the form so
+// the owner can edit it, and switches the page into "edit mode"
+// copy/labels. Returns the building's current image URLs so the
+// submit handler can keep them if no new photos are chosen.
+async function prefillEditForm(buildingId) {
+
+    const user = await getCurrentUser();
+
+    if (!user) {
+        alert("Please log in to edit your property.");
+        window.location.href = "owner-dashboard.html";
+        return [];
+    }
+
+    const { data: building, error } = await supabaseClient
+        .from("buildings")
+        .select("*")
+        .eq("id", buildingId)
+        .maybeSingle();
+
+    if (error || !building) {
+        alert("Couldn't load this property to edit it.");
+        window.location.href = "owner-dashboard.html";
+        return [];
+    }
+
+    if (building.created_by && building.created_by !== user.id) {
+        alert("You can only edit properties you listed yourself.");
+        window.location.href = "owner-dashboard.html";
+        return [];
+    }
+
+    const heading = document.querySelector(".list-property-header h1");
+    const subheading = document.querySelector(".list-property-header p");
+    const submitBtn = document.querySelector(".lp-submit-btn");
+    const note = document.querySelector(".lp-note");
+
+    if (heading) heading.textContent = "Edit Property";
+    if (subheading) subheading.textContent = "Update your building's details and room types below.";
+    if (submitBtn) submitBtn.textContent = "Save Changes";
+    if (note) note.textContent = "Leave photos empty to keep your current property photos.";
+
+    if (submitBtn && !document.getElementById("lpCancelEditBtn")) {
+        const cancelLink = document.createElement("a");
+        cancelLink.id = "lpCancelEditBtn";
+        cancelLink.href = "owner-dashboard.html";
+        cancelLink.textContent = "Cancel and go back to dashboard";
+        cancelLink.style.display = "block";
+        cancelLink.style.textAlign = "center";
+        cancelLink.style.marginTop = "12px";
+        cancelLink.style.color = "#64748b";
+        cancelLink.style.fontSize = "14px";
+        submitBtn.insertAdjacentElement("afterend", cancelLink);
+    }
+
+    document.getElementById("lpName").value = building.name || "";
+    document.getElementById("lpLocation").value = building.location || "";
+    document.getElementById("lpDistance").value = building.distance_km ?? "";
+    document.getElementById("lpType").value = building.type || "";
+    document.getElementById("lpDescription").value = building.description || "";
+    document.getElementById("lpRules").value = (building.rules || []).join("\n");
+    document.getElementById("lpOwnerName").value = building.owner_name || "";
+    document.getElementById("lpOwnerPhone").value = building.owner_phone || "";
+
+    const facilityTags = building.facility_tags || [];
+    document.querySelectorAll(".lpFacility").forEach((checkbox) => {
+        checkbox.checked = facilityTags.includes(checkbox.value);
+    });
+
+    const { data: roomTypes } = await supabaseClient
+        .from("room_types")
+        .select("*")
+        .eq("building_id", buildingId);
+
+    const container = document.getElementById("roomTypesContainer");
+    container.innerHTML = "";
+
+    if (roomTypes && roomTypes.length > 0) {
+
+        roomTypes.forEach((rt) => {
+            addRoomTypeBlock();
+            const block = container.lastElementChild;
+            block.querySelector(".rtRoomType").value = rt.room_type || "";
+            block.querySelector(".rtRent").value = rt.price_value || rt.room_rent || "";
+            block.querySelector(".rtPeople").value = rt.room_people || 1;
+            block.querySelector(".rtAvailable").value = rt.available_rooms || 1;
+        });
+
+    } else {
+        addRoomTypeBlock();
+    }
+
+    return building.images || [];
+}
+
 function wireListPropertyForm() {
     const listPropertyForm = document.getElementById("listPropertyForm");
     if (!listPropertyForm) return;
 
-    // Start with one room type block, and let "+ Add Another" add more
-    addRoomTypeBlock();
     document.getElementById("addRoomTypeBtn")?.addEventListener("click", addRoomTypeBlock);
+
+    const params = new URLSearchParams(window.location.search);
+    const editingBuildingId = params.get("edit");
+
+    // In edit mode this resolves to the building's current images,
+    // used as a fallback when the owner doesn't pick new photos.
+    let existingImagesPromise = Promise.resolve([]);
+
+    if (editingBuildingId) {
+        existingImagesPromise = prefillEditForm(editingBuildingId);
+    } else {
+        // Start with one empty room type block for a brand new listing.
+        addRoomTypeBlock();
+    }
 
     listPropertyForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -2337,7 +2106,6 @@ function wireListPropertyForm() {
         const submitBtn = listPropertyForm.querySelector(".lp-submit-btn");
         const originalBtnText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = "Uploading photos…";
 
         const name = document.getElementById("lpName").value.trim();
         const location = document.getElementById("lpLocation").value.trim();
@@ -2357,15 +2125,100 @@ function wireListPropertyForm() {
 const mediaFiles =
     document.getElementById("lpImages").files;
 
-const uploadedMedia =
-    await uploadPropertyMedia(
-        mediaFiles,
-        user.id
-    );
+let images = [];
+let videos = [];
 
-let images = uploadedMedia.images;
+if (mediaFiles.length > 0) {
+    submitBtn.textContent = "Uploading photos…";
+    const uploadedMedia =
+        await uploadPropertyMedia(
+            mediaFiles,
+            user.id
+        );
 
-const videos = uploadedMedia.videos;
+    images = uploadedMedia.images || [];
+    videos = uploadedMedia.videos || [];
+}
+
+
+        if (images.length === 0) {
+            images = editingBuildingId
+                ? await existingImagesPromise
+                : ["images/krishna-pg-1.webp", "images/krishna-pg-2.webp"];
+        }
+
+
+        // =========================================
+        // EDIT MODE — update the existing building
+        // =========================================
+
+        if (editingBuildingId) {
+
+            submitBtn.textContent = "Saving changes…";
+
+            const { error: updateError } = await supabaseClient
+                .from("buildings")
+                .update({
+                    name,
+                    location,
+                    distance_km: distanceKm,
+                    type,
+                    description,
+                    rules,
+                    facilities,
+                    facility_tags: facilityTags,
+                    images,
+                    owner_name: ownerName,
+                    owner_phone: ownerPhone,
+                    owner_whatsapp: ownerPhone
+                })
+                .eq("id", editingBuildingId)
+                .eq("created_by", user.id);
+
+            if (updateError) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+                alert(`Something went wrong saving your changes: ${updateError.message}`);
+                return;
+            }
+
+            // Simplest reliable way to keep room types in sync with
+            // the form: replace them all with what's on screen now.
+            await supabaseClient
+                .from("room_types")
+                .delete()
+                .eq("building_id", editingBuildingId);
+
+            const roomTypeRows = roomTypeInputs.map(rt => ({
+                building_id: editingBuildingId,
+                room_type: rt.roomType,
+                price_value: rt.rent,
+                daily_price: Math.round(rt.rent / 25),
+                room_rent: rt.rent,
+                room_people: rt.people,
+                available_rooms: rt.available,
+                availability: "Just listed"
+            }));
+
+            const { error: roomTypesError } = await supabaseClient.from("room_types").insert(roomTypeRows);
+
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+
+            if (roomTypesError) {
+                alert(`Your property details were saved, but there was an issue updating room types: ${roomTypesError.message}`);
+                return;
+            }
+
+            alert(`"${name}" has been updated!`);
+            window.location.href = "owner-dashboard.html";
+            return;
+        }
+
+
+        // =========================================
+        // CREATE MODE — brand new listing
+        // =========================================
 
         submitBtn.textContent = "Listing your property…";
 
@@ -2656,9 +2509,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireResetPasswordForm();
     wireRoleChoice();
 
-   const currentUser = await getCurrentUserFast();
+    const currentUser = await getCurrentUserFast();
 
-updateNavForUser(currentUser);
+    updateNavForUser(currentUser);
 
     await initRenterDashboard();
 
