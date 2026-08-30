@@ -187,11 +187,33 @@ footer {
     transition: background 0.15s ease;
 }
 
-.nav-profile-menu-item:hover {
-    background: #f8fafc;
+
+.nav-profile-menu-item:hover,
+.nav-profile-menu-item:focus-visible {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
     transform: none;
-    box-shadow: none;
+    box-shadow: none !important;
 }
+
+.nav-profile-menu-item:hover .nav-profile-menu-text strong,
+.nav-profile-menu-item:hover .nav-profile-menu-text span,
+.nav-profile-menu-item:focus-visible .nav-profile-menu-text strong,
+.nav-profile-menu-item:focus-visible .nav-profile-menu-text span {
+    color: #ffffff !important;
+}
+
+.nav-profile-menu-item:hover .nav-profile-menu-icon,
+.nav-profile-menu-item:focus-visible .nav-profile-menu-icon {
+    color: #ffffff !important;
+}
+
+.nav-profile-menu-item.danger:hover .nav-profile-menu-text strong,
+.nav-profile-menu-item.danger:focus-visible .nav-profile-menu-text strong {
+    color: #ffffff !important;
+}
+
+
 
 .nav-profile-menu-icon {
     font-size: 18px;
@@ -219,6 +241,61 @@ footer {
 
 .nav-profile-menu-item.danger .nav-profile-menu-text strong {
     color: #dc2626;
+}
+
+/* =====================================================
+   3-DOT DROPDOWN OPTIONS
+   Default: White
+   Hover / Click: Blue
+   ===================================================== */
+
+.nav-profile-menu-item {
+    background: #ffffff !important;
+    color: #1f2937 !important;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.18s ease;
+}
+
+/* Hover / active-looking state */
+.nav-profile-menu-item:hover,
+.nav-profile-menu-item:focus-visible {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    transform: none;
+    box-shadow: none !important;
+}
+
+/* Text becomes white */
+.nav-profile-menu-item:hover .nav-profile-menu-text strong,
+.nav-profile-menu-item:hover .nav-profile-menu-text span,
+.nav-profile-menu-item:focus-visible .nav-profile-menu-text strong,
+.nav-profile-menu-item:focus-visible .nav-profile-menu-text span {
+    color: #ffffff !important;
+}
+
+/* Icon becomes white */
+.nav-profile-menu-item:hover .nav-profile-menu-icon,
+.nav-profile-menu-item:focus-visible .nav-profile-menu-icon {
+    color: #ffffff !important;
+}
+
+/* Logout stays red normally */
+.nav-profile-menu-item.danger .nav-profile-menu-text strong {
+    color: #dc2626;
+}
+
+/* Logout becomes blue when hovered/clicked */
+.nav-profile-menu-item.danger:hover,
+.nav-profile-menu-item.danger:focus-visible {
+    background: #4f46e5 !important;
+}
+
+.nav-profile-menu-item.danger:hover .nav-profile-menu-text strong,
+.nav-profile-menu-item.danger:hover .nav-profile-menu-text span,
+.nav-profile-menu-item.danger:focus-visible .nav-profile-menu-text strong,
+.nav-profile-menu-item.danger:focus-visible .nav-profile-menu-text span {
+    color: #ffffff !important;
 }
 
 /* ==========================================================================
@@ -2853,3 +2930,4 @@ a.category-card:hover {
     }
 
 }
+

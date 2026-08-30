@@ -1837,7 +1837,7 @@ function setupDashboardButtons() {
 
 
 // TODO: replace with RoomDhundo's real support number (with country code, no + or spaces).
-const SUPPORT_PHONE = "917980000000";
+const SUPPORT_PHONE = "9382991409";
 
 function setupHelpBox() {
 

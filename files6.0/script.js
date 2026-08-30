@@ -2295,163 +2295,1842 @@ async function uploadPropertyMedia(files, userId) {
         videos
     };
 }
+
 // =====================================================
-// ROOM TYPE BLOCKS (list-property page)
+// LIST PROPERTY PAGE
+// ADD + EDIT EXISTING PROPERTY
 // =====================================================
-function addRoomTypeBlock() {
-    const container = document.getElementById("roomTypesContainer");
-    const template = document.getElementById("roomTypeTemplate");
+
+let listPropertyEditMode = false;
+let listPropertyEditId = null;
+let listPropertyExistingImages = [];
+let listPropertyExistingVideos = [];
+
+
+// =====================================================
+// SMALL HELPER
+// =====================================================
+
+function escapePropertyHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+// =====================================================
+// ADD ROOM TYPE BLOCK
+// =====================================================
+
+function addRoomTypeBlock(roomData = null) {
+
+    const container =
+        document.getElementById("roomTypesContainer");
+
+    const template =
+        document.getElementById("roomTypeTemplate");
+
     if (!container || !template) return;
 
-    const clone = template.content.cloneNode(true);
-    const block = clone.querySelector(".room-type-block");
 
-    block.querySelector(".remove-room-type-btn")?.addEventListener("click", () => {
-        const allBlocks = container.querySelectorAll(".room-type-block");
-        if (allBlocks.length <= 1) {
-            alert("You need at least one room type.");
-            return;
-        }
-        block.remove();
-    });
+    const clone =
+        template.content.cloneNode(true);
+
+    const block =
+        clone.querySelector(".room-type-block");
+
+
+    if (!block) return;
+
+
+    // Existing room ID is stored here.
+    // New room types don't have an ID yet.
+    if (roomData?.id) {
+
+        block.dataset.roomId =
+            roomData.id;
+
+    }
+
+
+    const roomTypeSelect =
+        block.querySelector(".rtRoomType");
+
+    const rentInput =
+        block.querySelector(".rtRent");
+
+    const peopleInput =
+        block.querySelector(".rtPeople");
+
+    const availableInput =
+        block.querySelector(".rtAvailable");
+
+
+    // =================================================
+    // EDIT MODE VALUES
+    // =================================================
+
+    if (roomData) {
+
+        roomTypeSelect.value =
+            roomData.room_type || "";
+
+        rentInput.value =
+            roomData.price_value ??
+            roomData.room_rent ??
+            "";
+
+        peopleInput.value =
+            roomData.room_people ??
+            1;
+
+        availableInput.value =
+            roomData.available_rooms ??
+            0;
+
+
+        // Occupied rooms can legitimately have 0
+        // available rooms.
+        availableInput.min = "0";
+
+    } else {
+
+        // New property / new room
+        peopleInput.value = "1";
+        availableInput.value = "1";
+        availableInput.min = "1";
+
+    }
+
+
+    // =================================================
+    // REMOVE ROOM TYPE
+    // =================================================
+
+    block
+        .querySelector(".remove-room-type-btn")
+        ?.addEventListener(
+            "click",
+            () => {
+
+                const allBlocks =
+                    container.querySelectorAll(
+                        ".room-type-block"
+                    );
+
+                if (allBlocks.length <= 1) {
+
+                    alert(
+                        "You need at least one room type."
+                    );
+
+                    return;
+
+                }
+
+                block.remove();
+
+            }
+        );
+
 
     container.appendChild(clone);
+
 }
 
-function wireListPropertyForm() {
-    const listPropertyForm = document.getElementById("listPropertyForm");
-    if (!listPropertyForm) return;
 
-    const ownerPhone = document.getElementById("lpOwnerPhone").value.trim();
-    const ownerAltPhone = document.getElementById("lpOwnerAltPhone").value.trim();
-    // Start with one room type block, and let "+ Add Another" add more
-    addRoomTypeBlock();
-    document.getElementById("addRoomTypeBtn")?.addEventListener("click", addRoomTypeBlock);
+// =====================================================
+// EXISTING MEDIA PREVIEW
+// =====================================================
 
-    listPropertyForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+function renderExistingPropertyMedia() {
 
-        const user = await getCurrentUser();
-        if (!user) {
-            alert("Please log in first — listings are tied to your account.");
-            openAuthModal();
-            return;
-        }
+    const fileInput =
+        document.getElementById("lpImages");
 
-        const roomTypeBlocks = Array.from(document.querySelectorAll(".room-type-block"));
-        if (roomTypeBlocks.length === 0) {
-            alert("Please add at least one room type.");
-            return;
-        }
+    if (!fileInput) return;
 
-        // Validate room type blocks before doing any uploads/inserts
-        const roomTypeInputs = [];
-        for (const block of roomTypeBlocks) {
-            const roomType = block.querySelector(".rtRoomType").value;
-            const rent = Number(block.querySelector(".rtRent").value);
-            const people = Number(block.querySelector(".rtPeople").value) || 1;
-            const available = Number(block.querySelector(".rtAvailable").value) || 1;
 
-            if (!roomType || !rent) {
-                alert("Please fill in every field for each room type.");
-                return;
-            }
-            roomTypeInputs.push({ roomType, rent, people, available });
-        }
+    let preview =
+        document.getElementById(
+            "existingPropertyMediaPreview"
+        );
 
-        const submitBtn = listPropertyForm.querySelector(".lp-submit-btn");
-        const originalBtnText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Uploading photos…";
 
-        const name = document.getElementById("lpName").value.trim();
-        const location = document.getElementById("lpLocation").value.trim();
-        const distanceKm = Number(document.getElementById("lpDistance").value);
-        const type = document.getElementById("lpType").value;
-        const description = document.getElementById("lpDescription").value.trim();
-        const rulesRaw = document.getElementById("lpRules").value.trim();
-        const ownerName = document.getElementById("lpOwnerName").value.trim();
-        const ownerPhone = document.getElementById("lpOwnerPhone").value.trim();
-        const imageFiles = document.getElementById("lpImages").files;
+    // Create preview container automatically.
+    if (!preview) {
 
-        const facilityCheckboxes = Array.from(document.querySelectorAll(".lpFacility:checked"));
-        const facilityTags = facilityCheckboxes.map(cb => cb.value);
-        const facilities = facilityCheckboxes.map(cb => cb.dataset.label);
-        const rules = rulesRaw ? rulesRaw.split("\n").map(r => r.trim()).filter(Boolean) : [];
+        preview =
+            document.createElement("div");
 
-const mediaFiles =
-    document.getElementById("lpImages").files;
+        preview.id =
+            "existingPropertyMediaPreview";
 
-const uploadedMedia =
-    await uploadPropertyMedia(
-        mediaFiles,
-        user.id
+        preview.style.marginTop =
+            "12px";
+
+        preview.style.display =
+            "flex";
+
+        preview.style.flexDirection =
+            "column";
+
+        preview.style.gap =
+            "10px";
+
+        fileInput.parentNode?.appendChild(
+            preview
+        );
+
+    }
+
+
+    preview.innerHTML = "";
+
+
+    const totalImages =
+        listPropertyExistingImages.length;
+
+    const totalVideos =
+        listPropertyExistingVideos.length;
+
+
+    if (
+        !listPropertyEditMode ||
+        (totalImages === 0 && totalVideos === 0)
+    ) {
+
+        return;
+
+    }
+
+
+    const heading =
+        document.createElement("div");
+
+    heading.style.fontWeight =
+        "600";
+
+    heading.style.fontSize =
+        "13px";
+
+    heading.textContent =
+        `Existing media (${totalImages} photos, ${totalVideos} videos)`;
+
+
+    preview.appendChild(
+        heading
     );
 
-let images = uploadedMedia.images;
 
-const videos = uploadedMedia.videos;
+    // =================================================
+    // EXISTING IMAGES
+    // =================================================
 
-        submitBtn.textContent = "Listing your property…";
+    listPropertyExistingImages.forEach(
+        (url, index) => {
 
-        // Step 1: create the building
-        const { data: newBuilding, error: buildingError } = await supabaseClient
-            .from("buildings")
-            .insert({
-    name,
-    location,
-    distance_km: distanceKm,
-    type,
-    description,
-    rules,
-    facilities,
-    facility_tags: facilityTags,
-    images,
-    videos,
-    owner_name: ownerName,
-    owner_phone: ownerPhone,
-    owner_alt_phone: ownerAltPhone || null,   // ← new
-    owner_whatsapp: ownerPhone,
-    owner_verified: false,
-    owner_member_since: String(new Date().getFullYear()),
-    created_by: user.id
-})
-            .select()
-            .single();
+            const item =
+                document.createElement("div");
 
-        if (buildingError) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
-            alert(`Something went wrong listing your property: ${buildingError.message}`);
-            return;
+            item.style.display =
+                "flex";
+
+            item.style.alignItems =
+                "center";
+
+            item.style.gap =
+                "10px";
+
+            item.style.padding =
+                "8px";
+
+            item.style.border =
+                "1px solid #e5e7eb";
+
+            item.style.borderRadius =
+                "8px";
+
+
+            const image =
+                document.createElement("img");
+
+            image.src =
+                url;
+
+            image.alt =
+                `Property photo ${index + 1}`;
+
+            image.style.width =
+                "70px";
+
+            image.style.height =
+                "55px";
+
+            image.style.objectFit =
+                "cover";
+
+            image.style.borderRadius =
+                "6px";
+
+
+            const label =
+                document.createElement("span");
+
+            label.textContent =
+                `Photo ${index + 1}`;
+
+            label.style.flex =
+                "1";
+
+            label.style.fontSize =
+                "13px";
+
+
+            const removeButton =
+                document.createElement("button");
+
+            removeButton.type =
+                "button";
+
+            removeButton.textContent =
+                "Remove";
+
+            removeButton.style.border =
+                "1px solid #fecaca";
+
+            removeButton.style.background =
+                "#fef2f2";
+
+            removeButton.style.color =
+                "#dc2626";
+
+            removeButton.style.padding =
+                "6px 10px";
+
+            removeButton.style.borderRadius =
+                "6px";
+
+            removeButton.style.cursor =
+                "pointer";
+
+
+            removeButton.addEventListener(
+                "click",
+                () => {
+
+                    listPropertyExistingImages =
+                        listPropertyExistingImages.filter(
+                            (_, i) =>
+                                i !== index
+                        );
+
+                    renderExistingPropertyMedia();
+
+                }
+            );
+
+
+            item.appendChild(image);
+            item.appendChild(label);
+            item.appendChild(removeButton);
+
+            preview.appendChild(item);
+
         }
+    );
 
-        // Step 2: create each room type, linked to the new building
-        const roomTypeRows = roomTypeInputs.map(rt => ({
-            building_id: newBuilding.id,
-            room_type: rt.roomType,
-            price_value: rt.rent,
-            daily_price: Math.round(rt.rent / 25),
-            room_rent: rt.rent,
-            room_people: rt.people,
-            available_rooms: rt.available,
-            availability: "Just listed"
-        }));
 
-        const { error: roomTypesError } = await supabaseClient.from("room_types").insert(roomTypeRows);
+    // =================================================
+    // EXISTING VIDEOS
+    // =================================================
 
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalBtnText;
+    listPropertyExistingVideos.forEach(
+        (url, index) => {
 
-        if (roomTypesError) {
-            alert(`Your property was created, but there was an issue adding room types: ${roomTypesError.message}`);
-            return;
+            const item =
+                document.createElement("div");
+
+            item.style.display =
+                "flex";
+
+            item.style.alignItems =
+                "center";
+
+            item.style.gap =
+                "10px";
+
+            item.style.padding =
+                "8px";
+
+            item.style.border =
+                "1px solid #e5e7eb";
+
+            item.style.borderRadius =
+                "8px";
+
+
+            const video =
+                document.createElement("video");
+
+            video.src =
+                url;
+
+            video.controls =
+                true;
+
+            video.preload =
+                "metadata";
+
+            video.style.width =
+                "100px";
+
+            video.style.height =
+                "60px";
+
+            video.style.objectFit =
+                "cover";
+
+            video.style.borderRadius =
+                "6px";
+
+
+            const label =
+                document.createElement("span");
+
+            label.textContent =
+                `Video ${index + 1}`;
+
+            label.style.flex =
+                "1";
+
+            label.style.fontSize =
+                "13px";
+
+
+            const removeButton =
+                document.createElement("button");
+
+            removeButton.type =
+                "button";
+
+            removeButton.textContent =
+                "Remove";
+
+            removeButton.style.border =
+                "1px solid #fecaca";
+
+            removeButton.style.background =
+                "#fef2f2";
+
+            removeButton.style.color =
+                "#dc2626";
+
+            removeButton.style.padding =
+                "6px 10px";
+
+            removeButton.style.borderRadius =
+                "6px";
+
+            removeButton.style.cursor =
+                "pointer";
+
+
+            removeButton.addEventListener(
+                "click",
+                () => {
+
+                    listPropertyExistingVideos =
+                        listPropertyExistingVideos.filter(
+                            (_, i) =>
+                                i !== index
+                        );
+
+                    renderExistingPropertyMedia();
+
+                }
+            );
+
+
+            item.appendChild(video);
+            item.appendChild(label);
+            item.appendChild(removeButton);
+
+            preview.appendChild(item);
+
         }
+    );
 
-        alert(`"${name}" has been listed! Taking you to search results.`);
-        window.location.href = "search.html";
-    });
 }
+
+
+// =====================================================
+// LOAD EXISTING PROPERTY FOR EDIT
+// =====================================================
+
+async function loadPropertyForEdit(
+    buildingId,
+    user
+) {
+
+    const {
+        data: property,
+        error
+    } = await supabaseClient
+        .from("buildings")
+        .select(`
+            *,
+            room_types(*)
+        `)
+        .eq(
+            "id",
+            buildingId
+        )
+        .eq(
+            "created_by",
+            user.id
+        )
+        .single();
+
+
+    if (error || !property) {
+
+        console.error(
+            "Edit property loading error:",
+            error
+        );
+
+        alert(
+            "Unable to load this property. Please try again."
+        );
+
+        window.location.href =
+            "owner-dashboard.html";
+
+        return false;
+
+    }
+
+
+    listPropertyEditMode =
+        true;
+
+    listPropertyEditId =
+        property.id;
+
+
+    // =================================================
+    // FORM TEXT
+    // =================================================
+
+    const pageTitle =
+        document.querySelector(
+            ".list-property-header h1"
+        );
+
+    const pageSubtitle =
+        document.querySelector(
+            ".list-property-header p"
+        );
+
+
+    if (pageTitle) {
+
+        pageTitle.textContent =
+            "Edit Your Property";
+
+    }
+
+
+    if (pageSubtitle) {
+
+        pageSubtitle.textContent =
+            "Update only the information you want to change. Your existing information will remain unchanged.";
+
+    }
+
+
+    const submitButton =
+        document.querySelector(
+            ".lp-submit-btn"
+        );
+
+
+    if (submitButton) {
+
+        submitButton.textContent =
+            "Update Property";
+
+    }
+
+
+    // =================================================
+    // BUILDING DETAILS
+    // =================================================
+
+    document.getElementById("lpName").value =
+        property.name || "";
+
+    document.getElementById("lpLocation").value =
+        property.location || "";
+
+    document.getElementById("lpDistance").value =
+        property.distance_km ?? "";
+
+    document.getElementById("lpType").value =
+        property.type || "";
+
+    document.getElementById("lpDescription").value =
+        property.description || "";
+
+
+    document.getElementById("lpRules").value =
+        Array.isArray(property.rules)
+            ? property.rules.join("\n")
+            : "";
+
+
+    // =================================================
+    // OWNER DETAILS
+    // =================================================
+
+    document.getElementById("lpOwnerName").value =
+        property.owner_name || "";
+
+    document.getElementById("lpOwnerPhone").value =
+        property.owner_phone || "";
+
+    document.getElementById("lpOwnerAltPhone").value =
+        property.owner_alt_phone || "";
+
+
+    // =================================================
+    // FACILITIES
+    // =================================================
+
+    const savedFacilityTags =
+        Array.isArray(property.facility_tags)
+            ? property.facility_tags
+            : [];
+
+
+    const savedFacilities =
+        Array.isArray(property.facilities)
+            ? property.facilities
+            : [];
+
+
+    document
+        .querySelectorAll(".lpFacility")
+        .forEach(checkbox => {
+
+            const value =
+                checkbox.value;
+
+            const label =
+                checkbox.dataset.label;
+
+
+            checkbox.checked =
+                savedFacilityTags.includes(value) ||
+                savedFacilities.includes(label);
+
+        });
+
+
+    // =================================================
+    // EXISTING MEDIA
+    // =================================================
+
+    listPropertyExistingImages =
+        Array.isArray(property.images)
+            ? property.images.filter(Boolean)
+            : [];
+
+
+    listPropertyExistingVideos =
+        Array.isArray(property.videos)
+            ? property.videos.filter(Boolean)
+            : [];
+
+
+    renderExistingPropertyMedia();
+
+
+    // =================================================
+    // ROOM TYPES
+    // =================================================
+
+    const roomContainer =
+        document.getElementById(
+            "roomTypesContainer"
+        );
+
+
+    if (roomContainer) {
+
+        roomContainer.innerHTML = "";
+
+        const roomTypes =
+            Array.isArray(property.room_types)
+                ? property.room_types
+                : [];
+
+
+        if (roomTypes.length > 0) {
+
+            roomTypes.forEach(
+                room => {
+
+                    addRoomTypeBlock(
+                        room
+                    );
+
+                }
+            );
+
+        } else {
+
+            addRoomTypeBlock();
+
+        }
+
+    }
+
+
+    return true;
+
+}
+
+
+// =====================================================
+// LIST / UPDATE PROPERTY FORM
+// =====================================================
+
+function wireListPropertyForm() {
+
+    const listPropertyForm =
+        document.getElementById(
+            "listPropertyForm"
+        );
+
+
+    if (!listPropertyForm) return;
+
+
+    // =================================================
+    // DETECT EDIT MODE
+    // =================================================
+
+    const urlParams =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const editId =
+        urlParams.get("edit");
+
+
+    // =================================================
+    // INITIAL ROOM BLOCK
+    // =================================================
+
+    const initializeForm =
+        async () => {
+
+            const user =
+                await getCurrentUser();
+
+
+            if (!user) {
+
+                return;
+
+            }
+
+
+            if (editId) {
+
+                const loaded =
+                    await loadPropertyForEdit(
+                        editId,
+                        user
+                    );
+
+
+                if (!loaded) {
+
+                    return;
+
+                }
+
+            } else {
+
+                // Normal ADD mode
+
+                listPropertyEditMode =
+                    false;
+
+                listPropertyEditId =
+                    null;
+
+
+                listPropertyExistingImages =
+                    [];
+
+                listPropertyExistingVideos =
+                    [];
+
+
+                const roomContainer =
+                    document.getElementById(
+                        "roomTypesContainer"
+                    );
+
+
+                if (
+                    roomContainer &&
+                    roomContainer.children.length === 0
+                ) {
+
+                    addRoomTypeBlock();
+
+                }
+
+            }
+
+        };
+
+
+    initializeForm();
+
+
+    // =================================================
+    // ADD ANOTHER ROOM TYPE
+    // =================================================
+
+    document
+        .getElementById(
+            "addRoomTypeBtn"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                addRoomTypeBlock();
+
+            }
+        );
+
+
+    // =================================================
+    // SUBMIT
+    // =================================================
+
+    listPropertyForm.addEventListener(
+        "submit",
+        async (e) => {
+
+            e.preventDefault();
+
+
+            const user =
+                await getCurrentUser();
+
+
+            if (!user) {
+
+                alert(
+                    "Please log in first — listings are tied to your account."
+                );
+
+                openAuthModal();
+
+                return;
+
+            }
+
+
+            // =================================================
+            // READ BUILDING FIELDS
+            // =================================================
+
+            const name =
+                document
+                    .getElementById("lpName")
+                    .value
+                    .trim();
+
+
+            const location =
+                document
+                    .getElementById("lpLocation")
+                    .value
+                    .trim();
+
+
+            const distanceKm =
+                Number(
+                    document
+                        .getElementById("lpDistance")
+                        .value
+                );
+
+
+            const type =
+                document
+                    .getElementById("lpType")
+                    .value;
+
+
+            const description =
+                document
+                    .getElementById("lpDescription")
+                    .value
+                    .trim();
+
+
+            const rulesRaw =
+                document
+                    .getElementById("lpRules")
+                    .value
+                    .trim();
+
+
+            const ownerName =
+                document
+                    .getElementById("lpOwnerName")
+                    .value
+                    .trim();
+
+
+            const ownerPhone =
+                document
+                    .getElementById("lpOwnerPhone")
+                    .value
+                    .trim();
+
+
+            const ownerAltPhone =
+                document
+                    .getElementById("lpOwnerAltPhone")
+                    .value
+                    .trim();
+
+
+            // =================================================
+            // BASIC VALIDATION
+            // =================================================
+
+            if (!name) {
+
+                alert(
+                    "Please enter the property name."
+                );
+
+                return;
+
+            }
+
+
+            if (!location) {
+
+                alert(
+                    "Please enter the property location."
+                );
+
+                return;
+
+            }
+
+
+            if (!type) {
+
+                alert(
+                    "Please select a property type."
+                );
+
+                return;
+
+            }
+
+
+            if (!ownerName) {
+
+                alert(
+                    "Please enter the owner/business name."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                ownerPhone &&
+                !/^[6-9]\d{9}$/.test(ownerPhone)
+            ) {
+
+                alert(
+                    "Please enter a valid 10-digit owner phone number."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                ownerAltPhone &&
+                !/^[6-9]\d{9}$/.test(ownerAltPhone)
+            ) {
+
+                alert(
+                    "Please enter a valid alternative phone number."
+                );
+
+                return;
+
+            }
+
+
+            // =================================================
+            // FACILITIES
+            // =================================================
+
+            const facilityCheckboxes =
+                Array.from(
+                    document.querySelectorAll(
+                        ".lpFacility:checked"
+                    )
+                );
+
+
+            const facilityTags =
+                facilityCheckboxes.map(
+                    checkbox =>
+                        checkbox.value
+                );
+
+
+            const facilities =
+                facilityCheckboxes.map(
+                    checkbox =>
+                        checkbox.dataset.label
+                );
+
+
+            // =================================================
+            // RULES
+            // =================================================
+
+            const rules =
+                rulesRaw
+                    ? rulesRaw
+                        .split("\n")
+                        .map(
+                            rule =>
+                                rule.trim()
+                        )
+                        .filter(Boolean)
+                    : [];
+
+
+            // =================================================
+            // ROOM TYPES
+            // =================================================
+
+            const roomTypeBlocks =
+                Array.from(
+                    document.querySelectorAll(
+                        ".room-type-block"
+                    )
+                );
+
+
+            if (
+                roomTypeBlocks.length === 0
+            ) {
+
+                alert(
+                    "Please add at least one room type."
+                );
+
+                return;
+
+            }
+
+
+            const roomTypeInputs =
+                [];
+
+
+            for (
+                const block
+                of roomTypeBlocks
+            ) {
+
+                const roomType =
+                    block
+                        .querySelector(".rtRoomType")
+                        ?.value
+                        .trim();
+
+
+                const rent =
+                    Number(
+                        block
+                            .querySelector(".rtRent")
+                            ?.value
+                    );
+
+
+                const people =
+                    Number(
+                        block
+                            .querySelector(".rtPeople")
+                            ?.value
+                    );
+
+
+                const available =
+                    Number(
+                        block
+                            .querySelector(".rtAvailable")
+                            ?.value
+                    );
+
+
+                if (!roomType) {
+
+                    alert(
+                        "Please select a room type for every room."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !Number.isFinite(rent) ||
+                    rent <= 0
+                ) {
+
+                    alert(
+                        "Please enter a valid monthly rent for every room type."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !Number.isFinite(people) ||
+                    people < 1
+                ) {
+
+                    alert(
+                        "People sharing must be at least 1."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !Number.isFinite(available) ||
+                    available < 0
+                ) {
+
+                    alert(
+                        "Available rooms cannot be negative."
+                    );
+
+                    return;
+
+                }
+
+
+                roomTypeInputs.push({
+
+                    id:
+                        block.dataset.roomId ||
+                        null,
+
+                    roomType,
+
+                    rent,
+
+                    people,
+
+                    available
+
+                });
+
+            }
+
+
+            // =================================================
+            // BUTTON STATE
+            // =================================================
+
+            const submitButton =
+                listPropertyForm
+                    .querySelector(
+                        ".lp-submit-btn"
+                    );
+
+
+            const originalButtonText =
+                submitButton
+                    ? submitButton.textContent
+                    : "";
+
+
+            if (submitButton) {
+
+                submitButton.disabled =
+                    true;
+
+                submitButton.textContent =
+                    listPropertyEditMode
+                        ? "Updating property..."
+                        : "Uploading photos...";
+
+            }
+
+
+            try {
+
+                // =================================================
+                // NEW MEDIA
+                // =================================================
+
+                const mediaInput =
+                    document.getElementById(
+                        "lpImages"
+                    );
+
+
+                const newMediaFiles =
+                    mediaInput?.files
+                        ? Array.from(
+                            mediaInput.files
+                        )
+                        : [];
+
+
+                let newImages = [];
+                let newVideos = [];
+
+
+                if (
+                    newMediaFiles.length > 0
+                ) {
+
+                    // Respect maximum 5 photos total.
+                    const newImageCount =
+                        newMediaFiles.filter(
+                            file =>
+                                file.type.startsWith(
+                                    "image/"
+                                )
+                        ).length;
+
+
+                    const remainingImageSlots =
+                        Math.max(
+                            0,
+                            5 -
+                            listPropertyExistingImages.length
+                        );
+
+
+                    if (
+                        newImageCount >
+                        remainingImageSlots
+                    ) {
+
+                        if (submitButton) {
+
+                            submitButton.disabled =
+                                false;
+
+                            submitButton.textContent =
+                                originalButtonText;
+
+                        }
+
+
+                        alert(
+                            `You can add only ${remainingImageSlots} more photo(s). Existing photos are already using ${listPropertyExistingImages.length} of 5 slots.`
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (submitButton) {
+
+                        submitButton.textContent =
+                            listPropertyEditMode
+                                ? "Uploading new media..."
+                                : "Uploading photos...";
+
+                    }
+
+
+                    const uploadedMedia =
+                        await uploadPropertyMedia(
+                            newMediaFiles,
+                            user.id
+                        );
+
+
+                    newImages =
+                        uploadedMedia.images || [];
+
+
+                    newVideos =
+                        uploadedMedia.videos || [];
+
+                }
+
+
+                // =================================================
+                // FINAL MEDIA ARRAYS
+                // =================================================
+
+                const finalImages =
+                    [
+                        ...listPropertyExistingImages,
+                        ...newImages
+                    ]
+                    .slice(0, 5);
+
+
+                const finalVideos =
+                    [
+                        ...listPropertyExistingVideos,
+                        ...newVideos
+                    ];
+
+
+                // =================================================
+                // UPDATE EXISTING PROPERTY
+                // =================================================
+
+                if (
+                    listPropertyEditMode &&
+                    listPropertyEditId
+                ) {
+
+                    if (submitButton) {
+
+                        submitButton.textContent =
+                            "Updating property...";
+
+                    }
+
+
+                    // Only owner who created this property
+                    // is allowed to update it.
+                    const {
+                        data: updatedBuilding,
+                        error: buildingError
+                    } =
+                        await supabaseClient
+                            .from("buildings")
+                            .update({
+
+                                name,
+
+                                location,
+
+                                distance_km:
+                                    distanceKm,
+
+                                type,
+
+                                description,
+
+                                rules,
+
+                                facilities,
+
+                                facility_tags:
+                                    facilityTags,
+
+                                images:
+                                    finalImages,
+
+                                videos:
+                                    finalVideos,
+
+                                owner_name:
+                                    ownerName,
+
+                                owner_phone:
+                                    ownerPhone,
+
+                                owner_alt_phone:
+                                    ownerAltPhone || null,
+
+                                owner_whatsapp:
+                                    ownerPhone
+
+                            })
+                            .eq(
+                                "id",
+                                listPropertyEditId
+                            )
+                            .eq(
+                                "created_by",
+                                user.id
+                            )
+                            .select()
+                            .single();
+
+
+                    if (buildingError) {
+
+                        throw new Error(
+                            buildingError.message
+                        );
+
+                    }
+
+
+                    if (!updatedBuilding) {
+
+                        throw new Error(
+                            "The property could not be updated."
+                        );
+
+                    }
+
+
+                    // =================================================
+                    // EXISTING ROOM IDS
+                    // =================================================
+
+                    const {
+                        data: existingRoomRows,
+                        error: existingRoomsError
+                    } =
+                        await supabaseClient
+                            .from("room_types")
+                            .select("id")
+                            .eq(
+                                "building_id",
+                                listPropertyEditId
+                            );
+
+
+                    if (existingRoomsError) {
+
+                        throw new Error(
+                            existingRoomsError.message
+                        );
+
+                    }
+
+
+                    const existingRoomIds =
+                        (existingRoomRows || [])
+                            .map(
+                                room =>
+                                    String(room.id)
+                            );
+
+
+                    const submittedExistingIds =
+                        roomTypeInputs
+                            .filter(
+                                room =>
+                                    room.id
+                            )
+                            .map(
+                                room =>
+                                    String(room.id)
+                            );
+
+
+                    // =================================================
+                    // DELETE ROOM TYPES REMOVED IN EDIT
+                    // =================================================
+
+                    const removedRoomIds =
+                        existingRoomIds.filter(
+                            id =>
+                                !submittedExistingIds.includes(
+                                    id
+                                )
+                        );
+
+
+                    for (
+                        const removedId
+                        of removedRoomIds
+                    ) {
+
+                        const {
+                            error: deleteRoomError
+                        } =
+                            await supabaseClient
+                                .from("room_types")
+                                .delete()
+                                .eq(
+                                    "id",
+                                    removedId
+                                )
+                                .eq(
+                                    "building_id",
+                                    listPropertyEditId
+                                );
+
+
+                        if (deleteRoomError) {
+
+                            throw new Error(
+                                `Could not remove a room type: ${deleteRoomError.message}`
+                            );
+
+                        }
+
+                    }
+
+
+                    // =================================================
+                    // UPDATE EXISTING + INSERT NEW ROOMS
+                    // =================================================
+
+                    for (
+                        const room
+                        of roomTypeInputs
+                    ) {
+
+                        const availability =
+                            room.available > 0
+                                ? "Available"
+                                : "Occupied";
+
+
+                        const roomPayload = {
+
+                            room_type:
+                                room.roomType,
+
+                            price_value:
+                                room.rent,
+
+                            daily_price:
+                                Math.round(
+                                    room.rent / 25
+                                ),
+
+                            room_rent:
+                                room.rent,
+
+                            room_people:
+                                room.people,
+
+                            available_rooms:
+                                room.available,
+
+                            availability
+
+                        };
+
+
+                        // -------------------------------
+                        // EXISTING ROOM
+                        // -------------------------------
+
+                        if (room.id) {
+
+                            const {
+                                error: updateRoomError
+                            } =
+                                await supabaseClient
+                                    .from("room_types")
+                                    .update(
+                                        roomPayload
+                                    )
+                                    .eq(
+                                        "id",
+                                        room.id
+                                    )
+                                    .eq(
+                                        "building_id",
+                                        listPropertyEditId
+                                    );
+
+
+                            if (
+                                updateRoomError
+                            ) {
+
+                                throw new Error(
+                                    `Could not update room type: ${updateRoomError.message}`
+                                );
+
+                            }
+
+                        }
+
+                        // -------------------------------
+                        // NEW ROOM TYPE
+                        // -------------------------------
+
+                        else {
+
+                            const {
+                                error: insertRoomError
+                            } =
+                                await supabaseClient
+                                    .from("room_types")
+                                    .insert({
+
+                                        building_id:
+                                            listPropertyEditId,
+
+                                        ...roomPayload
+
+                                    });
+
+
+                            if (
+                                insertRoomError
+                            ) {
+
+                                throw new Error(
+                                    `Could not add new room type: ${insertRoomError.message}`
+                                );
+
+                            }
+
+                        }
+
+                    }
+
+
+                    // =================================================
+                    // SUCCESS - EDIT
+                    // =================================================
+
+                    alert(
+                        `"${name}" has been updated successfully!`
+                    );
+
+
+                    window.location.href =
+                        "owner-dashboard.html";
+
+
+                    return;
+
+                }
+
+
+                // =================================================
+                // CREATE NEW PROPERTY
+                // =================================================
+
+                if (submitButton) {
+
+                    submitButton.textContent =
+                        "Listing your property...";
+
+                }
+
+
+                const {
+                    data: newBuilding,
+                    error: buildingError
+                } =
+                    await supabaseClient
+                        .from("buildings")
+                        .insert({
+
+                            name,
+
+                            location,
+
+                            distance_km:
+                                distanceKm,
+
+                            type,
+
+                            description,
+
+                            rules,
+
+                            facilities,
+
+                            facility_tags:
+                                facilityTags,
+
+                            images:
+                                finalImages,
+
+                            videos:
+                                finalVideos,
+
+                            owner_name:
+                                ownerName,
+
+                            owner_phone:
+                                ownerPhone,
+
+                            owner_alt_phone:
+                                ownerAltPhone ||
+                                null,
+
+                            owner_whatsapp:
+                                ownerPhone,
+
+                            owner_verified:
+                                false,
+
+                            owner_member_since:
+                                String(
+                                    new Date()
+                                        .getFullYear()
+                                ),
+
+                            created_by:
+                                user.id
+
+                        })
+                        .select()
+                        .single();
+
+
+                if (buildingError) {
+
+                    throw new Error(
+                        buildingError.message
+                    );
+
+                }
+
+
+                // =================================================
+                // CREATE ROOM TYPES
+                // =================================================
+
+                const roomTypeRows =
+                    roomTypeInputs.map(
+                        room => ({
+
+                            building_id:
+                                newBuilding.id,
+
+                            room_type:
+                                room.roomType,
+
+                            price_value:
+                                room.rent,
+
+                            daily_price:
+                                Math.round(
+                                    room.rent / 25
+                                ),
+
+                            room_rent:
+                                room.rent,
+
+                            room_people:
+                                room.people,
+
+                            available_rooms:
+                                room.available,
+
+                            availability:
+                                room.available > 0
+                                    ? "Just listed"
+                                    : "Occupied"
+
+                        })
+                    );
+
+
+                const {
+                    error: roomTypesError
+                } =
+                    await supabaseClient
+                        .from("room_types")
+                        .insert(
+                            roomTypeRows
+                        );
+
+
+                if (roomTypesError) {
+
+                    throw new Error(
+                        `Your property was created, but there was an issue adding room types: ${roomTypesError.message}`
+                    );
+
+                }
+
+
+                // =================================================
+                // SUCCESS - ADD
+                // =================================================
+
+                alert(
+                    `"${name}" has been listed successfully!`
+                );
+
+
+                window.location.href =
+                    "search.html";
+
+
+            } catch (error) {
+
+                console.error(
+                    "Property save/update error:",
+                    error
+                );
+
+
+                alert(
+                    `Something went wrong: ${error.message}`
+                );
+
+
+                if (submitButton) {
+
+                    submitButton.disabled =
+                        false;
+
+                    submitButton.textContent =
+                        originalButtonText ||
+                        (
+                            listPropertyEditMode
+                                ? "Update Property"
+                                : "List My Property"
+                        );
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
 
 // =====================================================
 // RESET PASSWORD PAGE
