@@ -1047,8 +1047,26 @@ async function initSearchPage() {
             <div class="property-card" data-id="${b.id}">
                 <div class="property-image">
                     ${b.images && b.images.length > 0
-                        ? `<img src="${b.images[0]}" alt="${b.name}">`
-                        : `<div class="image-placeholder">Property Image</div>`}
+    ? `
+        <img
+            src="${b.images[0]}"
+            alt="${b.name}"
+            loading="lazy"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        >
+        <div
+            class="image-placeholder"
+            style="display:none;"
+        >
+            Property Image
+        </div>
+      `
+    : `
+        <div class="image-placeholder">
+            Property Image
+        </div>
+      `
+}
                 </div>
                 <div class="property-content">
                     <div class="property-title">
@@ -1164,7 +1182,62 @@ async function initPropertyPage() {
         if (main) main.innerHTML = `<p style="padding:60px 20px;text-align:center;">Property not found. <a href="search.html">Back to search</a></p>`;
         return;
     }
+// =====================================================
+// PROPERTY VIDEOS
+// =====================================================
 
+const propertyVideosSection =
+    document.getElementById("propertyVideosSection");
+
+const propertyVideos =
+    document.getElementById("propertyVideos");
+
+const videos =
+    Array.isArray(building.videos)
+        ? building.videos
+        : [];
+
+if (
+    propertyVideosSection &&
+    propertyVideos
+) {
+
+    if (videos.length > 0) {
+
+        propertyVideosSection.style.display =
+            "block";
+
+        propertyVideos.innerHTML =
+            videos.map(videoUrl => `
+                <div class="property-video-card">
+
+                    <video
+                        controls
+                        preload="metadata"
+                        playsinline
+                    >
+                        <source
+                            src="${videoUrl}"
+                            type="video/mp4"
+                        >
+
+                        Your browser does not support
+                        video playback.
+                    </video>
+
+                </div>
+            `).join("");
+
+    } else {
+
+        propertyVideosSection.style.display =
+            "none";
+
+        propertyVideos.innerHTML = "";
+
+    }
+
+}
     const priceLabel = (building.room_types || []).length > 1 ? "From ₹" : "₹";
     const priceValue = building.minPrice != null ? Number(building.minPrice).toLocaleString("en-IN") : "—";
 
@@ -1629,66 +1702,270 @@ async function initPropertyPage() {
         }
     );
 
-    // --- Image gallery ---
-    const mainPropertyImage = document.getElementById("mainPropertyImage");
-    const smallPropertyImages = document.getElementById("smallPropertyImages");
-    const galleryPrev = document.getElementById("galleryPrev");
-    const galleryNext = document.getElementById("galleryNext");
-    const galleryImages = (building.images && building.images.length > 0) ? building.images : ["images/krishna-pg-1.webp"];
-    let currentImageIndex = 0;
-    let galleryThumbnails = [];
+// =====================================================
+// IMAGE GALLERY
+// =====================================================
 
-    // Build thumbnails dynamically from THIS building's actual photos
-    if (smallPropertyImages) {
-        if (galleryImages.length > 1) {
-            smallPropertyImages.innerHTML = galleryImages.map((src, i) => `
-                <div class="gallery-thumbnail${i === 0 ? " active" : ""}" data-index="${i}">
-                    <img src="${src}" alt="Property Image ${i + 1}">
-                </div>
-            `).join("");
-        } else {
-            smallPropertyImages.innerHTML = "";
-        }
-        galleryThumbnails = document.querySelectorAll(".gallery-thumbnail");
+const mainPropertyImage = document.getElementById("mainPropertyImage");
+const smallPropertyImages = document.getElementById("smallPropertyImages");
+const galleryPrev = document.getElementById("galleryPrev");
+const galleryNext = document.getElementById("galleryNext");
+
+// Get images saved in Supabase
+const galleryImages = Array.isArray(building.images)
+    ? building.images.filter(src => typeof src === "string" && src.trim() !== "")
+    : [];
+
+let currentImageIndex = 0;
+let galleryThumbnails = [];
+
+// -----------------------------------------------------
+// NO IMAGES
+// -----------------------------------------------------
+
+if (galleryImages.length === 0) {
+
+    if (mainPropertyImage) {
+        mainPropertyImage.removeAttribute("src");
+        mainPropertyImage.alt = "No property image available";
+        mainPropertyImage.style.display = "none";
     }
+
+    if (smallPropertyImages) {
+        smallPropertyImages.innerHTML = `
+            <div class="no-property-image">
+                🏠 No property images available
+            </div>
+        `;
+    }
+
+    if (galleryPrev) {
+        galleryPrev.style.display = "none";
+    }
+
+    if (galleryNext) {
+        galleryNext.style.display = "none";
+    }
+
+} else {
+
+    // -------------------------------------------------
+    // SHOW MAIN IMAGE
+    // -------------------------------------------------
 
     function showGalleryImage(index) {
-        currentImageIndex = index;
-        if (mainPropertyImage) mainPropertyImage.src = galleryImages[currentImageIndex % galleryImages.length];
-        galleryThumbnails.forEach((thumb, i) => thumb.classList.toggle("active", i === currentImageIndex));
+
+        if (galleryImages.length === 0) return;
+
+        currentImageIndex =
+            (index + galleryImages.length) % galleryImages.length;
+
+        if (mainPropertyImage) {
+            mainPropertyImage.src = galleryImages[currentImageIndex];
+            mainPropertyImage.alt =
+                `${building.name || "Property"} Image ${currentImageIndex + 1}`;
+        }
+
+        galleryThumbnails.forEach((thumb, i) => {
+            thumb.classList.toggle(
+                "active",
+                i === currentImageIndex
+            );
+        });
     }
 
-    galleryThumbnails.forEach((thumb, index) => thumb.addEventListener("click", () => showGalleryImage(index)));
-    galleryPrev?.addEventListener("click", () => showGalleryImage((currentImageIndex - 1 + galleryImages.length) % galleryImages.length));
-    galleryNext?.addEventListener("click", () => showGalleryImage((currentImageIndex + 1) % galleryImages.length));
+
+    // -------------------------------------------------
+    // BUILD THUMBNAILS
+    // -------------------------------------------------
+
+    if (smallPropertyImages) {
+
+        if (galleryImages.length > 1) {
+
+            smallPropertyImages.innerHTML = galleryImages
+                .map((src, i) => `
+                    <div
+                        class="gallery-thumbnail ${i === 0 ? "active" : ""}"
+                        data-index="${i}"
+                    >
+                        <img
+                            src="${src}"
+                            alt="Property Image ${i + 1}"
+                            loading="lazy"
+                        >
+                    </div>
+                `)
+                .join("");
+
+        } else {
+
+            smallPropertyImages.innerHTML = "";
+
+        }
+
+        galleryThumbnails =
+            smallPropertyImages.querySelectorAll(".gallery-thumbnail");
+    }
+
+
+    // -------------------------------------------------
+    // THUMBNAIL CLICK
+    // -------------------------------------------------
+
+    galleryThumbnails.forEach((thumb, index) => {
+
+        thumb.addEventListener("click", () => {
+            showGalleryImage(index);
+        });
+
+    });
+
+
+    // -------------------------------------------------
+    // PREVIOUS / NEXT
+    // -------------------------------------------------
+
+    galleryPrev?.addEventListener("click", () => {
+
+        showGalleryImage(currentImageIndex - 1);
+
+    });
+
+
+    galleryNext?.addEventListener("click", () => {
+
+        showGalleryImage(currentImageIndex + 1);
+
+    });
+
+
+    // -------------------------------------------------
+    // HIDE ARROWS IF ONLY ONE IMAGE
+    // -------------------------------------------------
+
     if (galleryImages.length <= 1) {
-        if (galleryPrev) galleryPrev.style.display = "none";
-        if (galleryNext) galleryNext.style.display = "none";
+
+        if (galleryPrev) {
+            galleryPrev.style.display = "none";
+        }
+
+        if (galleryNext) {
+            galleryNext.style.display = "none";
+        }
+
+    } else {
+
+        if (galleryPrev) {
+            galleryPrev.style.display = "flex";
+        }
+
+        if (galleryNext) {
+            galleryNext.style.display = "flex";
+        }
+
     }
-    if (mainPropertyImage) showGalleryImage(0);
 
-    // --- Full-screen photo viewer ---
-    const photoViewer = document.getElementById("photoViewer");
-    const photoViewerImage = document.getElementById("photoViewerImage");
-    const photoViewerClose = document.getElementById("photoViewerClose");
-    const photoViewerPrev = document.getElementById("photoViewerPrev");
-    const photoViewerNext = document.getElementById("photoViewerNext");
 
-    mainPropertyImage?.addEventListener("click", () => {
-        if (photoViewerImage) photoViewerImage.src = galleryImages[currentImageIndex];
-        if (photoViewer) photoViewer.style.display = "flex";
-    });
-    photoViewerClose?.addEventListener("click", () => { if (photoViewer) photoViewer.style.display = "none"; });
-    photoViewerPrev?.addEventListener("click", () => {
-        showGalleryImage((currentImageIndex - 1 + galleryImages.length) % galleryImages.length);
-        if (photoViewerImage) photoViewerImage.src = galleryImages[currentImageIndex];
-    });
-    photoViewerNext?.addEventListener("click", () => {
-        showGalleryImage((currentImageIndex + 1) % galleryImages.length);
-        if (photoViewerImage) photoViewerImage.src = galleryImages[currentImageIndex];
-    });
-    photoViewer?.addEventListener("click", (e) => { if (e.target === photoViewer) photoViewer.style.display = "none"; });
-    photoViewerImage?.addEventListener("click", (e) => e.stopPropagation());
+    // Show first image
+    showGalleryImage(0);
+}
+
+
+// =====================================================
+// FULL-SCREEN PHOTO VIEWER
+// =====================================================
+
+const photoViewer =
+    document.getElementById("photoViewer");
+
+const photoViewerImage =
+    document.getElementById("photoViewerImage");
+
+const photoViewerClose =
+    document.getElementById("photoViewerClose");
+
+const photoViewerPrev =
+    document.getElementById("photoViewerPrev");
+
+const photoViewerNext =
+    document.getElementById("photoViewerNext");
+
+
+// Open viewer
+mainPropertyImage?.addEventListener("click", () => {
+
+    if (galleryImages.length === 0) return;
+
+    if (photoViewerImage) {
+        photoViewerImage.src =
+            galleryImages[currentImageIndex];
+    }
+
+    if (photoViewer) {
+        photoViewer.style.display = "flex";
+    }
+
+});
+
+
+// Close viewer
+photoViewerClose?.addEventListener("click", () => {
+
+    if (photoViewer) {
+        photoViewer.style.display = "none";
+    }
+
+});
+
+
+// Previous image
+photoViewerPrev?.addEventListener("click", () => {
+
+    if (galleryImages.length === 0) return;
+
+    showGalleryImage(currentImageIndex - 1);
+
+    if (photoViewerImage) {
+        photoViewerImage.src =
+            galleryImages[currentImageIndex];
+    }
+
+});
+
+
+// Next image
+photoViewerNext?.addEventListener("click", () => {
+
+    if (galleryImages.length === 0) return;
+
+    showGalleryImage(currentImageIndex + 1);
+
+    if (photoViewerImage) {
+        photoViewerImage.src =
+            galleryImages[currentImageIndex];
+    }
+
+});
+
+
+// Click outside image to close
+photoViewer?.addEventListener("click", (e) => {
+
+    if (e.target === photoViewer) {
+        photoViewer.style.display = "none";
+    }
+
+});
+
+
+// Prevent image click from closing viewer
+photoViewerImage?.addEventListener("click", (e) => {
+
+    e.stopPropagation();
+
+});
+
 
     // --- Save / unsave toggle ---
     const savePropertyBtn = document.getElementById("savePropertyBtn");
@@ -1900,26 +2177,124 @@ async function uploadPropertyImages(files, userId) {
 // =====================================================
 // LIST PROPERTY PAGE (building + repeatable room types)
 // =====================================================
-function addRoomTypeBlock() {
-    const container = document.getElementById("roomTypesContainer");
-    const template = document.getElementById("roomTypeTemplate");
-    if (!container || !template) return;
+// =====================================================
+// PROPERTY MEDIA UPLOAD
+// PHOTOS -> images[]
+// VIDEOS -> videos[]
+// =====================================================
 
-    const clone = template.content.cloneNode(true);
-    const block = clone.querySelector(".room-type-block");
+async function uploadPropertyMedia(files, userId) {
 
-    block.querySelector(".remove-room-type-btn").addEventListener("click", () => {
-        // Always keep at least one room type block
-        if (container.querySelectorAll(".room-type-block").length > 1) {
-            block.remove();
-        } else {
-            alert("You need at least one room type.");
+    const images = [];
+    const videos = [];
+
+    const maxImageSize = 5 * 1024 * 1024;   // 5 MB
+    const maxVideoSize = 50 * 1024 * 1024;  // 50 MB
+
+    for (let i = 0; i < files.length; i++) {
+
+        const file = files[i];
+
+        const isImage = file.type.startsWith("image/");
+        const isVideo = file.type.startsWith("video/");
+
+        if (!isImage && !isVideo) {
+            console.warn("Unsupported file:", file.name);
+            continue;
         }
-    });
 
-    container.appendChild(clone);
+        // -----------------------------
+        // IMAGE SIZE
+        // -----------------------------
+
+        if (isImage && file.size > maxImageSize) {
+
+            alert(
+                `${file.name} is larger than 5MB.`
+            );
+
+            continue;
+        }
+
+        // -----------------------------
+        // VIDEO SIZE
+        // -----------------------------
+
+        if (isVideo && file.size > maxVideoSize) {
+
+            alert(
+                `${file.name} is larger than 50MB.`
+            );
+
+            continue;
+        }
+
+        const safeName =
+            file.name.replace(
+                /[^a-zA-Z0-9._-]/g,
+                "_"
+            );
+
+        const path =
+            `${userId}/${Date.now()}-${i}-${safeName}`;
+
+        // -----------------------------
+        // UPLOAD
+        // -----------------------------
+
+        const {
+            error: uploadError
+        } = await supabaseClient
+            .storage
+            .from("property-images")
+            .upload(path, file);
+
+        if (uploadError) {
+
+            console.error(
+                "Upload error:",
+                uploadError
+            );
+
+            continue;
+        }
+
+        // -----------------------------
+        // PUBLIC URL
+        // -----------------------------
+
+        const {
+            data: publicUrlData
+        } = supabaseClient
+            .storage
+            .from("property-images")
+            .getPublicUrl(path);
+
+        const publicUrl =
+            publicUrlData?.publicUrl;
+
+        if (!publicUrl) {
+            continue;
+        }
+
+        // -----------------------------
+        // SAVE ACCORDING TO FILE TYPE
+        // -----------------------------
+
+        if (isImage) {
+            images.push(publicUrl);
+        }
+
+        if (isVideo) {
+            videos.push(publicUrl);
+        }
+    }
+
+    return {
+        images,
+        videos
+    };
 }
-
 function wireListPropertyForm() {
     const listPropertyForm = document.getElementById("listPropertyForm");
     if (!listPropertyForm) return;
@@ -1979,10 +2354,18 @@ function wireListPropertyForm() {
         const facilities = facilityCheckboxes.map(cb => cb.dataset.label);
         const rules = rulesRaw ? rulesRaw.split("\n").map(r => r.trim()).filter(Boolean) : [];
 
-        let images = await uploadPropertyImages(imageFiles, user.id);
-        if (images.length === 0) {
-            images = ["images/krishna-pg-1.webp", "images/krishna-pg-2.webp"];
-        }
+const mediaFiles =
+    document.getElementById("lpImages").files;
+
+const uploadedMedia =
+    await uploadPropertyMedia(
+        mediaFiles,
+        user.id
+    );
+
+let images = uploadedMedia.images;
+
+const videos = uploadedMedia.videos;
 
         submitBtn.textContent = "Listing your property…";
 
@@ -1999,6 +2382,7 @@ function wireListPropertyForm() {
                 facilities,
                 facility_tags: facilityTags,
                 images,
+                videos,
                 owner_name: ownerName,
                 owner_phone: ownerPhone,
                 owner_whatsapp: ownerPhone,

@@ -62,7 +62,25 @@
 
             <div class="form-group">
                 <label for="lpImages">Property Photos (up to 5)</label>
-                <input type="file" id="lpImages" accept="image/*" multiple>
+                <div class="media-upload-section">
+
+    <label for="lpImages">
+        Property Photos & Videos
+    </label>
+
+    <input
+        type="file"
+        id="lpImages"
+        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+        multiple
+    >
+
+    <small>
+        Upload property photos and videos.
+        Photos up to 5MB each, videos up to 50MB each.
+    </small>
+
+</div>
                 <p class="lp-hint">JPG or PNG, up to 5MB each. Shared across all room types in this building.</p>
             </div>
 
