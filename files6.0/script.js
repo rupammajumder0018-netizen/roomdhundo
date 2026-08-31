@@ -4365,6 +4365,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireListPropertyForm();
     wireResetPasswordForm();
     wireRoleChoice();
+    wireThemeToggle();
 
    const currentUser = await getCurrentUserFast();
 
@@ -4530,4 +4531,43 @@ function wireRoleChoice() {
 
     });
 
+}
+
+// =====================================================
+// DARK MODE TOGGLE
+// =====================================================
+function wireThemeToggle() {
+    const storageKey = "roomdhundo-theme";
+    const root = document.documentElement;
+    const savedTheme = localStorage.getItem(storageKey);
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+
+    function setTheme(theme) {
+        root.dataset.theme = theme;
+        localStorage.setItem(storageKey, theme);
+        const button = document.querySelector(".theme-toggle");
+        if (button) {
+            const isDark = theme === "dark";
+            button.textContent = isDark ? "☀" : "☾";
+            button.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+            button.title = button.getAttribute("aria-label");
+        }
+    }
+
+    setTheme(savedTheme || systemTheme);
+
+    const navLinks = document.querySelector(".nav-links");
+    if (!navLinks || navLinks.querySelector(".theme-toggle")) return;
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "theme-toggle";
+    toggle.addEventListener("click", () => {
+        setTheme(root.dataset.theme === "dark" ? "light" : "dark");
+    });
+
+    navLinks.insertBefore(toggle, navLinks.querySelector("#navAuthBtn") || null);
+    setTheme(root.dataset.theme);
 }
