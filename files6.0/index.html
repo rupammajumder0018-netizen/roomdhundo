@@ -76,6 +76,75 @@
                 Search
             </button>
         </div>
+
+        <div class="location-pill" id="locationPill">
+            <span class="location-pill-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/>
+                    <circle cx="12" cy="10" r="2.5"/>
+                </svg>
+            </span>
+
+            <input
+                type="text"
+                id="locationPillInput"
+                class="location-pill-input"
+                value="Kolkata"
+                placeholder="Where are you looking?"
+            >
+
+            <button class="location-pill-filter" id="locationPillFilterBtn" aria-label="Filters">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="6" x2="20" y2="6"/>
+                    <circle cx="9" cy="6" r="2"/>
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                    <circle cx="15" cy="12" r="2"/>
+                    <line x1="4" y1="18" x2="20" y2="18"/>
+                    <circle cx="9" cy="18" r="2"/>
+                </svg>
+            </button>
+
+            <div class="pill-filter-dropdown" id="pillFilterDropdown">
+                <div class="pill-filter-section">
+                    <h4>Property Type</h4>
+
+                    <label>
+                        <input type="checkbox" class="pillTypeFilter" value="PG">
+                        PG
+                    </label>
+                    <label>
+                        <input type="checkbox" class="pillTypeFilter" value="Room">
+                        Room
+                    </label>
+                    <label>
+                        <input type="checkbox" class="pillTypeFilter" value="Mess">
+                        Mess
+                    </label>
+                    <label>
+                        <input type="checkbox" class="pillTypeFilter" value="Flat">
+                        Flat
+                    </label>
+                    <label>
+                        <input type="checkbox" class="pillTypeFilter" value="Guest House">
+                        Guest House
+                    </label>
+                </div>
+
+                <div class="pill-filter-section">
+                    <h4>Budget</h4>
+
+                    <div class="pill-filter-budget">
+                        <input type="number" id="pillBudgetMin" placeholder="Min">
+                        <span>–</span>
+                        <input type="number" id="pillBudgetMax" placeholder="Max">
+                    </div>
+                </div>
+
+                <button type="button" class="pill-filter-apply" id="pillFilterApplyBtn">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
     </section>
 
     <section class="categories">
@@ -188,6 +257,127 @@
                         ? "light"
                         : "dark"
                 );
+            });
+        })();
+    </script>
+
+    <script>
+        (() => {
+            const locationInput = document.getElementById("locationPillInput");
+            const locationIcon = document.querySelector(".location-pill-icon");
+
+            if (!locationInput || !locationIcon) {
+                return;
+            }
+
+            async function reverseGeocode(lat, lon) {
+                const url =
+                    "https://nominatim.openstreetmap.org/reverse" +
+                    `?format=jsonv2&lat=${lat}&lon=${lon}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+                const address = data.address || {};
+
+                return (
+                    address.city ||
+                    address.town ||
+                    address.village ||
+                    address.suburb ||
+                    address.state ||
+                    "Kolkata"
+                );
+            }
+
+            function detectLocation() {
+                if (!navigator.geolocation) {
+                    return;
+                }
+
+                locationInput.value = "Detecting location...";
+
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        try {
+                            const place = await reverseGeocode(
+                                position.coords.latitude,
+                                position.coords.longitude
+                            );
+                            locationInput.value = place;
+                        } catch (error) {
+                            locationInput.value = "Kolkata";
+                        }
+                    },
+                    () => {
+                        locationInput.value = "Kolkata";
+                    },
+                    { timeout: 8000 }
+                );
+            }
+
+            detectLocation();
+            locationIcon.addEventListener("click", detectLocation);
+        })();
+    </script>
+
+    <script>
+        (() => {
+            const filterBtn = document.getElementById("locationPillFilterBtn");
+            const dropdown = document.getElementById("pillFilterDropdown");
+            const applyBtn = document.getElementById("pillFilterApplyBtn");
+            const locationInput = document.getElementById("locationPillInput");
+            const minInput = document.getElementById("pillBudgetMin");
+            const maxInput = document.getElementById("pillBudgetMax");
+
+            if (!filterBtn || !dropdown || !applyBtn) {
+                return;
+            }
+
+            function closeDropdown() {
+                dropdown.classList.remove("open");
+            }
+
+            filterBtn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                dropdown.classList.toggle("open");
+            });
+
+            dropdown.addEventListener("click", (event) => {
+                event.stopPropagation();
+            });
+
+            document.addEventListener("click", closeDropdown);
+
+            document.addEventListener("keydown", (event) => {
+                if (event.key === "Escape") {
+                    closeDropdown();
+                }
+            });
+
+            applyBtn.addEventListener("click", () => {
+                const selectedTypes = Array.from(
+                    document.querySelectorAll(".pillTypeFilter:checked")
+                ).map((checkbox) => checkbox.value);
+
+                const params = new URLSearchParams();
+
+                if (locationInput && locationInput.value.trim()) {
+                    params.set("q", locationInput.value.trim());
+                }
+
+                if (selectedTypes.length) {
+                    params.set("type", selectedTypes.join(","));
+                }
+
+                if (minInput && minInput.value) {
+                    params.set("min", minInput.value);
+                }
+
+                if (maxInput && maxInput.value) {
+                    params.set("max", maxInput.value);
+                }
+
+                window.location.href = "search.html?" + params.toString();
             });
         })();
     </script>

@@ -1,207 +1,1437 @@
--- =====================================================
--- ROOMDHUNDO DATABASE SCHEMA (v2 — buildings + room types)
--- Paste this whole file into Supabase SQL Editor and run it.
--- This REPLACES the old single "properties" table structure.
--- Safe to re-run: it drops and recreates these tables only.
--- =====================================================
+-- ============================================================
+-- ROOMDHUNDO DATABASE SCHEMA
+-- VERSION 3
+--
+-- Compatible with:
+--   - Public website
+--   - Search
+--   - Property details
+--   - Login / Signup
+--   - User account
+--   - Owner dashboard
+--   - List property
+--   - Saved properties
+--   - Reviews
+--   - Enquiries
+--   - Admin user/property management
+--
+-- IMPORTANT:
+-- This version DOES NOT DROP your existing buildings.
+-- It is designed to preserve existing RoomDhundo data.
+-- ============================================================
 
-drop table if exists saved_buildings cascade;
-drop table if exists saved_properties cascade; -- old v1 table, if it still exists
-drop table if exists reviews cascade;
-drop table if exists room_types cascade;
-drop table if exists properties cascade;       -- old v1 table, if it still exists
-drop table if exists buildings cascade;
 
--- =====================================================
+-- ============================================================
+-- EXTENSIONS
+-- ============================================================
+
+create extension if not exists pgcrypto;
+
+
+-- ============================================================
+-- HELPER: updated_at
+-- ============================================================
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+    new.updated_at = now();
+    return new;
+end;
+$$;
+
+
+-- ============================================================
+-- PROFILES
+--
+-- Connected to Supabase Auth.
+--
+-- Your frontend uses:
+-- id
+-- name
+-- full_name
+-- email
+-- phone
+-- address
+-- city
+-- pincode
+-- role
+-- user_type
+-- status
+-- ============================================================
+
+create table if not exists public.profiles (
+    id uuid primary key references auth.users(id) on delete cascade,
+
+    name text,
+    full_name text,
+
+    email text,
+
+    phone text,
+    address text,
+    city text,
+    pincode text,
+
+    role text not null default 'user'
+        check (role in ('user', 'owner', 'admin')),
+
+    user_type text default 'renter'
+        check (user_type in ('renter', 'owner', 'admin')),
+
+    status text not null default 'active'
+        check (status in ('active', 'suspended', 'blocked')),
+
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+);
+
+
+-- Add missing columns if profiles already existed
+alter table public.profiles
+    add column if not exists name text;
+
+alter table public.profiles
+    add column if not exists full_name text;
+
+alter table public.profiles
+    add column if not exists email text;
+
+alter table public.profiles
+    add column if not exists phone text;
+
+alter table public.profiles
+    add column if not exists address text;
+
+alter table public.profiles
+    add column if not exists city text;
+
+alter table public.profiles
+    add column if not exists pincode text;
+
+alter table public.profiles
+    add column if not exists role text default 'user';
+
+alter table public.profiles
+    add column if not exists user_type text default 'renter';
+
+alter table public.profiles
+    add column if not exists status text default 'active';
+
+alter table public.profiles
+    add column if not exists created_at timestamptz default now();
+
+alter table public.profiles
+    add column if not exists updated_at timestamptz default now();
+
+
+-- ============================================================
+-- PROFILE TRIGGER
+--
+-- Automatically creates a profile when a Supabase Auth user
+-- is created.
+-- ============================================================
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+
+    insert into public.profiles (
+        id,
+        name,
+        full_name,
+        email,
+        role,
+        user_type,
+        status
+    )
+
+    values (
+        new.id,
+
+        coalesce(
+            new.raw_user_meta_data ->> 'name',
+            new.raw_user_meta_data ->> 'full_name',
+            split_part(coalesce(new.email, ''), '@', 1)
+        ),
+
+        coalesce(
+            new.raw_user_meta_data ->> 'full_name',
+            new.raw_user_meta_data ->> 'name',
+            split_part(coalesce(new.email, ''), '@', 1)
+        ),
+
+        new.email,
+
+        'user',
+        'renter',
+        'active'
+    )
+
+    on conflict (id) do nothing;
+
+    return new;
+
+end;
+$$;
+
+
+drop trigger if exists on_auth_user_created on auth.users;
+
+create trigger on_auth_user_created
+
+after insert on auth.users
+
+for each row
+
+execute procedure public.handle_new_user();
+
+
+-- ============================================================
+-- PROFILE UPDATED_AT
+-- ============================================================
+
+drop trigger if exists profiles_updated_at on public.profiles;
+
+create trigger profiles_updated_at
+
+before update on public.profiles
+
+for each row
+
+execute procedure public.set_updated_at();
+
+
+-- ============================================================
 -- BUILDINGS
--- One row per physical property. Room-specific info (price,
--- sharing type, availability) lives in room_types instead.
--- =====================================================
-create table buildings (
+--
+-- One row = one physical property.
+--
+-- Existing RoomDhundo structure is preserved.
+-- ============================================================
+
+create table if not exists public.buildings (
+
     id uuid primary key default gen_random_uuid(),
+
     name text not null,
+
     location text not null,
-    distance_km numeric not null,
-    type text not null,               -- PG / Room / Mess / Flat / Guest House
+
+    distance_km numeric not null default 0,
+
+    type text not null,
+
     description text,
-    rules jsonb default '[]',
-    facilities jsonb default '[]',       -- e.g. ["📶 Wi-Fi", "🍛 Food"]
-    facility_tags jsonb default '[]',    -- e.g. ["wifi", "food"]
-    images jsonb default '[]',
+
+    rules jsonb not null default '[]'::jsonb,
+
+    facilities jsonb not null default '[]'::jsonb,
+
+    facility_tags jsonb not null default '[]'::jsonb,
+
+    images jsonb not null default '[]'::jsonb,
+
+    videos jsonb not null default '[]'::jsonb,
+
     owner_name text not null,
+
     owner_phone text not null,
+
+    owner_alt_phone text,
+
     owner_whatsapp text,
-    owner_verified boolean default false,
+
+    owner_verified boolean not null default false,
+
     owner_member_since text,
-    created_by uuid references auth.users(id),
-    created_at timestamptz default now()
+
+    created_by uuid references auth.users(id) on delete set null,
+
+    listing_status text not null default 'published'
+        check (
+            listing_status in (
+                'draft',
+                'pending',
+                'published',
+                'rejected',
+                'archived'
+            )
+        ),
+
+    verification_status text not null default 'pending'
+        check (
+            verification_status in (
+                'pending',
+                'approved',
+                'rejected',
+                'changes_requested'
+            )
+        ),
+
+    rejection_reason text,
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
 );
 
-alter table buildings enable row level security;
 
-create policy "Public can view buildings"
-    on buildings for select
-    using (true);
+-- ============================================================
+-- ADD MISSING BUILDING COLUMNS
+-- ============================================================
 
-create policy "Authenticated users can insert their own building"
-    on buildings for insert
-    with check (auth.uid() = created_by);
+alter table public.buildings
+    add column if not exists videos jsonb not null default '[]'::jsonb;
 
-create policy "Owners can update their own building"
-    on buildings for update
-    using (auth.uid() = created_by);
+alter table public.buildings
+    add column if not exists owner_alt_phone text;
 
-create policy "Owners can delete their own building"
-    on buildings for delete
-    using (auth.uid() = created_by);
+alter table public.buildings
+    add column if not exists listing_status text default 'published';
 
--- =====================================================
+alter table public.buildings
+    add column if not exists verification_status text default 'pending';
+
+alter table public.buildings
+    add column if not exists rejection_reason text;
+
+alter table public.buildings
+    add column if not exists updated_at timestamptz default now();
+
+
+-- ============================================================
+-- BUILDING UPDATED_AT
+-- ============================================================
+
+drop trigger if exists buildings_updated_at on public.buildings;
+
+create trigger buildings_updated_at
+
+before update on public.buildings
+
+for each row
+
+execute procedure public.set_updated_at();
+
+
+-- ============================================================
 -- ROOM TYPES
--- Multiple per building — this is what actually has a price.
--- =====================================================
-create table room_types (
+-- ============================================================
+
+create table if not exists public.room_types (
+
     id uuid primary key default gen_random_uuid(),
-    building_id uuid references buildings(id) on delete cascade,
-    room_type text not null,          -- Single / Double Sharing / Triple Sharing / 4+ Sharing
-    price_value integer not null,     -- monthly rent for this room type
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    room_type text not null,
+
+    price_value integer not null default 0,
+
     daily_price integer,
-    room_rent integer not null,
+
+    room_rent integer not null default 0,
+
     room_people integer not null default 1,
+
     available_rooms integer not null default 1,
-    availability text default 'Room available',
-    created_at timestamptz default now()
+
+    availability text not null default 'Available',
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
 );
 
-alter table room_types enable row level security;
 
-create policy "Public can view room types"
-    on room_types for select
-    using (true);
+-- ============================================================
+-- ROOM TYPE UPDATED_AT
+-- ============================================================
 
-create policy "Owners can insert room types for their building"
-    on room_types for insert
-    with check (exists (select 1 from buildings b where b.id = building_id and b.created_by = auth.uid()));
+drop trigger if exists room_types_updated_at on public.room_types;
 
-create policy "Owners can update room types for their building"
-    on room_types for update
-    using (exists (select 1 from buildings b where b.id = building_id and b.created_by = auth.uid()));
+create trigger room_types_updated_at
 
-create policy "Owners can delete room types for their building"
-    on room_types for delete
-    using (exists (select 1 from buildings b where b.id = building_id and b.created_by = auth.uid()));
+before update on public.room_types
 
--- =====================================================
--- REVIEWS (per building)
--- =====================================================
-create table reviews (
+for each row
+
+execute procedure public.set_updated_at();
+
+
+-- ============================================================
+-- REVIEWS
+-- ============================================================
+
+create table if not exists public.reviews (
+
     id uuid primary key default gen_random_uuid(),
-    building_id uuid references buildings(id) on delete cascade,
-    user_id uuid references auth.users(id),
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    user_id uuid
+        references auth.users(id)
+        on delete set null,
+
     reviewer_name text not null,
-    rating integer not null check (rating between 1 and 5),
+
+    rating integer not null
+        check (rating between 1 and 5),
+
     comment text,
-    created_at timestamptz default now()
+
+    status text not null default 'published'
+        check (
+            status in (
+                'pending',
+                'published',
+                'rejected'
+            )
+        ),
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
 );
 
-alter table reviews enable row level security;
 
-create policy "Public can view reviews"
-    on reviews for select
-    using (true);
+-- ============================================================
+-- SAVED BUILDINGS
+-- ============================================================
 
-create policy "Authenticated users can add a review as themselves"
-    on reviews for insert
-    with check (auth.uid() = user_id);
+create table if not exists public.saved_buildings (
 
--- =====================================================
--- SAVED BUILDINGS (favorites)
--- =====================================================
-create table saved_buildings (
-    user_id uuid references auth.users(id) on delete cascade,
-    building_id uuid references buildings(id) on delete cascade,
-    created_at timestamptz default now(),
+    user_id uuid not null
+        references auth.users(id)
+        on delete cascade,
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    created_at timestamptz not null default now(),
+
     primary key (user_id, building_id)
 );
 
-alter table saved_buildings enable row level security;
+
+-- ============================================================
+-- ENQUIRIES
+--
+-- Used by property.html.
+--
+-- Current frontend inserts:
+--
+-- user_id
+-- building_id
+-- renter_phone
+-- status
+-- ============================================================
+
+create table if not exists public.enquiries (
+
+    id uuid primary key default gen_random_uuid(),
+
+    user_id uuid not null
+        references auth.users(id)
+        on delete cascade,
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    renter_phone text not null,
+
+    message text,
+
+    status text not null default 'pending'
+        check (
+            status in (
+                'pending',
+                'contacted',
+                'scheduled',
+                'visited',
+                'closed',
+                'cancelled'
+            )
+        ),
+
+    owner_response text,
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
+);
+
+
+-- ============================================================
+-- ENQUIRY UPDATED_AT
+-- ============================================================
+
+drop trigger if exists enquiries_updated_at on public.enquiries;
+
+create trigger enquiries_updated_at
+
+before update on public.enquiries
+
+for each row
+
+execute procedure public.set_updated_at();
+
+
+-- ============================================================
+-- VERIFICATION REQUESTS
+--
+-- For the future/admin verification workflow.
+-- ============================================================
+
+create table if not exists public.verification_requests (
+
+    id uuid primary key default gen_random_uuid(),
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    submitted_by uuid
+        references auth.users(id)
+        on delete set null,
+
+    status text not null default 'pending'
+        check (
+            status in (
+                'pending',
+                'approved',
+                'rejected',
+                'changes_requested'
+            )
+        ),
+
+    admin_note text,
+
+    reviewed_by uuid
+        references auth.users(id)
+        on delete set null,
+
+    reviewed_at timestamptz,
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
+);
+
+
+-- ============================================================
+-- PROPERTY REPORTS
+--
+-- Useful for future moderation.
+-- ============================================================
+
+create table if not exists public.property_reports (
+
+    id uuid primary key default gen_random_uuid(),
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    reported_by uuid
+        references auth.users(id)
+        on delete set null,
+
+    reason text not null,
+
+    description text,
+
+    status text not null default 'pending'
+        check (
+            status in (
+                'pending',
+                'reviewed',
+                'resolved',
+                'dismissed'
+            )
+        ),
+
+    admin_note text,
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
+);
+
+
+-- ============================================================
+-- NOTIFICATIONS
+-- ============================================================
+
+create table if not exists public.notifications (
+
+    id uuid primary key default gen_random_uuid(),
+
+    user_id uuid not null
+        references auth.users(id)
+        on delete cascade,
+
+    title text not null,
+
+    message text not null,
+
+    type text default 'general',
+
+    is_read boolean not null default false,
+
+    created_at timestamptz not null default now()
+);
+
+
+-- ============================================================
+-- INDEXES
+-- ============================================================
+
+create index if not exists buildings_created_by_idx
+on public.buildings(created_by);
+
+create index if not exists buildings_type_idx
+on public.buildings(type);
+
+create index if not exists buildings_location_idx
+on public.buildings(location);
+
+create index if not exists buildings_distance_idx
+on public.buildings(distance_km);
+
+create index if not exists buildings_listing_status_idx
+on public.buildings(listing_status);
+
+create index if not exists buildings_verification_status_idx
+on public.buildings(verification_status);
+
+create index if not exists room_types_building_id_idx
+on public.room_types(building_id);
+
+create index if not exists enquiries_user_id_idx
+on public.enquiries(user_id);
+
+create index if not exists enquiries_building_id_idx
+on public.enquiries(building_id);
+
+create index if not exists enquiries_status_idx
+on public.enquiries(status);
+
+create index if not exists reviews_building_id_idx
+on public.reviews(building_id);
+
+create index if not exists profiles_role_idx
+on public.profiles(role);
+
+create index if not exists profiles_status_idx
+on public.profiles(status);
+
+
+-- ============================================================
+-- ENABLE RLS
+-- ============================================================
+
+alter table public.profiles enable row level security;
+
+alter table public.buildings enable row level security;
+
+alter table public.room_types enable row level security;
+
+alter table public.reviews enable row level security;
+
+alter table public.saved_buildings enable row level security;
+
+alter table public.enquiries enable row level security;
+
+alter table public.verification_requests enable row level security;
+
+alter table public.property_reports enable row level security;
+
+alter table public.notifications enable row level security;
+
+
+-- ============================================================
+-- ADMIN HELPER
+--
+-- Used by RLS policies.
+-- ============================================================
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select exists (
+        select 1
+        from public.profiles
+        where id = auth.uid()
+        and role = 'admin'
+        and status = 'active'
+    );
+$$;
+
+
+-- ============================================================
+-- REMOVE OLD POLICIES
+--
+-- This prevents duplicate-policy errors when rerunning.
+-- ============================================================
+
+
+-- PROFILES
+
+drop policy if exists "Users can view own profile"
+on public.profiles;
+
+drop policy if exists "Users can insert own profile"
+on public.profiles;
+
+drop policy if exists "Users can update own profile"
+on public.profiles;
+
+drop policy if exists "Admins can view all profiles"
+on public.profiles;
+
+drop policy if exists "Admins can update profiles"
+on public.profiles;
+
+
+-- BUILDINGS
+
+drop policy if exists "Public can view buildings"
+on public.buildings;
+
+drop policy if exists "Authenticated users can insert their own building"
+on public.buildings;
+
+drop policy if exists "Owners can update their own building"
+on public.buildings;
+
+drop policy if exists "Owners can delete their own building"
+on public.buildings;
+
+drop policy if exists "Admins can manage buildings"
+on public.buildings;
+
+
+-- ROOM TYPES
+
+drop policy if exists "Public can view room types"
+on public.room_types;
+
+drop policy if exists "Owners can insert room types for their building"
+on public.room_types;
+
+drop policy if exists "Owners can update room types for their building"
+on public.room_types;
+
+drop policy if exists "Owners can delete room types for their building"
+on public.room_types;
+
+drop policy if exists "Admins can manage room types"
+on public.room_types;
+
+
+-- REVIEWS
+
+drop policy if exists "Public can view reviews"
+on public.reviews;
+
+drop policy if exists "Authenticated users can add a review as themselves"
+on public.reviews;
+
+drop policy if exists "Admins can manage reviews"
+on public.reviews;
+
+
+-- SAVED BUILDINGS
+
+drop policy if exists "Users can view their own saved buildings"
+on public.saved_buildings;
+
+drop policy if exists "Users can save a building as themselves"
+on public.saved_buildings;
+
+drop policy if exists "Users can remove their own saved building"
+on public.saved_buildings;
+
+
+-- ENQUIRIES
+
+drop policy if exists "Users can create their own enquiries"
+on public.enquiries;
+
+drop policy if exists "Users can view their own enquiries"
+on public.enquiries;
+
+drop policy if exists "Owners can view enquiries for their properties"
+on public.enquiries;
+
+drop policy if exists "Owners can update enquiries for their properties"
+on public.enquiries;
+
+drop policy if exists "Admins can manage enquiries"
+on public.enquiries;
+
+
+-- VERIFICATION
+
+drop policy if exists "Owners can create verification requests"
+on public.verification_requests;
+
+drop policy if exists "Owners can view own verification requests"
+on public.verification_requests;
+
+drop policy if exists "Admins can manage verification requests"
+on public.verification_requests;
+
+
+-- REPORTS
+
+drop policy if exists "Users can create property reports"
+on public.property_reports;
+
+drop policy if exists "Users can view own property reports"
+on public.property_reports;
+
+drop policy if exists "Admins can manage property reports"
+on public.property_reports;
+
+
+-- NOTIFICATIONS
+
+drop policy if exists "Users can view own notifications"
+on public.notifications;
+
+drop policy if exists "Users can update own notifications"
+on public.notifications;
+
+drop policy if exists "Admins can manage notifications"
+on public.notifications;
+
+
+-- ============================================================
+-- PROFILES POLICIES
+-- ============================================================
+
+create policy "Users can view own profile"
+
+on public.profiles
+
+for select
+
+to authenticated
+
+using (
+    id = auth.uid()
+);
+
+
+create policy "Users can insert own profile"
+
+on public.profiles
+
+for insert
+
+to authenticated
+
+with check (
+    id = auth.uid()
+);
+
+
+create policy "Users can update own profile"
+
+on public.profiles
+
+for update
+
+to authenticated
+
+using (
+    id = auth.uid()
+)
+
+with check (
+    id = auth.uid()
+);
+
+
+create policy "Admins can view all profiles"
+
+on public.profiles
+
+for select
+
+to authenticated
+
+using (
+    public.is_admin()
+);
+
+
+create policy "Admins can update profiles"
+
+on public.profiles
+
+for update
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- BUILDINGS POLICIES
+-- ============================================================
+
+create policy "Public can view buildings"
+
+on public.buildings
+
+for select
+
+to anon, authenticated
+
+using (
+    true
+);
+
+
+create policy "Authenticated users can insert their own building"
+
+on public.buildings
+
+for insert
+
+to authenticated
+
+with check (
+    auth.uid() = created_by
+);
+
+
+create policy "Owners can update their own building"
+
+on public.buildings
+
+for update
+
+to authenticated
+
+using (
+    auth.uid() = created_by
+)
+
+with check (
+    auth.uid() = created_by
+);
+
+
+create policy "Owners can delete their own building"
+
+on public.buildings
+
+for delete
+
+to authenticated
+
+using (
+    auth.uid() = created_by
+);
+
+
+create policy "Admins can manage buildings"
+
+on public.buildings
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- ROOM TYPES POLICIES
+-- ============================================================
+
+create policy "Public can view room types"
+
+on public.room_types
+
+for select
+
+to anon, authenticated
+
+using (
+    true
+);
+
+
+create policy "Owners can insert room types for their building"
+
+on public.room_types
+
+for insert
+
+to authenticated
+
+with check (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+);
+
+
+create policy "Owners can update room types for their building"
+
+on public.room_types
+
+for update
+
+to authenticated
+
+using (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+)
+
+with check (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+);
+
+
+create policy "Owners can delete room types for their building"
+
+on public.room_types
+
+for delete
+
+to authenticated
+
+using (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+);
+
+
+create policy "Admins can manage room types"
+
+on public.room_types
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- REVIEWS POLICIES
+-- ============================================================
+
+create policy "Public can view reviews"
+
+on public.reviews
+
+for select
+
+to anon, authenticated
+
+using (
+    status = 'published'
+);
+
+
+create policy "Authenticated users can add a review as themselves"
+
+on public.reviews
+
+for insert
+
+to authenticated
+
+with check (
+    auth.uid() = user_id
+);
+
+
+create policy "Admins can manage reviews"
+
+on public.reviews
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- SAVED BUILDINGS POLICIES
+-- ============================================================
 
 create policy "Users can view their own saved buildings"
-    on saved_buildings for select
-    using (auth.uid() = user_id);
+
+on public.saved_buildings
+
+for select
+
+to authenticated
+
+using (
+    auth.uid() = user_id
+);
+
 
 create policy "Users can save a building as themselves"
-    on saved_buildings for insert
-    with check (auth.uid() = user_id);
+
+on public.saved_buildings
+
+for insert
+
+to authenticated
+
+with check (
+    auth.uid() = user_id
+);
+
 
 create policy "Users can remove their own saved building"
-    on saved_buildings for delete
-    using (auth.uid() = user_id);
 
--- =====================================================
--- SEED DATA — 10 demo buildings, each with one room type,
--- so search isn't empty on day one. (Real listings can have more.)
--- =====================================================
-do $$
-declare
-    b_id uuid;
-begin
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Krishna PG', 'Jaguli, near MAKAUT', 2.1, 'PG', 'Krishna PG provides comfortable accommodation for students and working professionals near MAKAUT.', '["No smoking inside rooms","Visitors allowed until 9 PM","Maintain cleanliness"]', '["📶 Wi-Fi","🍛 Food","🧺 Laundry","🚗 Parking","🚿 Attached Bathroom"]', '["wifi","food","laundry","parking","bathroom"]', '["images/krishna-pg-1.webp","images/krishna-pg-2.webp"]', 'Raj Properties', '9876543210', '9876543210', true, '2026')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Double Sharing', 6000, 300, 6000, 2, 2, 'Room available');
+on public.saved_buildings
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Green Residence', 'Haringhata', 4.3, 'PG', 'Green Residence offers affordable accommodation with essential facilities.', '["No smoking inside rooms","Visitors allowed until 8 PM"]', '["📶 Wi-Fi","🍛 Food","🚿 Attached Bathroom"]', '["wifi","food","bathroom"]', '["images/krishna-pg-1.webp"]', 'Green Homes', '9876543211', '9876543211', true, '2026')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Triple Sharing', 5500, 280, 5500, 2, 1, 'Room available');
+for delete
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Sunrise Boys Hostel', 'Near MAKAUT Gate', 0.8, 'Room', 'Sunrise Boys Hostel is a single-occupancy hostel just steps from the MAKAUT main gate.', '["No smoking or alcohol","Gate closes at 10 PM"]', '["📶 Wi-Fi","🍛 Food","❄️ AC"]', '["wifi","food","ac"]', '["images/krishna-pg-1.webp"]', 'Sunrise Hostels', '9876543212', '9876543212', true, '2025')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Single', 4500, 250, 4500, 1, 3, 'Rooms available');
+to authenticated
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Mahalaxmi Mess', 'Jaguli Bazar', 1.5, 'Mess', 'Mahalaxmi Mess offers budget dormitory-style beds with three home-cooked meals a day included.', '["Meal timings are fixed","No outside food in the mess hall"]', '["🍛 Food","📶 Wi-Fi"]', '["food","wifi"]', '["images/krishna-pg-1.webp"]', 'Mahalaxmi Mess Services', '9876543213', '9876543213', false, '2026')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, '4+ Sharing', 3200, 180, 3200, 4, 5, 'Beds available');
+using (
+    auth.uid() = user_id
+);
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Sky Heights Flat', 'Haringhata Main Road', 6.7, 'Flat', 'A fully independent 1BHK flat, ideal for working professionals who want privacy and space.', '["No subletting","Society guest register applies"]', '["📶 Wi-Fi","❄️ AC","🚗 Parking","🚿 Attached Bathroom"]', '["wifi","ac","parking","bathroom"]', '["images/krishna-pg-1.webp"]', 'Sky Heights Realty', '9876543214', '9876543214', true, '2024')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Single', 12000, 700, 12000, 1, 1, 'Flat available');
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Comfort Guest House', 'Near MAKAUT', 3.2, 'Guest House', 'Comfort Guest House suits both monthly stays and short nightly visits, with daily housekeeping.', '["Check-in after 12 PM","Check-out by 11 AM"]', '["📶 Wi-Fi","🍛 Food","❄️ AC","🧺 Laundry","🚿 Attached Bathroom"]', '["wifi","food","ac","laundry","bathroom"]', '["images/krishna-pg-1.webp"]', 'Comfort Stays', '9876543215', '9876543215', true, '2025')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Double Sharing', 8000, 900, 8000, 2, 4, 'Rooms available');
+-- ============================================================
+-- ENQUIRY POLICIES
+-- ============================================================
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Student Nest PG', 'Jaguli', 1.2, 'PG', 'Student Nest PG is a budget-friendly PG built specifically around MAKAUT students'' schedules.', '["No smoking inside rooms","Visitors allowed until 8 PM"]', '["📶 Wi-Fi","🍛 Food","🧺 Laundry"]', '["wifi","food","laundry"]', '["images/krishna-pg-1.webp"]', 'Student Nest Housing', '9876543216', '9876543216', true, '2026')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Triple Sharing', 5000, 260, 5000, 3, 2, 'Rooms available');
+create policy "Users can create their own enquiries"
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('City View Rooms', 'Haringhata Chowk', 9.4, 'Room', 'City View Rooms offers no-frills single rooms a bit further out, at a lower monthly rent.', '["No visitors after 9 PM","Electricity billed separately"]', '["📶 Wi-Fi","🚗 Parking"]', '["wifi","parking"]', '["images/krishna-pg-1.webp"]', 'City View Properties', '9876543217', '9876543217', false, '2025')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Single', 4000, 220, 4000, 1, 6, 'Rooms available');
+on public.enquiries
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Annapurna Mess', 'MAKAUT Road', 0.5, 'Mess', 'Annapurna Mess is the most budget option on the list, right on MAKAUT Road.', '["Meal timings are fixed","No refunds for missed meals"]', '["🍛 Food"]', '["food"]', '["images/krishna-pg-1.webp"]', 'Annapurna Services', '9876543218', '9876543218', false, '2026')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, '4+ Sharing', 2800, 160, 2800, 4, 8, 'Beds available');
+for insert
 
-    insert into buildings (name, location, distance_km, type, description, rules, facilities, facility_tags, images, owner_name, owner_phone, owner_whatsapp, owner_verified, owner_member_since)
-    values ('Royal Residency Flat', 'Jaguli', 5.5, 'Flat', 'Royal Residency is a premium 2BHK flat ideal for sharing between two working professionals.', '["No subletting","Advance deposit required"]', '["📶 Wi-Fi","❄️ AC","🚗 Parking","🚿 Attached Bathroom","🧺 Laundry"]', '["wifi","ac","parking","bathroom","laundry"]', '["images/krishna-pg-1.webp"]', 'Royal Residency', '9876543219', '9876543219', true, '2023')
-    returning id into b_id;
-    insert into room_types (building_id, room_type, price_value, daily_price, room_rent, room_people, available_rooms, availability)
-    values (b_id, 'Double Sharing', 15000, 850, 15000, 2, 2, 'Flat available');
-end $$;
+to authenticated
+
+with check (
+    auth.uid() = user_id
+);
+
+
+create policy "Users can view their own enquiries"
+
+on public.enquiries
+
+for select
+
+to authenticated
+
+using (
+    auth.uid() = user_id
+);
+
+
+create policy "Owners can view enquiries for their properties"
+
+on public.enquiries
+
+for select
+
+to authenticated
+
+using (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+);
+
+
+create policy "Owners can update enquiries for their properties"
+
+on public.enquiries
+
+for update
+
+to authenticated
+
+using (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+)
+
+with check (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+);
+
+
+create policy "Admins can manage enquiries"
+
+on public.enquiries
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- VERIFICATION REQUEST POLICIES
+-- ============================================================
+
+create policy "Owners can create verification requests"
+
+on public.verification_requests
+
+for insert
+
+to authenticated
+
+with check (
+    auth.uid() = submitted_by
+);
+
+
+create policy "Owners can view own verification requests"
+
+on public.verification_requests
+
+for select
+
+to authenticated
+
+using (
+    auth.uid() = submitted_by
+);
+
+
+create policy "Admins can manage verification requests"
+
+on public.verification_requests
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- PROPERTY REPORT POLICIES
+-- ============================================================
+
+create policy "Users can create property reports"
+
+on public.property_reports
+
+for insert
+
+to authenticated
+
+with check (
+    auth.uid() = reported_by
+);
+
+
+create policy "Users can view own property reports"
+
+on public.property_reports
+
+for select
+
+to authenticated
+
+using (
+    auth.uid() = reported_by
+);
+
+
+create policy "Admins can manage property reports"
+
+on public.property_reports
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- NOTIFICATION POLICIES
+-- ============================================================
+
+create policy "Users can view own notifications"
+
+on public.notifications
+
+for select
+
+to authenticated
+
+using (
+    auth.uid() = user_id
+);
+
+
+create policy "Users can update own notifications"
+
+on public.notifications
+
+for update
+
+to authenticated
+
+using (
+    auth.uid() = user_id
+)
+
+with check (
+    auth.uid() = user_id
+);
+
+
+create policy "Admins can manage notifications"
+
+on public.notifications
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- NORMALIZE EXISTING DATA
+--
+-- Existing buildings created before this schema update
+-- receive safe defaults.
+-- ============================================================
+
+update public.buildings
+
+set listing_status = 'published'
+
+where listing_status is null;
+
+
+update public.buildings
+
+set verification_status =
+    case
+        when owner_verified = true
+        then 'approved'
+        else 'pending'
+    end
+
+where verification_status is null;
+
+
+-- ============================================================
+-- FINAL
+-- ============================================================
+
+select
+    'RoomDhundo database schema updated successfully.' as message;
