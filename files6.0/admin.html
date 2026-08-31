@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,7 +11,14 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>RoomDhundo Admin Dashboard</title>
+    <meta
+        name="description"
+        content="RoomDhundo Admin Dashboard"
+    >
+
+    <title>
+        RoomDhundo | Admin Panel
+    </title>
 
     <link
         rel="stylesheet"
@@ -23,10 +31,11 @@
 <body>
 
 
-    <!-- SIDEBAR -->
+    <!-- =====================================================
+         ADMIN SIDEBAR
+         ===================================================== -->
 
     <aside class="sidebar">
-
 
         <div class="admin-logo">
 
@@ -41,285 +50,685 @@
         </div>
 
 
-        <!-- NAVIGATION -->
+        <nav
+            class="admin-nav"
+            aria-label="Admin Navigation"
+        >
 
-        <nav class="admin-nav">
-
-
-            <a
-                href="admin.html"
+            <button
+                type="button"
                 class="nav-item active"
-                data-page="dashboard"
+                data-section="dashboard"
             >
                 📊 Dashboard
-            </a>
+            </button>
 
 
-            <a
-                href="admin-properties.html"
+            <button
+                type="button"
                 class="nav-item"
-                data-page="properties"
+                data-section="properties"
             >
                 🏠 Properties
-            </a>
+            </button>
 
 
-            <a
-                href="admin-users.html"
+            <button
+                type="button"
                 class="nav-item"
-                data-page="users"
+                data-section="profiles"
             >
-                👤 Users
-            </a>
-
-            <a href="admin-owners.html" class="nav-item">
-    👨‍💼 Owners
-</a>
+                👤 Registered Profiles
+            </button>
 
 
-           <a href="admin.html" class="nav-item active">
-    📊 Dashboard
-</a>
+            <button
+                type="button"
+                class="nav-item"
+                data-section="reviews"
+            >
+                ⭐ Reviews
+            </button>
 
-<a href="admin-properties.html" class="nav-item">
-    🏠 Properties
-</a>
 
-<a href="admin-users.html" class="nav-item">
-    👤 Users
-</a>
-
-<a href="admin-owners.html" class="nav-item">
-    👨‍💼 Owners
-</a>
-
-<a href="admin-enquiries.html" class="nav-item">
-    📩 Enquiries
-</a>
-
-<a href="admin-verification.html" class="nav-item">
-    ✅ Verification
-</a>
-
-<a href="admin-reviews.html" class="nav-item">
-    ⭐ Reviews
-</a>
-
-<a href="admin-settings.html" class="nav-item">
-    ⚙️ Settings
-</a>
-
+            <button
+                type="button"
+                class="nav-item"
+                data-section="settings"
+            >
+                ⚙️ Settings
+            </button>
 
         </nav>
 
 
-        <!-- LOGOUT -->
+        <!-- =================================================
+             SIDEBAR BOTTOM
+             ================================================= -->
 
         <div class="sidebar-bottom">
 
             <button
                 type="button"
+                id="adminLoginBtn"
+            >
+                🔐 Admin Login
+            </button>
+
+
+            <button
+                type="button"
+                id="adminSignupBtn"
+            >
+                📝 Sign Up
+            </button>
+
+
+            <a
+                href="index.html"
+                class="view-website-btn"
+            >
+                🌐 View Website
+            </a>
+
+
+            <button
+                type="button"
                 id="adminLogoutBtn"
+                style="display:none;"
             >
                 🚪 Logout
             </button>
 
         </div>
 
-
     </aside>
 
 
 
-    <!-- MAIN CONTENT -->
+    <!-- =====================================================
+         MAIN CONTENT
+         ===================================================== -->
 
     <main class="main-content">
 
 
-        <!-- TOPBAR -->
+        <!-- =================================================
+             TOPBAR
+             ================================================= -->
 
         <header class="topbar">
 
-
             <div>
 
-                <h1>
+                <h1 id="pageTitle">
                     Dashboard
                 </h1>
 
-                <p>
-                    Welcome back, Admin.
+
+                <p id="pageSubtitle">
+                    Welcome back, Admin. Here's what's happening
+                    on RoomDhundo today.
                 </p>
 
             </div>
 
 
-            <div class="admin-profile">
+<div class="admin-profile">
 
+    <div class="profile-avatar">
+        A
+    </div>
 
-                <div class="profile-avatar">
-                    A
-                </div>
+    <div>
 
+        <strong id="adminProfileEmail">
+            Loading...
+        </strong>
 
-                <div>
+        <span>
+            Super Admin
+        </span>
 
-                    <strong>
-                        Administrator
-                    </strong>
+    </div>
 
-                    <span>
-                        Super Admin
-                    </span>
+</div>
 
-                </div>
-
-
-            </div>
-
-
+            
         </header>
 
 
 
-        <!-- STATISTICS -->
+        <!-- =================================================
+             DASHBOARD
+             ================================================= -->
 
-        <section class="stats-grid">
+        <section
+            id="dashboardSection"
+            class="admin-section active-section"
+            data-section-content="dashboard"
+        >
 
+            <!-- DASHBOARD STATISTICS -->
 
-            <div class="stat-card">
+            <section
+                class="stats-grid"
+                aria-label="Dashboard Statistics"
+            >
 
-                <div class="stat-icon">
-                    👤
-                </div>
+                <div
+                    class="stat-card clickable-card"
+                    data-section-target="profiles"
+                    role="button"
+                    tabindex="0"
+                >
 
-                <div>
+                    <div class="stat-icon">
+                        👤
+                    </div>
 
-                    <span>
-                        Total Users
-                    </span>
+                    <div>
 
-                    <h2 id="totalUsers">
-                        0
-                    </h2>
+                        <span>
+                            Total Users
+                        </span>
 
-                </div>
+                        <h2 id="dashboardTotalUsers">
+                            0
+                        </h2>
 
-            </div>
-
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon">
-                    👨‍💼
-                </div>
-
-                <div>
-
-                    <span>
-                        Total Owners
-                    </span>
-
-                    <h2 id="totalOwners">
-                        0
-                    </h2>
+                    </div>
 
                 </div>
 
-            </div>
 
+                <div
+                    class="stat-card clickable-card"
+                    data-section-target="profiles"
+                    role="button"
+                    tabindex="0"
+                >
 
+                    <div class="stat-icon">
+                        👨‍💼
+                    </div>
 
-            <div class="stat-card">
+                    <div>
 
-                <div class="stat-icon">
-                    🏠
-                </div>
+                        <span>
+                            Total Owners
+                        </span>
 
-                <div>
+                        <h2 id="dashboardTotalOwners">
+                            0
+                        </h2>
 
-                    <span>
-                        Total Properties
-                    </span>
-
-                    <h2 id="totalProperties">
-                        0
-                    </h2>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="stat-card">
-
-                <div class="stat-icon">
-                    📩
-                </div>
-
-                <div>
-
-                    <span>
-                        Pending Enquiries
-                    </span>
-
-                    <h2 id="pendingEnquiries">
-                        0
-                    </h2>
+                    </div>
 
                 </div>
 
-            </div>
 
+                <div
+                    class="stat-card clickable-card"
+                    data-section-target="properties"
+                    role="button"
+                    tabindex="0"
+                >
+
+                    <div class="stat-icon">
+                        🏠
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Properties
+                        </span>
+
+                        <h2 id="dashboardTotalProperties">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="stat-card clickable-card"
+                    data-section-target="reviews"
+                    role="button"
+                    tabindex="0"
+                >
+
+                    <div class="stat-icon">
+                        ⭐
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Reviews
+                        </span>
+
+                        <h2 id="dashboardTotalReviews">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- DASHBOARD GRID -->
+
+            <section class="dashboard-grid">
+
+
+                <!-- RECENT PROPERTIES -->
+
+                <div class="dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Recent Properties
+                            </h2>
+
+                            <p>
+                                Latest properties added to RoomDhundo.
+                            </p>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="view-all-btn"
+                            data-section-target="properties"
+                        >
+                            View All
+                        </button>
+
+                    </div>
+
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Property
+                                    </th>
+
+                                    <th>
+                                        Owner
+                                    </th>
+
+                                    <th>
+                                        Location
+                                    </th>
+
+                                    <th>
+                                        View
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="dashboardRecentProperties">
+
+                                <tr>
+
+                                    <td
+                                        colspan="4"
+                                        class="empty-state"
+                                    >
+                                        Loading properties...
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- QUICK OVERVIEW -->
+
+                <div class="dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Quick Overview
+                            </h2>
+
+                            <p>
+                                Current RoomDhundo platform activity.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="verification-list">
+
+                        <div class="verification-item">
+
+                            <div>
+
+                                <strong>
+                                    Registered Profiles
+                                </strong>
+
+                                <span>
+                                    Total profiles in RoomDhundo
+                                </span>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                class="review-btn"
+                                data-section-target="profiles"
+                            >
+                                View
+                            </button>
+
+                        </div>
+
+
+                        <div class="verification-item">
+
+                            <div>
+
+                                <strong>
+                                    Properties
+                                </strong>
+
+                                <span>
+                                    Manage all property listings
+                                </span>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                class="review-btn"
+                                data-section-target="properties"
+                            >
+                                View
+                            </button>
+
+                        </div>
+
+
+                        <div class="verification-item">
+
+                            <div>
+
+                                <strong>
+                                    Reviews
+                                </strong>
+
+                                <span>
+                                    View submitted property reviews
+                                </span>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                class="review-btn"
+                                data-section-target="reviews"
+                            >
+                                View
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- QUICK ACTIONS -->
+
+            <section
+                class="dashboard-card"
+                style="margin-top:20px;"
+            >
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            Quick Actions
+                        </h2>
+
+                        <p>
+                            Quickly access important admin sections.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="quick-actions"
+                    style="
+                        display:grid;
+                        grid-template-columns:repeat(3,minmax(0,1fr));
+                        gap:12px;
+                    "
+                >
+
+                    <button
+                        type="button"
+                        class="view-all-btn"
+                        data-section-target="properties"
+                    >
+                        🏠 Properties
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="view-all-btn"
+                        data-section-target="profiles"
+                    >
+                        👤 Registered Profiles
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="view-all-btn"
+                        data-section-target="reviews"
+                    >
+                        ⭐ Reviews
+                    </button>
+
+                </div>
+
+            </section>
 
         </section>
 
 
 
-        <!-- DASHBOARD CONTENT -->
+        <!-- =================================================
+             PROPERTIES
+             ================================================= -->
 
-        <section class="dashboard-grid">
+        <section
+            id="propertiesSection"
+            class="admin-section"
+            data-section-content="properties"
+        >
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        🏠
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Properties
+                        </span>
+
+                        <h2 id="propertiesTotalCount">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </section>
 
 
-            <!-- RECENT PROPERTIES -->
+
+            <!-- SEARCH / FILTER -->
+
+            <div class="filter-card">
+
+                <div class="search-wrapper">
+
+                    <input
+                        type="search"
+                        id="propertySearch"
+                        placeholder="Search property, owner or location..."
+                        autocomplete="off"
+                    >
+
+
+                    <button
+                        type="button"
+                        id="propertySearchBtn"
+                    >
+                        🔍 Search
+                    </button>
+
+                </div>
+
+
+                <div class="filters">
+
+                    <select id="propertyTypeFilter">
+
+                        <option value="all">
+                            All Types
+                        </option>
+
+                        <option value="PG">
+                            PG
+                        </option>
+
+                        <option value="Room">
+                            Room
+                        </option>
+
+                        <option value="Mess">
+                            Mess
+                        </option>
+
+                        <option value="Guest House">
+                            Guest House
+                        </option>
+
+                        <option value="Flat">
+                            Flat
+                        </option>
+
+                    </select>
+
+
+                    <select id="propertySort">
+
+                        <option value="newest">
+                            Newest
+                        </option>
+
+                        <option value="oldest">
+                            Oldest
+                        </option>
+
+                        <option value="price-low">
+                            Price: Low to High
+                        </option>
+
+                        <option value="price-high">
+                            Price: High to Low
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ALL PROPERTIES -->
 
             <div class="dashboard-card">
 
-
                 <div class="card-header">
-
 
                     <div>
 
                         <h2>
-                            Recent Properties
+                            All Properties
                         </h2>
 
                         <p>
-                            Latest properties submitted by owners
+                            Live property listings from the RoomDhundo database.
                         </p>
 
                     </div>
 
 
-                    <a
-                        href="admin-properties.html"
-                        class="view-all-btn"
-                    >
-                        View All
-                    </a>
-
+                    <span id="propertyCount">
+                        0 Properties
+                    </span>
 
                 </div>
 
 
                 <div class="table-container">
 
-
                     <table>
-
 
                         <thead>
 
@@ -327,6 +736,10 @@
 
                                 <th>
                                     Property
+                                </th>
+
+                                <th>
+                                    Type
                                 </th>
 
                                 <th>
@@ -338,7 +751,15 @@
                                 </th>
 
                                 <th>
-                                    Status
+                                    Rent
+                                </th>
+
+                                <th>
+                                    View
+                                </th>
+
+                                <th>
+                                    Delete
                                 </th>
 
                             </tr>
@@ -346,169 +767,1531 @@
                         </thead>
 
 
-                        <tbody id="recentProperties">
-
-
-                            <tr>
-
-                                <td>
-                                    Jaguli PG
-                                </td>
-
-                                <td>
-                                    Owner Name
-                                </td>
-
-                                <td>
-                                    Jaguli
-                                </td>
-
-                                <td>
-
-                                    <span class="status pending">
-                                        Pending
-                                    </span>
-
-                                </td>
-
-                            </tr>
-
+                        <tbody id="propertyTableBody">
 
                             <tr>
 
-                                <td>
-                                    Haringhata Room
-                                </td>
-
-                                <td>
-                                    Owner Name
-                                </td>
-
-                                <td>
-                                    Haringhata
-                                </td>
-
-                                <td>
-
-                                    <span class="status approved">
-                                        Approved
-                                    </span>
-
+                                <td
+                                    colspan="7"
+                                    class="empty-state"
+                                >
+                                    Loading properties...
                                 </td>
 
                             </tr>
-
 
                         </tbody>
 
-
                     </table>
-
 
                 </div>
 
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             REGISTERED PROFILES
+             ================================================= -->
+
+        <section
+            id="profilesSection"
+            class="admin-section"
+            data-section-content="profiles"
+        >
+
+            <!-- PROFILE STATISTICS -->
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        👥
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Profiles
+                        </span>
+
+                        <h2 id="profilesAllCount">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        👤
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Users
+                        </span>
+
+                        <h2 id="profilesUserCount">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        👨‍💼
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Owners
+                        </span>
+
+                        <h2 id="profilesOwnerCount">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        🛡️
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Admins
+                        </span>
+
+                        <h2 id="profilesAdminCount">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- PROFILE SEARCH -->
+
+            <div class="filter-card">
+
+                <div class="search-wrapper">
+
+                    <input
+                        type="search"
+                        id="profileSearch"
+                        placeholder="Search by name, role or profile ID..."
+                        autocomplete="off"
+                    >
+
+
+                    <button
+                        type="button"
+                        id="profileSearchBtn"
+                    >
+                        🔍 Search
+                    </button>
+
+                </div>
+
+
+                <div class="filters">
+
+                    <select id="profileRoleFilter">
+
+                        <option value="all">
+                            All Roles
+                        </option>
+
+                        <option value="user">
+                            Users
+                        </option>
+
+                        <option value="owner">
+                            Owners
+                        </option>
+
+                        <option value="admin">
+                            Admins
+                        </option>
+
+                    </select>
+
+
+                    <select id="profileSort">
+
+                        <option value="newest">
+                            Newest
+                        </option>
+
+                        <option value="oldest">
+                            Oldest
+                        </option>
+
+                        <option value="name">
+                            Name A-Z
+                        </option>
+
+                        <option value="name-desc">
+                            Name Z-A
+                        </option>
+
+                    </select>
+
+                </div>
 
             </div>
 
 
 
-            <!-- VERIFICATION -->
+            <!-- PROFILE TABLE -->
 
             <div class="dashboard-card">
 
-
                 <div class="card-header">
-
 
                     <div>
 
                         <h2>
-                            Pending Verification
+                            All Registered Profiles
                         </h2>
 
                         <p>
-                            Properties waiting for approval
+                            Live profile records from RoomDhundo.
                         </p>
 
                     </div>
 
 
-                    <span class="notification-count">
-                        0
+                    <span id="profileCount">
+                        0 Profiles
                     </span>
 
-
                 </div>
 
 
-                <div class="verification-list">
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Profile
+                                </th>
+
+                                <th>
+                                    Role
+                                </th>
+
+                                <th>
+                                    Profile ID
+                                </th>
+
+                                <th>
+                                    Joined
+                                </th>
+
+                                <th>
+                                    View
+                                </th>
+
+                            </tr>
+
+                        </thead>
 
 
-                    <div class="verification-item">
+                        <tbody id="profileTableBody">
 
+                            <tr>
 
-                        <div>
+                                <td
+                                    colspan="5"
+                                    class="empty-state"
+                                >
+                                    Loading profiles...
+                                </td>
 
-                            <strong>
-                                Jaguli PG
-                            </strong>
+                            </tr>
 
-                            <span>
-                                Submitted recently
-                            </span>
+                        </tbody>
 
-                        </div>
-
-
-                        <button
-                            type="button"
-                            class="review-btn"
-                        >
-                            Review
-                        </button>
-
-
-                    </div>
-
-
-                    <div class="verification-item">
-
-
-                        <div>
-
-                            <strong>
-                                MAKAUT Room
-                            </strong>
-
-                            <span>
-                                Submitted recently
-                            </span>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            class="review-btn"
-                        >
-                            Review
-                        </button>
-
-
-                    </div>
-
+                    </table>
 
                 </div>
-
 
             </div>
-
 
         </section>
 
 
+
+        <!-- =================================================
+             REVIEWS
+             ================================================= -->
+
+        <section
+            id="reviewsSection"
+            class="admin-section"
+            data-section-content="reviews"
+        >
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        ⭐
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Reviews
+                        </span>
+
+                        <h2 id="reviewsTotalCount">
+                            0
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- REVIEW SEARCH -->
+
+            <div class="filter-card">
+
+                <div class="search-wrapper">
+
+                    <input
+                        type="search"
+                        id="reviewSearch"
+                        placeholder="Search reviewer, property or review..."
+                        autocomplete="off"
+                    >
+
+
+                    <button
+                        type="button"
+                        id="reviewSearchBtn"
+                    >
+                        🔍 Search
+                    </button>
+
+                </div>
+
+
+                <div class="filters">
+
+                    <select id="reviewRatingFilter">
+
+                        <option value="all">
+                            All Ratings
+                        </option>
+
+                        <option value="5">
+                            ⭐ 5 Stars
+                        </option>
+
+                        <option value="4">
+                            ⭐ 4 Stars
+                        </option>
+
+                        <option value="3">
+                            ⭐ 3 Stars
+                        </option>
+
+                        <option value="2">
+                            ⭐ 2 Stars
+                        </option>
+
+                        <option value="1">
+                            ⭐ 1 Star
+                        </option>
+
+                    </select>
+
+
+                    <select id="reviewSort">
+
+                        <option value="newest">
+                            Newest
+                        </option>
+
+                        <option value="oldest">
+                            Oldest
+                        </option>
+
+                        <option value="highest">
+                            Highest Rating
+                        </option>
+
+                        <option value="lowest">
+                            Lowest Rating
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- REVIEW TABLE -->
+
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>
+                            All Reviews
+                        </h2>
+
+                        <p>
+                            Live review records from RoomDhundo.
+                        </p>
+
+                    </div>
+
+
+                    <span id="reviewCount">
+                        0 Reviews
+                    </span>
+
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Reviewer
+                                </th>
+
+                                <th>
+                                    Property
+                                </th>
+
+                                <th>
+                                    Rating
+                                </th>
+
+                                <th>
+                                    Review
+                                </th>
+
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    View
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="reviewTableBody">
+
+                            <tr>
+
+                                <td
+                                    colspan="6"
+                                    class="empty-state"
+                                >
+                                    Loading reviews...
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SETTINGS
+             ================================================= -->
+
+        <section
+            id="settingsSection"
+            class="admin-section"
+            data-section-content="settings"
+        >
+
+            <div class="dashboard-grid">
+
+
+                <!-- ADMIN INFORMATION -->
+
+                <div class="dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Admin Information
+                            </h2>
+
+                            <p>
+                                Current administrator account information.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-list">
+
+
+                        <div class="detail-item">
+
+                            <span>
+                                Email
+                            </span>
+
+                            <strong id="settingsAdminEmail">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-item">
+
+                            <span>
+                                Role
+                            </span>
+
+                            <strong>
+                                Super Admin
+                            </strong>
+
+                        </div>
+
+
+                        <div class="detail-item">
+
+                            <span>
+                                Panel
+                            </span>
+
+                            <strong>
+                                RoomDhundo Admin
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="settings-actions"
+                        style="margin-top:20px;"
+                    >
+
+                        <button
+                            type="button"
+                            class="view-all-btn"
+                            id="editAdminInformationBtn"
+                        >
+                            ✏️ Edit Information
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ADMIN CONTROLS -->
+
+                <div class="dashboard-card">
+
+                    <div class="card-header">
+
+                        <div>
+
+                            <h2>
+                                Admin Controls
+                            </h2>
+
+                            <p>
+                                Useful admin shortcuts.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="settings-actions">
+
+                        <button
+                            type="button"
+                            class="view-all-btn"
+                            data-section-target="properties"
+                        >
+                            🏠 Manage Properties
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="view-all-btn"
+                            data-section-target="profiles"
+                        >
+                            👤 Registered Profiles
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="view-all-btn"
+                            data-section-target="reviews"
+                        >
+                            ⭐ Manage Reviews
+                        </button>
+
+
+                        <a
+                            href="index.html"
+                            class="view-all-btn"
+                        >
+                            🌐 Open Main Website
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
+
+
+    <!-- =====================================================
+         PROPERTY MODAL
+         ===================================================== -->
+
+    <div
+        class="admin-modal"
+        id="propertyModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modalPropertyName"
+        >
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 id="modalPropertyName">
+                        Property Details
+                    </h2>
+
+                    <p id="modalPropertyType">
+                        Property
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closePropertyModal"
+                    aria-label="Close property details"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div
+                    class="modal-property-icon"
+                    id="modalPropertyIcon"
+                >
+                    🏠
+                </div>
+
+
+                <div class="property-details">
+
+                    <div class="detail-item">
+
+                        <span>
+                            Owner
+                        </span>
+
+                        <strong id="modalOwner">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Location
+                        </span>
+
+                        <strong id="modalLocation">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Rent
+                        </span>
+
+                        <strong id="modalRent">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-description">
+
+                    <h3>
+                        Description
+                    </h3>
+
+                    <p id="modalDescription">
+                        -
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="modal-btn close-btn"
+                    id="closePropertyBtn"
+                >
+                    Close
+                </button>
+
+
+                <button
+                    type="button"
+                    class="modal-btn delete-btn"
+                    id="deletePropertyBtn"
+                >
+                    🗑️ Delete Property
+                </button>
+
+
+                <!-- Verification-only buttons -->
+
+                <button
+                    type="button"
+                    class="modal-btn reject-btn"
+                    id="rejectPropertyBtn"
+                    style="display:none;"
+                >
+                    ❌ Reject
+                </button>
+
+
+                <button
+                    type="button"
+                    class="modal-btn approve-btn"
+                    id="approvePropertyBtn"
+                    style="display:none;"
+                >
+                    ✅ Approve
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         PROFILE MODAL
+         ===================================================== -->
+
+    <div
+        class="admin-modal"
+        id="profileModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-modal-content"
+            role="dialog"
+            aria-modal="true"
+        >
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 id="modalProfileName">
+                        Profile
+                    </h2>
+
+                    <p id="modalProfileRole">
+                        User
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeProfileModal"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div
+                    class="modal-owner-avatar"
+                    id="modalProfileAvatar"
+                >
+                    U
+                </div>
+
+
+                <div class="property-details">
+
+                    <div class="detail-item">
+
+                        <span>
+                            Full Name
+                        </span>
+
+                        <strong id="modalProfileFullName">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Role
+                        </span>
+
+                        <strong id="modalProfileRoleDetail">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Profile ID
+                        </span>
+
+                        <strong
+                            id="modalProfileId"
+                            style="
+                                word-break:break-all;
+                                font-size:11px;
+                            "
+                        >
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Joined
+                        </span>
+
+                        <strong id="modalProfileJoined">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="modal-btn close-btn"
+                    id="closeProfileBtn"
+                >
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         REVIEW MODAL
+         ===================================================== -->
+
+    <div
+        class="admin-modal"
+        id="reviewModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-modal-content"
+            role="dialog"
+            aria-modal="true"
+        >
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 id="modalReviewTitle">
+                        Review Details
+                    </h2>
+
+                    <p id="modalReviewProperty">
+                        Property
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeReviewModal"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div class="property-details">
+
+                    <div class="detail-item">
+
+                        <span>
+                            Reviewer
+                        </span>
+
+                        <strong id="modalReviewerName">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Rating
+                        </span>
+
+                        <strong id="modalReviewRating">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>
+                            Date
+                        </span>
+
+                        <strong id="modalReviewDate">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-description">
+
+                    <h3>
+                        Review
+                    </h3>
+
+                    <p id="modalReviewComment">
+                        -
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="modal-btn close-btn"
+                    id="closeReviewBtn"
+                >
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         EDIT ADMIN INFORMATION MODAL
+         ===================================================== -->
+
+    <div
+        class="admin-modal"
+        id="editAdminModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="editAdminTitle"
+        >
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 id="editAdminTitle">
+                        Edit Information
+                    </h2>
+
+                    <p>
+                        Update your administrator account email.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeEditAdminModal"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <form id="editAdminForm">
+
+                    <div class="detail-item">
+
+                        <label
+                            for="editAdminEmail"
+                            style="
+                                display:block;
+                                margin-bottom:6px;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Email
+                        </label>
+
+
+                        <input
+                            type="email"
+                            id="editAdminEmail"
+                            placeholder="admin@example.com"
+                            required
+                            autocomplete="email"
+                            style="
+                                width:100%;
+                                height:42px;
+                                padding:0 12px;
+                                border:1px solid #dbe1e8;
+                                border-radius:8px;
+                                font-family:inherit;
+                                outline:none;
+                            "
+                        >
+
+                    </div>
+
+
+                    <p
+                        id="editAdminMessage"
+                        style="
+                            margin-top:12px;
+                            font-size:12px;
+                            line-height:1.5;
+                        "
+                    ></p>
+
+
+                    <div
+                        class="modal-actions"
+                        style="padding:0;margin-top:18px;"
+                    >
+
+                        <button
+                            type="button"
+                            class="modal-btn close-btn"
+                            id="cancelEditAdminBtn"
+                        >
+                            Cancel
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="modal-btn approve-btn"
+                        >
+                            💾 Save Changes
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         ADMIN AUTH MODAL
+         ===================================================== -->
+
+    <div
+        class="admin-modal"
+        id="adminAuthModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="admin-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="adminAuthTitle"
+        >
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 id="adminAuthTitle">
+                        Admin Login
+                    </h2>
+
+                    <p id="adminAuthSubtitle">
+                        Sign in to access the RoomDhundo Admin Panel.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    id="closeAdminAuthModal"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+
+                <!-- LOGIN FORM -->
+
+                <form id="adminLoginForm">
+
+                    <div class="detail-item">
+
+                        <label
+                            for="adminLoginEmail"
+                            style="
+                                display:block;
+                                margin-bottom:6px;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Email
+                        </label>
+
+
+                        <input
+                            type="email"
+                            id="adminLoginEmail"
+                            placeholder="admin@example.com"
+                            required
+                            autocomplete="email"
+                            style="
+                                width:100%;
+                                height:42px;
+                                padding:0 12px;
+                                border:1px solid #dbe1e8;
+                                border-radius:8px;
+                                font-family:inherit;
+                                outline:none;
+                            "
+                        >
+
+                    </div>
+
+
+                    <div
+                        class="detail-item"
+                        style="margin-top:10px;"
+                    >
+
+                        <label
+                            for="adminLoginPassword"
+                            style="
+                                display:block;
+                                margin-bottom:6px;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Password
+                        </label>
+
+
+                        <input
+                            type="password"
+                            id="adminLoginPassword"
+                            placeholder="Password"
+                            required
+                            autocomplete="current-password"
+                            style="
+                                width:100%;
+                                height:42px;
+                                padding:0 12px;
+                                border:1px solid #dbe1e8;
+                                border-radius:8px;
+                                font-family:inherit;
+                                outline:none;
+                            "
+                        >
+
+                    </div>
+
+
+                    <p
+                        id="adminLoginMessage"
+                        style="
+                            margin-top:12px;
+                            font-size:12px;
+                            line-height:1.5;
+                        "
+                    ></p>
+
+
+                    <button
+                        type="submit"
+                        class="modal-btn approve-btn"
+                        style="
+                            width:100%;
+                            margin-top:10px;
+                        "
+                    >
+                        🔐 Login
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="switchToSignup"
+                        class="view-all-btn"
+                        style="
+                            width:100%;
+                            margin-top:8px;
+                        "
+                    >
+                        Create Account
+                    </button>
+
+                </form>
+
+
+
+                <!-- SIGNUP FORM -->
+
+                <form
+                    id="adminSignupForm"
+                    style="display:none;"
+                >
+
+                    <div class="detail-item">
+
+                        <label
+                            for="adminSignupName"
+                            style="
+                                display:block;
+                                margin-bottom:6px;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Full Name
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="adminSignupName"
+                            placeholder="Your name"
+                            required
+                            autocomplete="name"
+                            style="
+                                width:100%;
+                                height:42px;
+                                padding:0 12px;
+                                border:1px solid #dbe1e8;
+                                border-radius:8px;
+                                font-family:inherit;
+                                outline:none;
+                            "
+                        >
+
+                    </div>
+
+
+                    <div
+                        class="detail-item"
+                        style="margin-top:10px;"
+                    >
+
+                        <label
+                            for="adminSignupEmail"
+                            style="
+                                display:block;
+                                margin-bottom:6px;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Email
+                        </label>
+
+
+                        <input
+                            type="email"
+                            id="adminSignupEmail"
+                            placeholder="name@example.com"
+                            required
+                            autocomplete="email"
+                            style="
+                                width:100%;
+                                height:42px;
+                                padding:0 12px;
+                                border:1px solid #dbe1e8;
+                                border-radius:8px;
+                                font-family:inherit;
+                                outline:none;
+                            "
+                        >
+
+                    </div>
+
+
+                    <div
+                        class="detail-item"
+                        style="margin-top:10px;"
+                    >
+
+                        <label
+                            for="adminSignupPassword"
+                            style="
+                                display:block;
+                                margin-bottom:6px;
+                                font-size:12px;
+                                font-weight:600;
+                            "
+                        >
+                            Password
+                        </label>
+
+
+                        <input
+                            type="password"
+                            id="adminSignupPassword"
+                            placeholder="Minimum 6 characters"
+                            minlength="6"
+                            required
+                            autocomplete="new-password"
+                            style="
+                                width:100%;
+                                height:42px;
+                                padding:0 12px;
+                                border:1px solid #dbe1e8;
+                                border-radius:8px;
+                                font-family:inherit;
+                                outline:none;
+                            "
+                        >
+
+                    </div>
+
+
+                    <p
+                        id="adminSignupMessage"
+                        style="
+                            margin-top:12px;
+                            font-size:12px;
+                            line-height:1.5;
+                        "
+                    ></p>
+
+
+                    <button
+                        type="submit"
+                        class="modal-btn approve-btn"
+                        style="
+                            width:100%;
+                            margin-top:10px;
+                        "
+                    >
+                        📝 Create Account
+                    </button>
+
+
+                    <button
+                        type="button"
+                        id="switchToLogin"
+                        class="view-all-btn"
+                        style="
+                            width:100%;
+                            margin-top:8px;
+                        "
+                    >
+                        Back to Login
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         SUPABASE
+         ===================================================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+    ></script>
 
 
     <script src="admin.js"></script>
