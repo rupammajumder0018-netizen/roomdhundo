@@ -2651,3 +2651,118 @@ html[data-theme="light"] .search-box:focus-within {
         0 0 82px rgba(124, 58, 237, 0.14),
         inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
+/* =====================================================
+   RENT WITH CONFIDENCE
+===================================================== */
+
+.rent-confidence {
+    padding: 80px 20px;
+    margin-top: 40px;
+    background: #f7f7f7;
+}
+
+.rent-confidence-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.rent-confidence h2 {
+    font-size: 38px;
+    margin-bottom: 35px;
+    text-align: center;
+}
+
+.confidence-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.confidence-content h3 {
+    font-size: 23px;
+    margin-bottom: 15px;
+}
+
+.confidence-content > p {
+    font-size: 17px;
+    line-height: 1.8;
+    margin-bottom: 25px;
+}
+
+.service-fee-box {
+    padding: 22px 25px;
+    margin: 30px 0 45px;
+    background: #fff;
+    border-left: 5px solid #222;
+}
+
+.service-fee-box strong {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.renter-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.renter-benefit {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.renter-benefit span {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.renter-benefit p {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   DARK MODE
+===================================================== */
+
+html[data-theme="dark"] .rent-confidence {
+    background: #111;
+}
+
+html[data-theme="dark"] .service-fee-box {
+    background: #1b1b1b;
+    border-left-color: #fff;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+    .rent-confidence {
+        padding: 60px 18px;
+    }
+
+    .rent-confidence h2 {
+        font-size: 30px;
+    }
+
+    .confidence-content h3 {
+        font-size: 20px;
+    }
+
+    .confidence-content > p,
+    .renter-benefit p {
+        font-size: 16px;
+    }
+
+    .service-fee-box {
+        padding: 18px;
+    }
+
+}
