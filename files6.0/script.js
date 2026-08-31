@@ -1124,16 +1124,23 @@ async function initSearchPage() {
     }
 
     // Prefill from URL params coming from the homepage hero search
+    // or the homepage location pill's quick filter dropdown.
     const urlParams = new URLSearchParams(window.location.search);
     const qParam = urlParams.get("q");
     const stayParam = urlParams.get("stay");
     const typeParam = urlParams.get("type");
+    const minParam = urlParams.get("min");
+    const maxParam = urlParams.get("max");
+
     if (qParam && searchInput) searchInput.value = qParam;
+
     if (typeParam) {
+        const selectedTypes = typeParam.split(",").map(t => t.trim()).filter(Boolean);
         document.querySelectorAll(".propertyTypeFilter").forEach(cb => {
-            cb.checked = cb.value === typeParam;
+            cb.checked = selectedTypes.includes(cb.value);
         });
     }
+
     if (stayParam === "daily") {
         const dailyBtnEl = document.getElementById("dailyBtn");
         const monthlyBtnEl = document.getElementById("monthlyBtn");
@@ -1145,6 +1152,14 @@ async function initSearchPage() {
             monthlyFiltersEl.style.display = "none";
             dailyFiltersEl.style.display = "block";
         }
+    }
+
+    if (minParam || maxParam) {
+        const daily = stayParam === "daily";
+        const minEl = document.getElementById(daily ? "dailyMin" : "monthlyMin");
+        const maxEl = document.getElementById(daily ? "dailyMax" : "monthlyMax");
+        if (minParam && minEl) minEl.value = minParam;
+        if (maxParam && maxEl) maxEl.value = maxParam;
     }
 
     wireStayTypeToggle(renderPage);
