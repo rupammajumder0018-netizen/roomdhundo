@@ -3388,6 +3388,13 @@ function wireListPropertyForm() {
                             ?.value
                     );
 
+                const nightlyRent =
+    Number(
+        block
+            .querySelector(".rtNightlyRent")
+            ?.value
+    );
+
 
                 const people =
                     Number(
@@ -3467,6 +3474,8 @@ function wireListPropertyForm() {
                     roomType,
 
                     rent,
+
+                    nightlyRent,
 
                     people,
 
@@ -3833,9 +3842,7 @@ function wireListPropertyForm() {
                                 room.rent,
 
                             daily_price:
-                                Math.round(
-                                    room.rent / 25
-                                ),
+                                room.nightlyRent,
 
                             room_rent:
                                 room.rent,
@@ -4042,9 +4049,7 @@ function wireListPropertyForm() {
                                 room.rent,
 
                             daily_price:
-                                Math.round(
-                                    room.rent / 25
-                                ),
+                                room.nightlyRent,
 
                             room_rent:
                                 room.rent,

@@ -153,10 +153,15 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label>Monthly Rent (₹)</label>
-                <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
-            </div>
+           <div class="form-group">
+    <label>Monthly Rent (₹)</label>
+    <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
+</div>
+
+<div class="form-group">
+    <label>Price per Night (₹)</label>
+    <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800" required>
+</div>
 
             <div class="form-group">
                 <label>People Sharing the Room</label>
@@ -172,6 +177,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="script.js"></script>
+
 
     <!-- AUTHENTICATION MODAL -->
     <div class="auth-modal" id="authModal">
