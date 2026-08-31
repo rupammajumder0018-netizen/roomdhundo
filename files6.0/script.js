@@ -42,9 +42,8 @@ function attachComputedFields(b) {
 
 async function fetchAllBuildings() {
     const { data, error } = await supabaseClient
-       .from("buildings")
+      .from("buildings")
 .select("*, room_types(*), reviews(*)")
-.eq("status", "approved")
 .order("created_at", { ascending: false });
 
     if (error) {
