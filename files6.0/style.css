@@ -2339,64 +2339,6 @@ html[data-theme="dark"] .nav-profile-menu-item { background: var(--rd-surface) !
 @keyframes rd-modal-in { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes rd-heart-pop { 50% { transform: scale(1.14); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
-.lp-submit-margin {
-    margin-top: 24px;
-}
-/* =====================================================
-   ROOMDHUNDO DARK MODE + SUBTLE MOTION
-   ===================================================== */
-:root {
-    --rd-bg: #f8fafc;
-    --rd-surface: #ffffff;
-    --rd-surface-soft: #f8fafc;
-    --rd-text: #1f2937;
-    --rd-muted: #64748b;
-    --rd-border: #e2e8f0;
-    --rd-accent: #4f46e5;
-    --rd-focus: rgba(79, 70, 229, .20);
-    --rd-shadow: 0 14px 34px rgba(15, 23, 42, .08);
-}
-html[data-theme="dark"] {
-    color-scheme: dark;
-    --rd-bg: #0b1120;
-    --rd-surface: #121a2a;
-    --rd-surface-soft: #182235;
-    --rd-text: #e5edf9;
-    --rd-muted: #9aabc3;
-    --rd-border: #28364d;
-    --rd-accent: #8b7cff;
-    --rd-focus: rgba(139, 124, 255, .28);
-    --rd-shadow: 0 16px 38px rgba(0, 0, 0, .30);
-}
-body { background: var(--rd-bg); color: var(--rd-text); transition: background-color .25s ease, color .25s ease; }
-.theme-toggle { width: 42px; height: 42px; border: 1px solid var(--rd-border); border-radius: 50%; background: var(--rd-surface); color: var(--rd-text); display: inline-grid; place-items: center; font-size: 18px; box-shadow: 0 4px 12px rgba(15,23,42,.08); }
-.theme-toggle:hover { transform: translateY(-2px) rotate(8deg); border-color: var(--rd-accent); }
-.theme-toggle:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--rd-focus); outline-offset: 2px; }
-html[data-theme="dark"] .navbar, html[data-theme="dark"] .search-header, html[data-theme="dark"] .search-box, html[data-theme="dark"] .filters, html[data-theme="dark"] .property-card, html[data-theme="dark"] .property-section, html[data-theme="dark"] .booking-card, html[data-theme="dark"] .list-property-form, html[data-theme="dark"] .auth-modal-content, html[data-theme="dark"] .auth-card, html[data-theme="dark"] .role-choice-box, html[data-theme="dark"] .saved-property-card, html[data-theme="dark"] .nav-profile-menu, html[data-theme="dark"] .owner-section, html[data-theme="dark"] .category-card, html[data-theme="dark"] .feature-grid div, html[data-theme="dark"] .room-type-card, html[data-theme="dark"] .room-type-block, html[data-theme="dark"] .room-option { background: var(--rd-surface); border-color: var(--rd-border); box-shadow: var(--rd-shadow); }
-html[data-theme="dark"] .logo, html[data-theme="dark"] .nav-links a, html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] .form-group label, html[data-theme="dark"] .nav-profile-name, html[data-theme="dark"] .nav-profile-menu-text strong, html[data-theme="dark"] .role-choice-box h2, html[data-theme="dark"] .role-option-text h3 { color: var(--rd-text); }
-html[data-theme="dark"] p, html[data-theme="dark"] .lp-hint, html[data-theme="dark"] .lp-note, html[data-theme="dark"] .property-location, html[data-theme="dark"] .results-top p, html[data-theme="dark"] .nav-profile-menu-text span, html[data-theme="dark"] .room-type-details, html[data-theme="dark"] .auth-subtitle, html[data-theme="dark"] .saved-header p, html[data-theme="dark"] footer { color: var(--rd-muted); }
-html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea, html[data-theme="dark"] .stay-btn, html[data-theme="dark"] .search-stay-btn, html[data-theme="dark"] .favorite, html[data-theme="dark"] .compare-btn, html[data-theme="dark"] .save-property, html[data-theme="dark"] .remove-room-type-btn, html[data-theme="dark"] .guest-counter button { background: var(--rd-surface-soft); color: var(--rd-text); border-color: var(--rd-border); }
-html[data-theme="dark"] .nav-profile-toggle { background: var(--rd-surface-soft) !important; color: var(--rd-text) !important; border-color: var(--rd-border) !important; }
-html[data-theme="dark"] .nav-profile-menu-item { background: var(--rd-surface) !important; color: var(--rd-text) !important; }
-.nav-links a { position: relative; }
-.nav-links a:not(.logo)::after { content: ""; position: absolute; left: 0; right: 0; bottom: -7px; height: 2px; border-radius: 2px; background: var(--rd-accent); transform: scaleX(0); transform-origin: right; transition: transform .2s ease; }
-.nav-links a:not(.logo):hover::after, .nav-links a:not(.logo):focus-visible::after { transform: scaleX(1); transform-origin: left; }
-.search-box { animation: rd-rise-in .5s ease both; }
-.hero h1, .hero p { animation: rd-fade-up .55s ease both; }
-.hero p { animation-delay: .08s; }
-.search-box input:focus, .search-bar input:focus, .form-group input:focus, .list-property-form select:focus, .list-property-form textarea:focus { border-color: var(--rd-accent); box-shadow: 0 0 0 4px var(--rd-focus); }
-.filters { animation: rd-rise-in .35s ease both; }
-.property-card, .saved-property-card, .category-card { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
-.property-card:hover, .saved-property-card:hover, .category-card:hover { transform: translateY(-5px); box-shadow: var(--rd-shadow); }
-.property-image img, .saved-property-image img { transition: transform .35s ease; }
-.property-card:hover .property-image img, .saved-property-card:hover .saved-property-image img { transform: scale(1.04); }
-.favorite:active, .save-property:active { animation: rd-heart-pop .25s ease; }
-.auth-modal-content, .role-choice-box { animation: rd-modal-in .25s ease; }
-@keyframes rd-fade-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes rd-rise-in { from { opacity: 0; transform: translateY(10px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes rd-modal-in { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes rd-heart-pop { 50% { transform: scale(1.14); } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
 /* =====================================================
    PROPERTY VIDEOS
    ===================================================== */
@@ -2430,4 +2372,282 @@ html[data-theme="dark"] .nav-profile-menu-item { background: var(--rd-surface) !
     .property-video-card video {
         height: 260px;
     }
+}
+html[data-theme="dark"] {
+    --rd-bg: #000000;
+    --rd-surface: #0d0d0d;
+    --rd-surface-soft: #171717;
+    --rd-text: #f8fafc;
+    --rd-muted: #b6b6b6;
+    --rd-border: #303030;
+}
+
+html[data-theme="dark"] .navbar {
+    background: #000000;
+    border-bottom: 1px solid #222;
+}
+
+html[data-theme="dark"] .nav-links a,
+html[data-theme="dark"] .logo,
+html[data-theme="dark"] .theme-toggle {
+    color: #ffffff !important;
+}
+
+.theme-toggle {
+    display: inline-grid !important;
+    flex-shrink: 0;
+}
+
+/* Dark glass theme-toggle */
+.theme-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    border: 1px solid rgba(139, 92, 246, 0.28) !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #e9ddff !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease !important;
+}
+
+.theme-toggle:hover {
+    background: rgba(124, 58, 237, 0.16) !important;
+    border-color: rgba(167, 139, 250, 0.8) !important;
+    box-shadow:
+        0 10px 22px rgba(76, 29, 149, 0.42),
+        0 0 20px rgba(139, 92, 246, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    transform: translateY(-3px) rotate(8deg) !important;
+}
+
+.theme-toggle:active {
+    transform: translateY(0) scale(0.96) !important;
+}
+
+/* Explore accommodation - dark glass cards */
+html[data-theme="dark"] .category-card {
+    background: rgba(255, 255, 255, 0.045) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+html[data-theme="dark"] .category-card:hover {
+    border-color: rgba(167, 139, 250, 0.7);
+    background: rgba(124, 58, 237, 0.10) !important;
+    box-shadow:
+        0 14px 30px rgba(76, 29, 149, 0.35),
+        0 0 24px rgba(139, 92, 246, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.09);
+    transform: translateY(-6px);
+}
+
+html[data-theme="dark"] .category-card span {
+    display: inline-block;
+    transition: transform 0.25s ease;
+}
+
+html[data-theme="dark"] .category-card:hover span {
+    transform: scale(1.12) translateY(-2px);
+}
+/* Login page - dark background */
+html[data-theme="dark"] .auth-page {
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(124, 58, 237, 0.16) 0%,
+            rgba(76, 29, 149, 0.07) 30%,
+            transparent 62%
+        ),
+        #050505 !important;
+}
+
+html[data-theme="dark"] .auth-card {
+    border-color: rgba(167, 139, 250, 0.22) !important;
+    box-shadow:
+        0 22px 55px rgba(0, 0, 0, 0.55),
+        0 0 36px rgba(124, 58, 237, 0.12) !important;
+}
+/* Login page - light mode background */
+html[data-theme="light"] .auth-page {
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(124, 58, 237, 0.13) 0%,
+            rgba(167, 139, 250, 0.07) 32%,
+            transparent 65%
+        ),
+        #f8fafc !important;
+}
+
+html[data-theme="light"] .auth-card {
+    border-color: rgba(124, 58, 237, 0.16) !important;
+    box-shadow:
+        0 22px 55px rgba(15, 23, 42, 0.12),
+        0 0 35px rgba(124, 58, 237, 0.14) !important;
+}
+/* Light mode - soft background across the site */
+html[data-theme="light"] body {
+    background:
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(124, 58, 237, 0.09),
+            transparent 42%
+        ),
+        #f6f5fb;
+}
+/* =====================================================
+   LIGHT MODE - GLOW, GLASS, AND HOVER EFFECTS
+   ===================================================== */
+
+html[data-theme="light"] body {
+    background:
+        radial-gradient(
+            circle at 50% 15%,
+            rgba(124, 58, 237, 0.10),
+            transparent 42%
+        ),
+        #f6f5fb;
+}
+
+/* Navbar */
+html[data-theme="light"] .navbar {
+    background: rgba(255, 255, 255, 0.82);
+    border-bottom: 1px solid rgba(124, 58, 237, 0.10);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+/* Cards and forms */
+html[data-theme="light"] .search-box,
+html[data-theme="light"] .category-card,
+html[data-theme="light"] .property-card,
+html[data-theme="light"] .saved-property-card,
+html[data-theme="light"] .filters,
+html[data-theme="light"] .property-section,
+html[data-theme="light"] .list-property-form,
+html[data-theme="light"] .auth-card {
+    border: 1px solid rgba(124, 58, 237, 0.10);
+    box-shadow:
+        0 12px 30px rgba(15, 23, 42, 0.07),
+        0 0 25px rgba(124, 58, 237, 0.05);
+}
+
+/* Card hover glow */
+html[data-theme="light"] .category-card:hover,
+html[data-theme="light"] .property-card:hover,
+html[data-theme="light"] .saved-property-card:hover {
+    border-color: rgba(124, 58, 237, 0.35);
+    box-shadow:
+        0 16px 34px rgba(15, 23, 42, 0.12),
+        0 0 28px rgba(124, 58, 237, 0.16);
+    transform: translateY(-5px);
+}
+
+/* Category icons */
+html[data-theme="light"] .category-card span {
+    display: inline-block;
+    transition: transform 0.25s ease;
+}
+
+html[data-theme="light"] .category-card:hover span {
+    transform: scale(1.12) translateY(-2px);
+}
+
+/* Inputs */
+html[data-theme="light"] input:focus,
+html[data-theme="light"] select:focus,
+html[data-theme="light"] textarea:focus {
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14) !important;
+}
+
+/* Main action buttons */
+html[data-theme="light"] .search-btn:hover,
+html[data-theme="light"] .lp-submit-btn:hover,
+html[data-theme="light"] .auth-submit-btn:hover,
+html[data-theme="light"] .view-btn:hover,
+html[data-theme="light"] .owner-cta:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 12px 24px rgba(76, 29, 149, 0.25),
+        0 0 22px rgba(124, 58, 237, 0.24);
+}
+
+/* Theme button */
+html[data-theme="light"] .theme-toggle {
+    background: rgba(255, 255, 255, 0.72) !important;
+    color: #5b21b6 !important;
+    border-color: rgba(124, 58, 237, 0.22) !important;
+}
+
+html[data-theme="light"] .theme-toggle:hover {
+    background: rgba(124, 58, 237, 0.10) !important;
+    border-color: rgba(124, 58, 237, 0.55) !important;
+    box-shadow:
+        0 10px 22px rgba(76, 29, 149, 0.18),
+        0 0 20px rgba(124, 58, 237, 0.18) !important;
+    transform: translateY(-3px) rotate(8deg) !important;
+}
+/* Hero search box - dark purple glow */
+html[data-theme="dark"] .search-box {
+    position: relative;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(25, 18, 39, 0.96),
+            rgba(12, 12, 16, 0.96)
+        ) !important;
+    border: 1px solid rgba(139, 92, 246, 0.22);
+    box-shadow:
+        0 18px 42px rgba(0, 0, 0, 0.55),
+        0 0 30px rgba(124, 58, 237, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+html[data-theme="dark"] .search-box:hover,
+html[data-theme="dark"] .search-box:focus-within {
+    border-color: rgba(167, 139, 250, 0.60);
+    box-shadow:
+        0 20px 48px rgba(0, 0, 0, 0.60),
+        0 0 42px rgba(124, 58, 237, 0.30),
+        0 0 82px rgba(76, 29, 149, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* =====================================================
+   Hero search box - LIGHT MODE glow
+   Mirrors the dark-mode search-box behavior exactly:
+   a soft resting glow that intensifies on hover/focus.
+   Placed last so it overrides the generic light-mode
+   "Cards and forms" box-shadow rule above for .search-box.
+   ===================================================== */
+html[data-theme="light"] .search-box {
+    position: relative;
+    background: #ffffff !important;
+    border: 1px solid rgba(124, 58, 237, 0.16);
+    box-shadow:
+        0 14px 34px rgba(15, 23, 42, 0.08),
+        0 0 24px rgba(124, 58, 237, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+html[data-theme="light"] .search-box:hover,
+html[data-theme="light"] .search-box:focus-within {
+    border-color: rgba(124, 58, 237, 0.50);
+    box-shadow:
+        0 20px 48px rgba(15, 23, 42, 0.14),
+        0 0 42px rgba(124, 58, 237, 0.26),
+        0 0 82px rgba(124, 58, 237, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }

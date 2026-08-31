@@ -4,20 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RoomDhundo - Find Your Perfect Stay</title>
+
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0TKM9DNE73"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0TKM9DNE73"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-<script>
-    window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
 
-    function gtag() {
-        dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-0TKM9DNE73');
-</script>
+        gtag("js", new Date());
+        gtag("config", "G-0TKM9DNE73");
+    </script>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -31,6 +30,15 @@
             <a href="search.html">Explore</a>
             <a href="list-property.html">List Property</a>
             <a href="saved.html">Saved</a>
+
+            <button
+                type="button"
+                class="theme-toggle"
+                id="themeToggle"
+                aria-label="Switch to dark mode"
+                title="Switch to dark mode"
+            >🌙</button>
+
             <div id="authLinks" class="auth-links">
                 <a href="login.html" class="nav-auth-btn" id="navAuthBtn">
                     Log In / Sign Up
@@ -39,9 +47,7 @@
         </div>
     </nav>
 
-
     <section class="hero">
-
         <h1>Find a place that feels right.</h1>
 
         <p>
@@ -49,9 +55,7 @@
             around MAKAUT, Jaguli and Haringhata.
         </p>
 
-
         <div class="search-box">
-
             <input
                 type="text"
                 id="heroSearchInput"
@@ -59,7 +63,6 @@
             >
 
             <div class="stay-options">
-
                 <button class="stay-btn active" id="heroMonthlyBtn">
                     Monthly
                 </button>
@@ -67,33 +70,27 @@
                 <button class="stay-btn" id="heroDailyBtn">
                     Daily / Nightly
                 </button>
-
             </div>
 
             <button class="search-btn" id="heroSearchBtn">
                 Search
             </button>
-
         </div>
-
     </section>
 
-
     <section class="categories">
-
         <h2>Explore accommodation</h2>
 
         <div class="category-grid">
-
             <a class="category-card" href="search.html?type=PG">
                 <span>🏠</span>
                 <h3>PG</h3>
             </a>
 
-             <a class="category-card" href="search.html?type=Room">
+            <a class="category-card" href="search.html?type=Room">
                 <span>🛏️</span>
                 <h3>Room</h3>
-             </a>
+            </a>
 
             <a class="category-card" href="search.html?type=Mess">
                 <span>🍛</span>
@@ -109,18 +106,13 @@
                 <span>🏢</span>
                 <h3>Flat</h3>
             </a>
-
         </div>
-
     </section>
 
-
     <section class="features">
-
         <h2>Why RoomDhundo?</h2>
 
         <div class="feature-grid">
-
             <div>
                 <h3>Easy Search</h3>
                 <p>Find accommodation based on your needs.</p>
@@ -140,14 +132,10 @@
                 <h3>Contact Owners</h3>
                 <p>Send enquiries directly.</p>
             </div>
-
         </div>
-
     </section>
 
-
     <section class="owner-section">
-
         <h2>Have a property?</h2>
 
         <p>
@@ -155,48 +143,89 @@
             with people looking for accommodation.
         </p>
 
-         <a href="list-property.html" class="owner-cta">
+        <a href="list-property.html" class="owner-cta">
             List Your Property
-         </a>
-
+        </a>
     </section>
 
-
     <footer>
-
         <p>© 2026 RoomDhundo</p>
-
     </footer>
-
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="script.js"></script>
 
+    <script>
+        (() => {
+            const storageKey = "roomdhundo-theme";
+            const root = document.documentElement;
+            const toggle = document.getElementById("themeToggle");
+
+            function applyTheme(theme) {
+                const isDark = theme === "dark";
+
+                root.dataset.theme = theme;
+                localStorage.setItem(storageKey, theme);
+
+                toggle.textContent = isDark ? "☀️" : "🌙";
+                toggle.setAttribute(
+                    "aria-label",
+                    isDark
+                        ? "Switch to light mode"
+                        : "Switch to dark mode"
+                );
+                toggle.title = toggle.getAttribute("aria-label");
+            }
+
+            const savedTheme = localStorage.getItem(storageKey);
+
+            /* Start in black/dark mode unless the user chose light mode. */
+            applyTheme(savedTheme || "dark");
+
+            toggle.addEventListener("click", () => {
+                applyTheme(
+                    root.dataset.theme === "dark"
+                        ? "light"
+                        : "dark"
+                );
+            });
+        })();
+    </script>
+
     <!-- AUTHENTICATION MODAL -->
-    
     <div class="auth-modal" id="authModal">
         <div class="auth-modal-content">
             <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
 
-    <!-- Modal Header Tabs -->
             <div class="auth-tabs">
                 <button class="auth-tab active" id="tabLogin">Log In</button>
                 <button class="auth-tab" id="tabSignup">Sign Up</button>
             </div>
 
-    <!-- Login Form -->
             <form class="auth-form active" id="loginForm">
                 <h2>Welcome Back</h2>
-                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
-      
+                <p class="auth-subtitle">
+                    Log in to manage your saved properties and bookings.
+                </p>
+
                 <div class="form-group">
                     <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        placeholder="name@example.com"
+                        required
+                    >
                 </div>
-      
+
                 <div class="form-group">
                     <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        placeholder="••••••••"
+                        required
+                    >
                 </div>
 
                 <div class="form-options">
@@ -207,27 +236,45 @@
                 <button type="submit" class="auth-submit-btn">Log In</button>
             </form>
 
-    <!-- Sign Up Form -->
             <form class="auth-form" id="signupForm">
                 <h2>Create an Account</h2>
-                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
+                <p class="auth-subtitle">
+                    Join us to save properties and contact hosts directly.
+                </p>
 
                 <div class="form-group">
                     <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" placeholder="John Doe" required>
+                    <input
+                        type="text"
+                        id="signupName"
+                        placeholder="John Doe"
+                        required
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="signupEmail">Email Address</label>
-                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        placeholder="name@example.com"
+                        required
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        placeholder="Create a strong password"
+                        required
+                    >
                 </div>
 
-                <button type="submit" class="auth-submit-btn">Create Account</button>
+                <button type="submit" class="auth-submit-btn">
+                    Create Account
+                </button>
             </form>
         </div>
     </div>

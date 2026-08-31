@@ -12,6 +12,14 @@
 
 <body>
 
+    <button
+        type="button"
+        class="dashboard-theme-toggle"
+        id="dashboardThemeToggle"
+        aria-label="Switch to dark mode"
+        title="Switch to dark mode"
+    >🌙</button>
+
     <!-- =====================================================
          RENTER DASHBOARD
          ===================================================== -->
@@ -385,13 +393,29 @@
          SUPABASE
          ===================================================== -->
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="script.js"></script>
+    <script>
+        (() => {
+            const key = "roomdhundo-theme";
+            const root = document.documentElement;
+            const toggle = document.getElementById("dashboardThemeToggle");
 
-    <!-- YOUR MAIN SCRIPT -->
-    <!-- script.js handles auth check, profile fetch, and wiring
-         every button on this page via initRenterDashboard() -->
+            function applyTheme(theme) {
+                const isDark = theme === "dark";
+                root.dataset.theme = theme;
+                localStorage.setItem(key, theme);
+                toggle.textContent = isDark ? "☀️" : "🌙";
+                toggle.title = isDark ? "Switch to light mode" : "Switch to dark mode";
+                toggle.setAttribute("aria-label", toggle.title);
+            }
 
-    <script src="script.js"></script>
+            applyTheme(localStorage.getItem(key) || "dark");
+            toggle.addEventListener("click", () => {
+                applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
+            });
+        })();
+    </script>
 
 </body>
 

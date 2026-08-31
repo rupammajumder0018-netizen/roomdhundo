@@ -24,6 +24,9 @@
 
 <body>
 
+    <!-- ================= THEME TOGGLE ================= --> 
+     <button type="button" class="dashboard-theme-toggle" id="dashboardThemeToggle" aria-label="Switch to light mode" title="Switch to light mode" >☀️</button>
+
     <!-- ================= SIDEBAR ================= -->
 
     <aside class="sidebar" id="sidebar">
@@ -587,6 +590,70 @@
     <!-- ================= JAVASCRIPT ================= -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script src="owner-dashboard.js"></script>
+    ```html
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="owner-dashboard.js"></script>
+
+<script>
+    (() => {
+
+        const key = "roomdhundo-theme";
+
+        const root = document.documentElement;
+
+        const toggle =
+            document.getElementById("dashboardThemeToggle");
+
+
+        function applyTheme(theme) {
+
+            const isDark = theme === "dark";
+
+            root.dataset.theme = theme;
+
+            localStorage.setItem(key, theme);
+
+            toggle.textContent =
+                isDark ? "☀️" : "🌙";
+
+            toggle.title =
+                isDark
+                    ? "Switch to light mode"
+                    : "Switch to dark mode";
+
+            toggle.setAttribute(
+                "aria-label",
+                toggle.title
+            );
+        }
+
+
+        /*
+         * Use the previously selected
+         * RoomDhundo theme.
+         *
+         * Default = dark
+         */
+
+        applyTheme(
+            localStorage.getItem(key) || "dark"
+        );
+
+
+        toggle.addEventListener("click", () => {
+
+            applyTheme(
+                root.dataset.theme === "dark"
+                    ? "light"
+                    : "dark"
+            );
+
+        });
+
+    })();
+</script>
+```
+
 
 </body>
 
