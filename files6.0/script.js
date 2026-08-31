@@ -42,9 +42,10 @@ function attachComputedFields(b) {
 
 async function fetchAllBuildings() {
     const { data, error } = await supabaseClient
-        .from("buildings")
-        .select("*, room_types(*), reviews(*)")
-        .order("created_at", { ascending: false });
+       .from("buildings")
+.select("*, room_types(*), reviews(*)")
+.eq("status", "approved")
+.order("created_at", { ascending: false });
 
     if (error) {
         console.error("Error fetching buildings:", error);
@@ -1384,7 +1385,7 @@ if (
     // -----------------------------------------------
 
     const ROOMDHUNDO_PHONE = "6295456503";
-    const ROOMDHUNDO_WHATSAPP = "6295456503";
+    const ROOMDHUNDO_WHATSAPP = "93829 91409";
 
     document
         .getElementById("callRoomDhundoBtn")
