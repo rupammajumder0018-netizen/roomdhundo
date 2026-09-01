@@ -23,8 +23,57 @@
 
 <body>
 
-    <nav class="navbar">
-        <a href="index.html" class="logo">RoomDhundo</a>
+        <nav class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">RoomDhundo</a>
+
+            <div class="nav-location-wrap" id="navLocationWrap">
+                <button
+                    type="button"
+                    class="nav-location-btn"
+                    id="navLocationBtn"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-label="Change location"
+                    title="Change location"
+                >
+                    <svg class="nav-location-pin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/>
+                        <circle cx="12" cy="10" r="2.5"/>
+                    </svg>
+                    <span class="nav-location-label" id="navLocationLabel">Kolkata</span>
+                    <svg class="nav-location-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                </button>
+
+                <div class="nav-location-dropdown" id="navLocationDropdown">
+                    <h4 class="nav-location-title">Explore RoomDhundo in...</h4>
+
+                    <div class="nav-location-search">
+                        <input
+                            type="text"
+                            id="navLocationSearchInput"
+                            placeholder="Search area or city"
+                        >
+                    </div>
+
+                    <div class="nav-location-section">
+                        <span class="nav-location-section-label">Popular areas</span>
+                        <div class="nav-location-chips">
+                            <button type="button" class="nav-location-chip" data-location="MAKAUT">MAKAUT</button>
+                            <button type="button" class="nav-location-chip" data-location="Jaguli">Jaguli</button>
+                            <button type="button" class="nav-location-chip" data-location="Haringhata">Haringhata</button>
+                        </div>
+                    </div>
+
+                    <div class="nav-location-section" id="navLocationRecentSection" style="display:none;">
+                        <span class="nav-location-section-label">Continue browsing where you left off</span>
+                        <div class="nav-location-chips" id="navLocationRecentChips"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="nav-links">
             <a href="search.html">Explore</a>
@@ -77,74 +126,6 @@
             </button>
         </div>
 
-        <div class="location-pill" id="locationPill">
-            <span class="location-pill-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/>
-                    <circle cx="12" cy="10" r="2.5"/>
-                </svg>
-            </span>
-
-            <input
-                type="text"
-                id="locationPillInput"
-                class="location-pill-input"
-                value="Kolkata"
-                placeholder="Where are you looking?"
-            >
-
-            <button class="location-pill-filter" id="locationPillFilterBtn" aria-label="Filters">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="4" y1="6" x2="20" y2="6"/>
-                    <circle cx="9" cy="6" r="2"/>
-                    <line x1="4" y1="12" x2="20" y2="12"/>
-                    <circle cx="15" cy="12" r="2"/>
-                    <line x1="4" y1="18" x2="20" y2="18"/>
-                    <circle cx="9" cy="18" r="2"/>
-                </svg>
-            </button>
-
-            <div class="pill-filter-dropdown" id="pillFilterDropdown">
-                <div class="pill-filter-section">
-                    <h4>Property Type</h4>
-
-                    <label>
-                        <input type="checkbox" class="pillTypeFilter" value="PG">
-                        PG
-                    </label>
-                    <label>
-                        <input type="checkbox" class="pillTypeFilter" value="Room">
-                        Room
-                    </label>
-                    <label>
-                        <input type="checkbox" class="pillTypeFilter" value="Mess">
-                        Mess
-                    </label>
-                    <label>
-                        <input type="checkbox" class="pillTypeFilter" value="Flat">
-                        Flat
-                    </label>
-                    <label>
-                        <input type="checkbox" class="pillTypeFilter" value="Guest House">
-                        Guest House
-                    </label>
-                </div>
-
-                <div class="pill-filter-section">
-                    <h4>Budget</h4>
-
-                    <div class="pill-filter-budget">
-                        <input type="number" id="pillBudgetMin" placeholder="Min">
-                        <span>–</span>
-                        <input type="number" id="pillBudgetMax" placeholder="Max">
-                    </div>
-                </div>
-
-                <button type="button" class="pill-filter-apply" id="pillFilterApplyBtn">
-                    Apply Filters
-                </button>
-            </div>
-        </div>
     </section>
 
     <section class="categories">
@@ -261,14 +242,51 @@
         })();
     </script>
 
-    <script>
+         <script>
         (() => {
+            const LOCATION_KEY = "roomdhundo-location";
+            const RECENT_KEY = "roomdhundo-recent-locations";
+
             const locationInput = document.getElementById("locationPillInput");
             const locationIcon = document.querySelector(".location-pill-icon");
+            const navLocationLabel = document.getElementById("navLocationLabel");
 
-            if (!locationInput || !locationIcon) {
-                return;
+            function setLocation(place, { save = true, remember = false } = {}) {
+                if (!place) return;
+
+                if (locationInput) locationInput.value = place;
+                if (navLocationLabel) navLocationLabel.textContent = place;
+
+                if (save) localStorage.setItem(LOCATION_KEY, place);
+                if (remember) addRecentLocation(place);
             }
+
+            function addRecentLocation(place) {
+                let recent = [];
+
+                try {
+                    recent = JSON.parse(localStorage.getItem(RECENT_KEY)) || [];
+                } catch (error) {
+                    recent = [];
+                }
+
+                recent = recent.filter(
+                    (item) => item.toLowerCase() !== place.toLowerCase()
+                );
+                recent.unshift(place);
+                recent = recent.slice(0, 3);
+
+                localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+            }
+
+            // Exposed so the navbar dropdown script can share the same
+            // location state instead of duplicating it.
+            window.roomdhundoLocation = {
+                setLocation,
+                addRecentLocation,
+                key: LOCATION_KEY,
+                recentKey: RECENT_KEY
+            };
 
             async function reverseGeocode(lat, lon) {
                 const url =
@@ -294,7 +312,7 @@
                     return;
                 }
 
-                locationInput.value = "Detecting location...";
+                setLocation("Detecting location...", { save: false });
 
                 navigator.geolocation.getCurrentPosition(
                     async (position) => {
@@ -303,46 +321,109 @@
                                 position.coords.latitude,
                                 position.coords.longitude
                             );
-                            locationInput.value = place;
+                            setLocation(place);
                         } catch (error) {
-                            locationInput.value = "Kolkata";
+                            setLocation("Kolkata");
                         }
                     },
                     () => {
-                        locationInput.value = "Kolkata";
+                        setLocation("Kolkata");
                     },
                     { timeout: 8000 }
                 );
             }
 
-            detectLocation();
-            locationIcon.addEventListener("click", detectLocation);
+            // If the user already picked/detected a location before,
+            // don't silently overwrite it with a fresh geolocation call.
+            const savedLocation = localStorage.getItem(LOCATION_KEY);
+
+            if (savedLocation) {
+                setLocation(savedLocation, { save: false });
+            } else {
+                detectLocation();
+            }
+
+            locationIcon?.addEventListener("click", detectLocation);
         })();
     </script>
 
-    <script>
+        <script>
         (() => {
-            const filterBtn = document.getElementById("locationPillFilterBtn");
-            const dropdown = document.getElementById("pillFilterDropdown");
-            const applyBtn = document.getElementById("pillFilterApplyBtn");
-            const locationInput = document.getElementById("locationPillInput");
-            const minInput = document.getElementById("pillBudgetMin");
-            const maxInput = document.getElementById("pillBudgetMax");
+            const navLocationWrap = document.getElementById("navLocationWrap");
+            const navLocationBtn = document.getElementById("navLocationBtn");
+            const navLocationDropdown = document.getElementById("navLocationDropdown");
+            const navLocationSearchInput = document.getElementById("navLocationSearchInput");
+            const navLocationChips = document.querySelectorAll(".nav-location-chip");
+            const navLocationRecentSection = document.getElementById("navLocationRecentSection");
+            const navLocationRecentChips = document.getElementById("navLocationRecentChips");
 
-            if (!filterBtn || !dropdown || !applyBtn) {
+            if (!navLocationWrap || !navLocationBtn || !navLocationDropdown) {
                 return;
             }
 
-            function closeDropdown() {
-                dropdown.classList.remove("open");
+            function renderRecentChips() {
+                if (!navLocationRecentChips || !navLocationRecentSection) return;
+
+                const recentKey =
+                    window.roomdhundoLocation?.recentKey || "roomdhundo-recent-locations";
+
+                let recent = [];
+
+                try {
+                    recent = JSON.parse(localStorage.getItem(recentKey)) || [];
+                } catch (error) {
+                    recent = [];
+                }
+
+                if (recent.length === 0) {
+                    navLocationRecentSection.style.display = "none";
+                    return;
+                }
+
+                navLocationRecentSection.style.display = "block";
+                navLocationRecentChips.innerHTML = recent
+                    .map(
+                        (place) =>
+                            `<button type="button" class="nav-location-chip nav-location-chip-recent" data-location="${place}">${place}</button>`
+                    )
+                    .join("");
             }
 
-            filterBtn.addEventListener("click", (event) => {
+            function chooseLocation(place) {
+                if (!place) return;
+
+                window.roomdhundoLocation?.setLocation(place, {
+                    save: true,
+                    remember: true
+                });
+
+                renderRecentChips();
+                closeDropdown();
+            }
+
+            function openDropdown() {
+                navLocationDropdown.classList.add("open");
+                navLocationBtn.setAttribute("aria-expanded", "true");
+                renderRecentChips();
+                navLocationSearchInput?.focus();
+            }
+
+            function closeDropdown() {
+                navLocationDropdown.classList.remove("open");
+                navLocationBtn.setAttribute("aria-expanded", "false");
+            }
+
+            navLocationBtn.addEventListener("click", (event) => {
                 event.stopPropagation();
-                dropdown.classList.toggle("open");
+
+                if (navLocationDropdown.classList.contains("open")) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
             });
 
-            dropdown.addEventListener("click", (event) => {
+            navLocationDropdown.addEventListener("click", (event) => {
                 event.stopPropagation();
             });
 
@@ -354,31 +435,24 @@
                 }
             });
 
-            applyBtn.addEventListener("click", () => {
-                const selectedTypes = Array.from(
-                    document.querySelectorAll(".pillTypeFilter:checked")
-                ).map((checkbox) => checkbox.value);
-
-                const params = new URLSearchParams();
-
-                if (locationInput && locationInput.value.trim()) {
-                    params.set("q", locationInput.value.trim());
-                }
-
-                if (selectedTypes.length) {
-                    params.set("type", selectedTypes.join(","));
-                }
-
-                if (minInput && minInput.value) {
-                    params.set("min", minInput.value);
-                }
-
-                if (maxInput && maxInput.value) {
-                    params.set("max", maxInput.value);
-                }
-
-                window.location.href = "search.html?" + params.toString();
+            navLocationChips.forEach((chip) => {
+                chip.addEventListener("click", () => chooseLocation(chip.dataset.location));
             });
+
+            navLocationSearchInput?.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    const value = navLocationSearchInput.value.trim();
+                    if (value) chooseLocation(value);
+                }
+            });
+
+            // Recent chips are rendered dynamically, so use delegation.
+            navLocationRecentChips?.addEventListener("click", (event) => {
+                const chip = event.target.closest(".nav-location-chip");
+                if (chip) chooseLocation(chip.dataset.location);
+            });
+
+            renderRecentChips();
         })();
     </script>
 
