@@ -2455,3 +2455,409 @@ function wireThemeToggle() {
     navLinks.insertBefore(toggle, navLinks.querySelector("#navAuthBtn") || null);
     setTheme(root.dataset.theme);
 }
+
+// =====================================================
+// ROOMDHUNDO CHATBOT
+// =====================================================
+
+function wireRoomDhundoChatbot() {
+    const chatbot = document.getElementById("chatbot");
+    const chatbotToggle = document.getElementById("chatbotToggle");
+    const chatbotClose = document.getElementById("chatbotClose");
+
+    const chatbotMessages = document.getElementById("chatbotMessages");
+    const chatbotInput = document.getElementById("chatbotInput");
+    const chatbotSend = document.getElementById("chatbotSend");
+
+    const chatbotFindRoomBtn = document.getElementById("chatbotFindRoomBtn");
+    const chatbotFindPGBtn = document.getElementById("chatbotFindPGBtn");
+    const chatbotSearchPropertyBtn = document.getElementById("chatbotSearchPropertyBtn");
+
+    const chatbotCallBtn = document.getElementById("chatbotCallBtn");
+    const chatbotEmailBtn = document.getElementById("chatbotEmailBtn");
+
+    if (!chatbot || !chatbotToggle || !chatbotClose || !chatbotMessages) {
+        console.error("RoomDhundo chatbot elements missing.");
+        return;
+    }
+
+    const ROOMDHUNDO_PHONE = "6295456503";
+    const ROOMDHUNDO_EMAIL = "roomdhundo@gmail.com";
+
+    // ---------------------------------------------
+    // OPEN
+    // ---------------------------------------------
+
+    chatbotToggle.addEventListener("click", () => {
+        chatbot.classList.add("open");
+        chatbotToggle.style.display = "none";
+
+        setTimeout(() => {
+            chatbotInput?.focus();
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }, 100);
+    });
+
+    // ---------------------------------------------
+    // CLOSE
+    // ---------------------------------------------
+
+    chatbotClose.addEventListener("click", () => {
+        chatbot.classList.remove("open");
+        chatbotToggle.style.display = "flex";
+    });
+
+    // ---------------------------------------------
+    // ADD MESSAGE
+    // ---------------------------------------------
+
+    function addMessage(text, sender = "bot") {
+        const message = document.createElement("div");
+
+        if (sender === "user") {
+            message.className = "chat-message user-message";
+
+            const bubble = document.createElement("div");
+            bubble.className = "message-bubble";
+            bubble.textContent = text;
+
+            message.appendChild(bubble);
+        } else {
+            message.className = "chat-message bot-message";
+
+            const avatar = document.createElement("div");
+            avatar.className = "message-avatar";
+            avatar.textContent = "🏠";
+
+            const bubble = document.createElement("div");
+            bubble.className = "message-bubble";
+            bubble.innerHTML = text;
+
+            message.appendChild(avatar);
+            message.appendChild(bubble);
+        }
+
+        chatbotMessages.appendChild(message);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    // ---------------------------------------------
+    // TYPING
+    // ---------------------------------------------
+
+    function showTyping() {
+        hideTyping();
+
+        const typing = document.createElement("div");
+        typing.className = "chat-message bot-message";
+        typing.id = "chatbotTyping";
+
+        typing.innerHTML = `
+            <div class="message-avatar">🏠</div>
+
+            <div class="chatbot-typing">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        `;
+
+        chatbotMessages.appendChild(typing);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    function hideTyping() {
+        document.getElementById("chatbotTyping")?.remove();
+    }
+
+    // ---------------------------------------------
+    // BOT RESPONSE
+    // ---------------------------------------------
+
+    function processMessage(message) {
+        const text = message.toLowerCase().trim();
+
+        if (!text) return;
+
+        showTyping();
+
+        setTimeout(() => {
+            hideTyping();
+
+            if (
+                text.includes("hi") ||
+                text.includes("hello") ||
+                text.includes("hey")
+            ) {
+                addMessage(
+                    "👋 Hello! How can I help you find your stay today?"
+                );
+                return;
+            }
+
+            if (
+                text.includes("room") ||
+                text.includes("stay")
+            ) {
+                addMessage(
+                    "🛏️ Sure! What type of room are you looking for?"
+                );
+
+                addMessage(
+                    `
+                    <div class="chatbot-inline-options">
+                        <button class="chatbot-option chatbot-dynamic-btn" data-action="single">
+                            Single Room
+                        </button>
+                        <button class="chatbot-option chatbot-dynamic-btn" data-action="double">
+                            Double Room
+                        </button>
+                    </div>
+                    `
+                );
+
+                bindDynamicButtons();
+                return;
+            }
+
+            if (text.includes("single")) {
+                addMessage(
+                    "🛏️ Single Room selected.<br><br>" +
+                    "Let's find available Single Rooms for you."
+                );
+
+                setTimeout(() => {
+                    window.location.href = "search.html?type=Room";
+                }, 700);
+
+                return;
+            }
+
+            if (
+                text.includes("double") ||
+                text.includes("shared")
+            ) {
+                addMessage(
+                    "🛏️ Double/Shared Room selected.<br><br>" +
+                    "Let's show you available rooms."
+                );
+
+                setTimeout(() => {
+                    window.location.href = "search.html?type=Room";
+                }, 700);
+
+                return;
+            }
+
+            if (text.includes("pg")) {
+                addMessage(
+                    "🏠 Great! Let's find a PG for you."
+                );
+
+                setTimeout(() => {
+                    window.location.href = "search.html?type=PG";
+                }, 700);
+
+                return;
+            }
+
+            if (
+                text.includes("price") ||
+                text.includes("rent") ||
+                text.includes("budget")
+            ) {
+                addMessage(
+                    "💰 You can search properties and filter them by your budget from the Explore page."
+                );
+                return;
+            }
+
+            if (
+                text.includes("makaut") ||
+                text.includes("jaguli") ||
+                text.includes("haringhata") ||
+                text.includes("location")
+            ) {
+                addMessage(
+                    "📍 RoomDhundo currently focuses on MAKAUT, Jaguli and Haringhata."
+                );
+                return;
+            }
+
+            if (
+                text.includes("contact") ||
+                text.includes("owner")
+            ) {
+                addMessage(
+                    "📞 You can contact property owners directly from the property details page."
+                );
+                return;
+            }
+
+            addMessage(
+                "😊 I can help you with rooms, PGs, rent, locations and property search."
+            );
+
+        }, 600);
+    }
+
+    // ---------------------------------------------
+    // DYNAMIC BUTTONS
+    // ---------------------------------------------
+
+    function bindDynamicButtons() {
+        document.querySelectorAll(".chatbot-dynamic-btn").forEach(button => {
+            button.addEventListener("click", () => {
+                const action = button.dataset.action;
+
+                if (action === "single") {
+                    addMessage("Single Room", "user");
+                    processMessage("single room");
+                }
+
+                if (action === "double") {
+                    addMessage("Double Room", "user");
+                    processMessage("double room");
+                }
+            });
+        });
+    }
+
+    // ---------------------------------------------
+    // SEND
+    // ---------------------------------------------
+
+    function sendMessage() {
+        const message = chatbotInput?.value.trim();
+
+        if (!message) return;
+
+        addMessage(message, "user");
+
+        chatbotInput.value = "";
+
+        processMessage(message);
+    }
+
+    chatbotSend?.addEventListener("click", sendMessage);
+
+    chatbotInput?.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // ---------------------------------------------
+    // FIND A ROOM
+    // ---------------------------------------------
+
+    chatbotFindRoomBtn?.addEventListener("click", () => {
+        addMessage("🛏️ Find a Room", "user");
+
+        setTimeout(() => {
+            addMessage(
+                "🛏️ What type of room are you looking for?<br><br>" +
+                "You can type <strong>Single Room</strong> or <strong>Double Room</strong>."
+            );
+        }, 400);
+    });
+
+    // ---------------------------------------------
+    // FIND A PG
+    // ---------------------------------------------
+
+    chatbotFindPGBtn?.addEventListener("click", () => {
+        addMessage("🏠 Find a PG", "user");
+
+        setTimeout(() => {
+            processMessage("pg");
+        }, 300);
+    });
+
+    // ---------------------------------------------
+    // SEARCH PROPERTIES
+    // ---------------------------------------------
+
+    chatbotSearchPropertyBtn?.addEventListener("click", () => {
+        addMessage("🔎 Search Properties", "user");
+
+        setTimeout(() => {
+            addMessage(
+                "🔎 Opening RoomDhundo Explore page..."
+            );
+
+            setTimeout(() => {
+                window.location.href = "search.html";
+            }, 500);
+
+        }, 300);
+    });
+
+    // ---------------------------------------------
+    // CALL
+    // ---------------------------------------------
+
+    chatbotCallBtn?.addEventListener("click", () => {
+        addMessage("📞 Call Us", "user");
+
+        setTimeout(() => {
+            addMessage(
+                `📞 You can call RoomDhundo at <strong>${ROOMDHUNDO_PHONE}</strong>.`
+            );
+        }, 300);
+
+        window.location.href = `tel:${ROOMDHUNDO_PHONE}`;
+    });
+
+    // ---------------------------------------------
+    // EMAIL
+    // ---------------------------------------------
+
+    chatbotEmailBtn?.addEventListener("click", () => {
+        addMessage("📧 Email Us", "user");
+
+        setTimeout(() => {
+            addMessage(
+                `✉️ You can email RoomDhundo at <strong>${ROOMDHUNDO_EMAIL}</strong>.`
+            );
+        }, 300);
+
+        window.location.href =
+            `mailto:${ROOMDHUNDO_EMAIL}?subject=${encodeURIComponent(
+                "RoomDhundo Enquiry"
+            )}`;
+    });
+
+    // ---------------------------------------------
+    // ESC
+    // ---------------------------------------------
+
+    document.addEventListener("keydown", event => {
+        if (
+            event.key === "Escape" &&
+            chatbot.classList.contains("open")
+        ) {
+            chatbot.classList.remove("open");
+            chatbotToggle.style.display = "flex";
+        }
+    });
+
+    // ---------------------------------------------
+    // INITIAL STATE
+    // ---------------------------------------------
+
+    chatbot.classList.remove("open");
+    chatbotToggle.style.display = "flex";
+
+    console.log("RoomDhundo chatbot ready.");
+}
+
+
+// =====================================================
+// INITIALIZE
+// =====================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    wireRoomDhundoChatbot();
+});
