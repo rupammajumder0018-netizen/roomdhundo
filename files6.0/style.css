@@ -3284,6 +3284,12 @@ html[data-theme="dark"] .nav-location-dropdown {
     transform: translateY(-1px);
 }
 
+.chatbot-faq-item {
+    white-space: normal;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
 
 /* =====================================================
    USER MESSAGE
