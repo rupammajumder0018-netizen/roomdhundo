@@ -553,6 +553,11 @@ function wireHeroSearch() {
     const heroSearchInput = document.getElementById("heroSearchInput");
     const heroSearchBtn = document.getElementById("heroSearchBtn");
     const heroDailyBtn = document.getElementById("heroDailyBtn");
+    const homeResultsList = document.getElementById("homeResultsList");
+
+    // On the new homepage, search filters listings in place.
+    // On any older layout without home cards, keep redirecting to Explore.
+    if (homeResultsList) return;
 
     function goToSearch() {
         const query = heroSearchInput ? heroSearchInput.value.trim() : "";
@@ -567,6 +572,239 @@ function wireHeroSearch() {
     heroSearchInput?.addEventListener("keydown", (e) => {
         if (e.key === "Enter") goToSearch();
     });
+}
+
+async function initHomePage() {
+    const resultsList = document.getElementById("homeResultsList");
+    const resultsCountEl = document.getElementById("homeResultsCount");
+    const noResultsMessage = document.getElementById("homeNoResults");
+    const searchInput = document.getElementById("heroSearchInput");
+    const searchBtn = document.getElementById("heroSearchBtn");
+    const monthlyBtn = document.getElementById("heroMonthlyBtn");
+    const dailyBtn = document.getElementById("heroDailyBtn");
+    const filterBtn = document.getElementById("homeFilterBtn");
+    const filterPanel = document.getElementById("homeFilterPanel");
+    const applyFiltersBtn = document.getElementById("homeApplyFiltersBtn");
+    const clearFiltersBtn = document.getElementById("homeClearFiltersBtn");
+
+    if (!resultsList) return;
+
+    resultsList.innerHTML = `<p class="no-results">Loading properties…</p>`;
+
+    const allBuildings = await fetchAllBuildings();
+    const currentUser = await getCurrentUser();
+    let savedIds = await getSavedBuildingIds(currentUser ? currentUser.id : null);
+
+    function isDailyMode() {
+        return !!(dailyBtn && dailyBtn.classList.contains("active"));
+    }
+
+    function readFilters() {
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+        const daily = isDailyMode();
+        const minEl = document.getElementById("homeMinBudget");
+        const maxEl = document.getElementById("homeMaxBudget");
+        const min = minEl && minEl.value ? Number(minEl.value) : null;
+        const max = maxEl && maxEl.value ? Number(maxEl.value) : null;
+        const propertyTypes = Array.from(
+            document.querySelectorAll(".homePropertyTypeFilter:checked")
+        ).map(cb => cb.value);
+        const facilities = Array.from(
+            document.querySelectorAll(".homeFacilityFilter:checked")
+        ).map(cb => cb.value);
+
+        return { query, daily, min, max, propertyTypes, facilities };
+    }
+
+    function applyFilters(list, f) {
+        return list.filter(b => {
+            if (f.query) {
+                const haystack = `${b.name} ${b.location} ${b.type || ""}`.toLowerCase();
+                if (!haystack.includes(f.query)) return false;
+            }
+
+            const roomTypes = b.room_types || [];
+
+            if (f.daily) {
+                const hasNightly = roomTypes.some(rt =>
+                    rt.daily_price != null && Number(rt.daily_price) > 0
+                );
+                if (!hasNightly) return false;
+            }
+
+            if (f.min !== null || f.max !== null) {
+                const anyRoomFits = roomTypes.some(rt => {
+                    const price = f.daily ? rt.daily_price : rt.price_value;
+                    if (price == null || price === "") return false;
+                    if (f.min !== null && price < f.min) return false;
+                    if (f.max !== null && price > f.max) return false;
+                    return true;
+                });
+                if (!anyRoomFits) return false;
+            }
+
+            if (f.propertyTypes.length > 0 && !f.propertyTypes.includes(b.type)) {
+                return false;
+            }
+
+            if (f.facilities.length > 0) {
+                const tags = b.facility_tags || [];
+                const labels = b.facilities || [];
+                const furnishingSelected = f.facilities.filter(tag => FURNISHING_TAGS.includes(tag));
+                const otherFacilities = f.facilities.filter(tag => !FURNISHING_TAGS.includes(tag));
+
+                const matchesTag = (tag) => {
+                    if (tag === COUPLE_FRIENDLY_TAG || isCoupleFriendlyFacility(tag)) {
+                        return buildingHasCoupleFriendly(b);
+                    }
+                    return tags.includes(tag) || labels.includes(tag);
+                };
+
+                if (otherFacilities.length > 0 && !otherFacilities.every(matchesTag)) {
+                    return false;
+                }
+
+                if (furnishingSelected.length > 0 && !furnishingSelected.some(matchesTag)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    function buildingCardHTML(b) {
+        const isSaved = savedIds.includes(b.id);
+        const allFacilities = b.facilities || [];
+        const coupleFriendlyFacility = allFacilities.find(isCoupleFriendlyFacility)
+            || (b.isCoupleFriendly ? COUPLE_FRIENDLY_LABEL : null);
+        const otherFacilities = allFacilities.filter(f => f !== coupleFriendlyFacility);
+        const facilitiesToShow = coupleFriendlyFacility
+            ? [coupleFriendlyFacility, ...otherFacilities.slice(0, 2)]
+            : otherFacilities.slice(0, 3);
+        const facilityBadges = facilitiesToShow.map(f => `<span>${f}</span>`).join("");
+        const daily = isDailyMode();
+        const unit = daily ? "/ night" : "/ month";
+        const price = daily ? b.minDailyPrice : b.minPrice;
+        const priceToShow = price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
+        const priceLabel = (b.room_types || []).length > 1 ? "From" : "";
+        const ratingLabel = b.avgRating ? `⭐ ${b.avgRating}` : "🆕 New";
+        const roomTypeSummary = (b.roomTypeNames || []).join(", ");
+
+        return `
+            <div class="property-card home-property-card" data-id="${b.id}">
+                <div class="property-image">
+                    ${b.images && b.images.length > 0
+                        ? `
+                            <img
+                                src="${b.images[0]}"
+                                alt="${b.name}"
+                                loading="lazy"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                            >
+                            <div class="image-placeholder" style="display:none;">Property Image</div>
+                          `
+                        : `<div class="image-placeholder">Property Image</div>`
+                    }
+                </div>
+                <div class="property-content">
+                    <div class="property-title">
+                        <div>
+                            <h2>${b.name}</h2>
+                            <p>📍 ${b.distance_km} km from MAKAUT · ${b.location || ""}</p>
+                        </div>
+                        <button class="favorite${isSaved ? " saved" : ""}" data-id="${b.id}">${isSaved ? "♥" : "♡"}</button>
+                    </div>
+                    <div class="rating">${ratingLabel} <span>(${b.reviewCount} reviews)</span></div>
+                    <div class="price">
+                        <strong>${priceLabel ? priceLabel + " " : ""}${priceToShow}</strong>
+                        <span>${unit}</span>
+                    </div>
+                    <p>${roomTypeSummary}</p>
+                    <div class="amenities">${facilityBadges}</div>
+                    <div class="availability">🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available</div>
+                    <div class="card-actions">
+                        <a href="property.html?id=${b.id}" class="view-btn">View Property</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function attachCardListeners() {
+        resultsList.querySelectorAll(".favorite").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const id = btn.dataset.id;
+                const nowSaved = await toggleSavedBuilding(id);
+                if (nowSaved === null) return;
+                savedIds = nowSaved ? [...savedIds, id] : savedIds.filter(x => x !== id);
+                btn.classList.toggle("saved", nowSaved);
+                btn.textContent = nowSaved ? "♥" : "♡";
+            });
+        });
+    }
+
+    function renderPage() {
+        const filters = readFilters();
+        const list = applyFilters(allBuildings, filters);
+
+        resultsList.innerHTML = list.map(buildingCardHTML).join("");
+        attachCardListeners();
+
+        if (resultsCountEl) {
+            resultsCountEl.textContent =
+                `${list.length} ${list.length === 1 ? "property" : "properties"} found`;
+        }
+
+        if (noResultsMessage) {
+            noResultsMessage.style.display = list.length === 0 ? "block" : "none";
+        }
+
+        resultsList.style.display = list.length === 0 ? "none" : "grid";
+    }
+
+    monthlyBtn?.addEventListener("click", () => {
+        monthlyBtn.classList.add("active");
+        dailyBtn?.classList.remove("active");
+        renderPage();
+    });
+
+    dailyBtn?.addEventListener("click", () => {
+        dailyBtn.classList.add("active");
+        monthlyBtn?.classList.remove("active");
+        renderPage();
+    });
+
+    filterBtn?.addEventListener("click", () => {
+        if (!filterPanel) return;
+        const open = filterPanel.hasAttribute("hidden");
+        if (open) filterPanel.removeAttribute("hidden");
+        else filterPanel.setAttribute("hidden", "");
+        filterBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        filterBtn.classList.toggle("active", open);
+    });
+
+    searchBtn?.addEventListener("click", renderPage);
+    searchInput?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") renderPage();
+    });
+    applyFiltersBtn?.addEventListener("click", renderPage);
+
+    clearFiltersBtn?.addEventListener("click", () => {
+        document.querySelectorAll(".homePropertyTypeFilter, .homeFacilityFilter").forEach(cb => {
+            cb.checked = false;
+        });
+        const minEl = document.getElementById("homeMinBudget");
+        const maxEl = document.getElementById("homeMaxBudget");
+        if (minEl) minEl.value = "";
+        if (maxEl) maxEl.value = "";
+        if (searchInput) searchInput.value = "";
+        monthlyBtn?.classList.add("active");
+        dailyBtn?.classList.remove("active");
+        renderPage();
+    });
+
+    renderPage();
 }
 
 function wireStayTypeToggle(onChange) {
@@ -2387,6 +2625,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     supabaseClient.auth.onAuthStateChange((_event, session) => {
         updateNavForUser(session ? session.user : null);
     });
+
+    if (document.getElementById("homeResultsList")) {
+        await initHomePage();
+    }
 
     if (document.getElementById("resultsList")) {
         await initSearchPage();

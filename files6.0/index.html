@@ -105,106 +105,90 @@
         </div>
     </nav>
 
-    <section class="hero">
+    <section class="hero home-hero">
         <h1>Find a place that feels right.</h1>
-
         <p>
             Discover PGs, rooms, messes, guest houses and flats
             around MAKAUT, Jaguli and Haringhata.
         </p>
 
-        <div class="search-box">
-            <input
-                type="text"
-                id="heroSearchInput"
-                placeholder="Where do you want to stay?"
-            >
+        <div class="home-search-panel">
+            <div class="home-search-bar">
+                <input
+                    type="text"
+                    id="heroSearchInput"
+                    placeholder="Search area, PG, room, or location..."
+                    aria-label="Search properties"
+                >
+                <button type="button" class="home-search-submit" id="heroSearchBtn">
+                    Search
+                </button>
+            </div>
 
-            <div class="stay-options">
-                <button class="stay-btn active" id="heroMonthlyBtn">
+            <div class="home-search-controls">
+                <button type="button" class="stay-btn active" id="heroMonthlyBtn">
                     Monthly
                 </button>
-
-                <button class="stay-btn" id="heroDailyBtn">
-                    Daily / Nightly
+                <button type="button" class="stay-btn" id="heroDailyBtn">
+                    Night
+                </button>
+                <button type="button" class="home-filter-btn" id="homeFilterBtn" aria-expanded="false">
+                    Filter
                 </button>
             </div>
 
-            <button class="search-btn" id="heroSearchBtn">
-                Search
-            </button>
-        </div>
+            <div class="home-filter-panel" id="homeFilterPanel" hidden>
+                <div class="home-filter-grid">
+                    <div class="home-filter-group">
+                        <h3>Property Type</h3>
+                        <label><input type="checkbox" class="homePropertyTypeFilter" value="PG"> PG</label>
+                        <label><input type="checkbox" class="homePropertyTypeFilter" value="Room"> Room</label>
+                        <label><input type="checkbox" class="homePropertyTypeFilter" value="Mess"> Mess</label>
+                        <label><input type="checkbox" class="homePropertyTypeFilter" value="Flat"> Flat</label>
+                        <label><input type="checkbox" class="homePropertyTypeFilter" value="Guest House"> Guest House</label>
+                    </div>
 
-    </section>
+                    <div class="home-filter-group">
+                        <h3>Facilities</h3>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="wifi"> Wi-Fi</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="food"> Food</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="ac"> AC</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="kitchen"> Attached Kitchen</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="couple-friendly"> Couple Friendly</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="furnished"> Furnished</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="semi-furnished"> Semi Furnished</label>
+                        <label><input type="checkbox" class="homeFacilityFilter" value="unfurnished"> Unfurnished</label>
+                    </div>
 
-    <section class="categories">
-        <h2>Explore accommodation</h2>
+                    <div class="home-filter-group">
+                        <h3>Budget</h3>
+                        <div class="home-budget-inputs">
+                            <input type="number" id="homeMinBudget" placeholder="Min">
+                            <span>–</span>
+                            <input type="number" id="homeMaxBudget" placeholder="Max">
+                        </div>
+                    </div>
+                </div>
 
-        <div class="category-grid">
-            <a class="category-card" href="search.html?type=PG">
-                <span>🏠</span>
-                <h3>PG</h3>
-            </a>
-
-            <a class="category-card" href="search.html?type=Room">
-                <span>🛏️</span>
-                <h3>Room</h3>
-            </a>
-
-            <a class="category-card" href="search.html?type=Mess">
-                <span>🍛</span>
-                <h3>Mess</h3>
-            </a>
-
-            <a class="category-card" href="search.html?type=Guest%20House">
-                <span>🏡</span>
-                <h3>Guest House</h3>
-            </a>
-
-            <a class="category-card" href="search.html?type=Flat">
-                <span>🏢</span>
-                <h3>Flat</h3>
-            </a>
-        </div>
-    </section>
-
-    <section class="features">
-        <h2>Why RoomDhundo?</h2>
-
-        <div class="feature-grid">
-            <div>
-                <h3>Easy Search</h3>
-                <p>Find accommodation based on your needs.</p>
-            </div>
-
-            <div>
-                <h3>Compare</h3>
-                <p>Compare rent, facilities and distance.</p>
-            </div>
-
-            <div>
-                <h3>Local</h3>
-                <p>Focused on the MAKAUT area.</p>
-            </div>
-
-            <div>
-                <h3>Contact Owners</h3>
-                <p>Send enquiries directly.</p>
+                <div class="home-filter-actions">
+                    <button type="button" id="homeApplyFiltersBtn" class="home-apply-filters">Apply Filters</button>
+                    <button type="button" id="homeClearFiltersBtn" class="home-clear-filters">Clear</button>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="owner-section">
-        <h2>Have a property?</h2>
+    <section class="home-listings" aria-label="Available properties">
+        <div class="home-listings-header">
+            <p id="homeResultsCount">Loading properties...</p>
+            <a href="search.html" class="home-explore-link">Open full Explore →</a>
+        </div>
 
-        <p>
-            List your PG, room or guest house and connect
-            with people looking for accommodation.
+        <div class="home-results-list" id="homeResultsList"></div>
+
+        <p class="no-results" id="homeNoResults" style="display:none;">
+            No properties match your search. Try clearing filters or searching another area.
         </p>
-
-        <a href="list-property.html" class="owner-cta">
-            List Your Property
-        </a>
     </section>
 
     <footer>
