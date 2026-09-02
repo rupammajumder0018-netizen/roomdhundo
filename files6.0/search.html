@@ -285,26 +285,42 @@
             <div class="filter-section">
 
                 <h3>Distance from MAKAUT</h3>
+<label>
+        <input
+            type="radio"
+            name="distance"
+            value="2"
+        >
+        Within 2 km
+    </label>
 
-                <label>
-                    <input type="radio" name="distance" class="distanceFilter" value="1">
-                    Within 1 km
-                </label>
+    <label>
+        <input
+            type="radio"
+            name="distance"
+            value="5"
+            checked
+        >
+        Within 5 km
+    </label>
 
-                <label>
-                    <input type="radio" name="distance" class="distanceFilter" value="5">
-                    Within 5 km
-                </label>
+    <label>
+        <input
+            type="radio"
+            name="distance"
+            value="10"
+        >
+        Within 10 km
+    </label>
 
-                <label>
-                    <input type="radio" name="distance" class="distanceFilter" value="10">
-                    Within 10 km
-                </label>
-
-                <label>
-                    <input type="radio" name="distance" class="distanceFilter" value="15">
-                    Within 15 km
-                </label>
+    <label>
+        <input
+            type="radio"
+            name="distance"
+            value="15"
+        >
+        Within 15 km
+    </label>
 
             </div>
 
@@ -442,6 +458,9 @@
 
    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="script.js"></script>
+<script src="location.js"></script>
+<script src="nearby.js"></script>
+
 
     <!-- AUTHENTICATION MODAL -->
     <div class="auth-modal" id="authModal">

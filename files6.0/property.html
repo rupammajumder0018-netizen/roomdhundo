@@ -8,6 +8,11 @@
     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-0TKM9DNE73"></script>
 
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
 <script>
     window.dataLayer = window.dataLayer || [];
 
@@ -58,6 +63,16 @@
                 ♡ Save
             </button>
         </section>
+
+        <!-- Property location map (shown when the listing has coordinates) -->
+        <div
+            id="roomdhundoMap"
+            style="
+                width:100%;
+                height:500px;
+                border-radius:20px;
+            "
+        ></div>
 
         <!-- IMAGE GALLERY -->
         <section class="property-gallery">
@@ -121,6 +136,8 @@
                     <p id="propertyLocationDetails"></p>
                     <p id="propertyDistance"></p>
                 </section>
+
+                
 
                 <!-- REVIEWS -->
                 <section class="property-section">
@@ -423,7 +440,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
+    <script src="location.js"></script>
+    <script src="property-map.js"></script>
 </body>
 
 </html>

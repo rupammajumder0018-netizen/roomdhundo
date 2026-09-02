@@ -57,6 +57,15 @@
                             placeholder="Search area or city"
                         >
                     </div>
+                    <button
+    type="button"
+    id="useMyLocationBtn"
+    class="use-location-btn"
+>
+    📍 Use My Location
+</button>
+
+<span id="locationStatus"></span>
 
                     <div class="nav-location-section">
                         <span class="nav-location-section-label">Popular areas</span>
@@ -203,7 +212,8 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-    <script src="script.js"></script>
+<script src="script.js"></script>
+<script src="location.js"></script>
 
     <script>
         (() => {

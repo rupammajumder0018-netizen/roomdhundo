@@ -1018,6 +1018,33 @@ async function initPropertyPage() {
     document.getElementById("propertyLocationDetails").textContent = building.location;
     document.getElementById("propertyDistance").textContent = `${building.distance_km} km from MAKAUT`;
 
+    // --------------------------------------------------------
+    // MAP: show the listing's location, plus the visitor's own
+    // location when we already have it saved.
+    // --------------------------------------------------------
+    const roomdhundoMapEl = document.getElementById("roomdhundoMap");
+    if (roomdhundoMapEl) {
+        if (
+            building.latitude != null &&
+            building.longitude != null &&
+            typeof initializeRoomDhundoMap === "function"
+        ) {
+            initializeRoomDhundoMap(building.latitude, building.longitude);
+            addPropertyLocationToMap(building.latitude, building.longitude, building.name);
+
+            const visitorLocation =
+                typeof getCurrentUserLocation === "function"
+                    ? getCurrentUserLocation()
+                    : null;
+
+            if (visitorLocation) {
+                addUserLocationToMap(visitorLocation.latitude, visitorLocation.longitude);
+            }
+        } else {
+            roomdhundoMapEl.style.display = "none";
+        }
+    }
+
     const reviewsContainer = document.getElementById("reviewsContainer");
     reviewsContainer.innerHTML = "";
     if ((building.reviews || []).length === 0) {
@@ -1202,6 +1229,15 @@ async function initPropertyPage() {
     });
 
     document.getElementById("directionsBtn")?.addEventListener("click", () => {
+        if (
+            building.latitude != null &&
+            building.longitude != null &&
+            typeof openDirections === "function"
+        ) {
+            openDirections(building.latitude, building.longitude);
+            return;
+        }
+
         const loc = `${building.location}, ${building.distance_km} km from MAKAUT`;
         window.open(
             `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`,
@@ -2680,3 +2716,79 @@ function wireThemeToggle() {
     navLinks.insertBefore(toggle, navLinks.querySelector("#navAuthBtn") || null);
     setTheme(root.dataset.theme);
 }
+
+// ============================================================
+// OWNER PROPERTY LOCATION (list-property.html "pick on map")
+// ============================================================
+
+let propertyLocationData = {
+    latitude: null,
+    longitude: null,
+    accuracy: null
+};
+
+
+// ------------------------------------------------------------
+// USE OWNER'S CURRENT LOCATION
+// ------------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const ownerUseLocationBtn =
+        document.getElementById("ownerUseLocationBtn");
+
+    if (!ownerUseLocationBtn) return;
+
+    ownerUseLocationBtn.addEventListener(
+        "click",
+        async () => {
+
+            const status =
+                document.getElementById(
+                    "ownerLocationStatus"
+                );
+
+            try {
+
+                ownerUseLocationBtn.disabled = true;
+
+                status.textContent =
+                    "📍 Detecting location...";
+
+                const location =
+                    await getUserLocation();
+
+                propertyLocationData = {
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    accuracy: location.accuracy
+                };
+
+                document.getElementById(
+                    "propertyLatitude"
+                ).value =
+                    location.latitude;
+
+                document.getElementById(
+                    "propertyLongitude"
+                ).value =
+                    location.longitude;
+
+                status.textContent =
+                    `✅ Location detected`;
+
+            } catch (error) {
+
+                console.error(error);
+
+                status.textContent =
+                    "❌ " + error.message;
+
+            } finally {
+
+                ownerUseLocationBtn.disabled =
+                    false;
+            }
+        }
+    );
+});
