@@ -10,8 +10,8 @@
 
 // RoomDhundo MAKAUT reference point
 const MAKAUT_LOCATION = {
-    latitude: 22.944,
-    longitude: 88.532
+    latitude: 22.95704,
+    longitude: 88.54346
 };
 
 

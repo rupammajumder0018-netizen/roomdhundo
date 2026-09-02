@@ -25,6 +25,40 @@ function buildingHasCoupleFriendly(building) {
     return tags.some(isCoupleFriendlyFacility) || labels.some(isCoupleFriendlyFacility);
 }
 
+function getActiveHubSafe() {
+    return window.roomdhundoLocation?.getActiveHub?.() || { name: "MAKAUT" };
+}
+
+function getBuildingHubDistance(building) {
+    const api = window.roomdhundoLocation;
+    if (api?.getBuildingDistanceToHub) {
+        return api.getBuildingDistanceToHub(building, getActiveHubSafe());
+    }
+    return Number(building?.distance_km);
+}
+
+function sortBuildingsForActiveHub(list) {
+    const api = window.roomdhundoLocation;
+    if (api?.sortBuildingsByActiveHub) {
+        return api.sortBuildingsByActiveHub(list);
+    }
+    return [...(list || [])].sort(
+        (a, b) => (Number(a.distance_km) || 999) - (Number(b.distance_km) || 999)
+    );
+}
+
+function formatDistanceFromActiveHub(building, { includeLocation = false } = {}) {
+    const hub = getActiveHubSafe();
+    const km = getBuildingHubDistance(building);
+    const dist = Number.isFinite(Number(km))
+        ? `${Number(km).toFixed(1)} km from ${hub.name}`
+        : `Near ${hub.name}`;
+    if (includeLocation && building?.location) {
+        return `📍 ${dist} · ${building.location}`;
+    }
+    return `📍 ${dist}`;
+}
+
 function ensureCoupleFriendlyFacilityFilter() {
     if (document.querySelector(`.facilityFilter[value="${COUPLE_FRIENDLY_TAG}"]`)) {
         return;
@@ -717,7 +751,7 @@ async function initHomePage() {
                     <div class="property-title">
                         <div>
                             <h2>${b.name}</h2>
-                            <p>📍 ${b.distance_km} km from MAKAUT · ${b.location || ""}</p>
+                            <p>${formatDistanceFromActiveHub(b, { includeLocation: true })}</p>
                         </div>
                         <button class="favorite${isSaved ? " saved" : ""}" data-id="${b.id}">${isSaved ? "♥" : "♡"}</button>
                     </div>
@@ -752,7 +786,7 @@ async function initHomePage() {
 
     function renderPage() {
         const filters = readFilters();
-        const list = applyFilters(allBuildings, filters);
+        const list = sortBuildingsForActiveHub(applyFilters(allBuildings, filters));
 
         if (visibleCount < HOME_PAGE_SIZE) {
             visibleCount = HOME_PAGE_SIZE;
@@ -855,7 +889,7 @@ async function initHomePage() {
 
     seeMoreBtn?.addEventListener("click", () => {
         const filters = readFilters();
-        const list = applyFilters(allBuildings, filters);
+        const list = sortBuildingsForActiveHub(applyFilters(allBuildings, filters));
         const previousCount = visibleCount;
         visibleCount = Math.min(visibleCount + HOME_PAGE_SIZE, list.length);
         renderPage();
@@ -870,6 +904,10 @@ async function initHomePage() {
     });
 
     window.addEventListener("scroll", updateBackToTopVisibility, { passive: true });
+
+    window.addEventListener("roomdhundo:location-changed", () => {
+        resetPreviewAndRender();
+    });
 
     renderPage();
 }
@@ -1034,7 +1072,7 @@ async function initSearchPage() {
             }
 
             if (f.propertyTypes.length > 0 && !f.propertyTypes.includes(b.type)) return false;
-            if (f.maxDistance !== null && b.distance_km > f.maxDistance) return false;
+            if (f.maxDistance !== null && getBuildingHubDistance(b) > f.maxDistance) return false;
 
             if (f.facilities.length > 0) {
                 const tags = b.facility_tags || [];
@@ -1068,9 +1106,9 @@ async function initSearchPage() {
         switch (sortKey) {
             case "price-asc": sorted.sort((a, b) => (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity)); break;
             case "price-desc": sorted.sort((a, b) => (b.minPrice ?? -Infinity) - (a.minPrice ?? -Infinity)); break;
-            case "distance": sorted.sort((a, b) => a.distance_km - b.distance_km); break;
+            case "distance": return sortBuildingsForActiveHub(sorted);
             case "rating": sorted.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0)); break;
-            default: break;
+            default: return sortBuildingsForActiveHub(sorted);
         }
         return sorted;
     }
@@ -1122,7 +1160,7 @@ async function initSearchPage() {
                     <div class="property-title">
                         <div>
                             <h2>${b.name}</h2>
-                            <p>📍 ${b.distance_km} km from MAKAUT</p>
+                            <p>${formatDistanceFromActiveHub(b)}</p>
                         </div>
                         <button class="favorite${isSaved ? " saved" : ""}" data-id="${b.id}">${isSaved ? "♥" : "♡"}</button>
                     </div>
@@ -1230,6 +1268,8 @@ async function initSearchPage() {
         renderPage();
     });
 
+    window.addEventListener("roomdhundo:location-changed", renderPage);
+
     renderPage();
 }
 
@@ -1276,7 +1316,7 @@ async function initPropertyPage() {
             : (building.room_types[0]?.availability || "Room available");
     document.getElementById("propertyName").textContent = building.name;
     document.title = `${building.name} | RoomDhundo`;
-    document.getElementById("propertyLocation").textContent = `📍 ${building.distance_km} km from MAKAUT, ${building.location}`;
+    document.getElementById("propertyLocation").textContent = formatDistanceFromActiveHub(building, { includeLocation: true });
     document.getElementById("propertyRating").textContent = building.avgRating || "New";
     document.getElementById("propertyReviews").textContent = building.reviewCount;
     document.getElementById("propertyDescription").textContent = building.description || "";
@@ -1321,7 +1361,7 @@ async function initPropertyPage() {
     }
 
     document.getElementById("propertyLocationDetails").textContent = building.location;
-    document.getElementById("propertyDistance").textContent = `${building.distance_km} km from MAKAUT`;
+    document.getElementById("propertyDistance").textContent = formatDistanceFromActiveHub(building).replace(/^📍\s*/, "");
 
     // --------------------------------------------------------
     // MAP: show the listing's location, plus the visitor's own
@@ -1817,7 +1857,7 @@ async function initSavedPage() {
             <div class="saved-property-info">
                 <h2>${item.name}</h2>
                 <p class="saved-location">📍 ${item.location}</p>
-                <p class="saved-distance">${item.distance_km} km from MAKAUT</p>
+                <p class="saved-distance">${formatDistanceFromActiveHub(item).replace(/^📍\s*/, "")}</p>
                 <div class="saved-rating">${item.avgRating ? `⭐ ${item.avgRating} rating` : "🆕 New listing"}</div>
                 <div class="saved-price">
                     <strong>${priceLabel}${priceValue}</strong>
