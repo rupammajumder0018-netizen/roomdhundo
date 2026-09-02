@@ -1482,33 +1482,26 @@ function openPropertyModal(
 // DELETE PROPERTY
 // ============================================================
 
-async function deleteProperty(
-    propertyId
-) {
+// ============================================================
+// DELETE PROPERTY
+// ============================================================
 
-    const property =
-        getPropertyById(
-            propertyId
-        );
+async function deleteProperty(propertyId) {
+
+    const property = getPropertyById(propertyId);
 
     if (!property) {
-
-        alert(
-            "Property not found."
-        );
-
+        alert("Property not found.");
         return;
-
     }
 
-    const name =
-        property.name ||
-        "this property";
+    const name = property.name || "this property";
 
-    const confirmed =
-        window.confirm(
-            `Are you sure you want to permanently delete "${name}"?\n\nThis action cannot be undone.`
-        );
+    const confirmed = window.confirm(
+        `Are you sure you want to permanently delete "${name}"?\n\n` +
+        `This will delete the property, its rooms, reviews, and saved records.\n\n` +
+        `This action cannot be undone.`
+    );
 
     if (!confirmed) {
         return;
@@ -1516,125 +1509,140 @@ async function deleteProperty(
 
     try {
 
-        const {
-            error: reviewError
-        } =
+        // -----------------------------------------
+        // 1. DELETE REVIEWS
+        // -----------------------------------------
+
+        const { error: reviewError } =
             await supabaseClient
                 .from("reviews")
                 .delete()
-                .eq(
-                    "building_id",
-                    propertyId
-                );
+                .eq("building_id", propertyId);
 
         if (reviewError) {
-
-            console.warn(
-                "Review deletion warning:",
-                reviewError
+            throw new Error(
+                `Unable to delete reviews: ${reviewError.message}`
             );
-
         }
 
-        const {
-            error: savedError
-        } =
+
+        // -----------------------------------------
+        // 2. DELETE SAVED PROPERTY RECORDS
+        // -----------------------------------------
+
+        const { error: savedError } =
             await supabaseClient
                 .from("saved_buildings")
                 .delete()
-                .eq(
-                    "building_id",
-                    propertyId
-                );
+                .eq("building_id", propertyId);
 
         if (savedError) {
-
-            console.warn(
-                "Saved building deletion warning:",
-                savedError
+            throw new Error(
+                `Unable to delete saved property records: ${savedError.message}`
             );
-
         }
 
-        const {
-            error: roomError
-        } =
+
+        // -----------------------------------------
+        // 3. DELETE ROOM TYPES
+        // -----------------------------------------
+
+        const { error: roomError } =
             await supabaseClient
                 .from("room_types")
                 .delete()
-                .eq(
-                    "building_id",
-                    propertyId
-                );
+                .eq("building_id", propertyId);
 
         if (roomError) {
-
-            alert(
+            throw new Error(
                 `Unable to delete room information: ${roomError.message}`
             );
-
-            return;
-
         }
 
-        const {
-            error: buildingError
-        } =
+
+        // -----------------------------------------
+        // 4. DELETE BUILDING
+        // -----------------------------------------
+
+        const { error: buildingError } =
             await supabaseClient
                 .from("buildings")
                 .delete()
-                .eq(
-                    "id",
-                    propertyId
-                );
+                .eq("id", propertyId);
 
         if (buildingError) {
-
-            alert(
+            throw new Error(
                 `Unable to delete property: ${buildingError.message}`
             );
-
-            return;
-
         }
 
-        buildings =
-            buildings.filter(
-                building =>
-                    String(
-                        building.id
-                    ) !==
-                    String(
-                        propertyId
-                    )
+
+        // -----------------------------------------
+        // 5. VERIFY PROPERTY IS REALLY DELETED
+        // -----------------------------------------
+
+        const {
+            data: verifyData,
+            error: verifyError
+        } =
+            await supabaseClient
+                .from("buildings")
+                .select("id")
+                .eq("id", propertyId)
+                .maybeSingle();
+
+        if (verifyError) {
+            throw new Error(
+                `Could not verify deletion: ${verifyError.message}`
             );
+        }
 
-        reviews =
-            reviews.filter(
-                review =>
-                    String(
-                        review.building_id
-                    ) !==
-                    String(
-                        propertyId
-                    )
+        if (verifyData) {
+            throw new Error(
+                "The property still exists in the database."
             );
+        }
 
-        selectedProperty =
-            null;
 
-        closeModalById(
-            "propertyModal"
+        // -----------------------------------------
+        // 6. UPDATE LOCAL DATA
+        // -----------------------------------------
+
+        buildings = buildings.filter(
+            building =>
+                String(building.id) !==
+                String(propertyId)
         );
 
-        renderDashboard();
+        reviews = reviews.filter(
+            review =>
+                String(review.building_id) !==
+                String(propertyId)
+        );
 
-        renderPropertySection();
+        selectedProperty = null;
 
-        renderReviewSection();
+
+        // -----------------------------------------
+        // 7. CLOSE MODAL
+        // -----------------------------------------
+
+        closeModalById("propertyModal");
+
+
+        // -----------------------------------------
+        // 8. RELOAD DATA FROM SUPABASE
+        // -----------------------------------------
+
+        await loadAllData();
+
+
+        // -----------------------------------------
+        // 9. SUCCESS
+        // -----------------------------------------
 
         alert(
-            `"${name}" deleted successfully.`
+            `"${name}" was permanently deleted successfully.`
         );
 
     }
@@ -1647,7 +1655,7 @@ async function deleteProperty(
         );
 
         alert(
-            "Something went wrong while deleting the property."
+            `Property could not be deleted.\n\n${error.message}`
         );
 
     }
@@ -2059,29 +2067,21 @@ function attachProfileButtons() {
 // DELETE PROFILE
 // ============================================================
 
-async function deleteProfile(
-    profileId
-) {
+// ============================================================
+// DELETE PROFILE
+// ============================================================
 
-    const profile =
-        profiles.find(
-            item =>
-                String(
-                    item.id
-                ) ===
-                String(
-                    profileId
-                )
-        );
+async function deleteProfile(profileId) {
+
+    const profile = profiles.find(
+        item =>
+            String(item.id) ===
+            String(profileId)
+    );
 
     if (!profile) {
-
-        alert(
-            "Profile not found."
-        );
-
+        alert("Profile not found.");
         return;
-
     }
 
     const name =
@@ -2089,11 +2089,13 @@ async function deleteProfile(
         "this profile";
 
     const role =
-        getProfileRole(
-            profile.role
-        );
+        getProfileRole(profile.role);
 
-    // Prevent accidental deletion of an admin profile
+
+    // -----------------------------------------
+    // ADMIN PROTECTION
+    // -----------------------------------------
+
     if (role === "admin") {
 
         alert(
@@ -2101,70 +2103,147 @@ async function deleteProfile(
         );
 
         return;
-
     }
+
 
     const confirmed =
         window.confirm(
-            `Are you sure you want to permanently delete "${name}"?\n\nThis will delete the profile record.`
+            `Are you sure you want to permanently delete "${name}"?\n\n` +
+            `This will delete the profile record and related saved data.\n\n` +
+            `This action cannot be undone.`
         );
 
     if (!confirmed) {
         return;
     }
 
+
     try {
 
-        const {
-            error
-        } =
+        // -----------------------------------------
+        // 1. DELETE SAVED BUILDINGS
+        // -----------------------------------------
+
+        const { error: savedError } =
+            await supabaseClient
+                .from("saved_buildings")
+                .delete()
+                .eq("user_id", profileId);
+
+        if (savedError) {
+
+            throw new Error(
+                `Unable to delete saved properties: ${savedError.message}`
+            );
+
+        }
+
+
+        // -----------------------------------------
+        // 2. DELETE REVIEWS
+        // -----------------------------------------
+
+        const { error: reviewError } =
+            await supabaseClient
+                .from("reviews")
+                .delete()
+                .eq("user_id", profileId);
+
+        if (reviewError) {
+
+            throw new Error(
+                `Unable to delete reviews: ${reviewError.message}`
+            );
+
+        }
+
+
+        // -----------------------------------------
+        // 3. DELETE PROFILE
+        // -----------------------------------------
+
+        const { error: profileError } =
             await supabaseClient
                 .from("profiles")
                 .delete()
-                .eq(
-                    "id",
-                    profileId
-                );
+                .eq("id", profileId);
 
-        if (error) {
+        if (profileError) {
 
-            console.error(
-                "Delete profile error:",
-                error
+            throw new Error(
+                `Unable to delete profile: ${profileError.message}`
             );
-
-            alert(
-                `Unable to delete profile: ${error.message}`
-            );
-
-            return;
 
         }
+
+
+        // -----------------------------------------
+        // 4. VERIFY PROFILE IS REALLY DELETED
+        // -----------------------------------------
+
+        const {
+            data: verifyData,
+            error: verifyError
+        } =
+            await supabaseClient
+                .from("profiles")
+                .select("id")
+                .eq("id", profileId)
+                .maybeSingle();
+
+        if (verifyError) {
+
+            throw new Error(
+                `Could not verify deletion: ${verifyError.message}`
+            );
+
+        }
+
+        if (verifyData) {
+
+            throw new Error(
+                "The profile still exists in the database."
+            );
+
+        }
+
+
+        // -----------------------------------------
+        // 5. UPDATE LOCAL STATE
+        // -----------------------------------------
 
         profiles =
             profiles.filter(
                 item =>
-                    String(
-                        item.id
-                    ) !==
-                    String(
-                        profileId
-                    )
+                    String(item.id) !==
+                    String(profileId)
             );
 
-        selectedProfile =
-            null;
+        selectedProfile = null;
+
+
+        // -----------------------------------------
+        // 6. CLOSE MODAL
+        // -----------------------------------------
 
         closeModalById(
             "profileModal"
         );
 
-        renderDashboard();
 
-        renderProfileSection();
+        // -----------------------------------------
+        // 7. REFRESH ADMIN DATA
+        // -----------------------------------------
+
+        await loadAllData();
+
+
+        // -----------------------------------------
+        // 8. SUCCESS
+        // -----------------------------------------
 
         alert(
-            `"${name}" deleted successfully.`
+            `"${name}" profile was permanently deleted from RoomDhundo.`
         );
 
     }
@@ -2172,12 +2251,12 @@ async function deleteProfile(
     catch (error) {
 
         console.error(
-            "Delete profile failed:",
+            "Delete profile error:",
             error
         );
 
         alert(
-            "Something went wrong while deleting the profile."
+            `Profile could not be deleted.\n\n${error.message}`
         );
 
     }
