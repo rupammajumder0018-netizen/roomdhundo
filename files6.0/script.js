@@ -586,10 +586,16 @@ async function initHomePage() {
     const filterPanel = document.getElementById("homeFilterPanel");
     const applyFiltersBtn = document.getElementById("homeApplyFiltersBtn");
     const clearFiltersBtn = document.getElementById("homeClearFiltersBtn");
+    const seeMoreWrap = document.getElementById("homeSeeMoreWrap");
+    const seeMoreBtn = document.getElementById("homeSeeMoreBtn");
+    const backToTopBtn = document.getElementById("homeBackToTopBtn");
 
     if (!resultsList) return;
 
     resultsList.innerHTML = `<p class="no-results">Loading properties…</p>`;
+
+    const HOME_PAGE_SIZE = 4;
+    let visibleCount = HOME_PAGE_SIZE;
 
     const allBuildings = await fetchAllBuildings();
     const currentUser = await getCurrentUser();
@@ -748,12 +754,28 @@ async function initHomePage() {
         const filters = readFilters();
         const list = applyFilters(allBuildings, filters);
 
-        resultsList.innerHTML = list.map(buildingCardHTML).join("");
+        if (visibleCount < HOME_PAGE_SIZE) {
+            visibleCount = HOME_PAGE_SIZE;
+        }
+        if (visibleCount > list.length) {
+            visibleCount = list.length || HOME_PAGE_SIZE;
+        }
+
+        const visibleList = list.slice(0, visibleCount);
+
+        resultsList.innerHTML = visibleList.map(buildingCardHTML).join("");
         attachCardListeners();
 
         if (resultsCountEl) {
-            resultsCountEl.textContent =
-                `${list.length} ${list.length === 1 ? "property" : "properties"} found`;
+            if (list.length === 0) {
+                resultsCountEl.textContent = "0 properties found";
+            } else if (visibleCount >= list.length) {
+                resultsCountEl.textContent =
+                    `${list.length} ${list.length === 1 ? "property" : "properties"} found`;
+            } else {
+                resultsCountEl.textContent =
+                    `Showing ${visibleCount} of ${list.length} properties`;
+            }
         }
 
         if (noResultsMessage) {
@@ -761,18 +783,45 @@ async function initHomePage() {
         }
 
         resultsList.style.display = list.length === 0 ? "none" : "grid";
+
+        if (seeMoreWrap && seeMoreBtn) {
+            if (list.length > visibleCount) {
+                const remaining = list.length - visibleCount;
+                const nextBatch = Math.min(HOME_PAGE_SIZE, remaining);
+                seeMoreWrap.style.display = "flex";
+                seeMoreBtn.textContent =
+                    nextBatch === remaining
+                        ? `See more (${remaining})`
+                        : `See more (+${nextBatch})`;
+            } else {
+                seeMoreWrap.style.display = "none";
+            }
+        }
+
+        updateBackToTopVisibility();
+    }
+
+    function resetPreviewAndRender() {
+        visibleCount = HOME_PAGE_SIZE;
+        renderPage();
+    }
+
+    function updateBackToTopVisibility() {
+        if (!backToTopBtn) return;
+        const shouldShow = window.scrollY > 420 || visibleCount > HOME_PAGE_SIZE;
+        backToTopBtn.hidden = !shouldShow;
     }
 
     monthlyBtn?.addEventListener("click", () => {
         monthlyBtn.classList.add("active");
         dailyBtn?.classList.remove("active");
-        renderPage();
+        resetPreviewAndRender();
     });
 
     dailyBtn?.addEventListener("click", () => {
         dailyBtn.classList.add("active");
         monthlyBtn?.classList.remove("active");
-        renderPage();
+        resetPreviewAndRender();
     });
 
     filterBtn?.addEventListener("click", () => {
@@ -784,11 +833,11 @@ async function initHomePage() {
         filterBtn.classList.toggle("active", open);
     });
 
-    searchBtn?.addEventListener("click", renderPage);
+    searchBtn?.addEventListener("click", resetPreviewAndRender);
     searchInput?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") renderPage();
+        if (e.key === "Enter") resetPreviewAndRender();
     });
-    applyFiltersBtn?.addEventListener("click", renderPage);
+    applyFiltersBtn?.addEventListener("click", resetPreviewAndRender);
 
     clearFiltersBtn?.addEventListener("click", () => {
         document.querySelectorAll(".homePropertyTypeFilter, .homeFacilityFilter").forEach(cb => {
@@ -801,8 +850,26 @@ async function initHomePage() {
         if (searchInput) searchInput.value = "";
         monthlyBtn?.classList.add("active");
         dailyBtn?.classList.remove("active");
-        renderPage();
+        resetPreviewAndRender();
     });
+
+    seeMoreBtn?.addEventListener("click", () => {
+        const filters = readFilters();
+        const list = applyFilters(allBuildings, filters);
+        const previousCount = visibleCount;
+        visibleCount = Math.min(visibleCount + HOME_PAGE_SIZE, list.length);
+        renderPage();
+
+        const cards = resultsList.querySelectorAll(".home-property-card");
+        const firstNewCard = cards[previousCount];
+        firstNewCard?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    backToTopBtn?.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    window.addEventListener("scroll", updateBackToTopVisibility, { passive: true });
 
     renderPage();
 }

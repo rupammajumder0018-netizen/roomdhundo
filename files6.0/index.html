@@ -85,7 +85,6 @@
         </div>
 
         <div class="nav-links">
-            <a href="search.html">Explore</a>
             <a href="list-property.html">List Property</a>
             <a href="saved.html">Saved</a>
 
@@ -181,15 +180,31 @@
     <section class="home-listings" aria-label="Available properties">
         <div class="home-listings-header">
             <p id="homeResultsCount">Loading properties...</p>
-            <a href="search.html" class="home-explore-link">Open full Explore →</a>
         </div>
 
         <div class="home-results-list" id="homeResultsList"></div>
+
+        <div class="home-see-more-wrap" id="homeSeeMoreWrap" style="display:none;">
+            <button type="button" class="home-see-more-btn" id="homeSeeMoreBtn">
+                See more
+            </button>
+        </div>
 
         <p class="no-results" id="homeNoResults" style="display:none;">
             No properties match your search. Try clearing filters or searching another area.
         </p>
     </section>
+
+    <button
+        type="button"
+        class="home-back-to-top"
+        id="homeBackToTopBtn"
+        aria-label="Return to top"
+        title="Return to top"
+        hidden
+    >
+        ↑ Top
+    </button>
 
     <footer>
         <p>© 2026 RoomDhundo</p>
