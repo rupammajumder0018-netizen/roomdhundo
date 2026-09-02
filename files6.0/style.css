@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    1. GLOBAL RESET & BASE STYLES
    ========================================================================== */
 * {
@@ -557,7 +557,7 @@ a.category-card:hover {
     line-height: 1.5;
 }
 /* ==========================================================================
-   ROOM TYPES — property detail page
+   ROOM TYPES â€” property detail page
    ========================================================================== */
 .room-types-list {
     display: grid;
@@ -597,7 +597,7 @@ a.category-card:hover {
     color: #555;
 }
 /* ==========================================================================
-   ROOM TYPES — list-property.html repeatable form blocks
+   ROOM TYPES â€” list-property.html repeatable form blocks
    ========================================================================== */
 .room-type-block {
     position: relative;
@@ -642,7 +642,7 @@ a.category-card:hover {
     background: #f5f4ff;
 }
 /* ==========================================================================
-   WRITE A REVIEW — property detail page
+   WRITE A REVIEW â€” property detail page
    ========================================================================== */
 .write-review-box {
     margin-top: 24px;
@@ -2653,7 +2653,7 @@ html[data-theme="light"] .search-box:focus-within {
 }
 
 /* =====================================================
-   LOCATION PILL — compact city + filter shortcut
+   LOCATION PILL â€” compact city + filter shortcut
    ===================================================== */
 .location-pill {
     display: flex;
@@ -2745,7 +2745,7 @@ html[data-theme="dark"] .location-pill:focus-within {
 }
 
 /* =====================================================
-   LOCATION PILL — filter dropdown
+   LOCATION PILL â€” filter dropdown
    ===================================================== */
 .location-pill {
     position: relative;
@@ -2963,7 +2963,7 @@ html[data-theme="dark"] .pill-filter-dropdown {
     transform: translateY(-1px);
 }
 
-/* Light mode glow — mirrors .pill-filter-dropdown */
+/* Light mode glow â€” mirrors .pill-filter-dropdown */
 html[data-theme="light"] .nav-location-dropdown {
     background: #ffffff !important;
     border: 1px solid rgba(124, 58, 237, 0.16);
@@ -2975,7 +2975,7 @@ html[data-theme="light"] .nav-location-btn:hover {
     box-shadow: 0 8px 18px rgba(76, 29, 149, 0.14);
 }
 
-/* Dark mode glow — mirrors .pill-filter-dropdown */
+/* Dark mode glow â€” mirrors .pill-filter-dropdown */
 html[data-theme="dark"] .nav-location-dropdown {
     background: rgba(18, 26, 42, 0.98) !important;
     border: 1px solid rgba(139, 92, 246, 0.22);

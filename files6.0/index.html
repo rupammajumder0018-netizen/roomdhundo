@@ -279,8 +279,6 @@
                 localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
             }
 
-            // Exposed so the navbar dropdown script can share the same
-            // location state instead of duplicating it.
             window.roomdhundoLocation = {
                 setLocation,
                 addRecentLocation,
@@ -333,8 +331,6 @@
                 );
             }
 
-            // If the user already picked/detected a location before,
-            // don't silently overwrite it with a fresh geolocation call.
             const savedLocation = localStorage.getItem(LOCATION_KEY);
 
             if (savedLocation) {
@@ -446,7 +442,6 @@
                 }
             });
 
-            // Recent chips are rendered dynamically, so use delegation.
             navLocationRecentChips?.addEventListener("click", (event) => {
                 const chip = event.target.closest(".nav-location-chip");
                 if (chip) chooseLocation(chip.dataset.location);
@@ -543,162 +538,58 @@
         </div>
     </div>
 
-    <!-- =====================================================
-     ROOMDHUNDO WEBSITE CHATBOT
-     ===================================================== -->
-
-<!-- Chatbot launcher -->
-
-<button
-type="button"
-id="chatbotToggle"
-class="chatbot-toggle"
-aria-label="Open RoomDhundo Chat"
-title="Chat with RoomDhundo"
-
->
-
-💬
-
-
-</button>
-
-<!-- Chatbot window -->
-
-<div class="chatbot" id="chatbot">
-
-<!-- Header -->
-<div class="chatbot-header">
-
-    <div class="chatbot-brand">
-
-        <div class="chatbot-avatar">
-            🏠
-        </div>
-
-        <div>
-            <strong>RoomDhundo</strong>
-            <span>Online • Here to help</span>
-        </div>
-
-    </div>
-
     <button
         type="button"
-        id="chatbotClose"
-        class="chatbot-close"
-        aria-label="Close chatbot"
+        id="chatbotToggle"
+        class="chatbot-toggle"
+        aria-label="Open RoomDhundo Chat"
+        title="Chat with RoomDhundo"
     >
-        ×
+        💬
     </button>
 
-</div>
-
-
-<!-- Messages -->
-<div
-    class="chatbot-messages"
-    id="chatbotMessages"
->
-
-    <!-- First bot message -->
-    <div class="chat-message bot-message">
-
-        <div class="message-avatar">
-            🏠
+    <div class="chatbot" id="chatbot">
+        <div class="chatbot-header">
+            <div class="chatbot-brand">
+                <div class="chatbot-avatar">🏠</div>
+                <div>
+                    <strong>RoomDhundo</strong>
+                    <span>Online • Here to help</span>
+                </div>
+            </div>
+            <button type="button" id="chatbotClose" class="chatbot-close" aria-label="Close chatbot">×</button>
         </div>
 
-        <div class="message-bubble">
-            👋 Hi! Welcome to RoomDhundo!<br>
-            🏠 Find rooms, PGs, flats, and rental properties easily.
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chat-message bot-message">
+                <div class="message-avatar">🏠</div>
+                <div class="message-bubble">
+                    👋 Hi! Welcome to RoomDhundo!<br>
+                    🏠 Find rooms, PGs, flats, and rental properties easily.
+                </div>
+            </div>
+
+            <div class="chat-message bot-message">
+                <div class="message-avatar">🏠</div>
+                <div class="message-bubble">
+                    How can we help you today?
+                </div>
+            </div>
+
+            <div class="chatbot-options" id="chatbotOptions">
+                <button type="button" class="chatbot-option" id="chatbotFindRoomBtn">🛏️ Find a Room</button>
+                <button type="button" class="chatbot-option" id="chatbotFindPGBtn">🏠 Find a PG</button>
+                <button type="button" class="chatbot-option" id="chatbotSearchPropertyBtn">🔎 Search Properties</button>
+                <button type="button" class="chatbot-option" id="chatbotCallBtn">📞 Call Us</button>
+                <button type="button" class="chatbot-option" id="chatbotEmailBtn">📧 Email Us</button>
+            </div>
         </div>
 
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbotInput" placeholder="Type a message..." autocomplete="off">
+            <button type="button" id="chatbotSend" aria-label="Send message">➤</button>
+        </div>
     </div>
 
-
-    <!-- Second bot message -->
-    <div class="chat-message bot-message">
-
-        <div class="message-avatar">
-            🏠
-        </div>
-
-        <div class="message-bubble">
-            How can we help you today?
-        </div>
-
-    </div>
-
-
-    <!-- Chatbot options -->
-    <div
-        class="chatbot-options"
-        id="chatbotOptions"
-    >
-
-        <button
-            type="button"
-            class="chatbot-option"
-            id="chatbotFindRoomBtn"
-        >
-            🛏️ Find a Room
-        </button>
-
-        <button
-            type="button"
-            class="chatbot-option"
-            id="chatbotFindPGBtn"
-        >
-            🏠 Find a PG
-        </button>
-
-        <button
-            type="button"
-            class="chatbot-option"
-            id="chatbotSearchPropertyBtn"
-        >
-            🔎 Search Properties
-        </button>
-
-        <button
-            type="button"
-            class="chatbot-option"
-            id="chatbotCallBtn"
-        >
-            📞 Call Us
-        </button>
-
-        <button
-            type="button"
-            class="chatbot-option"
-            id="chatbotEmailBtn"
-        >
-            📧 Email Us
-        </button>
-
-    </div>
-
-</div>
-
-
-<!-- Input area -->
-<div class="chatbot-input-area">
-
-    <input
-        type="text"
-        id="chatbotInput"
-        placeholder="Type a message..."
-        autocomplete="off"
-    >
-
-    <button
-        type="button"
-        id="chatbotSend"
-        aria-label="Send message"
-    >
-        ➤
-    </button>
-
-</div>
-
-</div>
+</body>
+</html>
