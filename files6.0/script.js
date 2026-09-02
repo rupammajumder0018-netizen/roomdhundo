@@ -2508,12 +2508,14 @@ function wireChatbot() {
         if (fromButton) addMessage("WhatsApp RoomDhundo", "user");
         addMessage("Opening WhatsApp so you can message RoomDhundo.", "bot");
         window.open(WHATSAPP_URL, "_blank");
+        promptContinue();
     }
 
     function openEmail(fromButton) {
         if (fromButton) addMessage("Email RoomDhundo", "user");
         addMessage(`Opening your email app to write to ${EMAIL}.`, "bot");
         window.location.href = EMAIL_URL;
+        promptContinue();
     }
 
     function showMainOptions() {
@@ -2530,6 +2532,11 @@ function wireChatbot() {
         document.getElementById("chatbotEmailBtn")?.addEventListener("click", () => openEmail(true));
         if (messages) messages.appendChild(options);
         scrollMessages();
+    }
+
+    function promptContinue() {
+        addMessage("How can we help you today?", "bot");
+        showMainOptions();
     }
 
     function showFaqMenu() {
@@ -2552,6 +2559,7 @@ function wireChatbot() {
                 if (!faq) return;
                 addMessage(faq.question, "user");
                 addMessage(faq.answer, "bot");
+                promptContinue();
             });
         });
 
@@ -2588,6 +2596,7 @@ function wireChatbot() {
 
         if (faq) {
             addMessage(faq.answer, "bot");
+            promptContinue();
             return;
         }
 
