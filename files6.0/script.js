@@ -7,6 +7,19 @@
 const SUPABASE_URL = "https://vyusxdilgwrcgmqqvzsp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dXN4ZGlsZ3dyY2dtcXF2enNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNjYyNTYsImV4cCI6MjEwMjc0MjI1Nn0.X6FbzDad06d5-kj1aK4zQkPSPrrLUW_O7CdfZ-ghwrM";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// =====================================================
+// ROOMDHUNDO ADMIN ACCOUNT
+// =====================================================
+
+const ADMIN_EMAIL = "roomdhundo18@gmail.com";
+
+function isAdminEmail(user) {
+    return !!(
+        user?.email &&
+        user.email.trim().toLowerCase() ===
+        ADMIN_EMAIL.trim().toLowerCase()
+    );
+}
 
 const COUPLE_FRIENDLY_TAG = "couple-friendly";
 const COUPLE_FRIENDLY_LABEL = "💑 Couple Friendly";
@@ -168,10 +181,14 @@ let navProfileOutsideClickBound = false;
 let lastRenderedNavUserId = "__unset__";
 
 async function updateNavForUser(user) {
-    const navAuthBtn = document.getElementById("navAuthBtn");
+
+    const navAuthBtn =
+        document.getElementById("navAuthBtn");
+
     if (!navAuthBtn) return;
 
-    const currentUserId = user ? user.id : null;
+    const currentUserId =
+        user ? user.id : null;
 
     if (
         currentUserId === lastRenderedNavUserId &&
@@ -180,164 +197,531 @@ async function updateNavForUser(user) {
         return;
     }
 
-    lastRenderedNavUserId = currentUserId;
+    lastRenderedNavUserId =
+        currentUserId;
 
-    let navProfileWrap = navAuthBtn.closest(".nav-profile-wrap");
+    let navProfileWrap =
+        navAuthBtn.closest(".nav-profile-wrap");
 
     if (!navProfileWrap) {
-        navProfileWrap = document.createElement("div");
-        navProfileWrap.className = "nav-profile-wrap";
-        navAuthBtn.parentNode.insertBefore(navProfileWrap, navAuthBtn);
-        navProfileWrap.appendChild(navAuthBtn);
+
+        navProfileWrap =
+            document.createElement("div");
+
+        navProfileWrap.className =
+            "nav-profile-wrap";
+
+        navAuthBtn.parentNode.insertBefore(
+            navProfileWrap,
+            navAuthBtn
+        );
+
+        navProfileWrap.appendChild(
+            navAuthBtn
+        );
     }
 
-    navProfileWrap.querySelector("#navProfileMenu")?.remove();
-    navAuthBtn.classList.remove("nav-profile-toggle");
-    navAuthBtn.removeAttribute("aria-haspopup");
+    navProfileWrap
+        .querySelector("#navProfileMenu")
+        ?.remove();
+
+    navAuthBtn.classList.remove(
+        "nav-profile-toggle"
+    );
+
+    navAuthBtn.removeAttribute(
+        "aria-haspopup"
+    );
+
     navAuthBtn.onclick = null;
 
+
+    // =================================================
+    // LOGGED OUT
+    // =================================================
+
     if (!user) {
-        navAuthBtn.textContent = "Log In / Sign Up";
+
+        navAuthBtn.textContent =
+            "Log In / Sign Up";
+
         navAuthBtn.onclick = () => {
             openAuthModal();
         };
-        navAuthBtn.dataset.navReady = "true";
-        navAuthBtn.classList.add("nav-ready");
+
+        navAuthBtn.dataset.navReady =
+            "true";
+
+        navAuthBtn.classList.add(
+            "nav-ready"
+        );
+
         return;
     }
 
-    const { data: profile, error } = await supabaseClient
-        .from("profiles")
-        .select("full_name, role")
-        .eq("id", user.id)
-        .maybeSingle();
+
+    // =================================================
+    // GET PROFILE
+    // =================================================
+
+    const {
+        data: profile,
+        error
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "id, full_name, role"
+            )
+            .eq(
+                "id",
+                user.id
+            )
+            .maybeSingle();
 
     if (error) {
-        console.error("Profile fetch error:", error);
+        console.error(
+            "Profile fetch error:",
+            error
+        );
     }
+
 
     const displayName =
         profile?.full_name ||
         user.user_metadata?.full_name ||
-        user.email.split("@")[0];
+        user.email?.split("@")[0] ||
+        "User";
+
+
+    const profileRole =
+        String(
+            profile?.role || "user"
+        )
+            .trim()
+            .toLowerCase();
+
+
+    // =================================================
+    // ADMIN
+    // EXACT ADMIN EMAIL + ADMIN ROLE
+    // =================================================
+
+    const isAdmin =
+        isAdminEmail(user) &&
+        profileRole === "admin";
+
+
+    // =================================================
+    // OWNER
+    // =================================================
 
     const isOwner =
-        profile?.user_type === "owner" ||
-        profile?.role === "owner";
+        !isAdmin &&
+        profileRole === "owner";
 
-    const roleLabel = isOwner ? "Owner" : "Renter";
+
+    const roleLabel =
+        isAdmin
+            ? "Super Admin"
+            : isOwner
+                ? "Owner"
+                : "Renter";
+
+
+    const roleClass =
+        isAdmin
+            ? "admin"
+            : isOwner
+                ? "owner"
+                : "renter";
+
+
+    // =================================================
+    // PROFILE BUTTON
+    // =================================================
 
     navAuthBtn.innerHTML = `
         <span class="nav-profile-info">
-            <span class="nav-profile-name">${displayName}</span>
-            <span class="nav-profile-role ${isOwner ? "owner" : "renter"}">${roleLabel}</span>
-        </span>
-        <span class="nav-profile-dots">⋮</span>
-    `;
-    navAuthBtn.classList.add("nav-profile-toggle");
-    navAuthBtn.setAttribute("aria-label", "Account menu");
-    navAuthBtn.setAttribute("aria-haspopup", "true");
-    navAuthBtn.removeAttribute("href");
 
-    const menu = document.createElement("div");
-    menu.id = "navProfileMenu";
-    menu.className = "nav-profile-menu";
+            <span class="nav-profile-name">
+                ${escapePropertyHtml(displayName)}
+            </span>
+
+            <span class="nav-profile-role ${roleClass}">
+                ${roleLabel}
+            </span>
+
+        </span>
+
+        <span class="nav-profile-dots">
+            ⋮
+        </span>
+    `;
+
+    navAuthBtn.classList.add(
+        "nav-profile-toggle"
+    );
+
+    navAuthBtn.setAttribute(
+        "aria-label",
+        "Account menu"
+    );
+
+    navAuthBtn.setAttribute(
+        "aria-haspopup",
+        "true"
+    );
+
+    navAuthBtn.removeAttribute(
+        "href"
+    );
+
+
+    // =================================================
+    // PROFILE MENU
+    // =================================================
+
+    const menu =
+        document.createElement("div");
+
+    menu.id =
+        "navProfileMenu";
+
+    menu.className =
+        "nav-profile-menu";
+
 
     const menuItems = [];
 
-    if (isOwner) {
+
+    // =================================================
+    // ADMIN MENU
+    // =================================================
+
+    if (isAdmin) {
+
         menuItems.push({
+
             icon: "👤",
+
             title: "My Profile",
-            subtitle: "Owner Dashboard",
-            action: () => {
-                window.location.href = "owner-dashboard.html";
-            }
-        });
-    } else {
-        menuItems.push({
-            icon: "👤",
-            title: "My Profile",
+
             subtitle: "User Dashboard",
+
             action: () => {
-                window.location.href = "user-dashboard.html";
+
+                window.location.href =
+                    "user-dashboard.html";
+
             }
+
         });
+
+
+        menuItems.push({
+
+            icon: "🏠",
+
+            title: "Owner Dashboard",
+
+            subtitle: "Manage properties and rooms",
+
+            action: () => {
+
+                window.location.href =
+                    "owner-dashboard.html";
+
+            }
+
+        });
+
+
+        menuItems.push({
+
+            icon: "🛡️",
+
+            title: "Admin Dashboard",
+
+            subtitle: "Manage RoomDhundo",
+
+            action: () => {
+
+                window.location.href =
+                    "admin.html";
+
+            }
+
+        });
+
     }
 
+
+    // =================================================
+    // OWNER MENU
+    // =================================================
+
+    else if (isOwner) {
+
+        menuItems.push({
+
+            icon: "👤",
+
+            title: "My Profile",
+
+            subtitle: "Owner Dashboard",
+
+            action: () => {
+
+                window.location.href =
+                    "owner-dashboard.html";
+
+            }
+
+        });
+
+    }
+
+
+    // =================================================
+    // NORMAL USER MENU
+    // =================================================
+
+    else {
+
+        menuItems.push({
+
+            icon: "👤",
+
+            title: "My Profile",
+
+            subtitle: "User Dashboard",
+
+            action: () => {
+
+                window.location.href =
+                    "user-dashboard.html";
+
+            }
+
+        });
+
+    }
+
+
+    // =================================================
+    // ADD ANOTHER ACCOUNT
+    // =================================================
+
     menuItems.push({
+
         icon: "👥",
+
         title: "Add Another Account",
+
         subtitle: "Sign in with another account",
+
         action: () => {
-            window.location.href = "login.html";
+
+            window.location.href =
+                "login.html";
+
         }
+
     });
 
+
+    // =================================================
+    // LOGOUT
+    // =================================================
+
     menuItems.push({
+
         icon: "🚪",
+
         title: "Logout",
+
         subtitle: "Sign out of RoomDhundo",
+
         danger: true,
+
         action: async () => {
-            const { error: signOutError } =
-                await supabaseClient.auth.signOut();
+
+            const {
+                error: signOutError
+            } =
+                await supabaseClient
+                    .auth
+                    .signOut();
 
             if (signOutError) {
-                console.error("Logout error:", signOutError);
-                alert("Unable to log out. Please try again.");
+
+                console.error(
+                    "Logout error:",
+                    signOutError
+                );
+
+                alert(
+                    "Unable to log out. Please try again."
+                );
+
                 return;
             }
 
-            window.location.href = "index.html";
+            lastRenderedNavUserId =
+                "__unset__";
+
+            window.location.href =
+                "index.html";
+
         }
+
     });
 
-    menuItems.forEach((item) => {
-        const menuItem = document.createElement("button");
-        menuItem.type = "button";
-        menuItem.className =
-            "nav-profile-menu-item" + (item.danger ? " danger" : "");
 
-        menuItem.innerHTML = `
-            <span class="nav-profile-menu-icon">${item.icon}</span>
-            <span class="nav-profile-menu-text">
-                <strong>${item.title}</strong>
-                <span>${item.subtitle}</span>
-            </span>
-        `;
+    // =================================================
+    // CREATE MENU
+    // =================================================
 
-        menuItem.addEventListener("click", (e) => {
-            e.stopPropagation();
-            menu.classList.remove("open");
-            item.action();
-        });
+    menuItems.forEach(
+        item => {
 
-        menu.appendChild(menuItem);
-    });
+            const menuItem =
+                document.createElement("button");
 
-    navProfileWrap.appendChild(menu);
+            menuItem.type =
+                "button";
 
-    navAuthBtn.onclick = (e) => {
-        e.preventDefault?.();
-        e.stopPropagation();
-        menu.classList.toggle("open");
-    };
+            menuItem.className =
+    "nav-profile-menu-item" +
+    (
+        item.danger
+            ? " danger"
+            : ""
+    ) +
+    (
+        isAdmin &&
+        item.title === "Admin Dashboard"
+            ? " admin-dashboard-item"
+            : ""
+    );
 
-    if (!navProfileOutsideClickBound) {
-        document.addEventListener("click", (e) => {
-            const openMenu = document.getElementById("navProfileMenu");
-            if (!openMenu) return;
-            const wrap = openMenu.closest(".nav-profile-wrap");
-            if (wrap && !wrap.contains(e.target)) {
-                openMenu.classList.remove("open");
+            menuItem.innerHTML = `
+                <span class="nav-profile-menu-icon">
+                    ${item.icon}
+                </span>
+
+                <span class="nav-profile-menu-text">
+
+                    <strong>
+                        ${item.title}
+                    </strong>
+
+                    <span>
+                        ${item.subtitle}
+                    </span>
+
+                </span>
+            `;
+
+            menuItem.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+                    menu.classList.remove(
+                        "open"
+                    );
+
+                    item.action();
+
+                }
+            );
+
+            menu.appendChild(
+                menuItem
+            );
+
+        }
+    );
+
+
+    navProfileWrap.appendChild(
+        menu
+    );
+
+
+    // =================================================
+    // OPEN / CLOSE MENU
+    // =================================================
+
+    navAuthBtn.onclick =
+        event => {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            menu.classList.toggle(
+                "open"
+            );
+
+        };
+
+
+    // =================================================
+    // OUTSIDE CLICK
+    // =================================================
+
+    if (
+        !navProfileOutsideClickBound
+    ) {
+
+        document.addEventListener(
+            "click",
+            event => {
+
+                const openMenu =
+                    document.getElementById(
+                        "navProfileMenu"
+                    );
+
+                if (!openMenu) {
+                    return;
+                }
+
+                const wrap =
+                    openMenu.closest(
+                        ".nav-profile-wrap"
+                    );
+
+                if (
+                    wrap &&
+                    !wrap.contains(
+                        event.target
+                    )
+                ) {
+
+                    openMenu.classList.remove(
+                        "open"
+                    );
+
+                }
+
             }
-        });
-        navProfileOutsideClickBound = true;
+        );
+
+        navProfileOutsideClickBound =
+            true;
     }
 
-    navAuthBtn.dataset.navReady = "true";
-    navAuthBtn.classList.add("nav-ready");
+    navAuthBtn.dataset.navReady =
+        "true";
+
+    navAuthBtn.classList.add(
+        "nav-ready"
+    );
+
 }
 
 function openAuthModal() {
@@ -391,61 +775,195 @@ function wireAuthUI() {
         switchTab(tabSignup, tabLogin, signupForm, loginForm);
     });
 
-    loginForm?.addEventListener("submit", async (e) => {
-        e.preventDefault();
+loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-        const email = document.getElementById("loginEmail")?.value.trim();
-        const password = document.getElementById("loginPassword")?.value;
-        const loginMessage = document.getElementById("loginMessage");
+    const email =
+        document.getElementById("loginEmail")?.value.trim();
 
-        if (!email || !password) {
-            if (loginMessage) {
-                loginMessage.textContent = "Please enter email and password.";
-            }
-            return;
-        }
+    const password =
+        document.getElementById("loginPassword")?.value;
 
-        if (!validateEmail(email)) {
-            if (loginMessage) {
-                loginMessage.textContent = "Please enter a valid email.";
-            }
-            return;
-        }
+    const loginMessage =
+        document.getElementById("loginMessage");
+
+
+    // =================================================
+    // VALIDATION
+    // =================================================
+
+    if (!email || !password) {
 
         if (loginMessage) {
-            loginMessage.textContent = "Logging in...";
+            loginMessage.textContent =
+                "Please enter email and password.";
         }
 
-        const { data, error } =
-            await supabaseClient.auth.signInWithPassword({
-                email,
-                password
-            });
+        return;
+    }
 
-        if (error) {
-            console.error("Login error:", error);
-            if (loginMessage) {
-                loginMessage.textContent = error.message;
-            }
-            return;
-        }
+
+    if (!validateEmail(email)) {
 
         if (loginMessage) {
-            loginMessage.textContent = "Login successful!";
+            loginMessage.textContent =
+                "Please enter a valid email.";
         }
 
-        await updateNavForUser(data.user);
-        alert("Login successful!");
-        window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
+        return;
+    }
 
-        const result = await getCurrentUserProfile();
 
-        if (result?.profile?.role === "owner") {
-            window.location.href = "owner-dashboard.html";
-        } else {
-            window.location.href = "search.html";
+    if (loginMessage) {
+        loginMessage.textContent =
+            "Logging in...";
+    }
+
+
+    // =================================================
+    // SUPABASE LOGIN
+    // =================================================
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+
+    if (error) {
+
+        console.error(
+            "Login error:",
+            error
+        );
+
+        if (loginMessage) {
+            loginMessage.textContent =
+                error.message;
         }
-    });
+
+        return;
+    }
+
+
+    if (!data?.user) {
+
+        if (loginMessage) {
+            loginMessage.textContent =
+                "Login failed.";
+        }
+
+        return;
+    }
+
+
+    // =================================================
+    // GET PROFILE
+    // =================================================
+
+    const result =
+        await getCurrentUserProfile();
+
+
+    const loggedInUser =
+        result?.user || data.user;
+
+
+    const loggedInRole =
+        String(
+            result?.profile?.role || "user"
+        )
+            .trim()
+            .toLowerCase();
+
+
+    // =================================================
+    // ADMIN CHECK
+    // EXACT EMAIL + ADMIN ROLE
+    // =================================================
+
+    const isAdmin =
+        isAdminEmail(loggedInUser) &&
+        loggedInRole === "admin";
+
+
+    // =================================================
+    // UPDATE NAVIGATION
+    // =================================================
+
+    await updateNavForUser(
+        loggedInUser
+    );
+
+
+    if (loginMessage) {
+        loginMessage.textContent =
+            "Login successful!";
+    }
+
+
+    window.dispatchEvent(
+        new CustomEvent(
+            "roomdhundo:auth-changed"
+        )
+    );
+
+
+    // =================================================
+    // ADMIN
+    // STAY ON MAIN WEBSITE
+    // =================================================
+
+    if (isAdmin) {
+
+        alert(
+            "Admin login successful!"
+        );
+
+        closeAuthModal();
+
+        window.location.href =
+            "index.html";
+
+        return;
+    }
+
+
+    // =================================================
+    // OWNER
+    // =================================================
+
+    if (
+        loggedInRole === "owner"
+    ) {
+
+        alert(
+            "Login successful!"
+        );
+
+        window.location.href =
+            "owner-dashboard.html";
+
+        return;
+    }
+
+
+    // =================================================
+    // NORMAL USER
+    // =================================================
+
+    alert(
+        "Login successful!"
+    );
+
+    window.location.href =
+        "search.html";
+
+});
 
     signupForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -2629,14 +3147,39 @@ function wireResetPasswordForm() {
 }
 
 async function initRenterDashboard() {
-    const params = new URLSearchParams(window.location.search);
-    const onOwnPage = window.location.pathname.endsWith("user-dashboard.html");
-    const isDashboard = params.get("dashboard") === "renter" || onOwnPage;
-    const dashboard = document.getElementById("renterDashboard");
-    const searchHeader = document.querySelector(".search-header");
-    const searchContainer = document.querySelector(".search-container");
 
-    if (!dashboard) return;
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+    const onOwnPage =
+        window.location.pathname.endsWith(
+            "user-dashboard.html"
+        );
+
+    const isDashboard =
+        params.get("dashboard") === "renter" ||
+        onOwnPage;
+
+    const dashboard =
+        document.getElementById(
+            "renterDashboard"
+        );
+
+    const searchHeader =
+        document.querySelector(
+            ".search-header"
+        );
+
+    const searchContainer =
+        document.querySelector(
+            ".search-container"
+        );
+
+    if (!dashboard) {
+        return;
+    }
 
     if (!isDashboard) {
         dashboard.style.display = "none";
@@ -2644,75 +3187,841 @@ async function initRenterDashboard() {
     }
 
     dashboard.style.display = "block";
-    if (searchHeader) searchHeader.style.display = "none";
-    if (searchContainer) searchContainer.style.display = "none";
 
-    const user = await getCurrentUser();
+    if (searchHeader) {
+        searchHeader.style.display = "none";
+    }
+
+    if (searchContainer) {
+        searchContainer.style.display = "none";
+    }
+
+
+    // =================================================
+    // CURRENT USER
+    // =================================================
+
+    const user =
+        await getCurrentUser();
+
     if (!user) {
-        window.location.href = "index.html";
+
+        window.location.href =
+            "index.html";
+
         return;
     }
 
-    const { data: profile, error: profileError } =
-        await supabaseClient.from("profiles").select("*").eq("id", user.id).maybeSingle();
 
-    if (profileError) console.error("Profile error:", profileError);
+    // =================================================
+    // PROFILE
+    // =================================================
 
-    if (profile?.role === "owner") {
-        window.location.href = "owner-dashboard.html";
-        return;
+    const {
+        data: profile,
+        error: profileError
+    } =
+        await supabaseClient
+            .from("profiles")
+            .select(
+                "id, full_name, role"
+            )
+            .eq(
+                "id",
+                user.id
+            )
+            .maybeSingle();
+
+
+    if (profileError) {
+
+        console.error(
+            "Profile error:",
+            profileError
+        );
+
     }
+
+
+    const userRole =
+        String(
+            profile?.role || "user"
+        )
+            .trim()
+            .toLowerCase();
+
+
+    // =================================================
+    // ADMIN
+    //
+    // Admin is still allowed to use the User Dashboard.
+    // Do NOT redirect admin to another dashboard here.
+    // =================================================
+
+    const isAdmin =
+        isAdminEmail(user) &&
+        userRole === "admin";
+
 
     const displayName =
         profile?.full_name ||
         user.user_metadata?.full_name ||
-        user.email.split("@")[0];
+        user.email?.split("@")[0] ||
+        "User";
 
-    const renterNameEl = document.getElementById("renterName");
-    const renterFullNameEl = document.getElementById("renterFullName");
-    const renterEmailEl = document.getElementById("renterEmail");
 
-    if (renterNameEl) renterNameEl.textContent = displayName;
-    if (renterFullNameEl) renterFullNameEl.textContent = displayName;
-    if (renterEmailEl) renterEmailEl.textContent = user.email;
+    const roleLabel =
+        isAdmin
+            ? "Super Admin"
+            : userRole === "owner"
+                ? "Owner"
+                : "Renter";
 
-    const { data: saved, error: savedError } =
-        await supabaseClient.from("saved_buildings").select("id").eq("user_id", user.id);
 
-    if (savedError) console.error("Saved property count error:", savedError);
+    // =================================================
+    // PROFILE DISPLAY
+    // =================================================
 
-    const savedCountEl = document.getElementById("savedPropertyCount");
-    if (savedCountEl) savedCountEl.textContent = saved?.length || 0;
+    const renterNameEl =
+        document.getElementById(
+            "renterName"
+        );
 
-    const enquiryCountEl = document.getElementById("enquiryCount");
-    if (enquiryCountEl) enquiryCountEl.textContent = "0";
+    const renterFullNameEl =
+        document.getElementById(
+            "renterFullName"
+        );
 
-    document.getElementById("dashboardExploreBtn")?.addEventListener("click", () => {
-        window.location.href = "search.html";
-    });
+    const renterEmailEl =
+        document.getElementById(
+            "renterEmail"
+        );
 
-    document.getElementById("dashboardExploreMainBtn")?.addEventListener("click", () => {
-        window.location.href = "search.html";
-    });
+    const dashboardProfileRole =
+        document.getElementById(
+            "dashboardProfileRole"
+        );
 
-    document.getElementById("dashboardSavedBtn")?.addEventListener("click", () => {
-        window.location.href = "saved.html";
-    });
+    const dashboardAccountType =
+        document.getElementById(
+            "dashboardAccountType"
+        );
 
-    document.getElementById("dashboardEnquiriesBtn")?.addEventListener("click", () => {
-        alert("My Enquiries will be available here.");
-    });
 
-    document.getElementById("dashboardLogoutBtn")?.addEventListener("click", async () => {
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) {
-            console.error("Logout error:", error);
-            alert("Unable to log out. Please try again.");
+    if (renterNameEl) {
+        renterNameEl.textContent =
+            displayName;
+    }
+
+    if (renterFullNameEl) {
+        renterFullNameEl.textContent =
+            displayName;
+    }
+
+    if (renterEmailEl) {
+        renterEmailEl.textContent =
+            user.email || "—";
+    }
+
+    if (dashboardProfileRole) {
+        dashboardProfileRole.textContent =
+            roleLabel;
+    }
+
+    if (dashboardAccountType) {
+        dashboardAccountType.textContent =
+            roleLabel;
+    }
+
+
+    // =================================================
+    // SAVED PROPERTY COUNT
+    // =================================================
+
+    const {
+        data: saved,
+        error: savedError
+    } =
+        await supabaseClient
+            .from("saved_buildings")
+            .select("id")
+            .eq(
+                "user_id",
+                user.id
+            );
+
+
+    if (savedError) {
+
+        console.error(
+            "Saved property count error:",
+            savedError
+        );
+
+    }
+
+
+    const savedCountEl =
+        document.getElementById(
+            "savedPropertyCount"
+        );
+
+    if (savedCountEl) {
+
+        savedCountEl.textContent =
+            saved?.length || 0;
+
+    }
+
+
+    // =================================================
+    // ENQUIRY COUNT
+    // =================================================
+
+    let enquiryCount = 0;
+
+    const {
+        data: enquiries,
+        error: enquiryError
+    } =
+        await supabaseClient
+            .from("enquiries")
+            .select("id")
+            .eq(
+                "user_id",
+                user.id
+            );
+
+
+    if (enquiryError) {
+
+        console.warn(
+            "Enquiry count error:",
+            enquiryError
+        );
+
+    } else {
+
+        enquiryCount =
+            enquiries?.length || 0;
+
+    }
+
+
+    
+
+
+    // =================================================
+    // EXPLORE
+    // =================================================
+
+    function goToSearch() {
+
+        window.location.href =
+            "search.html";
+
+    }
+
+
+    document
+        .getElementById(
+            "dashboardExploreBtn"
+        )
+        ?.addEventListener(
+            "click",
+            goToSearch
+        );
+
+
+    document
+        .getElementById(
+            "dashboardExploreMainBtn"
+        )
+        ?.addEventListener(
+            "click",
+            goToSearch
+        );
+
+
+    // =================================================
+    // SAVED PROPERTIES
+    // =================================================
+
+    function goToSaved() {
+
+        window.location.href =
+            "saved.html";
+
+    }
+
+
+    document
+        .getElementById(
+            "dashboardSavedBtn"
+        )
+        ?.addEventListener(
+            "click",
+            goToSaved
+        );
+
+
+    document
+        .getElementById(
+            "dashboardSavedStatBtn"
+        )
+        ?.addEventListener(
+            "click",
+            goToSaved
+        );
+
+
+    // =================================================
+    // ENQUIRIES
+    // =================================================
+
+    function goToEnquiries() {
+
+        /*
+         * Use enquiries.html when it exists.
+         * Otherwise keep the user informed.
+         */
+
+        window.location.href =
+            "enquiries.html";
+
+    }
+
+
+    document
+        .getElementById(
+            "dashboardEnquiriesBtn"
+        )
+        ?.addEventListener(
+            "click",
+            goToEnquiries
+        );
+
+
+    document
+        .getElementById(
+            "dashboardEnquiriesStatBtn"
+        )
+        ?.addEventListener(
+            "click",
+            goToEnquiries
+        );
+
+
+    // =================================================
+    // EDIT PROFILE
+    // =================================================
+
+    const editProfileBtn =
+        document.getElementById(
+            "editProfileBtn"
+        );
+
+    const editModal =
+        document.getElementById(
+            "profileEditModal"
+        );
+
+    const closeEditBtn =
+        document.getElementById(
+            "profileEditCloseBtn"
+        );
+
+    const cancelEditBtn =
+        document.getElementById(
+            "profileEditCancelBtn"
+        );
+
+    const editForm =
+        document.getElementById(
+            "profileEditForm"
+        );
+
+    const editNameInput =
+        document.getElementById(
+            "editProfileName"
+        );
+
+    const editEmailInput =
+        document.getElementById(
+            "editProfileEmail"
+        );
+
+    const editMessage =
+        document.getElementById(
+            "profileEditMessage"
+        );
+
+    const editSaveBtn =
+        document.getElementById(
+            "profileEditSaveBtn"
+        );
+
+
+    function openEditProfile() {
+
+        if (!editModal) {
             return;
         }
-        window.location.href = "index.html";
-    });
+
+
+        if (editNameInput) {
+
+            editNameInput.value =
+                displayName;
+
+        }
+
+
+        if (editEmailInput) {
+
+            editEmailInput.value =
+                user.email || "";
+
+        }
+
+
+        if (editMessage) {
+
+            editMessage.textContent =
+                "";
+
+            editMessage.style.color =
+                "";
+
+        }
+
+
+        editModal.classList.add(
+            "show"
+        );
+
+        editModal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.style.overflow =
+            "hidden";
+
+
+        editNameInput?.focus();
+
+    }
+
+
+    function closeEditProfile() {
+
+        if (!editModal) {
+            return;
+        }
+
+        editModal.classList.remove(
+            "show"
+        );
+
+        editModal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.style.overflow =
+            "";
+
+    }
+
+
+    editProfileBtn?.addEventListener(
+        "click",
+        openEditProfile
+    );
+
+
+    closeEditBtn?.addEventListener(
+        "click",
+        closeEditProfile
+    );
+
+
+    cancelEditBtn?.addEventListener(
+        "click",
+        closeEditProfile
+    );
+
+
+    editModal?.addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target ===
+                editModal
+            ) {
+
+                closeEditProfile();
+
+            }
+
+        }
+    );
+
+
+    editForm?.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+
+            const newName =
+                editNameInput?.value
+                    ?.trim() ||
+                "";
+
+            const newEmail =
+                editEmailInput?.value
+                    ?.trim() ||
+                "";
+
+
+            if (
+                !newName ||
+                newName.length < 2
+            ) {
+
+                if (editMessage) {
+
+                    editMessage.style.color =
+                        "#dc2626";
+
+                    editMessage.textContent =
+                        "Please enter your full name.";
+
+                }
+
+                return;
+            }
+
+
+            if (!validateEmail(newEmail)) {
+
+                if (editMessage) {
+
+                    editMessage.style.color =
+                        "#dc2626";
+
+                    editMessage.textContent =
+                        "Please enter a valid email address.";
+
+                }
+
+                return;
+            }
+
+
+            if (
+                editSaveBtn
+            ) {
+
+                editSaveBtn.disabled =
+                    true;
+
+                editSaveBtn.textContent =
+                    "Saving...";
+
+            }
+
+
+            if (editMessage) {
+
+                editMessage.style.color =
+                    "#6b7280";
+
+                editMessage.textContent =
+                    "Updating your profile...";
+
+            }
+
+
+            try {
+
+                // -----------------------------------------
+                // UPDATE PROFILE NAME
+                // -----------------------------------------
+
+                const {
+                    error: nameError
+                } =
+                    await supabaseClient
+                        .from("profiles")
+                        .update({
+                            full_name:
+                                newName
+                        })
+                        .eq(
+                            "id",
+                            user.id
+                        );
+
+
+                if (nameError) {
+
+                    throw new Error(
+                        nameError.message
+                    );
+
+                }
+
+
+                // -----------------------------------------
+                // UPDATE AUTH METADATA
+                // -----------------------------------------
+
+                const {
+                    error: metadataError
+                } =
+                    await supabaseClient.auth
+                        .updateUser({
+                            data: {
+                                full_name:
+                                    newName
+                            }
+                        });
+
+
+                if (metadataError) {
+
+                    console.warn(
+                        "Metadata update warning:",
+                        metadataError
+                    );
+
+                }
+
+
+                // -----------------------------------------
+                // UPDATE EMAIL ONLY WHEN CHANGED
+                // -----------------------------------------
+
+                let emailChanged =
+    String(newEmail || "").trim().toLowerCase() !==
+    String(user.email || "").trim().toLowerCase();
+
+
+                if (emailChanged) {
+
+                    const {
+                        error: emailError
+                    } =
+                        await supabaseClient.auth
+                            .updateUser({
+                                email:
+                                    newEmail
+                            });
+
+
+                    if (emailError) {
+
+                        throw new Error(
+                            emailError.message
+                        );
+
+                    }
+
+                }
+
+
+                // -----------------------------------------
+                // UPDATE UI
+                // -----------------------------------------
+
+                if (renterNameEl) {
+                    renterNameEl.textContent =
+                        newName;
+                }
+
+                if (renterFullNameEl) {
+                    renterFullNameEl.textContent =
+                        newName;
+                }
+
+
+                if (editMessage) {
+
+                    editMessage.style.color =
+                        "#16a34a";
+
+                    editMessage.textContent =
+                        emailChanged
+                            ? "Profile updated. Please confirm your new email if Supabase requires confirmation."
+                            : "Profile updated successfully.";
+
+                }
+
+
+                // Refresh navbar profile
+                await updateNavForUser(user);
+
+
+                setTimeout(
+                    closeEditProfile,
+                    1300
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Edit profile error:",
+                    error
+                );
+
+
+                if (editMessage) {
+
+                    editMessage.style.color =
+                        "#dc2626";
+
+                    editMessage.textContent =
+                        error.message ||
+                        "Unable to update your profile.";
+
+                }
+
+            } finally {
+
+                if (editSaveBtn) {
+
+                    editSaveBtn.disabled =
+                        false;
+
+                    editSaveBtn.textContent =
+                        "💾 Save Changes";
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // =================================================
+    // ESC TO CLOSE EDIT MODAL
+    // =================================================
+
+    const escapeHandler =
+        event => {
+
+            if (
+                event.key === "Escape" &&
+                editModal?.classList.contains("show")
+            ) {
+
+                closeEditProfile();
+
+            }
+
+        };
+
+
+    document.addEventListener(
+        "keydown",
+        escapeHandler
+    );
+
+
+
+// =================================================
+// NEED HELP / WHATSAPP
+// =================================================
+
+document
+    .getElementById(
+        "needHelpWhatsAppBtn"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            const whatsappNumber =
+                "9382991409";
+
+            const message =
+                "Hello RoomDhundo, I need help with my account.";
+
+            const whatsappUrl =
+                `https://wa.me/91${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+            window.open(
+                whatsappUrl,
+                "_blank"
+            );
+
+        }
+    );
+
+
+
+    // =================================================
+    // LOGOUT
+    // =================================================
+
+    document
+        .getElementById(
+            "dashboardLogoutBtn"
+        )
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                const confirmed =
+                    window.confirm(
+                        "Are you sure you want to logout?"
+                    );
+
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                const {
+                    error
+                } =
+                    await supabaseClient.auth
+                        .signOut();
+
+
+                if (error) {
+
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
+
+                    alert(
+                        "Unable to log out. Please try again."
+                    );
+
+                    return;
+
+                }
+
+
+                window.location.href =
+                    "index.html";
+
+            }
+        );
+
 }
+
+
 
 document.addEventListener("DOMContentLoaded", async () => {
     wireAuthUI();

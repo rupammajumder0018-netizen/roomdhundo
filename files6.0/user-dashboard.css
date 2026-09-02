@@ -469,3 +469,486 @@ html[data-theme="light"] .renter-stat-card:hover,
 html[data-theme="light"] .renter-action-card:hover { border-color: rgba(124, 58, 237, .35); box-shadow: 0 14px 30px rgba(15, 23, 42, .10), 0 0 22px rgba(124, 58, 237, .13); transform: translateY(-4px); }
 
 @media (max-width: 600px) { .dashboard-theme-toggle { top: 15px; right: 15px; } }
+
+/* =====================================================
+   USER DASHBOARD TOP ACTIONS
+   ===================================================== */
+
+.dashboard-top-actions {
+    position: fixed;
+    top: 18px;
+    left: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.dashboard-top-actions > * {
+    pointer-events: auto;
+}
+
+
+/* =====================================================
+   BACK TO HOME
+   ===================================================== */
+
+.dashboard-back-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 9px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.08);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dashboard-back-home:hover {
+    transform: translateY(-2px);
+    background: #ffffff;
+    border-color: #c4b5fd;
+    box-shadow:
+        0 12px 24px rgba(15, 23, 42, 0.12),
+        0 0 20px rgba(124, 58, 237, 0.10);
+}
+
+
+/* =====================================================
+   STAT CARD BUTTON
+   ===================================================== */
+
+button.renter-stat-card {
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    color: inherit;
+}
+
+.stat-card-button {
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-card-button:focus-visible,
+.renter-action-card:focus-visible,
+.edit-profile-btn:focus-visible,
+.dashboard-back-home:focus-visible {
+    outline: 3px solid rgba(124, 58, 237, 0.22);
+    outline-offset: 3px;
+}
+
+
+/* =====================================================
+   SECTION HEADER WITH EDIT BUTTON
+   ===================================================== */
+
+.dashboard-section-title {
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.edit-profile-btn {
+    flex-shrink: 0;
+    min-height: 40px;
+    padding: 9px 15px;
+    border: 1px solid #ddd6fe;
+    border-radius: 10px;
+    background: #f5f3ff;
+    color: #6d28d9;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.edit-profile-btn:hover {
+    transform: translateY(-2px);
+    background: #ede9fe;
+    border-color: #c4b5fd;
+    box-shadow: 0 8px 18px rgba(109, 40, 217, 0.12);
+}
+
+
+/* =====================================================
+   ACCOUNT OPTIONS
+   ===================================================== */
+
+.account-option-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+
+/* =====================================================
+   EDIT PROFILE MODAL
+   ===================================================== */
+
+.profile-edit-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.58);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+
+.profile-edit-modal.show {
+    display: flex;
+    animation: profileModalFade 0.2s ease;
+}
+
+@keyframes profileModalFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.profile-edit-modal-content {
+    width: min(500px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.24);
+    animation: profileModalIn 0.22s ease;
+}
+
+@keyframes profileModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.profile-edit-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.profile-edit-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #111827;
+}
+
+.profile-edit-header p {
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.profile-edit-close {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 9px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.profile-edit-close:hover {
+    background: #e5e7eb;
+}
+
+.profile-edit-body {
+    padding: 20px;
+}
+
+.edit-form-group {
+    margin-bottom: 18px;
+}
+
+.edit-form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.edit-form-group input {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.edit-form-group input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+.edit-form-group small {
+    display: block;
+    margin-top: 7px;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.profile-edit-message {
+    min-height: 20px;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.profile-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px 20px;
+    border-top: 1px solid #eef2f7;
+}
+
+.profile-cancel-btn,
+.profile-save-btn {
+    min-height: 40px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    border: none;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.profile-cancel-btn {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.profile-cancel-btn:hover {
+    background: #e5e7eb;
+}
+
+.profile-save-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #ffffff;
+}
+
+.profile-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.24);
+}
+
+.profile-save-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html[data-theme="dark"] .dashboard-back-home {
+    background: rgba(18, 18, 22, 0.92);
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="dark"] .dashboard-back-home:hover {
+    background: #171717;
+    border-color: rgba(167, 139, 250, 0.55);
+}
+
+html[data-theme="dark"] .edit-profile-btn {
+    background: rgba(124, 58, 237, 0.12);
+    color: #c4b5fd;
+    border-color: rgba(167, 139, 250, 0.28);
+}
+
+html[data-theme="dark"] .edit-profile-btn:hover {
+    background: rgba(124, 58, 237, 0.20);
+    border-color: rgba(167, 139, 250, 0.55);
+}
+
+html[data-theme="dark"] .profile-edit-modal-content {
+    background: #121212;
+    border-color: #303030;
+}
+
+html[data-theme="dark"] .profile-edit-header,
+html[data-theme="dark"] .profile-edit-actions {
+    border-color: #303030;
+}
+
+html[data-theme="dark"] .profile-edit-header h2,
+html[data-theme="dark"] .edit-form-group label {
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .profile-edit-header p,
+html[data-theme="dark"] .edit-form-group small {
+    color: #a7b0c0;
+}
+
+html[data-theme="dark"] .edit-form-group input {
+    background: #171717;
+    border-color: #303030;
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .profile-edit-close,
+html[data-theme="dark"] .profile-cancel-btn {
+    background: #1f1f1f;
+    color: #e5e7eb;
+}
+
+html[data-theme="dark"] .profile-edit-close:hover,
+html[data-theme="dark"] .profile-cancel-btn:hover {
+    background: #292929;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .account-option-list {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .dashboard-top-actions {
+        top: 12px;
+        left: 15px;
+        right: 15px;
+    }
+
+    .dashboard-back-home {
+        min-height: 38px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .dashboard-section-title {
+        align-items: flex-start;
+    }
+
+    .edit-profile-btn {
+        width: 100%;
+    }
+
+    .profile-edit-actions {
+        flex-direction: column;
+    }
+
+    .profile-cancel-btn,
+    .profile-save-btn {
+        width: 100%;
+    }
+
+}
+
+```css
+/* =====================================================
+   NEED HELP
+   ===================================================== */
+
+.need-help-section {
+    margin-bottom: 22px;
+}
+
+.need-help-whatsapp-btn {
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 18px;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    background: #f0fdf4;
+    color: #15803d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.need-help-whatsapp-btn span {
+    font-size: 18px;
+}
+
+.need-help-whatsapp-btn:hover {
+    transform: translateY(-2px);
+    background: #dcfce7;
+    border-color: #86efac;
+    box-shadow:
+        0 10px 22px rgba(22, 163, 74, 0.12);
+}
+
+html[data-theme="dark"] .need-help-whatsapp-btn {
+    background: rgba(22, 163, 74, 0.10);
+    border-color: rgba(74, 222, 128, 0.25);
+    color: #86efac;
+}
+
+html[data-theme="dark"] .need-help-whatsapp-btn:hover {
+    background: rgba(22, 163, 74, 0.18);
+    border-color: rgba(74, 222, 128, 0.45);
+}
+```
+

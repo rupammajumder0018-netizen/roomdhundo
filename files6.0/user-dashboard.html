@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,21 +13,43 @@
 
 <body>
 
-    <button
-        type="button"
-        class="dashboard-theme-toggle"
-        id="dashboardThemeToggle"
-        aria-label="Switch to dark mode"
-        title="Switch to dark mode"
-    >🌙</button>
+    <!-- =====================================================
+         TOP ACTIONS
+         ===================================================== -->
+
+    <div class="dashboard-top-actions">
+
+        <a
+            href="index.html"
+            class="dashboard-back-home"
+        >
+            ← Back to Home
+        </a>
+
+        <button
+            type="button"
+            class="dashboard-theme-toggle"
+            id="dashboardThemeToggle"
+            aria-label="Switch to dark mode"
+            title="Switch to dark mode"
+        >
+            🌙
+        </button>
+
+    </div>
+
 
     <!-- =====================================================
          RENTER DASHBOARD
          ===================================================== -->
 
-    <section id="renterDashboard" class="renter-dashboard">
+    <section
+        id="renterDashboard"
+        class="renter-dashboard"
+    >
 
         <div class="renter-dashboard-container">
+
 
             <!-- =================================================
                  HEADER
@@ -37,7 +60,7 @@
                 <div>
 
                     <span class="dashboard-label">
-                        RENTER DASHBOARD
+                        MY PROFILE
                     </span>
 
                     <h1>
@@ -46,17 +69,21 @@
                     </h1>
 
                     <p>
-                        Manage your RoomDhundo account and find your next place.
+                        Manage your RoomDhundo account and profile.
                     </p>
 
                 </div>
 
                 <div class="account-status">
+
                     <span class="status-dot"></span>
+
                     Account Active
+
                 </div>
 
             </div>
+
 
 
             <!-- =================================================
@@ -65,42 +92,35 @@
 
             <div class="renter-dashboard-cards">
 
+
                 <!-- SAVED -->
 
-                <div class="renter-stat-card">
+                <button
+                    type="button"
+                    class="renter-stat-card stat-card-button"
+                    id="dashboardSavedStatBtn"
+                >
 
                     <div class="stat-icon">
                         ❤️
                     </div>
 
                     <div>
-                        <span>Saved Properties</span>
+
+                        <span>
+                            Saved Properties
+                        </span>
 
                         <strong id="savedPropertyCount">
                             0
                         </strong>
+
                     </div>
 
-                </div>
+                </button>
 
 
-                <!-- ENQUIRIES -->
-
-                <div class="renter-stat-card">
-
-                    <div class="stat-icon">
-                        📩
-                    </div>
-
-                    <div>
-                        <span>My Enquiries</span>
-
-                        <strong id="enquiryCount">
-                            0
-                        </strong>
-                    </div>
-
-                </div>
+          
 
 
                 <!-- ACCOUNT TYPE -->
@@ -108,15 +128,19 @@
                 <div class="renter-stat-card">
 
                     <div class="stat-icon">
-                        🏠
+                        👤
                     </div>
 
                     <div>
-                        <span>Account Type</span>
 
-                        <strong>
+                        <span>
+                            Account Type
+                        </span>
+
+                        <strong id="dashboardAccountType">
                             Renter
                         </strong>
+
                     </div>
 
                 </div>
@@ -124,8 +148,9 @@
             </div>
 
 
+
             <!-- =================================================
-                 QUICK ACTIONS
+                 MY ACCOUNT / MY PROFILE
                  ================================================= -->
 
             <div class="renter-dashboard-section">
@@ -135,141 +160,28 @@
                     <div>
 
                         <h2>
-                            Quick Actions
+                            My Profile
                         </h2>
 
                         <p>
-                            Everything you need to find your next stay.
+                            View and manage your RoomDhundo account information.
                         </p>
 
                     </div>
 
-                </div>
-
-
-                <div class="renter-quick-actions">
-
-                    <!-- EXPLORE -->
-
                     <button
-                        class="renter-action-card"
-                        id="dashboardExploreBtn"
                         type="button"
+                        class="edit-profile-btn"
+                        id="editProfileBtn"
                     >
-
-                        <span class="action-icon">
-                            🔎
-                        </span>
-
-                        <span class="action-content">
-
-                            <strong>
-                                Explore Properties
-                            </strong>
-
-                            <small>
-                                Find rooms, PGs and other stays
-                            </small>
-
-                        </span>
-
-                        <span class="action-arrow">
-                            →
-                        </span>
-
+                        ✏️ Edit Profile
                     </button>
-
-
-                    <!-- SAVED -->
-
-                    <button
-                        class="renter-action-card"
-                        id="dashboardSavedBtn"
-                        type="button"
-                    >
-
-                        <span class="action-icon">
-                            ❤️
-                        </span>
-
-                        <span class="action-content">
-
-                            <strong>
-                                Saved Properties
-                            </strong>
-
-                            <small>
-                                View properties you've saved
-                            </small>
-
-                        </span>
-
-                        <span class="action-arrow">
-                            →
-                        </span>
-
-                    </button>
-
-
-                    <!-- ENQUIRIES -->
-
-                    <button
-                        class="renter-action-card"
-                        id="dashboardEnquiriesBtn"
-                        type="button"
-                    >
-
-                        <span class="action-icon">
-                            📩
-                        </span>
-
-                        <span class="action-content">
-
-                            <strong>
-                                My Enquiries
-                            </strong>
-
-                            <small>
-                                Track your property enquiries
-                            </small>
-
-                        </span>
-
-                        <span class="action-arrow">
-                            →
-                        </span>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- =================================================
-                 ACCOUNT INFORMATION
-                 ================================================= -->
-
-            <div class="renter-dashboard-section">
-
-                <div class="dashboard-section-title">
-
-                    <div>
-
-                        <h2>
-                            My Account
-                        </h2>
-
-                        <p>
-                            Your RoomDhundo account information.
-                        </p>
-
-                    </div>
 
                 </div>
 
 
                 <div class="renter-account-card">
+
 
                     <!-- NAME -->
 
@@ -309,7 +221,7 @@
                             Account Type
                         </span>
 
-                        <strong>
+                        <strong id="dashboardProfileRole">
                             Renter
                         </strong>
 
@@ -335,6 +247,135 @@
             </div>
 
 
+
+            <!-- =================================================
+                 ACCOUNT OPTIONS
+                 ================================================= -->
+
+            <div class="renter-dashboard-section">
+
+                <div class="dashboard-section-title">
+
+                    <div>
+
+                        <h2>
+                            Account
+                        </h2>
+
+                        <p>
+                            Access your saved properties and enquiries.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="account-option-list">
+
+
+                    <!-- EXPLORE -->
+
+                    <button
+                        type="button"
+                        class="renter-action-card"
+                        id="dashboardExploreBtn"
+                    >
+
+                        <span class="action-icon">
+                            🔎
+                        </span>
+
+                        <span class="action-content">
+
+                            <strong>
+                                Explore Properties
+                            </strong>
+
+                            <small>
+                                Find rooms, PGs and other stays.
+                            </small>
+
+                        </span>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    <!-- SAVED -->
+
+                    <button
+                        type="button"
+                        class="renter-action-card"
+                        id="dashboardSavedBtn"
+                    >
+
+                        <span class="action-icon">
+                            ❤️
+                        </span>
+
+                        <span class="action-content">
+
+                            <strong>
+                                Saved Properties
+                            </strong>
+
+                            <small>
+                                View properties you have saved.
+                            </small>
+
+                        </span>
+
+                        <span class="action-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                
+
+                </div>
+
+            </div>
+
+<!-- =================================================
+     NEED HELP
+     ================================================= -->
+
+<div class="renter-dashboard-section need-help-section">
+
+    <div class="dashboard-section-title">
+
+        <div>
+
+            <h2>
+                Need Help?
+            </h2>
+
+            <p>
+                Have a question or need assistance? Contact RoomDhundo.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="need-help-whatsapp-btn"
+        id="needHelpWhatsAppBtn"
+    >
+        💬 WhatsApp RoomDhundo
+        <span>→</span>
+    </button>
+
+</div>
+
             <!-- =================================================
                  EXPLORE BOX
                  ================================================= -->
@@ -344,7 +385,7 @@
                 <div>
 
                     <span class="dashboard-label">
-                        READY TO FIND A PLACE?
+                        FIND YOUR NEXT STAY
                     </span>
 
                     <h2>
@@ -352,7 +393,7 @@
                     </h2>
 
                     <p>
-                        Explore verified rooms, PGs and other
+                        Explore rooms, PGs and other
                         accommodation options around MAKAUT.
                     </p>
 
@@ -369,6 +410,7 @@
             </div>
 
 
+
             <!-- =================================================
                  LOGOUT
                  ================================================= -->
@@ -379,7 +421,7 @@
                     id="dashboardLogoutBtn"
                     type="button"
                 >
-                    Log Out
+                    🚪 Log Out
                 </button>
 
             </div>
@@ -389,34 +431,228 @@
     </section>
 
 
+
+    <!-- =====================================================
+         EDIT PROFILE MODAL
+         ===================================================== -->
+
+    <div
+        class="profile-edit-modal"
+        id="profileEditModal"
+        aria-hidden="true"
+    >
+
+        <div
+            class="profile-edit-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="profileEditTitle"
+        >
+
+            <div class="profile-edit-header">
+
+                <div>
+
+                    <h2 id="profileEditTitle">
+                        Edit Profile
+                    </h2>
+
+                    <p>
+                        Update your RoomDhundo account information.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="profile-edit-close"
+                    id="profileEditCloseBtn"
+                    aria-label="Close edit profile"
+                >
+                    &times;
+                </button>
+
+            </div>
+
+
+            <form id="profileEditForm">
+
+                <div class="profile-edit-body">
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="edit-form-group">
+
+                        <label for="editProfileName">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editProfileName"
+                            placeholder="Enter your full name"
+                            autocomplete="name"
+                            required
+                            minlength="2"
+                        >
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="edit-form-group">
+
+                        <label for="editProfileEmail">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="editProfileEmail"
+                            placeholder="name@example.com"
+                            autocomplete="email"
+                            required
+                        >
+
+                        <small>
+                            Changing your email may require confirmation from Supabase.
+                        </small>
+
+                    </div>
+
+
+                    <p
+                        id="profileEditMessage"
+                        class="profile-edit-message"
+                    ></p>
+
+                </div>
+
+
+                <div class="profile-edit-actions">
+
+                    <button
+                        type="button"
+                        class="profile-cancel-btn"
+                        id="profileEditCancelBtn"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="profile-save-btn"
+                        id="profileEditSaveBtn"
+                    >
+                        💾 Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
     <!-- =====================================================
          SUPABASE
          ===================================================== -->
 
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="script.js"></script>
-    <script>
-        (() => {
-            const key = "roomdhundo-theme";
-            const root = document.documentElement;
-            const toggle = document.getElementById("dashboardThemeToggle");
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
-            function applyTheme(theme) {
-                const isDark = theme === "dark";
-                root.dataset.theme = theme;
-                localStorage.setItem(key, theme);
-                toggle.textContent = isDark ? "☀️" : "🌙";
-                toggle.title = isDark ? "Switch to light mode" : "Switch to dark mode";
-                toggle.setAttribute("aria-label", toggle.title);
+    <script src="script.js"></script>
+
+
+    <!-- =====================================================
+         DASHBOARD THEME
+         ===================================================== -->
+
+    <script>
+
+        (() => {
+
+            const key = "roomdhundo-theme";
+
+            const root =
+                document.documentElement;
+
+            const toggle =
+                document.getElementById(
+                    "dashboardThemeToggle"
+                );
+
+
+            if (!toggle) {
+                return;
             }
 
-            applyTheme(localStorage.getItem(key) || "dark");
-            toggle.addEventListener("click", () => {
-                applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
-            });
+
+            function applyTheme(theme) {
+
+                const isDark =
+                    theme === "dark";
+
+
+                root.dataset.theme =
+                    theme;
+
+
+                localStorage.setItem(
+                    key,
+                    theme
+                );
+
+
+                toggle.textContent =
+                    isDark
+                        ? "☀️"
+                        : "🌙";
+
+
+                toggle.title =
+                    isDark
+                        ? "Switch to light mode"
+                        : "Switch to dark mode";
+
+
+                toggle.setAttribute(
+                    "aria-label",
+                    toggle.title
+                );
+
+            }
+
+
+            applyTheme(
+                localStorage.getItem(key) ||
+                "dark"
+            );
+
+
+            toggle.addEventListener(
+                "click",
+                () => {
+
+                    applyTheme(
+                        root.dataset.theme === "dark"
+                            ? "light"
+                            : "dark"
+                    );
+
+                }
+            );
+
         })();
+
     </script>
 
 </body>
 
 </html>
+

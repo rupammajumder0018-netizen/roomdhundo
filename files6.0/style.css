@@ -4697,3 +4697,58 @@ body:has(.nav-location-dropdown.open) .hero {
     background: #f8fafc;
     cursor: not-allowed;
 }
+
+/* =========================================================
+   ROOMDHUNDO ADMIN ACCOUNT MENU
+   ========================================================= */
+
+/* Admin role badge */
+.nav-profile-role.admin {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Admin account button */
+.nav-profile-toggle:has(.nav-profile-role.admin) {
+    border-color: #c4b5fd !important;
+    background: #f5f3ff !important;
+}
+
+/* Admin account button hover */
+.nav-profile-toggle:has(.nav-profile-role.admin):hover {
+    background: #ede9fe !important;
+    border-color: #a78bfa !important;
+}
+
+/* Admin menu items */
+.nav-profile-menu-item.admin-dashboard-item {
+    border-top: 1px solid #f1f5f9;
+    margin-top: 4px;
+    padding-top: 12px;
+}
+
+/* Admin dashboard button */
+.nav-profile-menu-item.admin-dashboard-item .nav-profile-menu-icon {
+    color: #7c3aed;
+}
+
+/* Admin dashboard hover */
+.nav-profile-menu-item.admin-dashboard-item:hover {
+    background: #4f46e5 !important;
+}
+
+/* Dark mode */
+html[data-theme="dark"] .nav-profile-role.admin {
+    background: rgba(34, 197, 94, 0.16);
+    color: #86efac;
+}
+
+html[data-theme="dark"] .nav-profile-toggle:has(.nav-profile-role.admin) {
+    background: #171717 !important;
+    border-color: #3b2b61 !important;
+}
+
+html[data-theme="dark"] .nav-profile-toggle:has(.nav-profile-role.admin):hover {
+    background: #241b36 !important;
+    border-color: #6d4aff !important;
+}

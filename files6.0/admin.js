@@ -12,7 +12,7 @@
 // 5. Settings
 //
 // Real Supabase data only.
-// Verification / Approve / Reject removed.
+// Admin access verified through profiles.role.
 // ============================================================
 
 
@@ -99,10 +99,8 @@ function formatDate(value) {
 
     }
 
-
     const date =
         new Date(value);
-
 
     if (
         Number.isNaN(
@@ -113,7 +111,6 @@ function formatDate(value) {
         return "—";
 
     }
-
 
     return date.toLocaleDateString(
         "en-IN",
@@ -139,17 +136,14 @@ function formatPrice(value) {
 
     }
 
-
     const number =
         Number(value);
-
 
     if (!Number.isFinite(number)) {
 
         return "—";
 
     }
-
 
     return (
         "₹" +
@@ -167,7 +161,6 @@ function getInitial(
     const value =
         String(name || "")
             .trim();
-
 
     return (
         value.charAt(0) ||
@@ -220,7 +213,6 @@ function getMinimumRent(property) {
             ? property.room_types
             : [];
 
-
     const prices =
         rooms
             .map(
@@ -237,13 +229,11 @@ function getMinimumRent(property) {
                     value > 0
             );
 
-
     if (!prices.length) {
 
         return null;
 
     }
-
 
     return Math.min(
         ...prices
@@ -276,7 +266,6 @@ function getProfileRole(role) {
     const value =
         normalize(role);
 
-
     if (
         value === "owner" ||
         value === "landlord" ||
@@ -288,7 +277,6 @@ function getProfileRole(role) {
 
     }
 
-
     if (
         value === "admin" ||
         value === "administrator" ||
@@ -298,7 +286,6 @@ function getProfileRole(role) {
         return "admin";
 
     }
-
 
     return "user";
 
@@ -310,20 +297,17 @@ function getProfileRoleLabel(role) {
     const group =
         getProfileRole(role);
 
-
     if (group === "owner") {
 
         return "Owner";
 
     }
 
-
     if (group === "admin") {
 
         return "Admin";
 
     }
-
 
     return "User";
 
@@ -369,7 +353,6 @@ function showSection(
             }
         );
 
-
     document
         .querySelectorAll(
             ".admin-nav .nav-item"
@@ -386,17 +369,14 @@ function showSection(
             }
         );
 
-
     updatePageHeader(
         sectionName
     );
-
 
     window.scrollTo({
         top: 0,
         behavior: "smooth"
     });
-
 
     if (
         sectionName ===
@@ -466,7 +446,6 @@ function updatePageHeader(
 
         },
 
-
         properties: {
 
             title:
@@ -476,7 +455,6 @@ function updatePageHeader(
                 "Manage the property listings currently available on RoomDhundo."
 
         },
-
 
         profiles: {
 
@@ -488,7 +466,6 @@ function updatePageHeader(
 
         },
 
-
         reviews: {
 
             title:
@@ -498,7 +475,6 @@ function updatePageHeader(
                 "View reviews submitted for RoomDhundo properties."
 
         },
-
 
         settings: {
 
@@ -512,17 +488,14 @@ function updatePageHeader(
 
     };
 
-
     const header =
         headers[sectionName] ||
         headers.dashboard;
-
 
     setText(
         "pageTitle",
         header.title
     );
-
 
     setText(
         "pageSubtitle",
@@ -547,7 +520,6 @@ async function loadAllData() {
         loadReviews()
 
     ]);
-
 
     renderDashboard();
 
@@ -582,7 +554,6 @@ async function loadBuildings() {
                     }
                 );
 
-
         if (error) {
 
             console.error(
@@ -590,14 +561,12 @@ async function loadBuildings() {
                 error
             );
 
-
             buildings = [];
 
             const table =
                 document.getElementById(
                     "propertyTableBody"
                 );
-
 
             if (table) {
 
@@ -616,20 +585,16 @@ async function loadBuildings() {
 
             }
 
-
             return;
 
         }
-
 
         buildings =
             Array.isArray(data)
                 ? data
                 : [];
 
-
         await loadRoomTypes();
-
 
         console.log(
             "Buildings loaded:",
@@ -644,7 +609,6 @@ async function loadBuildings() {
             "Buildings loading failed:",
             error
         );
-
 
         buildings = [];
 
@@ -679,14 +643,12 @@ async function loadRoomTypes() {
                     availability
                 `);
 
-
         if (error) {
 
             console.warn(
                 "Room types loading error:",
                 error
             );
-
 
             buildings =
                 buildings.map(
@@ -699,17 +661,14 @@ async function loadRoomTypes() {
                     })
                 );
 
-
             return;
 
         }
-
 
         const roomTypes =
             Array.isArray(data)
                 ? data
                 : [];
-
 
         buildings =
             buildings.map(
@@ -739,7 +698,6 @@ async function loadRoomTypes() {
             "Room types loading failed:",
             error
         );
-
 
         buildings =
             buildings.map(
@@ -781,7 +739,6 @@ async function loadProfiles() {
                     }
                 );
 
-
         if (error) {
 
             console.error(
@@ -789,13 +746,11 @@ async function loadProfiles() {
                 error
             );
 
-
             profiles = [];
 
             return;
 
         }
-
 
         profiles =
             Array.isArray(data)
@@ -810,7 +765,6 @@ async function loadProfiles() {
             "Profile loading failed:",
             error
         );
-
 
         profiles = [];
 
@@ -849,7 +803,6 @@ async function loadReviews() {
                     }
                 );
 
-
         if (error) {
 
             console.error(
@@ -857,13 +810,11 @@ async function loadReviews() {
                 error
             );
 
-
             reviews = [];
 
             return;
 
         }
-
 
         reviews =
             Array.isArray(data)
@@ -878,7 +829,6 @@ async function loadReviews() {
             "Reviews loading failed:",
             error
         );
-
 
         reviews = [];
 
@@ -901,7 +851,6 @@ function renderDashboard() {
                 ) === "user"
         ).length;
 
-
     const owners =
         profiles.filter(
             profile =>
@@ -910,30 +859,25 @@ function renderDashboard() {
                 ) === "owner"
         ).length;
 
-
     setText(
         "dashboardTotalUsers",
         users
     );
-
 
     setText(
         "dashboardTotalOwners",
         owners
     );
 
-
     setText(
         "dashboardTotalProperties",
         buildings.length
     );
 
-
     setText(
         "dashboardTotalReviews",
         reviews.length
     );
-
 
     renderDashboardRecentProperties();
 
@@ -951,18 +895,15 @@ function renderDashboardRecentProperties() {
             "dashboardRecentProperties"
         );
 
-
     if (!container) {
         return;
     }
-
 
     const recent =
         buildings.slice(
             0,
             5
         );
-
 
     if (!recent.length) {
 
@@ -981,7 +922,6 @@ function renderDashboardRecentProperties() {
 
     }
 
-
     container.innerHTML =
         recent
             .map(
@@ -990,36 +930,27 @@ function renderDashboardRecentProperties() {
                     <tr>
 
                         <td>
-
                             <strong>
                                 ${escapeHTML(
                                     property.name ||
                                     "Unnamed Property"
                                 )}
                             </strong>
-
                         </td>
 
-
                         <td>
-
                             ${escapeHTML(
                                 property.owner_name ||
                                 "Not specified"
                             )}
-
                         </td>
 
-
                         <td>
-
                             ${escapeHTML(
                                 property.location ||
                                 "Not specified"
                             )}
-
                         </td>
-
 
                         <td>
 
@@ -1041,7 +972,6 @@ function renderDashboardRecentProperties() {
             )
             .join("");
 
-
     container
         .querySelectorAll(
             "[data-dashboard-property-id]"
@@ -1056,7 +986,6 @@ function renderDashboardRecentProperties() {
                         showSection(
                             "properties"
                         );
-
 
                         openPropertyModal(
                             button.dataset
@@ -1083,11 +1012,9 @@ function renderPropertySection() {
             "propertyTableBody"
         );
 
-
     if (!tableBody) {
         return;
     }
-
 
     const search =
         normalize(
@@ -1095,7 +1022,6 @@ function renderPropertySection() {
                 "propertySearch"
             )?.value
         );
-
 
     const selectedType =
         normalize(
@@ -1105,7 +1031,6 @@ function renderPropertySection() {
             "all"
         );
 
-
     const sort =
         normalize(
             document.getElementById(
@@ -1113,7 +1038,6 @@ function renderPropertySection() {
             )?.value ||
             "newest"
         );
-
 
     let list =
         buildings.filter(
@@ -1124,24 +1048,20 @@ function renderPropertySection() {
                         property.name
                     );
 
-
                 const owner =
                     normalize(
                         property.owner_name
                     );
-
 
                 const location =
                     normalize(
                         property.location
                     );
 
-
                 const type =
                     normalize(
                         property.type
                     );
-
 
                 const matchesSearch =
                     !search ||
@@ -1150,11 +1070,9 @@ function renderPropertySection() {
                     location.includes(search) ||
                     type.includes(search);
 
-
                 const matchesType =
                     selectedType === "all" ||
                     type === selectedType;
-
 
                 return (
                     matchesSearch &&
@@ -1163,11 +1081,6 @@ function renderPropertySection() {
 
             }
         );
-
-
-    // --------------------------------------------------------
-    // SORT
-    // --------------------------------------------------------
 
     if (
         sort ===
@@ -1186,7 +1099,6 @@ function renderPropertySection() {
 
     }
 
-
     else if (
         sort ===
         "oldest"
@@ -1203,7 +1115,6 @@ function renderPropertySection() {
         );
 
     }
-
 
     else if (
         sort ===
@@ -1224,7 +1135,6 @@ function renderPropertySection() {
 
     }
 
-
     else if (
         sort ===
         "price-high"
@@ -1244,12 +1154,10 @@ function renderPropertySection() {
 
     }
 
-
     setText(
         "propertiesTotalCount",
         buildings.length
     );
-
 
     setText(
         "propertyCount",
@@ -1259,7 +1167,6 @@ function renderPropertySection() {
                 : "Properties"
         }`
     );
-
 
     if (!list.length) {
 
@@ -1278,7 +1185,6 @@ function renderPropertySection() {
 
     }
 
-
     tableBody.innerHTML =
         list
             .map(
@@ -1291,7 +1197,6 @@ function renderPropertySection() {
                             ? property.room_types
                             : [];
 
-
                     const roomText =
                         rooms
                             .map(
@@ -1302,7 +1207,6 @@ function renderPropertySection() {
                             .join(", ") ||
                         "Property";
 
-
                     let image =
                         `
                             <span>
@@ -1311,7 +1215,6 @@ function renderPropertySection() {
                                 )}
                             </span>
                         `;
-
 
                     if (
                         Array.isArray(
@@ -1344,7 +1247,6 @@ function renderPropertySection() {
 
                     }
 
-
                     return `
                         <tr>
 
@@ -1356,7 +1258,6 @@ function renderPropertySection() {
                                         ${image}
                                     </div>
 
-
                                     <div>
 
                                         <strong>
@@ -1365,7 +1266,6 @@ function renderPropertySection() {
                                                 "Unnamed Property"
                                             )}
                                         </strong>
-
 
                                         <span>
                                             ${escapeHTML(
@@ -1379,14 +1279,12 @@ function renderPropertySection() {
 
                             </td>
 
-
                             <td>
                                 ${escapeHTML(
                                     property.type ||
                                     "—"
                                 )}
                             </td>
-
 
                             <td>
                                 ${escapeHTML(
@@ -1395,14 +1293,12 @@ function renderPropertySection() {
                                 )}
                             </td>
 
-
                             <td>
                                 ${escapeHTML(
                                     property.location ||
                                     "Not specified"
                                 )}
                             </td>
-
 
                             <td>
                                 ${formatPrice(
@@ -1411,7 +1307,6 @@ function renderPropertySection() {
                                     )
                                 )}
                             </td>
-
 
                             <td>
 
@@ -1426,7 +1321,6 @@ function renderPropertySection() {
                                 </button>
 
                             </td>
-
 
                             <td>
 
@@ -1448,7 +1342,6 @@ function renderPropertySection() {
                 }
             )
             .join("");
-
 
     attachPropertyButtons();
 
@@ -1481,7 +1374,6 @@ function attachPropertyButtons() {
 
             }
         );
-
 
     document
         .querySelectorAll(
@@ -1520,7 +1412,6 @@ function openPropertyModal(
             propertyId
         );
 
-
     if (!property) {
 
         alert(
@@ -1531,10 +1422,8 @@ function openPropertyModal(
 
     }
 
-
     selectedProperty =
         property;
-
 
     setText(
         "modalPropertyName",
@@ -1542,13 +1431,11 @@ function openPropertyModal(
         "Property Details"
     );
 
-
     setText(
         "modalPropertyType",
         property.type ||
         "Property"
     );
-
 
     setText(
         "modalPropertyIcon",
@@ -1557,20 +1444,17 @@ function openPropertyModal(
         )
     );
 
-
     setText(
         "modalOwner",
         property.owner_name ||
         "Not specified"
     );
 
-
     setText(
         "modalLocation",
         property.location ||
         "Not specified"
     );
-
 
     setText(
         "modalRent",
@@ -1581,13 +1465,11 @@ function openPropertyModal(
         )
     );
 
-
     setText(
         "modalDescription",
         property.description ||
         "No description available."
     );
-
 
     openModalById(
         "propertyModal"
@@ -1609,7 +1491,6 @@ async function deleteProperty(
             propertyId
         );
 
-
     if (!property) {
 
         alert(
@@ -1620,28 +1501,20 @@ async function deleteProperty(
 
     }
 
-
     const name =
         property.name ||
         "this property";
-
 
     const confirmed =
         window.confirm(
             `Are you sure you want to permanently delete "${name}"?\n\nThis action cannot be undone.`
         );
 
-
     if (!confirmed) {
         return;
     }
 
-
     try {
-
-        // ----------------------------------------------------
-        // DELETE REVIEWS
-        // ----------------------------------------------------
 
         const {
             error: reviewError
@@ -1654,7 +1527,6 @@ async function deleteProperty(
                     propertyId
                 );
 
-
         if (reviewError) {
 
             console.warn(
@@ -1663,11 +1535,6 @@ async function deleteProperty(
             );
 
         }
-
-
-        // ----------------------------------------------------
-        // DELETE SAVED BUILDINGS
-        // ----------------------------------------------------
 
         const {
             error: savedError
@@ -1680,7 +1547,6 @@ async function deleteProperty(
                     propertyId
                 );
 
-
         if (savedError) {
 
             console.warn(
@@ -1689,11 +1555,6 @@ async function deleteProperty(
             );
 
         }
-
-
-        // ----------------------------------------------------
-        // DELETE ROOM TYPES
-        // ----------------------------------------------------
 
         const {
             error: roomError
@@ -1706,7 +1567,6 @@ async function deleteProperty(
                     propertyId
                 );
 
-
         if (roomError) {
 
             alert(
@@ -1716,11 +1576,6 @@ async function deleteProperty(
             return;
 
         }
-
-
-        // ----------------------------------------------------
-        // DELETE BUILDING
-        // ----------------------------------------------------
 
         const {
             error: buildingError
@@ -1733,7 +1588,6 @@ async function deleteProperty(
                     propertyId
                 );
 
-
         if (buildingError) {
 
             alert(
@@ -1743,11 +1597,6 @@ async function deleteProperty(
             return;
 
         }
-
-
-        // ----------------------------------------------------
-        // UPDATE LOCAL DATA
-        // ----------------------------------------------------
 
         buildings =
             buildings.filter(
@@ -1760,7 +1609,6 @@ async function deleteProperty(
                     )
             );
 
-
         reviews =
             reviews.filter(
                 review =>
@@ -1772,22 +1620,18 @@ async function deleteProperty(
                     )
             );
 
-
         selectedProperty =
             null;
-
 
         closeModalById(
             "propertyModal"
         );
-
 
         renderDashboard();
 
         renderPropertySection();
 
         renderReviewSection();
-
 
         alert(
             `"${name}" deleted successfully.`
@@ -1801,7 +1645,6 @@ async function deleteProperty(
             "Delete property error:",
             error
         );
-
 
         alert(
             "Something went wrong while deleting the property."
@@ -1823,11 +1666,9 @@ function renderProfileSection() {
             "profileTableBody"
         );
 
-
     if (!tableBody) {
         return;
     }
-
 
     const search =
         normalize(
@@ -1835,7 +1676,6 @@ function renderProfileSection() {
                 "profileSearch"
             )?.value
         );
-
 
     const roleFilter =
         normalize(
@@ -1845,7 +1685,6 @@ function renderProfileSection() {
             "all"
         );
 
-
     const sort =
         normalize(
             document.getElementById(
@@ -1853,7 +1692,6 @@ function renderProfileSection() {
             )?.value ||
             "newest"
         );
-
 
     let list =
         profiles.filter(
@@ -1864,18 +1702,15 @@ function renderProfileSection() {
                         profile.full_name
                     );
 
-
                 const role =
                     normalize(
                         profile.role
                     );
 
-
                 const id =
                     normalize(
                         profile.id
                     );
-
 
                 const matchesSearch =
                     !search ||
@@ -1883,17 +1718,14 @@ function renderProfileSection() {
                     role.includes(search) ||
                     id.includes(search);
 
-
                 const normalizedRole =
                     getProfileRole(
                         profile.role
                     );
 
-
                 const matchesRole =
                     roleFilter === "all" ||
                     normalizedRole === roleFilter;
-
 
                 return (
                     matchesSearch &&
@@ -1902,11 +1734,6 @@ function renderProfileSection() {
 
             }
         );
-
-
-    // --------------------------------------------------------
-    // SORT
-    // --------------------------------------------------------
 
     if (
         sort ===
@@ -1925,7 +1752,6 @@ function renderProfileSection() {
 
     }
 
-
     else if (
         sort ===
         "oldest"
@@ -1942,7 +1768,6 @@ function renderProfileSection() {
         );
 
     }
-
 
     else if (
         sort ===
@@ -1962,7 +1787,6 @@ function renderProfileSection() {
 
     }
 
-
     else if (
         sort ===
         "name-desc"
@@ -1981,11 +1805,6 @@ function renderProfileSection() {
 
     }
 
-
-    // --------------------------------------------------------
-    // COUNTS
-    // --------------------------------------------------------
-
     const users =
         profiles.filter(
             profile =>
@@ -1993,7 +1812,6 @@ function renderProfileSection() {
                     profile.role
                 ) === "user"
         ).length;
-
 
     const owners =
         profiles.filter(
@@ -2003,7 +1821,6 @@ function renderProfileSection() {
                 ) === "owner"
         ).length;
 
-
     const admins =
         profiles.filter(
             profile =>
@@ -2012,30 +1829,25 @@ function renderProfileSection() {
                 ) === "admin"
         ).length;
 
-
     setText(
         "profilesAllCount",
         profiles.length
     );
-
 
     setText(
         "profilesUserCount",
         users
     );
 
-
     setText(
         "profilesOwnerCount",
         owners
     );
 
-
     setText(
         "profilesAdminCount",
         admins
     );
-
 
     setText(
         "profileCount",
@@ -2046,13 +1858,12 @@ function renderProfileSection() {
         }`
     );
 
-
     if (!list.length) {
 
         tableBody.innerHTML = `
             <tr>
                 <td
-                    colspan="5"
+                    colspan="6"
                     class="empty-state"
                 >
                     No profiles found.
@@ -2064,7 +1875,6 @@ function renderProfileSection() {
 
     }
 
-
     tableBody.innerHTML =
         list
             .map(
@@ -2074,18 +1884,15 @@ function renderProfileSection() {
                         profile.full_name?.trim() ||
                         "Unnamed Profile";
 
-
                     const role =
                         getProfileRole(
                             profile.role
                         );
 
-
                     const label =
                         getProfileRoleLabel(
                             profile.role
                         );
-
 
                     return `
                         <tr>
@@ -2102,7 +1909,6 @@ function renderProfileSection() {
                                         )}
                                     </div>
 
-
                                     <div>
 
                                         <strong>
@@ -2110,7 +1916,6 @@ function renderProfileSection() {
                                                 name
                                             )}
                                         </strong>
-
 
                                         <span>
                                             ${escapeHTML(
@@ -2123,7 +1928,6 @@ function renderProfileSection() {
                                 </div>
 
                             </td>
-
 
                             <td>
 
@@ -2139,7 +1943,6 @@ function renderProfileSection() {
 
                             </td>
 
-
                             <td
                                 style="
                                     max-width:280px;
@@ -2153,7 +1956,6 @@ function renderProfileSection() {
                                 )}
                             </td>
 
-
                             <td>
                                 ${escapeHTML(
                                     formatDate(
@@ -2161,7 +1963,6 @@ function renderProfileSection() {
                                     )
                                 )}
                             </td>
-
 
                             <td>
 
@@ -2177,13 +1978,26 @@ function renderProfileSection() {
 
                             </td>
 
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="action-btn delete-btn profile-delete-btn"
+                                    data-profile-id="${escapeHTML(
+                                        profile.id
+                                    )}"
+                                >
+                                    🗑️ Delete
+                                </button>
+
+                            </td>
+
                         </tr>
                     `;
 
                 }
             )
             .join("");
-
 
     attachProfileButtons();
 
@@ -2217,6 +2031,157 @@ function attachProfileButtons() {
             }
         );
 
+    document
+        .querySelectorAll(
+            "#profileTableBody .profile-delete-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteProfile(
+                            button.dataset.profileId
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+// ============================================================
+// DELETE PROFILE
+// ============================================================
+
+async function deleteProfile(
+    profileId
+) {
+
+    const profile =
+        profiles.find(
+            item =>
+                String(
+                    item.id
+                ) ===
+                String(
+                    profileId
+                )
+        );
+
+    if (!profile) {
+
+        alert(
+            "Profile not found."
+        );
+
+        return;
+
+    }
+
+    const name =
+        profile.full_name?.trim() ||
+        "this profile";
+
+    const role =
+        getProfileRole(
+            profile.role
+        );
+
+    // Prevent accidental deletion of an admin profile
+    if (role === "admin") {
+
+        alert(
+            "Admin profiles cannot be deleted from this panel."
+        );
+
+        return;
+
+    }
+
+    const confirmed =
+        window.confirm(
+            `Are you sure you want to permanently delete "${name}"?\n\nThis will delete the profile record.`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("profiles")
+                .delete()
+                .eq(
+                    "id",
+                    profileId
+                );
+
+        if (error) {
+
+            console.error(
+                "Delete profile error:",
+                error
+            );
+
+            alert(
+                `Unable to delete profile: ${error.message}`
+            );
+
+            return;
+
+        }
+
+        profiles =
+            profiles.filter(
+                item =>
+                    String(
+                        item.id
+                    ) !==
+                    String(
+                        profileId
+                    )
+            );
+
+        selectedProfile =
+            null;
+
+        closeModalById(
+            "profileModal"
+        );
+
+        renderDashboard();
+
+        renderProfileSection();
+
+        alert(
+            `"${name}" deleted successfully.`
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Delete profile failed:",
+            error
+        );
+
+        alert(
+            "Something went wrong while deleting the profile."
+        );
+
+    }
+
 }
 
 
@@ -2239,7 +2204,6 @@ function openProfileModal(
                 )
         );
 
-
     if (!profile) {
 
         alert(
@@ -2250,33 +2214,27 @@ function openProfileModal(
 
     }
 
-
     selectedProfile =
         profile;
-
 
     const name =
         profile.full_name?.trim() ||
         "Unnamed Profile";
-
 
     const role =
         getProfileRoleLabel(
             profile.role
         );
 
-
     setText(
         "modalProfileName",
         name
     );
 
-
     setText(
         "modalProfileRole",
         role
     );
-
 
     setText(
         "modalProfileAvatar",
@@ -2285,24 +2243,20 @@ function openProfileModal(
         )
     );
 
-
     setText(
         "modalProfileFullName",
         name
     );
-
 
     setText(
         "modalProfileRoleDetail",
         role
     );
 
-
     setText(
         "modalProfileId",
         profile.id
     );
-
 
     setText(
         "modalProfileJoined",
@@ -2310,7 +2264,6 @@ function openProfileModal(
             profile.created_at
         )
     );
-
 
     openModalById(
         "profileModal"
@@ -2330,11 +2283,9 @@ function renderReviewSection() {
             "reviewTableBody"
         );
 
-
     if (!tableBody) {
         return;
     }
-
 
     const search =
         normalize(
@@ -2343,13 +2294,11 @@ function renderReviewSection() {
             )?.value
         );
 
-
     const ratingFilter =
         document.getElementById(
             "reviewRatingFilter"
         )?.value ||
         "all";
-
 
     const sort =
         normalize(
@@ -2358,7 +2307,6 @@ function renderReviewSection() {
             )?.value ||
             "newest"
         );
-
 
     let list =
         reviews.filter(
@@ -2369,31 +2317,26 @@ function renderReviewSection() {
                         review.building_id
                     );
 
-
                 const reviewer =
                     normalize(
                         review.reviewer_name
                     );
-
 
                 const propertyName =
                     normalize(
                         property?.name
                     );
 
-
                 const comment =
                     normalize(
                         review.comment
                     );
-
 
                 const matchesSearch =
                     !search ||
                     reviewer.includes(search) ||
                     propertyName.includes(search) ||
                     comment.includes(search);
-
 
                 const matchesRating =
                     ratingFilter === "all" ||
@@ -2404,7 +2347,6 @@ function renderReviewSection() {
                         ratingFilter
                     );
 
-
                 return (
                     matchesSearch &&
                     matchesRating
@@ -2412,11 +2354,6 @@ function renderReviewSection() {
 
             }
         );
-
-
-    // --------------------------------------------------------
-    // SORT
-    // --------------------------------------------------------
 
     if (
         sort ===
@@ -2435,7 +2372,6 @@ function renderReviewSection() {
 
     }
 
-
     else if (
         sort ===
         "oldest"
@@ -2452,7 +2388,6 @@ function renderReviewSection() {
         );
 
     }
-
 
     else if (
         sort ===
@@ -2471,7 +2406,6 @@ function renderReviewSection() {
 
     }
 
-
     else if (
         sort ===
         "lowest"
@@ -2489,12 +2423,10 @@ function renderReviewSection() {
 
     }
 
-
     setText(
         "reviewsTotalCount",
         reviews.length
     );
-
 
     setText(
         "reviewCount",
@@ -2505,13 +2437,12 @@ function renderReviewSection() {
         }`
     );
 
-
     if (!list.length) {
 
         tableBody.innerHTML = `
             <tr>
                 <td
-                    colspan="6"
+                    colspan="7"
                     class="empty-state"
                 >
                     No reviews found.
@@ -2523,7 +2454,6 @@ function renderReviewSection() {
 
     }
 
-
     tableBody.innerHTML =
         list
             .map(
@@ -2534,23 +2464,26 @@ function renderReviewSection() {
                             review.building_id
                         );
 
-
                     const rating =
                         Number(
                             review.rating || 0
                         );
 
+                    const safeRating =
+                        Math.max(
+                            0,
+                            Math.min(
+                                rating,
+                                5
+                            )
+                        );
 
                     const stars =
-                        rating > 0
+                        safeRating > 0
                             ? "⭐".repeat(
-                                Math.min(
-                                    rating,
-                                    5
-                                )
+                                safeRating
                             )
                             : "—";
-
 
                     return `
                         <tr>
@@ -2566,7 +2499,6 @@ function renderReviewSection() {
 
                             </td>
 
-
                             <td>
 
                                 ${escapeHTML(
@@ -2576,13 +2508,11 @@ function renderReviewSection() {
 
                             </td>
 
-
                             <td>
 
                                 ${stars}
 
                             </td>
-
 
                             <td
                                 style="
@@ -2592,12 +2522,13 @@ function renderReviewSection() {
                                     text-overflow:ellipsis;
                                 "
                             >
+
                                 ${escapeHTML(
                                     review.comment ||
                                     "No comment"
                                 )}
-                            </td>
 
+                            </td>
 
                             <td>
 
@@ -2608,7 +2539,6 @@ function renderReviewSection() {
                                 )}
 
                             </td>
-
 
                             <td>
 
@@ -2624,13 +2554,26 @@ function renderReviewSection() {
 
                             </td>
 
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="action-btn delete-btn review-delete-btn"
+                                    data-review-id="${escapeHTML(
+                                        review.id
+                                    )}"
+                                >
+                                    🗑️ Delete
+                                </button>
+
+                            </td>
+
                         </tr>
                     `;
 
                 }
             )
             .join("");
-
 
     attachReviewButtons();
 
@@ -2664,6 +2607,141 @@ function attachReviewButtons() {
             }
         );
 
+    document
+        .querySelectorAll(
+            "#reviewTableBody .review-delete-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteReview(
+                            button.dataset.reviewId
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+// ============================================================
+// DELETE REVIEW
+// ============================================================
+
+async function deleteReview(
+    reviewId
+) {
+
+    const review =
+        reviews.find(
+            item =>
+                String(
+                    item.id
+                ) ===
+                String(
+                    reviewId
+                )
+        );
+
+    if (!review) {
+
+        alert(
+            "Review not found."
+        );
+
+        return;
+
+    }
+
+    const reviewer =
+        review.reviewer_name?.trim() ||
+        "Anonymous";
+
+    const confirmed =
+        window.confirm(
+            `Are you sure you want to permanently delete the review by "${reviewer}"?\n\nThis action cannot be undone.`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("reviews")
+                .delete()
+                .eq(
+                    "id",
+                    reviewId
+                );
+
+        if (error) {
+
+            console.error(
+                "Delete review error:",
+                error
+            );
+
+            alert(
+                `Unable to delete review: ${error.message}`
+            );
+
+            return;
+
+        }
+
+        reviews =
+            reviews.filter(
+                item =>
+                    String(
+                        item.id
+                    ) !==
+                    String(
+                        reviewId
+                    )
+            );
+
+        selectedReview =
+            null;
+
+        closeModalById(
+            "reviewModal"
+        );
+
+        renderDashboard();
+
+        renderReviewSection();
+
+        alert(
+            "Review deleted successfully."
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Delete review failed:",
+            error
+        );
+
+        alert(
+            "Something went wrong while deleting the review."
+        );
+
+    }
+
 }
 
 
@@ -2686,7 +2764,6 @@ function openReviewModal(
                 )
         );
 
-
     if (!review) {
 
         alert(
@@ -2697,28 +2774,32 @@ function openReviewModal(
 
     }
 
-
     selectedReview =
         review;
-
 
     const property =
         getBuildingById(
             review.building_id
         );
 
-
     const rating =
         Number(
             review.rating || 0
         );
 
+    const safeRating =
+        Math.max(
+            0,
+            Math.min(
+                rating,
+                5
+            )
+        );
 
     setText(
         "modalReviewTitle",
         "Review Details"
     );
-
 
     setText(
         "modalReviewProperty",
@@ -2726,26 +2807,20 @@ function openReviewModal(
         "Property unavailable"
     );
 
-
     setText(
         "modalReviewerName",
         review.reviewer_name ||
         "Anonymous"
     );
 
-
     setText(
         "modalReviewRating",
-        rating > 0
+        safeRating > 0
             ? `${"⭐".repeat(
-                Math.min(
-                    rating,
-                    5
-                )
-            )} ${rating}/5`
+                safeRating
+            )} ${safeRating}/5`
             : "—"
     );
-
 
     setText(
         "modalReviewDate",
@@ -2754,13 +2829,11 @@ function openReviewModal(
         )
     );
 
-
     setText(
         "modalReviewComment",
         review.comment ||
         "No comment provided."
     );
-
 
     openModalById(
         "reviewModal"
@@ -2778,22 +2851,18 @@ function openModalById(id) {
     const modal =
         document.getElementById(id);
 
-
     if (!modal) {
         return;
     }
-
 
     modal.classList.add(
         "show"
     );
 
-
     modal.setAttribute(
         "aria-hidden",
         "false"
     );
-
 
     document.body.style.overflow =
         "hidden";
@@ -2806,22 +2875,18 @@ function closeModalById(id) {
     const modal =
         document.getElementById(id);
 
-
     if (!modal) {
         return;
     }
-
 
     modal.classList.remove(
         "show"
     );
 
-
     modal.setAttribute(
         "aria-hidden",
         "true"
     );
-
 
     document.body.style.overflow =
         "";
@@ -2851,7 +2916,6 @@ function bindModalEvents() {
                                 ".admin-modal"
                             );
 
-
                         if (modal) {
 
                             closeModalById(
@@ -2865,7 +2929,6 @@ function bindModalEvents() {
 
             }
         );
-
 
     document
         .querySelectorAll(
@@ -2895,7 +2958,6 @@ function bindModalEvents() {
             }
         );
 
-
     document
         .getElementById(
             "closePropertyBtn"
@@ -2914,7 +2976,6 @@ function bindModalEvents() {
             }
         );
 
-
     document
         .getElementById(
             "closeProfileBtn"
@@ -2932,7 +2993,6 @@ function bindModalEvents() {
 
             }
         );
-
 
     document
         .getElementById(
@@ -2970,7 +3030,6 @@ function bindFilterEvents() {
             renderPropertySection
         );
 
-
     document
         .getElementById(
             "propertySearchBtn"
@@ -2979,7 +3038,6 @@ function bindFilterEvents() {
             "click",
             renderPropertySection
         );
-
 
     document
         .getElementById(
@@ -2990,7 +3048,6 @@ function bindFilterEvents() {
             renderPropertySection
         );
 
-
     document
         .getElementById(
             "propertySort"
@@ -2999,7 +3056,6 @@ function bindFilterEvents() {
             "change",
             renderPropertySection
         );
-
 
     document
         .getElementById(
@@ -3010,7 +3066,6 @@ function bindFilterEvents() {
             renderProfileSection
         );
 
-
     document
         .getElementById(
             "profileSearchBtn"
@@ -3019,7 +3074,6 @@ function bindFilterEvents() {
             "click",
             renderProfileSection
         );
-
 
     document
         .getElementById(
@@ -3030,7 +3084,6 @@ function bindFilterEvents() {
             renderProfileSection
         );
 
-
     document
         .getElementById(
             "profileSort"
@@ -3039,7 +3092,6 @@ function bindFilterEvents() {
             "change",
             renderProfileSection
         );
-
 
     document
         .getElementById(
@@ -3050,7 +3102,6 @@ function bindFilterEvents() {
             renderReviewSection
         );
 
-
     document
         .getElementById(
             "reviewSearchBtn"
@@ -3060,7 +3111,6 @@ function bindFilterEvents() {
             renderReviewSection
         );
 
-
     document
         .getElementById(
             "reviewRatingFilter"
@@ -3069,7 +3119,6 @@ function bindFilterEvents() {
             "change",
             renderReviewSection
         );
-
 
     document
         .getElementById(
@@ -3095,7 +3144,6 @@ async function loadAdminSettings() {
     } =
         await supabaseClient.auth.getUser();
 
-
     if (error) {
 
         console.error(
@@ -3108,27 +3156,23 @@ async function loadAdminSettings() {
             "Unable to load email"
         );
 
+        setText(
+            "adminProfileEmail",
+            "Admin"
+        );
+
         return;
 
     }
 
-
     const user =
         data?.user;
 
-        const adminProfileEmail =
-    document.getElementById(
-        "adminProfileEmail"
-    );
-
-if (adminProfileEmail) {
-
-    adminProfileEmail.textContent =
+    setText(
+        "adminProfileEmail",
         user?.email ||
-        "Admin";
-
-}
-
+        "Admin"
+    );
 
     if (!user) {
 
@@ -3140,7 +3184,6 @@ if (adminProfileEmail) {
         return;
 
     }
-
 
     setText(
         "settingsAdminEmail",
@@ -3162,12 +3205,10 @@ function openEditAdminInformation() {
             "editAdminEmail"
         );
 
-
     const message =
         document.getElementById(
             "editAdminMessage"
         );
-
 
     supabaseClient.auth
         .getUser()
@@ -3193,7 +3234,6 @@ function openEditAdminInformation() {
 
                 }
 
-
                 if (editEmail) {
 
                     editEmail.value =
@@ -3202,14 +3242,12 @@ function openEditAdminInformation() {
 
                 }
 
-
                 if (message) {
 
                     message.textContent =
                         "";
 
                 }
-
 
                 openModalById(
                     "editAdminModal"
@@ -3231,23 +3269,19 @@ async function handleEditAdminInformation(
 
     event.preventDefault();
 
-
     const emailInput =
         document.getElementById(
             "editAdminEmail"
         );
-
 
     const message =
         document.getElementById(
             "editAdminMessage"
         );
 
-
     const newEmail =
         emailInput?.value
             ?.trim();
-
 
     if (!newEmail) {
 
@@ -3265,7 +3299,6 @@ async function handleEditAdminInformation(
 
     }
 
-
     if (message) {
 
         message.style.color =
@@ -3275,7 +3308,6 @@ async function handleEditAdminInformation(
             "Saving changes...";
 
     }
-
 
     try {
 
@@ -3288,14 +3320,12 @@ async function handleEditAdminInformation(
                     email: newEmail
                 });
 
-
         if (error) {
 
             console.error(
                 "Email update error:",
                 error
             );
-
 
             if (message) {
 
@@ -3311,7 +3341,6 @@ async function handleEditAdminInformation(
 
         }
 
-
         if (message) {
 
             message.style.color =
@@ -3323,7 +3352,6 @@ async function handleEditAdminInformation(
                     : "Email update requested. Check your email to confirm the new address.";
 
         }
-
 
         setTimeout(
             async () => {
@@ -3346,7 +3374,6 @@ async function handleEditAdminInformation(
             "Admin information update failed:",
             error
         );
-
 
         if (message) {
 
@@ -3374,36 +3401,30 @@ function openAdminLogin() {
             "adminLoginForm"
         );
 
-
     const signupForm =
         document.getElementById(
             "adminSignupForm"
         );
-
 
     const title =
         document.getElementById(
             "adminAuthTitle"
         );
 
-
     const subtitle =
         document.getElementById(
             "adminAuthSubtitle"
         );
-
 
     const loginMessage =
         document.getElementById(
             "adminLoginMessage"
         );
 
-
     const signupMessage =
         document.getElementById(
             "adminSignupMessage"
         );
-
 
     if (loginForm) {
 
@@ -3412,14 +3433,12 @@ function openAdminLogin() {
 
     }
 
-
     if (signupForm) {
 
         signupForm.style.display =
             "none";
 
     }
-
 
     if (title) {
 
@@ -3428,14 +3447,12 @@ function openAdminLogin() {
 
     }
 
-
     if (subtitle) {
 
         subtitle.textContent =
             "Sign in with your administrator account.";
 
     }
-
 
     if (loginMessage) {
 
@@ -3447,14 +3464,12 @@ function openAdminLogin() {
 
     }
 
-
     if (signupMessage) {
 
         signupMessage.textContent =
             "";
 
     }
-
 
     openModalById(
         "adminAuthModal"
@@ -3474,30 +3489,25 @@ function openAdminSignup() {
             "adminLoginForm"
         );
 
-
     const signupForm =
         document.getElementById(
             "adminSignupForm"
         );
-
 
     const title =
         document.getElementById(
             "adminAuthTitle"
         );
 
-
     const subtitle =
         document.getElementById(
             "adminAuthSubtitle"
         );
 
-
     const signupMessage =
         document.getElementById(
             "adminSignupMessage"
         );
-
 
     if (loginForm) {
 
@@ -3506,14 +3516,12 @@ function openAdminSignup() {
 
     }
 
-
     if (signupForm) {
 
         signupForm.style.display =
             "block";
 
     }
-
 
     if (title) {
 
@@ -3522,14 +3530,12 @@ function openAdminSignup() {
 
     }
 
-
     if (subtitle) {
 
         subtitle.textContent =
             "Create an account. Admin access must be granted separately.";
 
     }
-
 
     if (signupMessage) {
 
@@ -3540,7 +3546,6 @@ function openAdminSignup() {
             "#dc2626";
 
     }
-
 
     openModalById(
         "adminAuthModal"
@@ -3564,7 +3569,6 @@ function bindAuthEvents() {
             openAdminLogin
         );
 
-
     document
         .getElementById(
             "adminSignupBtn"
@@ -3573,7 +3577,6 @@ function bindAuthEvents() {
             "click",
             openAdminSignup
         );
-
 
     document
         .getElementById(
@@ -3590,7 +3593,6 @@ function bindAuthEvents() {
             }
         );
 
-
     document
         .getElementById(
             "switchToSignup"
@@ -3599,7 +3601,6 @@ function bindAuthEvents() {
             "click",
             openAdminSignup
         );
-
 
     document
         .getElementById(
@@ -3610,7 +3611,6 @@ function bindAuthEvents() {
             openAdminLogin
         );
 
-
     document
         .getElementById(
             "adminLoginForm"
@@ -3619,7 +3619,6 @@ function bindAuthEvents() {
             "submit",
             handleAdminLogin
         );
-
 
     document
         .getElementById(
@@ -3630,7 +3629,6 @@ function bindAuthEvents() {
             handleAdminSignup
         );
 
-
     document
         .getElementById(
             "adminLogoutBtn"
@@ -3640,7 +3638,6 @@ function bindAuthEvents() {
             handleAdminLogout
         );
 
-
     document
         .getElementById(
             "editAdminInformationBtn"
@@ -3649,7 +3646,6 @@ function bindAuthEvents() {
             "click",
             openEditAdminInformation
         );
-
 
     document
         .getElementById(
@@ -3666,7 +3662,6 @@ function bindAuthEvents() {
             }
         );
 
-
     document
         .getElementById(
             "cancelEditAdminBtn"
@@ -3681,7 +3676,6 @@ function bindAuthEvents() {
 
             }
         );
-
 
     document
         .getElementById(
@@ -3705,33 +3699,27 @@ async function handleAdminLogin(
 
     event.preventDefault();
 
-
     const emailInput =
         document.getElementById(
             "adminLoginEmail"
         );
-
 
     const passwordInput =
         document.getElementById(
             "adminLoginPassword"
         );
 
-
     const message =
         document.getElementById(
             "adminLoginMessage"
         );
 
-
     const email =
         emailInput?.value
             ?.trim();
 
-
     const password =
         passwordInput?.value;
-
 
     if (!email || !password) {
 
@@ -3749,7 +3737,6 @@ async function handleAdminLogin(
 
     }
 
-
     if (message) {
 
         message.style.color =
@@ -3759,7 +3746,6 @@ async function handleAdminLogin(
             "Signing in...";
 
     }
-
 
     try {
 
@@ -3772,7 +3758,6 @@ async function handleAdminLogin(
                     email,
                     password
                 });
-
 
         if (error) {
 
@@ -3790,10 +3775,8 @@ async function handleAdminLogin(
 
         }
 
-
         const user =
             data?.user;
-
 
         if (!user) {
 
@@ -3811,7 +3794,6 @@ async function handleAdminLogin(
 
         }
 
-
         const {
             data: profile,
             error: profileError
@@ -3827,7 +3809,6 @@ async function handleAdminLogin(
                 )
                 .maybeSingle();
 
-
         if (profileError) {
 
             console.error(
@@ -3835,10 +3816,8 @@ async function handleAdminLogin(
                 profileError
             );
 
-
             await supabaseClient.auth
                 .signOut();
-
 
             if (message) {
 
@@ -3854,7 +3833,6 @@ async function handleAdminLogin(
 
         }
 
-
         if (
             getProfileRole(
                 profile?.role
@@ -3863,7 +3841,6 @@ async function handleAdminLogin(
 
             await supabaseClient.auth
                 .signOut();
-
 
             if (message) {
 
@@ -3879,18 +3856,15 @@ async function handleAdminLogin(
 
         }
 
-
         closeModalById(
             "adminAuthModal"
         );
-
 
         await updateAuthButtons();
 
         await loadAllData();
 
         await loadAdminSettings();
-
 
         alert(
             "Admin login successful."
@@ -3904,7 +3878,6 @@ async function handleAdminLogin(
             "Admin login error:",
             error
         );
-
 
         if (message) {
 
@@ -3931,44 +3904,36 @@ async function handleAdminSignup(
 
     event.preventDefault();
 
-
     const nameInput =
         document.getElementById(
             "adminSignupName"
         );
-
 
     const emailInput =
         document.getElementById(
             "adminSignupEmail"
         );
 
-
     const passwordInput =
         document.getElementById(
             "adminSignupPassword"
         );
-
 
     const message =
         document.getElementById(
             "adminSignupMessage"
         );
 
-
     const name =
         nameInput?.value
             ?.trim();
-
 
     const email =
         emailInput?.value
             ?.trim();
 
-
     const password =
         passwordInput?.value;
-
 
     if (
         !name ||
@@ -3989,7 +3954,6 @@ async function handleAdminSignup(
 
     }
 
-
     if (!email) {
 
         if (message) {
@@ -4005,7 +3969,6 @@ async function handleAdminSignup(
         return;
 
     }
-
 
     if (
         !password ||
@@ -4026,7 +3989,6 @@ async function handleAdminSignup(
 
     }
 
-
     if (message) {
 
         message.style.color =
@@ -4036,7 +3998,6 @@ async function handleAdminSignup(
             "Creating account...";
 
     }
-
 
     try {
 
@@ -4056,7 +4017,6 @@ async function handleAdminSignup(
                     }
                 });
 
-
         if (error) {
 
             if (message) {
@@ -4072,7 +4032,6 @@ async function handleAdminSignup(
             return;
 
         }
-
 
         if (!data?.user) {
 
@@ -4090,10 +4049,6 @@ async function handleAdminSignup(
 
         }
 
-
-        // Create profile as normal user.
-        // Admin role must be granted separately.
-
         const {
             error: profileError
         } =
@@ -4110,14 +4065,12 @@ async function handleAdminSignup(
                         "user"
                 });
 
-
         if (profileError) {
 
             console.error(
                 "Profile creation error:",
                 profileError
             );
-
 
             if (message) {
 
@@ -4133,7 +4086,6 @@ async function handleAdminSignup(
 
         }
 
-
         if (message) {
 
             message.style.color =
@@ -4143,7 +4095,6 @@ async function handleAdminSignup(
                 "Account created successfully. Admin role must be assigned separately.";
 
         }
-
 
         setTimeout(
             () => {
@@ -4162,7 +4113,6 @@ async function handleAdminSignup(
             "Admin signup error:",
             error
         );
-
 
         if (message) {
 
@@ -4194,7 +4144,6 @@ async function updateAuthButtons() {
             await supabaseClient.auth
                 .getUser();
 
-
         if (error) {
 
             console.warn(
@@ -4204,28 +4153,23 @@ async function updateAuthButtons() {
 
         }
 
-
         const user =
             data?.user;
-
 
         const loginBtn =
             document.getElementById(
                 "adminLoginBtn"
             );
 
-
         const signupBtn =
             document.getElementById(
                 "adminSignupBtn"
             );
 
-
         const logoutBtn =
             document.getElementById(
                 "adminLogoutBtn"
             );
-
 
         if (!user) {
 
@@ -4236,14 +4180,12 @@ async function updateAuthButtons() {
 
             }
 
-
             if (signupBtn) {
 
                 signupBtn.style.display =
                     "flex";
 
             }
-
 
             if (logoutBtn) {
 
@@ -4252,14 +4194,9 @@ async function updateAuthButtons() {
 
             }
 
-
             return;
 
         }
-
-
-        // User exists, but only show logout after
-        // verifying admin role.
 
         const {
             data: profile,
@@ -4276,7 +4213,6 @@ async function updateAuthButtons() {
                 )
                 .maybeSingle();
 
-
         if (
             profileError ||
             getProfileRole(
@@ -4291,14 +4227,12 @@ async function updateAuthButtons() {
 
             }
 
-
             if (signupBtn) {
 
                 signupBtn.style.display =
                     "flex";
 
             }
-
 
             if (logoutBtn) {
 
@@ -4307,11 +4241,9 @@ async function updateAuthButtons() {
 
             }
 
-
             return;
 
         }
-
 
         if (loginBtn) {
 
@@ -4320,14 +4252,12 @@ async function updateAuthButtons() {
 
         }
 
-
         if (signupBtn) {
 
             signupBtn.style.display =
                 "none";
 
         }
-
 
         if (logoutBtn) {
 
@@ -4361,11 +4291,9 @@ async function handleAdminLogout() {
             "Are you sure you want to logout?"
         );
 
-
     if (!confirmed) {
         return;
     }
-
 
     try {
 
@@ -4375,14 +4303,12 @@ async function handleAdminLogout() {
             await supabaseClient.auth
                 .signOut();
 
-
         if (error) {
 
             console.error(
                 "Logout error:",
                 error
             );
-
 
             alert(
                 error.message
@@ -4391,7 +4317,6 @@ async function handleAdminLogout() {
             return;
 
         }
-
 
         selectedProperty =
             null;
@@ -4402,6 +4327,9 @@ async function handleAdminLogout() {
         selectedReview =
             null;
 
+        buildings = [];
+        profiles = [];
+        reviews = [];
 
         await updateAuthButtons();
 
@@ -4409,10 +4337,16 @@ async function handleAdminLogout() {
             "adminAuthModal"
         );
 
+        setText(
+            "adminProfileEmail",
+            "Admin"
+        );
 
         alert(
             "Logged out successfully."
         );
+
+        openAdminLogin();
 
     }
 
@@ -4422,7 +4356,6 @@ async function handleAdminLogout() {
             "Logout failed:",
             error
         );
-
 
         alert(
             "Something went wrong while logging out."
@@ -4448,7 +4381,18 @@ function bindNavigation() {
 
                 button.addEventListener(
                     "click",
-                    () => {
+                    async () => {
+
+                        const isAdmin =
+                            await verifyAdminAccess();
+
+                        if (!isAdmin) {
+
+                            openAdminLogin();
+
+                            return;
+
+                        }
 
                         showSection(
                             button.dataset.section
@@ -4460,7 +4404,6 @@ function bindNavigation() {
             }
         );
 
-
     document
         .querySelectorAll(
             "[data-section-target]"
@@ -4470,7 +4413,18 @@ function bindNavigation() {
 
                 element.addEventListener(
                     "click",
-                    () => {
+                    async () => {
+
+                        const isAdmin =
+                            await verifyAdminAccess();
+
+                        if (!isAdmin) {
+
+                            openAdminLogin();
+
+                            return;
+
+                        }
 
                         showSection(
                             element.dataset
@@ -4512,10 +4466,25 @@ function bindClickableCards() {
 
                             event.preventDefault();
 
-                            showSection(
-                                card.dataset
-                                    .sectionTarget
-                            );
+                            verifyAdminAccess()
+                                .then(
+                                    isAdmin => {
+
+                                        if (!isAdmin) {
+
+                                            openAdminLogin();
+
+                                            return;
+
+                                        }
+
+                                        showSection(
+                                            card.dataset
+                                                .sectionTarget
+                                        );
+
+                                    }
+                                );
 
                         }
 
@@ -4547,7 +4516,6 @@ function bindEscapeKey() {
 
             }
 
-
             document
                 .querySelectorAll(
                     ".admin-modal.show"
@@ -4564,6 +4532,81 @@ function bindEscapeKey() {
 
         }
     );
+
+}
+
+
+// ============================================================
+// VERIFY ADMIN ACCESS
+// ============================================================
+
+async function verifyAdminAccess() {
+
+    try {
+
+        const {
+            data: userData,
+            error: userError
+        } =
+            await supabaseClient.auth.getUser();
+
+        if (
+            userError ||
+            !userData?.user
+        ) {
+
+            return false;
+
+        }
+
+        const user =
+            userData.user;
+
+        const {
+            data: profile,
+            error: profileError
+        } =
+            await supabaseClient
+                .from("profiles")
+                .select(
+                    "id, full_name, role"
+                )
+                .eq(
+                    "id",
+                    user.id
+                )
+                .maybeSingle();
+
+        if (profileError) {
+
+            console.error(
+                "Admin verification error:",
+                profileError
+            );
+
+            return false;
+
+        }
+
+        const role =
+            getProfileRole(
+                profile?.role
+            );
+
+        return role === "admin";
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Admin verification failed:",
+            error
+        );
+
+        return false;
+
+    }
 
 }
 
@@ -4588,11 +4631,22 @@ document.addEventListener(
 
         bindEscapeKey();
 
+        const isAdmin =
+            await verifyAdminAccess();
+
+        if (!isAdmin) {
+
+            await updateAuthButtons();
+
+            openAdminLogin();
+
+            return;
+
+        }
 
         showSection(
             "dashboard"
         );
-
 
         await updateAuthButtons();
 
@@ -4613,17 +4667,30 @@ document.addEventListener(
     async () => {
 
         if (
-            document.visibilityState ===
+            document.visibilityState !==
             "visible"
         ) {
 
-            await loadAllData();
+            return;
+
+        }
+
+        const isAdmin =
+            await verifyAdminAccess();
+
+        if (!isAdmin) {
 
             await updateAuthButtons();
 
-            await loadAdminSettings();
+            return;
 
         }
+
+        await loadAllData();
+
+        await updateAuthButtons();
+
+        await loadAdminSettings();
 
     }
 );

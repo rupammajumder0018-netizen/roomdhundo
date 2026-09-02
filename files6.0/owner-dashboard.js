@@ -185,92 +185,93 @@ function updateOwnerName(user) {
         user.email?.split("@")[0] ||
         "Owner";
 
-
     const firstName =
         name.split(" ")[0];
 
+    // -----------------------------------------
+    // TOPBAR NAME
+    // -----------------------------------------
+
+    const topbarName =
+        document.getElementById("ownerTopbarName");
+
+    if (topbarName) {
+        topbarName.textContent = name;
+    }
+
+
+    // -----------------------------------------
+    // WELCOME NAME
+    // -----------------------------------------
 
     const welcome =
-        document.querySelector(
-            ".welcome-section h2"
-        );
-
+        document.getElementById("ownerWelcomeTitle");
 
     if (welcome) {
-
         welcome.textContent =
             `Welcome back, ${firstName} 👋`;
-
     }
 
 
-    const profileName =
-        document.querySelector(
-            ".owner-info strong"
-        );
+    // -----------------------------------------
+    // TOPBAR ROLE
+    // -----------------------------------------
 
+    const role =
+        document.getElementById("ownerTopbarRole");
 
-    if (profileName) {
-
-        profileName.textContent =
-            name;
-
+    if (role) {
+        role.textContent = "Property Owner";
     }
 
 
-    const avatar =
-        document.querySelector(
-            ".owner-avatar"
-        );
-
-
-    if (avatar) {
-
-        const initials =
-            name
-                .split(" ")
-                .map(word => word[0])
-                .join("")
-                .substring(0, 2)
-                .toUpperCase();
-
-
-        avatar.textContent =
-            initials;
-
-    }
-
-
-    /*
-       Fill the "My Profile" section
-       further down the page.
-    */
+    // -----------------------------------------
+    // PROFILE SECTION
+    // -----------------------------------------
 
     const profileNameText =
-        document.getElementById(
-            "profileNameText"
-        );
-
+        document.getElementById("profileNameText");
 
     if (profileNameText) {
-
-        profileNameText.textContent =
-            name;
-
+        profileNameText.textContent = name;
     }
 
 
     const profileEmailText =
-        document.getElementById(
-            "profileEmailText"
-        );
-
+        document.getElementById("profileEmailText");
 
     if (profileEmailText) {
-
         profileEmailText.textContent =
             user.email || "";
+    }
 
+
+    // -----------------------------------------
+    // AVATAR INITIALS
+    // -----------------------------------------
+
+    const initials =
+        name
+            .trim()
+            .split(/\s+/)
+            .map(word => word[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
+
+    const avatar =
+        document.querySelector(".owner-avatar");
+
+    if (avatar) {
+        avatar.textContent = initials;
+    }
+
+
+    const profileAvatarLg =
+        document.getElementById("profileAvatarLg");
+
+    if (profileAvatarLg) {
+        profileAvatarLg.textContent = initials;
     }
 
 }

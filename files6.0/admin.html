@@ -174,27 +174,26 @@
             </div>
 
 
-<div class="admin-profile">
+            <div class="admin-profile">
 
-    <div class="profile-avatar">
-        
-    </div>
+                <div class="profile-avatar">
+                    👤
+                </div>
 
-    <div>
+                <div>
 
-        <strong id="adminProfileEmail">
-            Loading...
-        </strong>
+                    <strong id="adminProfileEmail">
+                        Loading...
+                    </strong>
 
-        <span>
-            Super Admin
-        </span>
+                    <span>
+                        Super Admin
+                    </span>
 
-    </div>
+                </div>
 
-</div>
+            </div>
 
-            
         </header>
 
 
@@ -1020,6 +1019,10 @@
                                     View
                                 </th>
 
+                                <th>
+                                    Delete
+                                </th>
+
                             </tr>
 
                         </thead>
@@ -1030,7 +1033,7 @@
                             <tr>
 
                                 <td
-                                    colspan="5"
+                                    colspan="6"
                                     class="empty-state"
                                 >
                                     Loading profiles...
@@ -1225,6 +1228,10 @@
                                     View
                                 </th>
 
+                                <th>
+                                    Delete
+                                </th>
+
                             </tr>
 
                         </thead>
@@ -1235,7 +1242,7 @@
                             <tr>
 
                                 <td
-                                    colspan="6"
+                                    colspan="7"
                                     class="empty-state"
                                 >
                                     Loading reviews...
@@ -1552,28 +1559,6 @@
                     🗑️ Delete Property
                 </button>
 
-
-                <!-- Verification-only buttons -->
-
-                <button
-                    type="button"
-                    class="modal-btn reject-btn"
-                    id="rejectPropertyBtn"
-                    style="display:none;"
-                >
-                    ❌ Reject
-                </button>
-
-
-                <button
-                    type="button"
-                    class="modal-btn approve-btn"
-                    id="approvePropertyBtn"
-                    style="display:none;"
-                >
-                    ✅ Approve
-                </button>
-
             </div>
 
         </div>
@@ -1617,6 +1602,7 @@
                     type="button"
                     class="modal-close"
                     id="closeProfileModal"
+                    aria-label="Close profile details"
                 >
                     &times;
                 </button>
@@ -1751,6 +1737,7 @@
                     type="button"
                     class="modal-close"
                     id="closeReviewModal"
+                    aria-label="Close review details"
                 >
                     &times;
                 </button>
@@ -1872,6 +1859,7 @@
                     type="button"
                     class="modal-close"
                     id="closeEditAdminModal"
+                    aria-label="Close edit information"
                 >
                     &times;
                 </button>
@@ -1904,15 +1892,6 @@
                             placeholder="admin@example.com"
                             required
                             autocomplete="email"
-                            style="
-                                width:100%;
-                                height:42px;
-                                padding:0 12px;
-                                border:1px solid #dbe1e8;
-                                border-radius:8px;
-                                font-family:inherit;
-                                outline:none;
-                            "
                         >
 
                     </div>
@@ -1930,7 +1909,10 @@
 
                     <div
                         class="modal-actions"
-                        style="padding:0;margin-top:18px;"
+                        style="
+                            padding:0;
+                            margin-top:18px;
+                        "
                     >
 
                         <button
@@ -1997,6 +1979,7 @@
                     type="button"
                     class="modal-close"
                     id="closeAdminAuthModal"
+                    aria-label="Close admin login"
                 >
                     &times;
                 </button>
@@ -2032,15 +2015,6 @@
                             placeholder="admin@example.com"
                             required
                             autocomplete="email"
-                            style="
-                                width:100%;
-                                height:42px;
-                                padding:0 12px;
-                                border:1px solid #dbe1e8;
-                                border-radius:8px;
-                                font-family:inherit;
-                                outline:none;
-                            "
                         >
 
                     </div>
@@ -2070,15 +2044,6 @@
                             placeholder="Password"
                             required
                             autocomplete="current-password"
-                            style="
-                                width:100%;
-                                height:42px;
-                                padding:0 12px;
-                                border:1px solid #dbe1e8;
-                                border-radius:8px;
-                                font-family:inherit;
-                                outline:none;
-                            "
                         >
 
                     </div>
@@ -2150,15 +2115,6 @@
                             placeholder="Your name"
                             required
                             autocomplete="name"
-                            style="
-                                width:100%;
-                                height:42px;
-                                padding:0 12px;
-                                border:1px solid #dbe1e8;
-                                border-radius:8px;
-                                font-family:inherit;
-                                outline:none;
-                            "
                         >
 
                     </div>
@@ -2188,15 +2144,6 @@
                             placeholder="name@example.com"
                             required
                             autocomplete="email"
-                            style="
-                                width:100%;
-                                height:42px;
-                                padding:0 12px;
-                                border:1px solid #dbe1e8;
-                                border-radius:8px;
-                                font-family:inherit;
-                                outline:none;
-                            "
                         >
 
                     </div>
@@ -2227,15 +2174,6 @@
                             minlength="6"
                             required
                             autocomplete="new-password"
-                            style="
-                                width:100%;
-                                height:42px;
-                                padding:0 12px;
-                                border:1px solid #dbe1e8;
-                                border-radius:8px;
-                                font-family:inherit;
-                                outline:none;
-                            "
                         >
 
                     </div>
