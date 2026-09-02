@@ -2428,13 +2428,42 @@ function wireChatbot() {
     const chatbot = document.getElementById("chatbot");
     const closeBtn = document.getElementById("chatbotClose");
     const messages = document.getElementById("chatbotMessages");
+    const options = document.getElementById("chatbotOptions");
     const input = document.getElementById("chatbotInput");
     const sendBtn = document.getElementById("chatbotSend");
 
     if (!toggle || !chatbot) return;
 
-    const PHONE = "6295456503";
-    const EMAIL = "support@roomdhundo.com";
+    const EMAIL = "roomdhundo18@gmail.com";
+    const WHATSAPP_NUMBER = "9382991409";
+    const WHATSAPP_MESSAGE = "Hello RoomDhundo, I need help with a query.";
+    const WHATSAPP_URL =
+        `https://wa.me/91${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+    const EMAIL_URL =
+        `mailto:${EMAIL}?subject=${encodeURIComponent("RoomDhundo enquiry")}&body=${encodeURIComponent("Hello RoomDhundo,\n\nI need help with a query.\n")}`;
+
+    const FAQ_ITEMS = [
+        {
+            question: "How do I contact a property owner?",
+            answer: "Open the property you are interested in and use the Contact Owner option. You can submit your enquiry with your phone number after logging in, and RoomDhundo will help connect you with the owner."
+        },
+        {
+            question: "How do I list my property?",
+            answer: "Click List Property from the navigation menu and log in to your account. Then enter your property details, room information, facilities, rent, photos, and other required information before submitting the listing."
+        },
+        {
+            question: "Do I need an account?",
+            answer: "You can browse and search properties without an account. However, you need to create an account to use features such as saving properties, contacting owners, and managing your enquiries."
+        },
+        {
+            question: "How does RoomDhundo work?",
+            answer: "RoomDhundo helps you discover accommodation such as PGs, rooms, messes, guest houses, and flats. Search by location and your requirements, compare available properties, view details, and contact the owner through RoomDhundo."
+        },
+        {
+            question: "How can I report a problem?",
+            answer: "You can contact the RoomDhundo team through WhatsApp or Email. Tell us about the issue and include the relevant property name or details so we can assist you properly."
+        }
+    ];
 
     function openChat() {
         chatbot.classList.add("open");
@@ -2469,59 +2498,119 @@ function wireChatbot() {
 
         const bubble = document.createElement("div");
         bubble.className = "message-bubble";
-        bubble.innerHTML = text;
+        bubble.textContent = text;
         row.appendChild(bubble);
         messages.appendChild(row);
         scrollMessages();
     }
 
-    function botReply(text) {
+    function openWhatsApp(fromButton) {
+        if (fromButton) addMessage("WhatsApp RoomDhundo", "user");
+        addMessage("Opening WhatsApp so you can message RoomDhundo.", "bot");
+        window.open(WHATSAPP_URL, "_blank");
+    }
+
+    function openEmail(fromButton) {
+        if (fromButton) addMessage("Email RoomDhundo", "user");
+        addMessage(`Opening your email app to write to ${EMAIL}.`, "bot");
+        window.location.href = EMAIL_URL;
+    }
+
+    function showMainOptions() {
+        if (!options) return;
+
+        options.innerHTML = `
+            <button type="button" class="chatbot-option" id="chatbotFaqBtn">❓ Common Questions</button>
+            <button type="button" class="chatbot-option" id="chatbotWhatsAppBtn">💬 WhatsApp RoomDhundo</button>
+            <button type="button" class="chatbot-option" id="chatbotEmailBtn">📧 Email RoomDhundo</button>
+        `;
+
+        document.getElementById("chatbotFaqBtn")?.addEventListener("click", showFaqMenu);
+        document.getElementById("chatbotWhatsAppBtn")?.addEventListener("click", () => openWhatsApp(true));
+        document.getElementById("chatbotEmailBtn")?.addEventListener("click", () => openEmail(true));
+        if (messages) messages.appendChild(options);
+        scrollMessages();
+    }
+
+    function showFaqMenu() {
+        addMessage("Common Questions", "user");
+        addMessage("Please choose a question:", "bot");
+
+        if (!options) return;
+
+        options.innerHTML = FAQ_ITEMS.map((item, index) => `
+            <button type="button" class="chatbot-option chatbot-faq-item" data-faq="${index}">
+                ${index + 1}. ${item.question}
+            </button>
+        `).join("") + `
+            <button type="button" class="chatbot-option" id="chatbotBackBtn">← Back</button>
+        `;
+
+        options.querySelectorAll(".chatbot-faq-item").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const faq = FAQ_ITEMS[Number(btn.dataset.faq)];
+                if (!faq) return;
+                addMessage(faq.question, "user");
+                addMessage(faq.answer, "bot");
+            });
+        });
+
+        document.getElementById("chatbotBackBtn")?.addEventListener("click", () => {
+            addMessage("Back", "user");
+            addMessage("How can we help you today?", "bot");
+            showMainOptions();
+        });
+
+        if (messages) messages.appendChild(options);
+        scrollMessages();
+    }
+
+    function findFaqMatch(text) {
         const q = text.toLowerCase();
 
-        if (q.includes("pg")) {
-            addMessage("I can show PGs near MAKAUT. Opening PG listings now.", "bot");
-            setTimeout(() => { window.location.href = "search.html?type=PG"; }, 500);
+        if (q.includes("contact") && q.includes("owner")) return FAQ_ITEMS[0];
+        if (q.includes("list") && q.includes("property")) return FAQ_ITEMS[1];
+        if (q.includes("account") || q.includes("sign up") || q.includes("login") || q.includes("log in")) {
+            return FAQ_ITEMS[2];
+        }
+        if (q.includes("how does") || q.includes("how do you work") || q.includes("what is roomdhundo")) {
+            return FAQ_ITEMS[3];
+        }
+        if (q.includes("report") || q.includes("problem") || q.includes("issue") || q.includes("complaint")) {
+            return FAQ_ITEMS[4];
+        }
+        return null;
+    }
+
+    function botReply(text) {
+        const q = text.toLowerCase();
+        const faq = findFaqMatch(text);
+
+        if (faq) {
+            addMessage(faq.answer, "bot");
             return;
         }
 
-        if (q.includes("room") || q.includes("flat") || q.includes("stay")) {
-            addMessage("Sure — taking you to property search.", "bot");
-            setTimeout(() => { window.location.href = "search.html"; }, 500);
+        if (q.includes("whatsapp") || q.includes("wa")) {
+            openWhatsApp();
             return;
         }
 
-        if (q.includes("couple")) {
-            addMessage("You can filter Couple Friendly listings on the Explore page. Opening that now.", "bot");
-            setTimeout(() => { window.location.href = "search.html"; }, 500);
+        if (q.includes("email") || q.includes("mail") || q.includes("gmail")) {
+            openEmail();
             return;
         }
 
-        if (q.includes("night") || q.includes("daily")) {
-            addMessage("Switch to Daily / Nightly on Explore to see places with a per-night price.", "bot");
-            setTimeout(() => { window.location.href = "search.html?stay=daily"; }, 500);
-            return;
-        }
-
-        if (q.includes("list") || q.includes("owner") || q.includes("property")) {
-            addMessage("Owners can list a PG, room, or guest house here.", "bot");
-            setTimeout(() => { window.location.href = "list-property.html"; }, 500);
-            return;
-        }
-
-        if (q.includes("call") || q.includes("phone") || q.includes("contact")) {
-            addMessage(`You can call RoomDhundo at ${PHONE}.`, "bot");
-            return;
-        }
-
-        if (q.includes("email") || q.includes("mail")) {
-            addMessage(`Email us at ${EMAIL}.`, "bot");
+        if (q.includes("faq") || q.includes("question") || q.includes("help")) {
+            showFaqMenu();
             return;
         }
 
         addMessage(
-            "I can help you find a room or PG, search properties, or contact RoomDhundo. Try a button above, or type PG, room, or call.",
+            "I can help with common questions, WhatsApp, or email. Please choose an option below, or ask one of the FAQ questions.",
             "bot"
         );
+        showMainOptions();
     }
 
     function sendUserMessage() {
@@ -2539,35 +2628,9 @@ function wireChatbot() {
 
     closeBtn?.addEventListener("click", closeChat);
 
-    document.getElementById("chatbotFindRoomBtn")?.addEventListener("click", () => {
-        addMessage("Find a Room", "user");
-        addMessage("Opening rooms near MAKAUT…", "bot");
-        setTimeout(() => { window.location.href = "search.html?type=Room"; }, 400);
-    });
-
-    document.getElementById("chatbotFindPGBtn")?.addEventListener("click", () => {
-        addMessage("Find a PG", "user");
-        addMessage("Opening PG listings…", "bot");
-        setTimeout(() => { window.location.href = "search.html?type=PG"; }, 400);
-    });
-
-    document.getElementById("chatbotSearchPropertyBtn")?.addEventListener("click", () => {
-        addMessage("Search Properties", "user");
-        addMessage("Taking you to Explore…", "bot");
-        setTimeout(() => { window.location.href = "search.html"; }, 400);
-    });
-
-    document.getElementById("chatbotCallBtn")?.addEventListener("click", () => {
-        addMessage("Call Us", "user");
-        addMessage(`Calling RoomDhundo at ${PHONE}…`, "bot");
-        window.location.href = `tel:${PHONE}`;
-    });
-
-    document.getElementById("chatbotEmailBtn")?.addEventListener("click", () => {
-        addMessage("Email Us", "user");
-        addMessage(`Opening an email to ${EMAIL}…`, "bot");
-        window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("RoomDhundo enquiry")}`;
-    });
+    document.getElementById("chatbotFaqBtn")?.addEventListener("click", showFaqMenu);
+    document.getElementById("chatbotWhatsAppBtn")?.addEventListener("click", () => openWhatsApp(true));
+    document.getElementById("chatbotEmailBtn")?.addEventListener("click", () => openEmail(true));
 
     sendBtn?.addEventListener("click", sendUserMessage);
     input?.addEventListener("keydown", (e) => {
