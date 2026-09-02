@@ -93,7 +93,7 @@
                     <label><input type="checkbox" class="lpFacility" value="laundry" data-label="🧺 Laundry"> Laundry</label>
                     <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
                     <label><input type="checkbox" class="lpFacility" value="bathroom" data-label="🚿 Attached Bathroom"> Attached Bathroom</label>
-                    <label> <input type="checkbox" class="lpFacility" value="couple-friendly" data-label="💑 Couple Friendly"> Couple Friendly</label>
+                    <label><input type="checkbox" class="lpFacility" value="couple-friendly" data-label="💑 Couple Friendly"> Couple Friendly</label>
                 </div>
             </div>
 
@@ -124,7 +124,7 @@
     <input type="tel" id="lpOwnerAltPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
 </div>
             <h2 class="lp-section-title">Room Types</h2>
-            <p class="lp-hint lp-room-hint">Add every room option this building offers — you need at least one.</p>
+            <p class="lp-hint lp-room-hint">Add every room option this building offers — you need at least one. Nightly stay is optional.</p>
 
             <div id="roomTypesContainer"></div>
 
@@ -159,10 +159,17 @@
     <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
 </div>
 
-<div class="form-group">
-    <label>Price per Night (₹)</label>
-    <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800" required>
-</div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" class="rtOfferNightly">
+                    Also offer this room per night (optional)
+                </label>
+            </div>
+
+            <div class="form-group rtNightlyGroup" hidden>
+                <label>Price per Night (₹)</label>
+                <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800">
+            </div>
 
             <div class="form-group">
                 <label>People Sharing the Room</label>

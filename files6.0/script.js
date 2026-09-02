@@ -703,9 +703,18 @@ async function initSearchPage() {
 
             const roomTypes = b.room_types || [];
 
+            // Daily search only shows rooms the owner priced per night.
+            if (f.daily) {
+                const hasNightly = roomTypes.some(rt =>
+                    rt.daily_price != null && Number(rt.daily_price) > 0
+                );
+                if (!hasNightly) return false;
+            }
+
             if (f.min !== null || f.max !== null) {
                 const anyRoomFits = roomTypes.some(rt => {
                     const price = f.daily ? rt.daily_price : rt.price_value;
+                    if (price == null || price === "") return false;
                     if (f.min !== null && price < f.min) return false;
                     if (f.max !== null && price > f.max) return false;
                     return true;
@@ -960,10 +969,14 @@ async function initPropertyPage() {
     (building.room_types || []).forEach(rt => {
         const card = document.createElement("div");
         card.classList.add("room-type-card");
+        const nightlyHtml = (rt.daily_price != null && Number(rt.daily_price) > 0)
+            ? `<div class="room-type-price">₹${Number(rt.daily_price).toLocaleString("en-IN")}<span>/ night</span></div>`
+            : "";
         card.innerHTML = `
             <div class="room-type-card-header">
                 <h3>${rt.room_type}</h3>
                 <div class="room-type-price">₹${Number(rt.price_value).toLocaleString("en-IN")}<span>/ month</span></div>
+                ${nightlyHtml}
             </div>
             <div class="room-type-details">
                 <span>${rt.room_people} ${rt.room_people === 1 ? "person" : "people"} sharing</span>
@@ -1600,14 +1613,29 @@ function addRoomTypeBlock(roomData = null) {
     const roomTypeSelect = block.querySelector(".rtRoomType");
     const rentInput = block.querySelector(".rtRent");
     const nightlyRentInput = block.querySelector(".rtNightlyRent");
+    const offerNightly = block.querySelector(".rtOfferNightly");
     const peopleInput = block.querySelector(".rtPeople");
     const availableInput = block.querySelector(".rtAvailable");
+
+    function syncNightlyOffer() {
+        const enabled = !!(offerNightly && offerNightly.checked);
+        const group = block.querySelector(".rtNightlyGroup");
+        if (group) group.hidden = !enabled;
+        if (nightlyRentInput) {
+            nightlyRentInput.disabled = !enabled;
+            if (!enabled) {
+                nightlyRentInput.removeAttribute("required");
+            }
+        }
+    }
 
     if (roomData) {
         roomTypeSelect.value = roomData.room_type || "";
         rentInput.value = roomData.price_value ?? roomData.room_rent ?? "";
-        if (nightlyRentInput) {
-            nightlyRentInput.value = roomData.daily_price ?? "";
+        const hasNightly = roomData.daily_price != null && Number(roomData.daily_price) > 0;
+        if (offerNightly) offerNightly.checked = hasNightly;
+        if (nightlyRentInput && hasNightly) {
+            nightlyRentInput.value = roomData.daily_price;
         }
         peopleInput.value = roomData.room_people ?? 1;
         availableInput.value = roomData.available_rooms ?? 0;
@@ -1617,6 +1645,9 @@ function addRoomTypeBlock(roomData = null) {
         availableInput.value = "1";
         availableInput.min = "1";
     }
+
+    offerNightly?.addEventListener("change", syncNightlyOffer);
+    syncNightlyOffer();
 
     block.querySelector(".remove-room-type-btn")?.addEventListener("click", () => {
         const allBlocks = container.querySelectorAll(".room-type-block");
@@ -1926,7 +1957,8 @@ function wireListPropertyForm() {
         for (const block of roomTypeBlocks) {
             const roomType = block.querySelector(".rtRoomType")?.value.trim();
             const rent = Number(block.querySelector(".rtRent")?.value);
-            const nightlyRent = Number(block.querySelector(".rtNightlyRent")?.value);
+            const offerNightly = block.querySelector(".rtOfferNightly")?.checked;
+            const nightlyRaw = block.querySelector(".rtNightlyRent")?.value.trim();
             const people = Number(block.querySelector(".rtPeople")?.value);
             const available = Number(block.querySelector(".rtAvailable")?.value);
 
@@ -1938,6 +1970,15 @@ function wireListPropertyForm() {
             if (!Number.isFinite(rent) || rent <= 0) {
                 alert("Please enter a valid monthly rent for every room type.");
                 return;
+            }
+
+            let nightlyRent = null;
+            if (offerNightly) {
+                nightlyRent = Number(nightlyRaw);
+                if (!Number.isFinite(nightlyRent) || nightlyRent <= 0) {
+                    alert("Enter a valid price per night, or uncheck nightly stay.");
+                    return;
+                }
             }
 
             if (!Number.isFinite(people) || people < 1) {
