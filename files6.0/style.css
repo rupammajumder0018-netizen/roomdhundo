@@ -543,20 +543,63 @@ html[data-theme="light"] .home-back-to-top {
 }
 
 @media (max-width: 800px) {
+    .home-hero {
+        padding: 36px 16px 18px;
+    }
+
+    .home-hero h1 {
+        font-size: 30px;
+        line-height: 1.2;
+        margin-bottom: 10px;
+    }
+
+    .home-hero p {
+        font-size: 15px;
+        padding: 0 4px;
+    }
+
+    .home-search-panel {
+        margin-top: 20px;
+        padding: 14px;
+    }
+
     .home-search-bar {
         flex-direction: column;
     }
 
+    .home-search-bar input,
     .home-search-submit {
+        min-height: 48px;
         width: 100%;
+    }
+
+    .home-search-controls {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .home-search-controls .stay-btn,
+    .home-filter-btn {
+        min-height: 44px;
+        padding: 10px 8px;
+        font-size: 13px;
     }
 
     .home-filter-grid {
         grid-template-columns: 1fr;
     }
 
-    .home-search-controls {
-        grid-template-columns: 1fr;
+    .home-filter-actions {
+        flex-direction: column;
+    }
+
+    .home-apply-filters,
+    .home-clear-filters {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .home-listings {
+        padding: 8px 16px 110px;
     }
 }
 
@@ -2049,18 +2092,6 @@ a.category-card:hover {
     }
 }
 @media (max-width: 600px) {
-    .navbar {
-        padding: 0 5%;
-    }
-    .nav-links {
-        gap: 10px;
-    }
-    .nav-links a {
-        display: none;
-    }
-    .nav-links a.nav-profile-toggle {
-        display: flex;
-    }
     .search-container {
         padding: 25px 5%;
     }
@@ -4656,7 +4687,7 @@ MOBILE
    ========================================================= */
 
 body:has(.nav-location-dropdown.open) .hero {
-    padding-top: 390px;
+    padding-top: 36px;
     transition: padding-top 0.2s ease;
 }
 
@@ -4751,4 +4782,237 @@ html[data-theme="dark"] .nav-profile-toggle:has(.nav-profile-role.admin) {
 html[data-theme="dark"] .nav-profile-toggle:has(.nav-profile-role.admin):hover {
     background: #241b36 !important;
     border-color: #6d4aff !important;
+}
+
+/* =========================================================
+   MOBILE NAV + PUBLIC PAGES
+   ========================================================= */
+
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.nav-mobile-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.nav-links {
+    margin-left: auto;
+}
+
+.nav-menu-toggle {
+    display: none;
+    width: 42px;
+    height: 42px;
+    padding: 0 !important;
+    border: 1px solid var(--rd-border, #dfe3eb);
+    border-radius: 12px !important;
+    background: var(--rd-surface-soft, #f8fafc) !important;
+    color: var(--rd-text, #1f2937) !important;
+    box-shadow: none !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-menu-toggle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        height: auto;
+        min-height: 64px;
+        padding: 8px 4%;
+        gap: 8px;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        z-index: 10000;
+    }
+
+    .logo {
+        font-size: 18px;
+    }
+
+    .nav-left {
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .nav-menu-toggle {
+        display: flex;
+    }
+
+    .nav-links {
+        display: none;
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 8px 0 12px;
+        order: 5;
+    }
+
+    .navbar.nav-open .nav-links {
+        display: flex;
+    }
+
+    .nav-links a,
+    .nav-links a.nav-auth-btn,
+    .nav-links #navAuthBtn,
+    .nav-links button#navAuthBtn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--rd-surface-soft, #f8fafc);
+        color: var(--rd-text, #222);
+        text-decoration: none;
+        font-weight: 600;
+        box-shadow: none;
+    }
+
+    .nav-links a::after {
+        display: none;
+    }
+
+    .nav-links .theme-toggle {
+        display: none;
+    }
+
+    .nav-profile-wrap,
+    .auth-links {
+        width: 100%;
+    }
+
+    .nav-profile-toggle {
+        width: 100% !important;
+        height: auto !important;
+        justify-content: space-between;
+    }
+
+    .nav-profile-menu {
+        position: static;
+        min-width: 0;
+        width: 100%;
+        box-shadow: none;
+        margin-top: 8px;
+    }
+
+    .search-header {
+        padding: 16px 5%;
+    }
+
+    .search-bar button {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .stay-selection {
+        width: 100%;
+    }
+
+    .search-stay-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 44px;
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .search-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .property-card,
+    .home-property-card {
+        grid-template-columns: 1fr;
+        margin-bottom: 16px;
+    }
+
+    .property-image,
+    .property-image img,
+    .image-placeholder {
+        min-height: 180px;
+        height: 200px;
+        max-height: 220px;
+    }
+
+    .amenities {
+        gap: 8px;
+        margin: 12px 0;
+    }
+
+    .availability {
+        margin-bottom: 12px;
+    }
+
+    .property-content {
+        padding: 16px;
+    }
+
+    .property-title {
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .property-title h2 {
+        font-size: 18px;
+        word-break: break-word;
+    }
+
+    .property-title p {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .card-actions {
+        flex-direction: column;
+    }
+
+    .compare-btn,
+    .view-btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .home-back-to-top {
+        left: 12px;
+        bottom: 92px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .auth-modal-content {
+        width: calc(100vw - 24px);
+        max-width: 480px;
+        margin: 12px;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+    }
+}
+
+@media (max-width: 420px) {
+    .home-hero h1 {
+        font-size: 26px;
+    }
+
+    .nav-location-label {
+        max-width: 72px;
+    }
 }

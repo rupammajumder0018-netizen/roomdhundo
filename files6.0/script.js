@@ -3338,6 +3338,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireListPropertyForm();
     wireResetPasswordForm();
     wireRoleChoice();
+    wireMobileNav();
     wireThemeToggle();
     wireChatbot();
 
@@ -3651,6 +3652,53 @@ function wireChatbot() {
     });
 }
 
+function wireMobileNav() {
+    const navbar = document.querySelector(".navbar");
+    const navLinks = document.querySelector(".nav-links");
+    if (!navbar || !navLinks || navbar.querySelector(".nav-menu-toggle")) return;
+
+    const tools = document.createElement("div");
+    tools.className = "nav-mobile-tools";
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "nav-menu-toggle";
+    toggle.setAttribute("aria-label", "Open menu");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.innerHTML = "<span></span><span></span><span></span>";
+
+    const existingTheme = navbar.querySelector(".theme-toggle");
+    if (existingTheme) tools.appendChild(existingTheme);
+    tools.appendChild(toggle);
+    navbar.appendChild(tools);
+
+    function closeMenu() {
+        navbar.classList.remove("nav-open");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Open menu");
+    }
+
+    toggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const open = navbar.classList.toggle("nav-open");
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    });
+
+    navLinks.addEventListener("click", (event) => {
+        if (event.target.closest(".nav-profile-menu, .nav-profile-toggle")) return;
+        if (event.target.closest("a, #navAuthBtn")) closeMenu();
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!navbar.contains(event.target)) closeMenu();
+    });
+
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 768) closeMenu();
+    });
+}
+
 function wireThemeToggle() {
     const storageKey = "roomdhundo-theme";
     const root = document.documentElement;
@@ -3669,20 +3717,33 @@ function wireThemeToggle() {
         }
     }
 
+    let toggle = document.querySelector(".theme-toggle");
+    if (!toggle) {
+        const navLinks = document.querySelector(".nav-links");
+        if (!navLinks) {
+            setTheme(savedTheme || systemTheme);
+            return;
+        }
+        toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "theme-toggle";
+        navLinks.insertBefore(toggle, navLinks.querySelector("#navAuthBtn") || null);
+    }
+
+    const tools = document.querySelector(".nav-mobile-tools");
+    const menuToggle = tools?.querySelector(".nav-menu-toggle");
+    if (tools && toggle.parentElement !== tools) {
+        tools.insertBefore(toggle, menuToggle || null);
+    }
+
+    if (!toggle.dataset.themeWired) {
+        toggle.dataset.themeWired = "true";
+        toggle.addEventListener("click", () => {
+            setTheme(root.dataset.theme === "dark" ? "light" : "dark");
+        });
+    }
+
     setTheme(savedTheme || systemTheme);
-
-    const navLinks = document.querySelector(".nav-links");
-    if (!navLinks || navLinks.querySelector(".theme-toggle")) return;
-
-    const toggle = document.createElement("button");
-    toggle.type = "button";
-    toggle.className = "theme-toggle";
-    toggle.addEventListener("click", () => {
-        setTheme(root.dataset.theme === "dark" ? "light" : "dark");
-    });
-
-    navLinks.insertBefore(toggle, navLinks.querySelector("#navAuthBtn") || null);
-    setTheme(root.dataset.theme);
 }
 
 // ============================================================
