@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Enquiries | RoomDhundo</title>
+
+    <link
+        rel="stylesheet"
+        href="user-enquiries.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         TOPBAR
+         ===================================================== -->
+
+    <header class="enquiries-topbar">
+
+        <a
+            href="user-dashboard.html"
+            class="back-dashboard"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            Back to Dashboard
+        </a>
+
+        <button
+            type="button"
+            class="enquiries-theme-toggle"
+            id="enquiriesThemeToggle"
+            aria-label="Switch to dark mode"
+        >
+            🌙
+        </button>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN
+         ===================================================== -->
+
+    <main class="enquiries-page">
+
+        <div class="enquiries-container">
+
+
+            <!-- =================================================
+                 PAGE HEADER
+                 ================================================= -->
+
+            <section class="enquiries-header">
+
+                <div>
+
+                    <span class="page-label">
+                        MY ACCOUNT
+                    </span>
+
+                    <h1>
+                        My Enquiries
+                    </h1>
+
+                    <p>
+                        Track the properties and owners you have contacted.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 STATISTICS
+                 ================================================= -->
+
+            <section class="enquiry-stats-grid">
+
+
+                <!-- TOTAL -->
+
+                <div class="enquiry-stat-card">
+
+                    <div class="enquiry-stat-icon total">
+                        <i class="fa-regular fa-envelope"></i>
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Total Enquiries
+                        </span>
+
+                        <strong id="userTotalEnquiries">
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PENDING -->
+
+                <div class="enquiry-stat-card">
+
+                    <div class="enquiry-stat-icon pending">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Pending
+                        </span>
+
+                        <strong id="userPendingEnquiries">
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ACCEPTED -->
+
+                <div class="enquiry-stat-card">
+
+                    <div class="enquiry-stat-icon accepted">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Accepted
+                        </span>
+
+                        <strong id="userAcceptedEnquiries">
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- CONTACTED -->
+
+<div class="enquiry-stat-card">
+
+    <div class="enquiry-stat-icon contacted">
+        <i class="fa-solid fa-phone"></i>
+    </div>
+
+    <div>
+
+        <span>
+            Contacted
+        </span>
+
+        <strong id="userContactedEnquiries">
+            0
+        </strong>
+
+    </div>
+
+</div>
+
+
+                <!-- REJECTED -->
+
+                <div class="enquiry-stat-card">
+
+                    <div class="enquiry-stat-icon rejected">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Rejected
+                        </span>
+
+                        <strong id="userRejectedEnquiries">
+                            0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- =================================================
+                 ENQUIRIES LIST
+                 ================================================= -->
+
+            <section class="user-enquiries-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <h2>
+                            Your Enquiries
+                        </h2>
+
+                        <p>
+                            See all your property enquiry requests and their current status.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="userEnquiriesList"
+                    class="user-enquiries-list"
+                >
+
+                    <div class="enquiries-loading">
+
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        Loading your enquiries...
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         SUPABASE
+         ===================================================== -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+    ></script>
+
+    <script src="script.js"></script>
+
+
+    <!-- =====================================================
+         PAGE THEME
+         ===================================================== -->
+
+    <script>
+
+        (() => {
+
+            const key =
+                "roomdhundo-theme";
+
+            const root =
+                document.documentElement;
+
+            const toggle =
+                document.getElementById(
+                    "enquiriesThemeToggle"
+                );
+
+
+            if (!toggle) {
+                return;
+            }
+
+
+            function applyTheme(theme) {
+
+                root.dataset.theme =
+                    theme;
+
+
+                localStorage.setItem(
+                    key,
+                    theme
+                );
+
+
+                const isDark =
+                    theme === "dark";
+
+
+                toggle.textContent =
+                    isDark
+                        ? "☀️"
+                        : "🌙";
+
+
+                toggle.setAttribute(
+                    "aria-label",
+                    isDark
+                        ? "Switch to light mode"
+                        : "Switch to dark mode"
+                );
+
+            }
+
+
+            applyTheme(
+                localStorage.getItem(key) ||
+                "dark"
+            );
+
+
+            toggle.addEventListener(
+                "click",
+                () => {
+
+                    applyTheme(
+                        root.dataset.theme === "dark"
+                            ? "light"
+                            : "dark"
+                    );
+
+                }
+            );
+
+        })();
+
+    </script>
+
+
+    <!-- =====================================================
+         USER ENQUIRIES JS
+         ===================================================== -->
+
+    <script src="user-enquiries.js"></script>
+
+</body>
+
+</html>

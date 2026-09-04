@@ -30,16 +30,15 @@ let ownerProperties = [];
    PAGE START
    ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async () => {
+document.addEventListener("DOMContentLoaded", () => {
 
-        setupDashboardButtons();
+    setupDashboardButtons();
 
-        await initializeOwnerDashboard();
+    setupEnquiryFilters();
 
-    }
-);
+    initializeOwnerDashboard();
+
+});
 
 
 /* =========================================================
@@ -169,6 +168,8 @@ async function loadOwnerProperties() {
     populatePropertyFilter();
 
     updateProfileDetails();
+
+    await loadOwnerEnquiries();
 
 }
 
@@ -2035,5 +2036,726 @@ function escapeHtml(
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+
+}
+
+/* =========================================================
+   UPDATE ENQUIRY STATUS
+   ========================================================= */
+
+async function updateEnquiryStatus(
+    enquiryId,
+    newStatus
+) {
+
+    if (!currentUser) {
+        alert("Please login again.");
+        return;
+    }
+
+    const statusLabel =
+        newStatus.charAt(0).toUpperCase() +
+        newStatus.slice(1);
+
+    const confirmed = window.confirm(
+        `Are you sure you want to mark this enquiry as ${statusLabel}?`
+    );
+
+    if (!confirmed) return;
+
+    const {
+        error
+    } = await supabaseClient
+        .from("enquiries")
+        .update({
+            status: newStatus,
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", enquiryId)
+        .eq("owner_id", currentUser.id);
+
+    if (error) {
+
+        console.error(
+            "Enquiry status update error:",
+            error
+        );
+
+        alert(
+            `Unable to update enquiry: ${error.message}`
+        );
+
+        return;
+    }
+
+    await loadOwnerEnquiries();
+
+}
+
+/* =========================================================
+   LOAD OWNER ENQUIRIES
+   ========================================================= */
+
+async function loadOwnerEnquiries() {
+
+    const container =
+        document.getElementById("ownerEnquiries");
+
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="loading-properties">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Loading enquiries...
+        </div>
+    `;
+
+    if (!currentUser) {
+        return;
+    }
+
+    /* =====================================================
+       STEP 1: LOAD ENQUIRIES
+       ===================================================== */
+
+    const {
+        data: enquiries,
+        error: enquiryError
+    } = await supabaseClient
+        .from("enquiries")
+        .select("*")
+        .eq("owner_id", currentUser.id)
+        .order("created_at", {
+            ascending: false
+        });
+
+    if (enquiryError) {
+
+        console.error(
+            "Enquiry loading error:",
+            enquiryError
+        );
+
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h3>Unable to load enquiries</h3>
+                <p>${escapeHtml(enquiryError.message)}</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    const enquiryList = enquiries || [];
+
+
+    /* =====================================================
+       STEP 2: GET USER IDs
+       ===================================================== */
+
+    const userIds = [
+        ...new Set(
+            enquiryList
+                .map(enquiry => enquiry.user_id)
+                .filter(Boolean)
+        )
+    ];
+
+
+    /* =====================================================
+       STEP 3: LOAD USER PROFILES
+       ===================================================== */
+
+    let profiles = [];
+
+    if (userIds.length > 0) {
+
+        const {
+            data: profileData,
+            error: profileError
+        } = await supabaseClient
+            .from("profiles")
+            .select("*")
+            .in("id", userIds);
+
+        if (profileError) {
+
+            console.error(
+                "Profile loading error:",
+                profileError
+            );
+
+        } else {
+
+            profiles = profileData || [];
+
+        }
+    }
+
+
+    /* =====================================================
+       STEP 4: CREATE PROFILE MAP
+       ===================================================== */
+
+    const profileMap = {};
+
+    profiles.forEach(profile => {
+
+        profileMap[profile.id] = profile;
+
+    });
+
+
+    /* =====================================================
+       STEP 5: UPDATE ENQUIRY COUNT
+       ===================================================== */
+
+    const totalEnquiries =
+        document.getElementById("totalEnquiries");
+
+    if (totalEnquiries) {
+
+        totalEnquiries.textContent =
+            enquiryList.length;
+
+    }
+
+
+    /* =====================================================
+       STEP 6: NO ENQUIRIES
+       ===================================================== */
+
+   if (enquiryList.length === 0) {
+
+    container.innerHTML = `
+        <div class="empty-state">
+
+            <div class="empty-state-icon">
+                <i class="fa-regular fa-envelope"></i>
+            </div>
+
+            <h3>
+                No enquiries yet
+            </h3>
+
+            <p>
+                When users show interest in your properties,
+                their enquiries will appear here.
+            </p>
+
+        </div>
+    `;
+
+    return;
+}
+
+
+    /* =====================================================
+       STEP 7: RENDER ENQUIRIES
+       ===================================================== */
+
+    container.innerHTML = enquiryList.map(enquiry => {
+
+        /* -------------------------------------------------
+           PROPERTY
+           ------------------------------------------------- */
+
+        const property =
+            ownerProperties.find(
+                item => item.id === enquiry.property_id
+            );
+
+        const propertyName =
+            property?.name || "Property";
+
+
+        /* -------------------------------------------------
+           ROOM TYPE
+           ------------------------------------------------- */
+
+        const roomType =
+            enquiry.room_type || "Room";
+
+
+        /* -------------------------------------------------
+           MESSAGE
+           ------------------------------------------------- */
+
+        const message =
+            enquiry.message ||
+            "I am interested in your room.";
+
+
+        /* -------------------------------------------------
+           PHONE
+           ------------------------------------------------- */
+
+        const phone =
+            enquiry.renter_phone || "";
+
+
+        /* -------------------------------------------------
+           STATUS
+           ------------------------------------------------- */
+
+        const status =
+            enquiry.status || "pending";
+
+
+        /* -------------------------------------------------
+           USER PROFILE
+           ------------------------------------------------- */
+
+        const profile =
+            profileMap[enquiry.user_id];
+
+
+        const userName =
+            profile?.full_name ||
+            profile?.name ||
+            "User";
+
+
+        const userInitial =
+            userName
+                .trim()
+                .charAt(0)
+                .toUpperCase() || "U";
+
+
+        /* -------------------------------------------------
+           DATE
+           ------------------------------------------------- */
+
+        const createdAt =
+            enquiry.created_at
+                ? new Date(
+                    enquiry.created_at
+                ).toLocaleString(
+                    "en-IN",
+                    {
+                        dateStyle: "medium",
+                        timeStyle: "short"
+                    }
+                )
+                : "—";
+
+
+        /* -------------------------------------------------
+           ACTIONS
+           ------------------------------------------------- */
+
+        let actions = "";
+
+        if (phone) {
+
+            const cleanPhone =
+                phone.replace(/\D/g, "");
+
+            actions += `
+                <a
+                    href="tel:${cleanPhone}"
+                    class="enquiry-action-btn call-btn"
+                >
+                    <i class="fa-solid fa-phone"></i>
+                    Call User
+                </a>
+
+                <a
+                    href="https://wa.me/${cleanPhone}"
+                    target="_blank"
+                    rel="noopener"
+                    class="enquiry-action-btn whatsapp-btn"
+                >
+                    <i class="fa-brands fa-whatsapp"></i>
+                    WhatsApp
+                </a>
+            `;
+
+        }
+
+
+        if (status === "pending") {
+
+            actions += `
+                <button
+                    type="button"
+                    class="enquiry-action-btn accept-btn"
+                    onclick="updateEnquiryStatus(
+                        '${enquiry.id}',
+                        'accepted'
+                    )"
+                >
+                    <i class="fa-solid fa-check"></i>
+                    Accept
+                </button>
+
+                <button
+                    type="button"
+                    class="enquiry-action-btn reject-btn"
+                    onclick="updateEnquiryStatus(
+                        '${enquiry.id}',
+                        'rejected'
+                    )"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                    Reject
+                </button>
+            `;
+
+        }
+
+
+        if (status === "accepted") {
+
+            actions += `
+                <button
+                    type="button"
+                    class="enquiry-action-btn contacted-btn"
+                    onclick="updateEnquiryStatus(
+                        '${enquiry.id}',
+                        'contacted'
+                    )"
+                >
+                    <i class="fa-solid fa-comment"></i>
+                    Mark Contacted
+                </button>
+            `;
+
+        }
+
+
+        /* -------------------------------------------------
+           CARD
+           ------------------------------------------------- */
+
+        return `
+            <article class="enquiry-card">
+
+                <div class="enquiry-card-header">
+
+                    <div class="enquiry-user">
+
+                        <div class="enquiry-user-avatar">
+                            ${escapeHtml(userInitial)}
+                        </div>
+
+                        <div class="enquiry-user-info">
+
+                            <h3>
+                                ${escapeHtml(userName)}
+                            </h3>
+
+                            <p>
+                                ${escapeHtml(
+                                    phone ||
+                                    "Phone not available"
+                                )}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <span
+                        class="enquiry-status ${escapeHtml(status)}"
+                    >
+                        ${escapeHtml(status)}
+                    </span>
+
+                </div>
+
+
+                <div class="enquiry-card-body">
+
+                    <div class="enquiry-detail">
+
+                        <i class="fa-solid fa-building"></i>
+
+                        <div>
+                            <span>Property</span>
+                            <strong>
+                                ${escapeHtml(propertyName)}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="enquiry-detail">
+
+                        <i class="fa-solid fa-door-open"></i>
+
+                        <div>
+                            <span>Room Type</span>
+                            <strong>
+                                ${escapeHtml(roomType)}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="enquiry-detail">
+
+                        <i class="fa-regular fa-clock"></i>
+
+                        <div>
+                            <span>Enquiry Date</span>
+                            <strong>
+                                ${escapeHtml(createdAt)}
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="enquiry-message">
+
+                        <span>Message</span>
+
+                        <p>
+                            ${escapeHtml(message)}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="enquiry-actions">
+
+                    ${actions}
+
+                </div>
+
+            </article>
+        `;
+
+   }).join("");
+
+/* Re-apply current search + status filter */
+applyEnquiryFilters();
+
+}
+
+/* =========================================================
+   ENQUIRY SEARCH + FILTER
+   ========================================================= */
+
+function setupEnquiryFilters() {
+
+    const searchInput =
+        document.getElementById("enquirySearch");
+
+    const statusFilter =
+        document.getElementById("enquiryStatusFilter");
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            "input",
+            applyEnquiryFilters
+        );
+
+    }
+
+    if (statusFilter) {
+
+        statusFilter.addEventListener(
+            "change",
+            applyEnquiryFilters
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   APPLY ENQUIRY FILTERS
+   ========================================================= */
+
+function applyEnquiryFilters() {
+
+    const searchInput =
+        document.getElementById("enquirySearch");
+
+    const statusFilter =
+        document.getElementById("enquiryStatusFilter");
+
+    const container =
+        document.getElementById("ownerEnquiries");
+
+    if (
+        !searchInput ||
+        !statusFilter ||
+        !container
+    ) {
+        return;
+    }
+
+    const searchText =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const selectedStatus =
+        statusFilter.value
+            .toLowerCase();
+
+    const cards =
+        container.querySelectorAll(
+            ".enquiry-card"
+        );
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+
+        const cardText =
+            card.textContent
+                .toLowerCase();
+
+        const statusElement =
+            card.querySelector(
+                ".enquiry-status"
+            );
+
+        const cardStatus =
+            statusElement
+                ? statusElement.textContent
+                    .trim()
+                    .toLowerCase()
+                : "";
+
+        const matchesSearch =
+            !searchText ||
+            cardText.includes(searchText);
+
+        const matchesStatus =
+            selectedStatus === "all" ||
+            cardStatus === selectedStatus;
+
+        if (
+            matchesSearch &&
+            matchesStatus
+        ) {
+
+            card.style.display = "";
+
+            visibleCount++;
+
+        } else {
+
+            card.style.display = "none";
+
+        }
+
+    });
+
+
+    /* =====================================================
+       NO SEARCH / FILTER RESULT
+       ===================================================== */
+
+    let noResults =
+        document.getElementById(
+            "noEnquiryFilterResults"
+        );
+
+
+    if (
+        visibleCount === 0 &&
+        cards.length > 0
+    ) {
+
+        if (!noResults) {
+
+            noResults =
+                document.createElement(
+                    "div"
+                );
+
+            noResults.id =
+                "noEnquiryFilterResults";
+
+            noResults.className =
+                "enquiry-filter-empty";
+
+            noResults.innerHTML = `
+                <div class="enquiry-filter-empty-icon">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+
+                <h3>
+                    No matching enquiries
+                </h3>
+
+                <p>
+                    We couldn't find any enquiry matching
+                    your search or selected status.
+                </p>
+
+                <button
+                    type="button"
+                    class="clear-enquiry-filter"
+                    onclick="clearEnquiryFilters()"
+                >
+                    Clear Filters
+                </button>
+            `;
+
+            container.appendChild(
+                noResults
+            );
+
+        }
+
+        noResults.style.display = "";
+
+    } else if (noResults) {
+
+        noResults.style.display = "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   CLEAR ENQUIRY FILTERS
+   ========================================================= */
+
+function clearEnquiryFilters() {
+
+    const searchInput =
+        document.getElementById(
+            "enquirySearch"
+        );
+
+    const statusFilter =
+        document.getElementById(
+            "enquiryStatusFilter"
+        );
+
+
+    if (searchInput) {
+
+        searchInput.value = "";
+
+    }
+
+
+    if (statusFilter) {
+
+        statusFilter.value = "all";
+
+    }
+
+
+    applyEnquiryFilters();
 
 }

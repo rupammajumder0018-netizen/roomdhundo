@@ -2537,3 +2537,1439 @@ html[data-theme="dark"] .topbar {
         animation-iteration-count: 1 !important;
     }
 }
+
+/* ============================================================
+   OWNER DASHBOARD - ENQUIRIES
+   ============================================================ */
+
+.enquiry-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+}
+
+.enquiry-count-label {
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 500;
+}
+
+#totalEnquiries {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.owner-enquiries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.enquiry-card {
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.enquiry-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.enquiry-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.enquiry-user-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2ff;
+    font-weight: 700;
+    color: #374151;
+    flex-shrink: 0;
+}
+
+.enquiry-user-info h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.enquiry-user-info p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.enquiry-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.enquiry-status.pending {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.enquiry-status.accepted {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.enquiry-status.rejected {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.enquiry-status.contacted {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+/* ============================================================
+   ENQUIRY DETAILS
+   ============================================================ */
+
+.enquiry-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.enquiry-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 12px;
+    background: var(--surface-soft, #f8fafc);
+}
+
+.enquiry-detail > i {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: var(--surface, #ffffff);
+    color: var(--text, #111827);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.enquiry-detail > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.enquiry-detail span {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.enquiry-detail strong {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text, #111827);
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   ENQUIRY MESSAGE
+   ============================================================ */
+
+.enquiry-message {
+    padding: 15px;
+    border-radius: 12px;
+    background: var(--surface-soft, #f8fafc);
+    border: 1px solid var(--border, #e5e7eb);
+}
+
+.enquiry-message > span {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted, #6b7280);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.enquiry-message p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text, #111827);
+    word-break: break-word;
+}
+
+.enquiry-message {
+    padding: 14px;
+    border-radius: 12px;
+    background: var(--surface-bg, #f8fafc);
+    margin-bottom: 16px;
+}
+
+.enquiry-message-label {
+    font-size: 12px;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.enquiry-message p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.enquiry-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.enquiry-action-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.enquiry-action-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   ENQUIRY ACTION BUTTONS
+   ============================================================ */
+
+.call-btn {
+    background: #eef2ff;
+    color: #3730a3;
+    text-decoration: none;
+}
+
+.call-btn:hover {
+    background: #e0e7ff;
+}
+
+.whatsapp-btn {
+    background: #ecfdf5;
+    color: #047857;
+    text-decoration: none;
+}
+
+.whatsapp-btn:hover {
+    background: #d1fae5;
+}
+
+.accept-btn {
+    background: #111827;
+    color: #ffffff;
+}
+
+.accept-btn:hover {
+    background: #1f2937;
+}
+
+.reject-btn {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.reject-btn:hover {
+    background: #fee2e2;
+}
+
+.contacted-btn {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.contacted-btn:hover {
+    background: #dbeafe;
+}
+
+.enquiry-empty {
+    text-align: center;
+    padding: 50px 20px;
+    border: 1px dashed var(--border-color, #d1d5db);
+    border-radius: 16px;
+}
+
+.enquiry-empty i {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+}
+
+.enquiry-empty h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+}
+
+.enquiry-empty p {
+    margin: 0;
+    color: var(--text-secondary, #6b7280);
+}
+
+@media (max-width: 768px) {
+
+    .enquiry-card {
+        padding: 16px;
+    }
+
+    .enquiry-card-header {
+        flex-direction: column;
+    }
+
+    .enquiry-details {
+        grid-template-columns: 1fr;
+    }
+
+    .enquiry-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .enquiry-action-btn {
+        width: 100%;
+    }
+}
+
+/* ============================================================
+   ENQUIRY SEARCH + FILTER
+   ============================================================ */
+
+.enquiry-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.enquiry-search {
+    position: relative;
+    width: 240px;
+}
+
+.enquiry-search i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted, #6b7280);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.enquiry-search input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 38px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 10px;
+    background: var(--surface, #ffffff);
+    color: var(--text, #111827);
+    font-size: 13px;
+    outline: none;
+    transition: 0.2s ease;
+    box-sizing: border-box;
+}
+
+.enquiry-search input:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+.enquiry-search input::placeholder {
+    color: var(--muted, #9ca3af);
+}
+
+.enquiry-filter {
+    height: 42px;
+    min-width: 135px;
+    padding: 0 12px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 10px;
+    background: var(--surface, #ffffff);
+    color: var(--text, #111827);
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.enquiry-filter:focus {
+    border-color: #111827;
+    box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+
+/* ============================================================
+   ENQUIRY HEADER LAYOUT
+   ============================================================ */
+
+#enquiries .section-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+#enquiries .section-header > div:first-child {
+    flex: 1;
+    min-width: 220px;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    #enquiries .section-header {
+        align-items: stretch;
+    }
+
+    .enquiry-summary {
+        width: 100%;
+        justify-content: space-between;
+        box-sizing: border-box;
+    }
+
+    .enquiry-tools {
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+    }
+
+    .enquiry-search {
+        width: 100%;
+    }
+
+    .enquiry-filter {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   ENQUIRY CARD - PROFESSIONAL POLISH
+   ============================================================ */
+
+.enquiry-card {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.enquiry-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+}
+
+.enquiry-user-avatar {
+    background: var(--surface-soft, #f8fafc);
+    border: 1px solid var(--border, #e5e7eb);
+}
+
+.enquiry-status {
+    white-space: nowrap;
+}
+
+.enquiry-actions {
+    padding-top: 4px;
+    border-top: 1px solid var(--border, #e5e7eb);
+}
+
+.enquiry-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    box-sizing: border-box;
+}
+
+.enquiry-action-btn i {
+    font-size: 13px;
+}
+
+.call-btn,
+.whatsapp-btn {
+    text-decoration: none;
+}
+
+
+/* ============================================================
+   MOBILE ENQUIRY HEADER
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+    .enquiry-card-header {
+        margin-bottom: 16px;
+    }
+
+    .enquiry-status {
+        align-self: flex-start;
+    }
+
+    .enquiry-action-btn {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   ENQUIRIES - DARK MODE
+   ============================================================ */
+
+.dark-mode .enquiry-card {
+    background: var(--surface, #111827);
+    border-color: var(--border, #374151);
+}
+
+.dark-mode .enquiry-detail,
+.dark-mode .enquiry-message {
+    background: var(--surface-soft, #1f2937);
+    border-color: var(--border, #374151);
+}
+
+.dark-mode .enquiry-detail > i {
+    background: var(--surface, #111827);
+    color: var(--text, #f9fafb);
+    border: 1px solid var(--border, #374151);
+}
+
+.dark-mode .enquiry-user-avatar {
+    background: var(--surface-soft, #1f2937);
+    border-color: var(--border, #374151);
+    color: var(--text, #f9fafb);
+}
+
+.dark-mode .enquiry-search input,
+.dark-mode .enquiry-filter {
+    background: var(--surface, #111827);
+    border-color: var(--border, #374151);
+    color: var(--text, #f9fafb);
+}
+
+.dark-mode .enquiry-search input:focus,
+.dark-mode .enquiry-filter:focus {
+    border-color: #9ca3af;
+}
+
+.dark-mode .enquiry-message p,
+.dark-mode .enquiry-detail strong,
+.dark-mode .enquiry-user-info h3 {
+    color: var(--text, #f9fafb);
+}
+
+.dark-mode .enquiry-actions {
+    border-top-color: var(--border, #374151);
+}
+
+/* ============================================================
+   ENQUIRY FILTER EMPTY STATE
+   ============================================================ */
+
+.enquiry-filter-empty {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 55px 25px;
+    text-align: center;
+    border: 1px dashed var(--border, #dfe3e8);
+    border-radius: 18px;
+    background: var(--surface, #ffffff);
+}
+
+.enquiry-filter-empty-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--surface-soft, #f5f7fa);
+}
+
+.enquiry-filter-empty-icon i {
+    font-size: 20px;
+    color: var(--muted, #6b7280);
+}
+
+.enquiry-filter-empty h3 {
+    margin: 0 0 7px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text, #111827);
+}
+
+.enquiry-filter-empty p {
+    max-width: 420px;
+    margin: 0 auto 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted, #6b7280);
+}
+
+.clear-enquiry-filter {
+    border: 1px solid var(--border, #dfe3e8);
+    background: var(--surface, #ffffff);
+    color: var(--text, #111827);
+    padding: 9px 15px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.clear-enquiry-filter:hover {
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   ENQUIRY HEADER - PROFESSIONAL LAYOUT
+   ============================================================ */
+
+#enquiries .section-header {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto auto;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+#enquiries .section-header > div:first-child {
+    min-width: 0;
+}
+
+#enquiries .section-header h2 {
+    margin-bottom: 5px;
+}
+
+#enquiries .section-header p {
+    margin: 0;
+}
+
+
+/* ============================================================
+   TOTAL ENQUIRIES STAT
+   ============================================================ */
+
+#enquiries .enquiry-summary {
+    height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 14px;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 11px;
+    background: var(--surface, #ffffff);
+    white-space: nowrap;
+}
+
+#enquiries .enquiry-count-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted, #6b7280);
+}
+
+#enquiries #totalEnquiries {
+    min-width: 20px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text, #111827);
+}
+
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+#enquiries .enquiry-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 0;
+}
+
+#enquiries .enquiry-search {
+    width: 250px;
+}
+
+#enquiries .enquiry-search input {
+    height: 44px;
+    border-radius: 11px;
+}
+
+
+/* ============================================================
+   STATUS FILTER
+   ============================================================ */
+
+#enquiries .enquiry-filter {
+    height: 44px;
+    min-width: 145px;
+    border-radius: 11px;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    #enquiries .section-header {
+        grid-template-columns: 1fr auto;
+    }
+
+    #enquiries .enquiry-tools {
+        grid-column: 1 / -1;
+    }
+
+    #enquiries .enquiry-search {
+        flex: 1;
+        width: auto;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    #enquiries .section-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    #enquiries .enquiry-summary {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #enquiries .enquiry-tools {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    #enquiries .enquiry-search {
+        width: 100%;
+    }
+
+    #enquiries .enquiry-filter {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   ENQUIRIES - PROFESSIONAL EMPTY STATE
+   ============================================================ */
+
+#enquiries .empty-state {
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    box-sizing: border-box;
+
+    background: var(--surface, #ffffff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 16px;
+}
+
+
+/* Empty State Icon */
+
+#enquiries .empty-state-icon {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 16px;
+
+    border-radius: 50%;
+    background: #f3f4f6;
+    color: #6b7280;
+
+    font-size: 25px;
+}
+
+
+/* Empty State Title */
+
+#enquiries .empty-state h3 {
+    margin: 0 0 7px;
+
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text, #111827);
+}
+
+
+/* Empty State Description */
+
+#enquiries .empty-state p {
+    max-width: 430px;
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted, #6b7280);
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    #enquiries .empty-state {
+        min-height: 220px;
+        padding: 30px 18px;
+        border-radius: 14px;
+    }
+
+    #enquiries .empty-state-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+    }
+
+    #enquiries .empty-state h3 {
+        font-size: 16px;
+    }
+
+    #enquiries .empty-state p {
+        font-size: 12px;
+    }
+
+}
+
+/* ============================================================
+   ROOMDHUNDO - ENQUIRY CARDS FINAL POLISH
+   ============================================================ */
+
+#enquiries .owner-enquiries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+
+/* ============================================================
+   ENQUIRY CARD
+   ============================================================ */
+
+#enquiries .enquiry-card {
+    position: relative;
+
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+
+    padding: 0;
+
+    overflow: hidden;
+
+    box-shadow: var(--shadow-sm);
+
+    transition:
+        transform var(--transition),
+        box-shadow var(--transition),
+        border-color var(--transition),
+        background-color var(--transition);
+}
+
+#enquiries .enquiry-card:hover {
+    transform: translateY(-3px);
+
+    border-color: rgba(79, 70, 229, 0.28);
+
+    box-shadow: var(--shadow-lg);
+}
+
+
+/* ============================================================
+   CARD HEADER
+   ============================================================ */
+
+#enquiries .enquiry-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 16px;
+
+    margin: 0;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid var(--border);
+
+    background: var(--surface);
+}
+
+
+/* ============================================================
+   USER
+   ============================================================ */
+
+#enquiries .enquiry-user {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-width: 0;
+}
+
+#enquiries .enquiry-user-avatar {
+    width: 44px;
+    height: 44px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: var(--primary-light);
+
+    border: 1px solid var(--border);
+
+    color: var(--primary);
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+#enquiries .enquiry-user-info {
+    min-width: 0;
+}
+
+#enquiries .enquiry-user-info h3 {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 15px;
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#enquiries .enquiry-user-info p {
+    margin: 4px 0 0;
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   STATUS BADGE
+   ============================================================ */
+
+#enquiries .enquiry-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    min-height: 28px;
+
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: capitalize;
+
+    border: 1px solid transparent;
+
+    white-space: nowrap;
+}
+
+#enquiries .enquiry-status.pending {
+    background: var(--orange-bg);
+    color: var(--orange);
+}
+
+#enquiries .enquiry-status.accepted {
+    background: var(--green-bg);
+    color: var(--green);
+}
+
+#enquiries .enquiry-status.rejected {
+    background: var(--red-bg);
+    color: var(--red);
+}
+
+#enquiries .enquiry-status.contacted {
+    background: var(--blue-bg);
+    color: var(--blue);
+}
+
+
+/* ============================================================
+   CARD BODY
+   ============================================================ */
+
+#enquiries .enquiry-card-body {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 12px;
+
+    padding: 18px 20px;
+
+    background: var(--surface);
+}
+
+
+/* ============================================================
+   ENQUIRY DETAILS
+   ============================================================ */
+
+#enquiries .enquiry-detail {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    min-width: 0;
+
+    padding: 12px;
+
+    background: var(--surface-soft);
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 11px;
+
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+#enquiries .enquiry-detail:hover {
+    border-color: var(--border);
+
+    background: var(--primary-light);
+}
+
+#enquiries .enquiry-detail > i {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: var(--surface);
+
+    color: var(--primary);
+
+    font-size: 13px;
+
+    border: 1px solid var(--border-soft);
+}
+
+#enquiries .enquiry-detail > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+#enquiries .enquiry-detail span {
+    font-size: 10px;
+
+    font-weight: 700;
+
+    color: var(--muted);
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.05em;
+}
+
+#enquiries .enquiry-detail strong {
+    min-width: 0;
+
+    color: var(--text);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1.35;
+
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   MESSAGE
+   ============================================================ */
+
+#enquiries .enquiry-message {
+    grid-column: 1 / -1;
+
+    margin: 0;
+
+    padding: 14px 15px;
+
+    background: var(--surface-soft);
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 11px;
+}
+
+#enquiries .enquiry-message > span,
+#enquiries .enquiry-message-label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.05em;
+}
+
+#enquiries .enquiry-message p {
+    margin: 0;
+
+    color: var(--text-soft);
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+    word-break: break-word;
+}
+
+
+/* ============================================================
+   ACTION AREA
+   ============================================================ */
+
+#enquiries .enquiry-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    flex-wrap: wrap;
+
+    margin: 0;
+
+    padding: 14px 20px;
+
+    border-top: 1px solid var(--border);
+
+    background: var(--surface-soft);
+}
+
+
+/* ============================================================
+   ACTION BUTTON
+   ============================================================ */
+
+#enquiries .enquiry-action-btn {
+    min-height: 38px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding: 8px 13px;
+
+    border-radius: 9px;
+
+    border: 1px solid transparent;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition:
+        transform var(--transition-fast),
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+#enquiries .enquiry-action-btn:hover {
+    transform: translateY(-2px);
+}
+
+#enquiries .enquiry-action-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+#enquiries .enquiry-action-btn i {
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   CALL
+   ============================================================ */
+
+#enquiries .call-btn {
+    background: var(--primary-light);
+
+    border-color: transparent;
+
+    color: var(--primary);
+}
+
+#enquiries .call-btn:hover {
+    border-color: var(--primary);
+
+    box-shadow: 0 5px 14px rgba(79, 70, 229, 0.12);
+}
+
+
+/* ============================================================
+   WHATSAPP
+   ============================================================ */
+
+#enquiries .whatsapp-btn {
+    background: var(--green-bg);
+
+    border-color: transparent;
+
+    color: var(--green);
+}
+
+#enquiries .whatsapp-btn:hover {
+    border-color: var(--green);
+
+    box-shadow: 0 5px 14px rgba(22, 163, 74, 0.12);
+}
+
+
+/* ============================================================
+   ACCEPT
+   ============================================================ */
+
+#enquiries .accept-btn {
+    background: var(--primary);
+
+    color: #ffffff;
+
+    border-color: var(--primary);
+}
+
+#enquiries .accept-btn:hover {
+    background: var(--primary-dark);
+
+    border-color: var(--primary-dark);
+
+    box-shadow: 0 5px 14px rgba(79, 70, 229, 0.2);
+}
+
+
+/* ============================================================
+   REJECT
+   ============================================================ */
+
+#enquiries .reject-btn {
+    background: var(--red-bg);
+
+    color: var(--red);
+
+    border-color: transparent;
+}
+
+#enquiries .reject-btn:hover {
+    border-color: var(--red);
+}
+
+
+/* ============================================================
+   CONTACTED
+   ============================================================ */
+
+#enquiries .contacted-btn {
+    background: var(--blue-bg);
+
+    color: var(--blue);
+
+    border-color: transparent;
+}
+
+#enquiries .contacted-btn:hover {
+    border-color: var(--blue);
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 850px) {
+
+    #enquiries .enquiry-card-body {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    #enquiries .enquiry-card-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        padding: 16px;
+    }
+
+    #enquiries .enquiry-status {
+        align-self: flex-start;
+    }
+
+    #enquiries .enquiry-card-body {
+        grid-template-columns: 1fr;
+
+        padding: 15px;
+    }
+
+    #enquiries .enquiry-message {
+        grid-column: auto;
+    }
+
+    #enquiries .enquiry-actions {
+        flex-direction: column;
+
+        align-items: stretch;
+
+        padding: 13px 15px;
+    }
+
+    #enquiries .enquiry-action-btn {
+        width: 100%;
+    }
+
+}
+
+
+/* ============================================================
+   DARK THEME - FINAL ENQUIRY POLISH
+   ============================================================ */
+
+html[data-theme="dark"] #enquiries .enquiry-card,
+html[data-theme="dark"] #enquiries .enquiry-card-header,
+html[data-theme="dark"] #enquiries .enquiry-card-body {
+    background: var(--surface);
+}
+
+html[data-theme="dark"] #enquiries .enquiry-detail,
+html[data-theme="dark"] #enquiries .enquiry-message,
+html[data-theme="dark"] #enquiries .enquiry-actions {
+    background: var(--surface-soft);
+}
+
+html[data-theme="dark"] #enquiries .enquiry-detail > i {
+    background: var(--surface);
+
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] #enquiries .enquiry-user-avatar {
+    background: var(--primary-light);
+
+    border-color: var(--border);
+
+    color: var(--primary);
+}
+
+html[data-theme="dark"] #enquiries .enquiry-message p {
+    color: var(--text-soft);
+}

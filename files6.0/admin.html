@@ -81,6 +81,14 @@
                 👤 Registered Profiles
             </button>
 
+             <button
+                type="button"
+                class="nav-item"
+                data-section="enquiries"
+        >
+                📩 Enquiries
+             </button>
+
 
             <button
                 type="button"
@@ -1051,7 +1059,266 @@
 
         </section>
 
+<!-- =================================================
+     ENQUIRIES
+     ================================================= -->
 
+<section
+    id="enquiriesSection"
+    class="admin-section"
+    data-section-content="enquiries"
+>
+
+    <!-- ENQUIRY STATISTICS -->
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                📩
+            </div>
+
+            <div>
+
+                <span>
+                    Total Enquiries
+                </span>
+
+                <h2 id="enquiriesTotalCount">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ⏳
+            </div>
+
+            <div>
+
+                <span>
+                    Pending
+                </span>
+
+                <h2 id="enquiriesPendingCount">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                ✅
+            </div>
+
+            <div>
+
+                <span>
+                    Accepted
+                </span>
+
+                <h2 id="enquiriesAcceptedCount">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon">
+                📞
+            </div>
+
+            <div>
+
+                <span>
+                    Contacted
+                </span>
+
+                <h2 id="enquiriesContactedCount">
+                    0
+                </h2>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ENQUIRY SEARCH / FILTER -->
+
+    <div class="filter-card">
+
+        <div class="search-wrapper">
+
+            <input
+                type="search"
+                id="enquirySearch"
+                placeholder="Search user, property or enquiry..."
+                autocomplete="off"
+            >
+
+
+            <button
+                type="button"
+                id="enquirySearchBtn"
+            >
+                🔍 Search
+            </button>
+
+        </div>
+
+
+        <div class="filters">
+
+            <select id="enquiryStatusFilter">
+
+                <option value="all">
+                    All Status
+                </option>
+
+                <option value="pending">
+                    Pending
+                </option>
+
+                <option value="accepted">
+                    Accepted
+                </option>
+
+                <option value="rejected">
+                    Rejected
+                </option>
+
+                <option value="contacted">
+                    Contacted
+                </option>
+
+            </select>
+
+
+            <select id="enquirySort">
+
+                <option value="newest">
+                    Newest
+                </option>
+
+                <option value="oldest">
+                    Oldest
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ALL ENQUIRIES -->
+
+    <div class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>
+                    All Enquiries
+                </h2>
+
+                <p>
+                    Manage user enquiries received for RoomDhundo properties.
+                </p>
+
+            </div>
+
+
+            <span id="enquiryCount">
+                0 Enquiries
+            </span>
+
+        </div>
+
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Property
+                        </th>
+
+                        <th>
+                            Owner
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            View
+                        </th>
+
+                        <th>
+                            Delete
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="enquiryTableBody">
+
+                    <tr>
+
+                        <td
+                            colspan="7"
+                            class="empty-state"
+                        >
+                            Loading enquiries...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
 
         <!-- =================================================
              REVIEWS
@@ -1821,7 +2088,231 @@
 
     </div>
 
+<!-- =====================================================
+     ENQUIRY MODAL
+     ===================================================== -->
 
+<div
+    class="admin-modal"
+    id="enquiryModal"
+    aria-hidden="true"
+>
+
+    <div
+        class="admin-modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalEnquiryTitle"
+    >
+
+        <!-- MODAL HEADER -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2 id="modalEnquiryTitle">
+                    Enquiry Details
+                </h2>
+
+                <p id="modalEnquiryProperty">
+                    Property
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closeEnquiryModal"
+                aria-label="Close enquiry details"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <!-- MODAL BODY -->
+
+        <div class="modal-body">
+
+            <div class="property-details">
+
+
+                <!-- USER -->
+
+                <div class="detail-item">
+
+                    <span>
+                        User
+                    </span>
+
+                    <strong id="modalEnquiryUser">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <!-- OWNER -->
+
+                <div class="detail-item">
+
+                    <span>
+                        Owner
+                    </span>
+
+                    <strong id="modalEnquiryOwner">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <!-- PROPERTY -->
+
+       <div class="detail-item">
+
+    <span>
+        Property
+    </span>
+
+    <strong>
+        <a
+            id="modalEnquiryPropertyDetail"
+            href="#"
+            style="
+                color:#111827;
+                text-decoration:none;
+                font-weight:700;
+                cursor:pointer;
+            "
+        >
+            -
+        </a>
+    </strong>
+
+</div>
+
+
+                <!-- ROOM TYPE -->
+
+                <div class="detail-item">
+
+                    <span>
+                        Room Type
+                    </span>
+
+                    <strong id="modalEnquiryRoomType">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <!-- PHONE -->
+
+              <div class="detail-item">
+
+    <span>
+        Phone
+    </span>
+
+    <strong>
+        <a
+            id="modalEnquiryPhone"
+            href="#"
+        >
+            -
+        </a>
+    </strong>
+
+</div>
+
+
+                <!-- STATUS -->
+
+                <div class="detail-item">
+
+                    <span>
+                        Status
+                    </span>
+
+                    <strong id="modalEnquiryStatus">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <!-- CREATED DATE -->
+
+                <div class="detail-item">
+
+                    <span>
+                        Submitted
+                    </span>
+
+                    <strong id="modalEnquiryDate">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <!-- UPDATED DATE -->
+
+                <div class="detail-item">
+
+                    <span>
+                        Last Updated
+                    </span>
+
+                    <strong id="modalEnquiryUpdated">
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- MESSAGE -->
+
+            <div class="modal-description">
+
+                <h3>
+                    Enquiry Message
+                </h3>
+
+                <p id="modalEnquiryMessage">
+                    -
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- MODAL ACTIONS -->
+
+        <div class="modal-actions">
+
+            <button
+                type="button"
+                class="modal-btn close-btn"
+                id="closeEnquiryBtn"
+            >
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
     <!-- =====================================================
          EDIT ADMIN INFORMATION MODAL

@@ -59,6 +59,10 @@
                 <span>Rooms</span>
             </a>
 
+            <a href="#enquiries" class="nav-link" data-section="enquiries">
+    <i class="fa-solid fa-envelope-open-text"></i>
+    <span>Enquiries</span>
+</a>
            
 
 
@@ -394,7 +398,65 @@
 </section>
 
             
+<!-- ================= ENQUIRIES ================= -->
 
+<section class="section-block" id="enquiries">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Enquiries</h2>
+            <p>Manage users interested in your properties</p>
+        </div>
+
+        <div class="enquiry-summary">
+            <span class="enquiry-count-label">Total Enquiries</span>
+            <strong id="totalEnquiries">0</strong>
+        </div>
+
+        <div class="enquiry-tools">
+
+    <div class="enquiry-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input
+            type="text"
+            id="enquirySearch"
+            placeholder="Search enquiries..."
+            autocomplete="off"
+        >
+    </div>
+
+    <select id="enquiryStatusFilter" class="enquiry-filter">
+
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="accepted">Accepted</option>
+        <option value="rejected">Rejected</option>
+        <option value="contacted">Contacted</option>
+
+    </select>
+
+</div>
+
+    </div>
+
+
+    <!-- ENQUIRIES CONTAINER -->
+
+    <div id="ownerEnquiries" class="owner-enquiries-list">
+
+        <div class="loading-properties">
+
+            <i class="fa-solid fa-spinner fa-spin"></i>
+
+            Loading enquiries...
+
+        </div>
+
+    </div>
+
+</section>
 
           
 

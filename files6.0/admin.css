@@ -1088,6 +1088,78 @@ table {
     color: #047857;
 }
 
+/* ============================================================
+   ENQUIRY STATUS
+   ============================================================ */
+
+.status-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 28px;
+
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    line-height: 1;
+
+    white-space: nowrap;
+
+}
+
+
+/* Pending */
+
+.status-pending {
+
+    background: #fef3c7;
+
+    color: #92400e;
+
+}
+
+
+/* Accepted */
+
+.status-accepted {
+
+    background: #dcfce7;
+
+    color: #166534;
+
+}
+
+
+/* Rejected */
+
+.status-rejected {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+
+}
+
+
+/* Contacted */
+
+.status-contacted {
+
+    background: #dbeafe;
+
+    color: #1e40af;
+
+}
+
 
 /* ============================================================
    NOTIFICATION COUNT
@@ -1707,3 +1779,59 @@ table {
 
 }
 
+/* ============================================================
+   CLICKABLE ENQUIRY DETAILS
+   ============================================================ */
+
+#modalEnquiryPropertyDetail,
+#modalEnquiryPhone {
+
+    color: #2563eb !important;
+
+    text-decoration: none !important;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+#modalEnquiryPropertyDetail::after {
+
+    content: "↗";
+
+    font-size: 12px;
+
+    opacity: 0.75;
+}
+
+
+#modalEnquiryPhone::after {
+
+    content: "☎";
+
+    font-size: 12px;
+
+    opacity: 0.75;
+}
+
+
+#modalEnquiryPropertyDetail:hover,
+#modalEnquiryPhone:hover {
+
+    color: #1d4ed8 !important;
+
+    text-decoration: underline !important;
+
+    transform: translateX(1px);
+}

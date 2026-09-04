@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,20 +18,12 @@
 
     <div class="dashboard-top-actions">
 
-        <a
-            href="index.html"
-            class="dashboard-back-home"
-        >
+        <a href="index.html" class="dashboard-back-home">
             ← Back to Home
         </a>
 
-        <button
-            type="button"
-            class="dashboard-theme-toggle"
-            id="dashboardThemeToggle"
-            aria-label="Switch to dark mode"
-            title="Switch to dark mode"
-        >
+        <button type="button" class="dashboard-theme-toggle" id="dashboardThemeToggle" aria-label="Switch to dark mode"
+            title="Switch to dark mode">
             🌙
         </button>
 
@@ -43,10 +34,7 @@
          RENTER DASHBOARD
          ===================================================== -->
 
-    <section
-        id="renterDashboard"
-        class="renter-dashboard"
-    >
+    <section id="renterDashboard" class="renter-dashboard">
 
         <div class="renter-dashboard-container">
 
@@ -95,11 +83,7 @@
 
                 <!-- SAVED -->
 
-                <button
-                    type="button"
-                    class="renter-stat-card stat-card-button"
-                    id="dashboardSavedStatBtn"
-                >
+                <button type="button" class="renter-stat-card stat-card-button" id="dashboardSavedStatBtn">
 
                     <div class="stat-icon">
                         ❤️
@@ -119,8 +103,32 @@
 
                 </button>
 
+<!-- MY ENQUIRIES -->
 
-          
+<button
+    type="button"
+    class="renter-stat-card stat-card-button"
+    id="dashboardEnquiriesStatBtn"
+>
+
+    <div class="stat-icon">
+        📩
+    </div>
+
+    <div>
+
+        <span>
+            My Enquiries
+        </span>
+
+        <strong id="enquiryCount">
+            0
+        </strong>
+
+    </div>
+
+</button>
+
 
 
                 <!-- ACCOUNT TYPE -->
@@ -169,11 +177,7 @@
 
                     </div>
 
-                    <button
-                        type="button"
-                        class="edit-profile-btn"
-                        id="editProfileBtn"
-                    >
+                    <button type="button" class="edit-profile-btn" id="editProfileBtn">
                         ✏️ Edit Profile
                     </button>
 
@@ -271,110 +275,120 @@
                 </div>
 
 
+
                 <div class="account-option-list">
 
+    <!-- EXPLORE -->
 
-                    <!-- EXPLORE -->
+    <button type="button" class="renter-action-card" id="dashboardExploreBtn">
 
-                    <button
-                        type="button"
-                        class="renter-action-card"
-                        id="dashboardExploreBtn"
-                    >
+        <span class="action-icon">
+            🔎
+        </span>
 
-                        <span class="action-icon">
-                            🔎
-                        </span>
+        <span class="action-content">
 
-                        <span class="action-content">
+            <strong>
+                Explore Properties
+            </strong>
 
-                            <strong>
-                                Explore Properties
-                            </strong>
+            <small>
+                Find rooms, PGs and other stays.
+            </small>
 
-                            <small>
-                                Find rooms, PGs and other stays.
-                            </small>
+        </span>
 
-                        </span>
+        <span class="action-arrow">
+            →
+        </span>
 
-                        <span class="action-arrow">
-                            →
-                        </span>
-
-                    </button>
+    </button>
 
 
-                    <!-- SAVED -->
+    <!-- SAVED -->
 
-                    <button
-                        type="button"
-                        class="renter-action-card"
-                        id="dashboardSavedBtn"
-                    >
+    <button type="button" class="renter-action-card" id="dashboardSavedBtn">
 
-                        <span class="action-icon">
-                            ❤️
-                        </span>
+        <span class="action-icon">
+            ❤️
+        </span>
 
-                        <span class="action-content">
+        <span class="action-content">
 
-                            <strong>
-                                Saved Properties
-                            </strong>
+            <strong>
+                Saved Properties
+            </strong>
 
-                            <small>
-                                View properties you have saved.
-                            </small>
+            <small>
+                View properties you have saved.
+            </small>
 
-                        </span>
+        </span>
 
-                        <span class="action-arrow">
-                            →
-                        </span>
+        <span class="action-arrow">
+            →
+        </span>
 
-                    </button>
+    </button>
 
 
-                
+    <!-- MY ENQUIRIES -->
 
-                </div>
+    <button type="button" class="renter-action-card" id="dashboardEnquiriesBtn">
 
-            </div>
+        <span class="action-icon">
+            📩
+        </span>
 
-<!-- =================================================
-     NEED HELP
-     ================================================= -->
+        <span class="action-content">
 
-<div class="renter-dashboard-section need-help-section">
+            <strong>
+                My Enquiries
+            </strong>
 
-    <div class="dashboard-section-title">
+            <small>
+                Track the enquiries you have sent to property owners.
+            </small>
 
-        <div>
+        </span>
 
-            <h2>
-                Need Help?
-            </h2>
+        <span class="action-arrow">
+            →
+        </span>
 
-            <p>
-                Have a question or need assistance? Contact RoomDhundo.
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <button
-        type="button"
-        class="need-help-whatsapp-btn"
-        id="needHelpWhatsAppBtn"
-    >
-        💬 WhatsApp RoomDhundo
-        <span>→</span>
     </button>
 
 </div>
+
+            <!-- =================================================
+     NEED HELP
+     ================================================= -->
+
+            <div class="renter-dashboard-section need-help-section">
+
+                <div class="dashboard-section-title">
+
+                    <div>
+
+                        <h2>
+                            Need Help?
+                        </h2>
+
+                        <p>
+                            Have a question or need assistance? Contact RoomDhundo.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <button type="button" class="need-help-whatsapp-btn" id="needHelpWhatsAppBtn">
+                    💬 WhatsApp RoomDhundo
+                    <span>→</span>
+                </button>
+
+            </div>
 
             <!-- =================================================
                  EXPLORE BOX
@@ -400,10 +414,7 @@
                 </div>
 
 
-                <button
-                    id="dashboardExploreMainBtn"
-                    type="button"
-                >
+                <button id="dashboardExploreMainBtn" type="button">
                     Explore Properties →
                 </button>
 
@@ -417,10 +428,7 @@
 
             <div class="renter-logout-area">
 
-                <button
-                    id="dashboardLogoutBtn"
-                    type="button"
-                >
+                <button id="dashboardLogoutBtn" type="button">
                     🚪 Log Out
                 </button>
 
@@ -436,18 +444,9 @@
          EDIT PROFILE MODAL
          ===================================================== -->
 
-    <div
-        class="profile-edit-modal"
-        id="profileEditModal"
-        aria-hidden="true"
-    >
+    <div class="profile-edit-modal" id="profileEditModal" aria-hidden="true">
 
-        <div
-            class="profile-edit-modal-content"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="profileEditTitle"
-        >
+        <div class="profile-edit-modal-content" role="dialog" aria-modal="true" aria-labelledby="profileEditTitle">
 
             <div class="profile-edit-header">
 
@@ -464,12 +463,8 @@
                 </div>
 
 
-                <button
-                    type="button"
-                    class="profile-edit-close"
-                    id="profileEditCloseBtn"
-                    aria-label="Close edit profile"
-                >
+                <button type="button" class="profile-edit-close" id="profileEditCloseBtn"
+                    aria-label="Close edit profile">
                     &times;
                 </button>
 
@@ -489,14 +484,8 @@
                             Full Name
                         </label>
 
-                        <input
-                            type="text"
-                            id="editProfileName"
-                            placeholder="Enter your full name"
-                            autocomplete="name"
-                            required
-                            minlength="2"
-                        >
+                        <input type="text" id="editProfileName" placeholder="Enter your full name" autocomplete="name"
+                            required minlength="2">
 
                     </div>
 
@@ -509,13 +498,8 @@
                             Email
                         </label>
 
-                        <input
-                            type="email"
-                            id="editProfileEmail"
-                            placeholder="name@example.com"
-                            autocomplete="email"
-                            required
-                        >
+                        <input type="email" id="editProfileEmail" placeholder="name@example.com" autocomplete="email"
+                            required>
 
                         <small>
                             Changing your email may require confirmation from Supabase.
@@ -524,29 +508,18 @@
                     </div>
 
 
-                    <p
-                        id="profileEditMessage"
-                        class="profile-edit-message"
-                    ></p>
+                    <p id="profileEditMessage" class="profile-edit-message"></p>
 
                 </div>
 
 
                 <div class="profile-edit-actions">
 
-                    <button
-                        type="button"
-                        class="profile-cancel-btn"
-                        id="profileEditCancelBtn"
-                    >
+                    <button type="button" class="profile-cancel-btn" id="profileEditCancelBtn">
                         Cancel
                     </button>
 
-                    <button
-                        type="submit"
-                        class="profile-save-btn"
-                        id="profileEditSaveBtn"
-                    >
+                    <button type="submit" class="profile-save-btn" id="profileEditSaveBtn">
                         💾 Save Changes
                     </button>
 
@@ -567,6 +540,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 
     <script src="script.js"></script>
+    <script src="user-dashboard.js"></script>
 
 
     <!-- =====================================================
@@ -655,4 +629,3 @@
 </body>
 
 </html>
-

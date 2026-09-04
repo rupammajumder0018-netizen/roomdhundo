@@ -45,10 +45,12 @@ const supabaseClient =
 let buildings = [];
 let profiles = [];
 let reviews = [];
+let enquiries = [];
 
 let selectedProperty = null;
 let selectedProfile = null;
 let selectedReview = null;
+
 
 
 // ============================================================
@@ -414,6 +416,10 @@ function showSection(
 
     }
 
+    else if (sectionName === "enquiries") {
+    renderEnquiriesSection();
+}
+
     else if (
         sectionName ===
         "settings"
@@ -511,24 +517,16 @@ function updatePageHeader(
 
 async function loadAllData() {
 
-    await Promise.all([
-
-        loadBuildings(),
-
-        loadProfiles(),
-
-        loadReviews()
-
-    ]);
+    await loadBuildings();
+    await loadProfiles();
+    await loadReviews();
+    await loadEnquiries();
 
     renderDashboard();
-
     renderPropertySection();
-
-    renderProfileSection();
-
+   renderProfileSection();
     renderReviewSection();
-
+    renderEnquiriesSection();
 }
 
 
@@ -832,6 +830,62 @@ async function loadReviews() {
 
         reviews = [];
 
+    }
+
+}
+
+// ============================================================
+// LOAD ENQUIRIES
+// ============================================================
+
+async function loadEnquiries() {
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .from("enquiries")
+            .select(`
+                id,
+                user_id,
+                owner_id,
+                property_id,
+                room_type,
+                message,
+                status,
+                created_at,
+                updated_at,
+                renter_phone
+            `)
+            .order("created_at", {
+                ascending: false
+            });
+
+
+        if (error) {
+            console.error("Error loading enquiries:", error);
+            enquiries = [];
+            return;
+        }
+
+
+        enquiries = Array.isArray(data)
+            ? data
+            : [];
+
+
+        console.log(
+            "Enquiries loaded:",
+            enquiries.length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Unexpected error loading enquiries:",
+            error
+        );
+
+        enquiries = [];
     }
 
 }
@@ -3090,6 +3144,66 @@ function bindModalEvents() {
 
             }
         );
+        const enquiryModal =
+    document.getElementById("enquiryModal");
+
+const closeEnquiryModal =
+    document.getElementById("closeEnquiryModal");
+
+const closeEnquiryBtn =
+    document.getElementById("closeEnquiryBtn");
+
+
+function closeEnquiryDetails() {
+
+    if (!enquiryModal) return;
+
+    enquiryModal.classList.remove("show");
+
+    enquiryModal.setAttribute(
+        "aria-hidden",
+        "true"
+    );
+
+    document.body.style.overflow =
+    "";
+}
+
+
+if (closeEnquiryModal) {
+
+    closeEnquiryModal.addEventListener(
+        "click",
+        closeEnquiryDetails
+    );
+
+}
+
+
+if (closeEnquiryBtn) {
+
+    closeEnquiryBtn.addEventListener(
+        "click",
+        closeEnquiryDetails
+    );
+
+}
+
+
+if (enquiryModal) {
+
+    enquiryModal.addEventListener(
+        "click",
+        (event) => {
+
+            if (event.target === enquiryModal) {
+                closeEnquiryDetails();
+            }
+
+        }
+    );
+
+}
 
 }
 
@@ -3207,6 +3321,855 @@ function bindFilterEvents() {
             "change",
             renderReviewSection
         );
+
+}
+
+// ============================================================
+// RENDER ENQUIRIES SECTION
+// ============================================================
+
+function renderEnquiriesSection() {
+
+    const tableBody = document.getElementById("enquiryTableBody");
+
+    const totalCount = document.getElementById("enquiriesTotalCount");
+    const pendingCount = document.getElementById("enquiriesPendingCount");
+    const acceptedCount = document.getElementById("enquiriesAcceptedCount");
+    const contactedCount = document.getElementById("enquiriesContactedCount");
+    const enquiryCount = document.getElementById("enquiryCount");
+
+
+    if (!tableBody) return;
+
+
+    // --------------------------------------------------------
+    // COUNTS
+    // --------------------------------------------------------
+
+    const total = enquiries.length;
+
+    const pending = enquiries.filter(
+        enquiry => normalize(enquiry.status) === "pending"
+    ).length;
+
+    const accepted = enquiries.filter(
+        enquiry => normalize(enquiry.status) === "accepted"
+    ).length;
+
+    const contacted = enquiries.filter(
+        enquiry => normalize(enquiry.status) === "contacted"
+    ).length;
+
+
+    if (totalCount) {
+        totalCount.textContent = total;
+    }
+
+    if (pendingCount) {
+        pendingCount.textContent = pending;
+    }
+
+    if (acceptedCount) {
+        acceptedCount.textContent = accepted;
+    }
+
+    if (contactedCount) {
+        contactedCount.textContent = contacted;
+    }
+
+    if (enquiryCount) {
+        enquiryCount.textContent =
+            `${total} ${total === 1 ? "Enquiry" : "Enquiries"}`;
+    }
+
+
+    // --------------------------------------------------------
+    // EMPTY STATE
+    // --------------------------------------------------------
+
+    if (!enquiries.length) {
+
+        tableBody.innerHTML = `
+            <tr>
+                <td
+                    colspan="7"
+                    class="empty-state"
+                >
+                    No enquiries found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+const filteredEnquiries = getFilteredEnquiries();
+    // --------------------------------------------------------
+    // TABLE ROWS
+    // --------------------------------------------------------
+
+    tableBody.innerHTML = filteredEnquiries.map(enquiry => {
+
+        const property = buildings.find(
+            building =>
+                String(building.id) === String(enquiry.property_id)
+        );
+
+
+        const owner = profiles.find(
+            profile =>
+                String(profile.id) === String(enquiry.owner_id)
+        );
+
+
+        const propertyName =
+            property?.name ||
+            property?.property_name ||
+            "Unknown Property";
+
+
+        const ownerName =
+            owner?.full_name ||
+            "Unknown Owner";
+
+
+        const user = profiles.find(
+            profile =>
+                String(profile.id) === String(enquiry.user_id)
+        );
+
+
+        const userName =
+            user?.full_name ||
+            "Unknown User";
+
+
+        const status =
+            normalize(enquiry.status) || "pending";
+
+
+        const formattedStatus =
+            status.charAt(0).toUpperCase() +
+            status.slice(1);
+
+
+        const statusClass =
+            `status-${status}`;
+
+
+        return `
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHTML(userName)}
+                    </strong>
+                </td>
+
+
+                <td>
+                    ${escapeHTML(propertyName)}
+                </td>
+
+
+                <td>
+                    ${escapeHTML(ownerName)}
+                </td>
+
+
+                <td>
+                    <span class="status-badge ${statusClass}">
+                        ${escapeHTML(formattedStatus)}
+                    </span>
+                </td>
+
+
+                <td>
+                    ${escapeHTML(
+                        formatDate(enquiry.created_at)
+                    )}
+                </td>
+
+
+                <td>
+
+               <button
+                        type="button"
+                        class="review-btn"
+                        onclick="openEnquiryModal('${enquiry.id}')"
+                    >
+                        View
+                    </button>
+
+                </td>
+
+
+                <td>
+
+                 <button
+    type="button"
+    class="action-btn delete-btn enquiry-delete-btn"
+    data-enquiry-id="${escapeHTML(enquiry.id)}"
+>
+    🗑️ Delete
+</button>
+
+                </td>
+
+            </tr>
+        `;
+
+    }).join("");
+    attachEnquiryButtons();
+
+}
+
+// ============================================================
+// ENQUIRY BUTTON EVENTS
+// ============================================================
+
+function attachEnquiryButtons() {
+
+    document
+        .querySelectorAll(
+            "#enquiryTableBody .enquiry-view-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        openEnquiryModal(
+                            button.dataset.enquiryId
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    document
+        .querySelectorAll(
+            "#enquiryTableBody .enquiry-delete-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteEnquiry(
+                            button.dataset.enquiryId
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+// ============================================================
+// OPEN ENQUIRY MODAL
+// ============================================================
+
+function openEnquiryModal(enquiryId) {
+
+    const enquiry = enquiries.find(
+        item => String(item.id) === String(enquiryId)
+    );
+
+    if (!enquiry) {
+        console.error("Enquiry not found:", enquiryId);
+        return;
+    }
+
+    const modal = document.getElementById("enquiryModal");
+
+    if (!modal) {
+        console.error("Enquiry modal not found.");
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // FIND RELATED USER
+    // --------------------------------------------------------
+
+    const user = profiles.find(
+        profile =>
+            String(profile.id) === String(enquiry.user_id)
+    );
+
+
+    // --------------------------------------------------------
+    // FIND RELATED OWNER
+    // --------------------------------------------------------
+
+    const owner = profiles.find(
+        profile =>
+            String(profile.id) === String(enquiry.owner_id)
+    );
+
+
+    // --------------------------------------------------------
+    // FIND RELATED PROPERTY
+    // --------------------------------------------------------
+
+    const property = buildings.find(
+        building =>
+            String(building.id) === String(enquiry.property_id)
+    );
+
+
+    // --------------------------------------------------------
+    // GET DISPLAY VALUES
+    // --------------------------------------------------------
+
+    const userName =
+        user?.full_name ||
+        "Unknown User";
+
+    const ownerName =
+        owner?.full_name ||
+        "Unknown Owner";
+
+    const propertyName =
+        property?.name ||
+        property?.property_name ||
+        "Unknown Property";
+
+    const roomType =
+        enquiry.room_type ||
+        "Not specified";
+
+    const phone =
+        enquiry.renter_phone ||
+        "Not provided";
+
+    const status =
+        normalize(enquiry.status) ||
+        "pending";
+
+    const formattedStatus =
+        status.charAt(0).toUpperCase() +
+        status.slice(1);
+
+
+    // --------------------------------------------------------
+    // FILL MODAL
+    // --------------------------------------------------------
+
+    setText(
+        "modalEnquiryUser",
+        userName
+    );
+
+    setText(
+        "modalEnquiryOwner",
+        ownerName
+    );
+
+    setText(
+        "modalEnquiryProperty",
+        propertyName
+    );
+
+    const propertyLink =
+    document.getElementById(
+        "modalEnquiryPropertyDetail"
+    );
+
+if (propertyLink) {
+
+    propertyLink.textContent =
+        propertyName;
+
+    if (property) {
+
+        propertyLink.href =
+            `property.html?id=${encodeURIComponent(
+                property.id
+            )}`;
+
+    } else {
+
+        propertyLink.removeAttribute(
+            "href"
+        );
+
+    }
+
+}
+
+    setText(
+        "modalEnquiryRoomType",
+        roomType
+    );
+
+    setText(
+        "modalEnquiryPhone",
+        phone
+    );
+
+    setText(
+        "modalEnquiryStatus",
+        formattedStatus
+    );
+
+    setText(
+        "modalEnquiryDate",
+        formatDate(enquiry.created_at)
+    );
+
+    setText(
+        "modalEnquiryUpdated",
+        formatDate(enquiry.updated_at)
+    );
+
+    setText(
+        "modalEnquiryMessage",
+        enquiry.message ||
+        "No message provided."
+    );
+
+
+    // --------------------------------------------------------
+    // STATUS CLASS
+    // --------------------------------------------------------
+
+    const statusElement =
+        document.getElementById(
+            "modalEnquiryStatus"
+        );
+
+    if (statusElement) {
+
+        statusElement.className =
+            `status-badge status-${status}`;
+
+    }
+
+
+    // --------------------------------------------------------
+// SHOW MODAL
+// --------------------------------------------------------
+
+modal.classList.add("show");
+
+modal.setAttribute(
+    "aria-hidden",
+    "false"
+);
+
+document.body.style.overflow =
+    "hidden";
+}
+
+// ============================================================
+// DELETE ENQUIRY PERMANENTLY
+// ============================================================
+
+async function deleteEnquiry(enquiryId) {
+
+    const enquiry = enquiries.find(
+        item =>
+            String(item.id) ===
+            String(enquiryId)
+    );
+
+    if (!enquiry) {
+
+        alert("Enquiry not found.");
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // RELATED INFORMATION
+    // --------------------------------------------------------
+
+    const property =
+        buildings.find(
+            building =>
+                String(building.id) ===
+                String(enquiry.property_id)
+        );
+
+    const user =
+        profiles.find(
+            profile =>
+                String(profile.id) ===
+                String(enquiry.user_id)
+        );
+
+
+    const propertyName =
+        property?.name ||
+        property?.property_name ||
+        "Unknown Property";
+
+    const userName =
+        user?.full_name ||
+        "Unknown User";
+
+
+    // --------------------------------------------------------
+    // CONFIRMATION
+    // --------------------------------------------------------
+
+    const confirmed =
+        window.confirm(
+            `Are you sure you want to permanently delete this enquiry?\n\n` +
+            `User: ${userName}\n` +
+            `Property: ${propertyName}\n\n` +
+            `This enquiry will be deleted permanently from the database.\n\n` +
+            `This action cannot be undone.`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        // ----------------------------------------------------
+        // 1. DELETE FROM DATABASE
+        // ----------------------------------------------------
+
+        const {
+            data: deletedRows,
+            error: deleteError
+        } =
+            await supabaseClient
+                .from("enquiries")
+                .delete()
+                .eq("id", enquiryId)
+                .select("id");
+
+
+        if (deleteError) {
+
+            console.error(
+                "Enquiry delete error:",
+                deleteError
+            );
+
+            alert(
+                `Enquiry could not be deleted.\n\n${deleteError.message}`
+            );
+
+            return;
+        }
+
+
+        // ----------------------------------------------------
+        // 2. VERIFY DELETE ACTUALLY HAPPENED
+        // ----------------------------------------------------
+
+        if (
+            !Array.isArray(deletedRows) ||
+            deletedRows.length === 0
+        ) {
+
+            console.error(
+                "Delete returned no rows:",
+                deletedRows
+            );
+
+            alert(
+                "The enquiry was not deleted from the database.\n\n" +
+                "This is usually caused by Supabase Row Level Security (RLS) permissions."
+            );
+
+            return;
+        }
+
+
+        // ----------------------------------------------------
+        // 3. CHECK DATABASE ONE MORE TIME
+        // ----------------------------------------------------
+
+        const {
+            data: verifyData,
+            error: verifyError
+        } =
+            await supabaseClient
+                .from("enquiries")
+                .select("id")
+                .eq("id", enquiryId)
+                .maybeSingle();
+
+
+        if (verifyError) {
+
+            console.error(
+                "Enquiry deletion verification error:",
+                verifyError
+            );
+
+            alert(
+                `Delete verification failed.\n\n${verifyError.message}`
+            );
+
+            return;
+        }
+
+
+        if (verifyData) {
+
+            alert(
+                "The enquiry still exists in the database."
+            );
+
+            return;
+        }
+
+
+        // ----------------------------------------------------
+        // 4. UPDATE LOCAL STATE
+        // ----------------------------------------------------
+
+        enquiries =
+            enquiries.filter(
+                item =>
+                    String(item.id) !==
+                    String(enquiryId)
+            );
+
+
+        // ----------------------------------------------------
+        // 5. REFRESH ENQUIRY UI
+        // ----------------------------------------------------
+
+        renderEnquiriesSection();
+
+
+        // ----------------------------------------------------
+        // 6. SUCCESS
+        // ----------------------------------------------------
+
+        alert(
+            "Enquiry permanently deleted successfully."
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Permanent enquiry delete failed:",
+            error
+        );
+
+        alert(
+            `Something went wrong while deleting the enquiry.\n\n${error.message}`
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// FILTER ENQUIRIES
+// ============================================================
+
+function getFilteredEnquiries() {
+
+    const searchInput = document.getElementById("enquirySearch");
+    const statusFilter = document.getElementById("enquiryStatusFilter");
+    const sortSelect = document.getElementById("enquirySort");
+
+    const searchTerm = normalize(
+        searchInput?.value || ""
+    );
+
+    const selectedStatus =
+        normalize(statusFilter?.value || "all");
+
+    const selectedSort =
+        sortSelect?.value || "newest";
+
+
+    let filtered = [...enquiries];
+
+
+    // --------------------------------------------------------
+    // SEARCH
+    // --------------------------------------------------------
+
+    if (searchTerm) {
+
+        filtered = filtered.filter(enquiry => {
+
+            const property = buildings.find(
+                building =>
+                    String(building.id) === String(enquiry.property_id)
+            );
+
+
+            const owner = profiles.find(
+                profile =>
+                    String(profile.id) === String(enquiry.owner_id)
+            );
+
+
+            const user = profiles.find(
+                profile =>
+                    String(profile.id) === String(enquiry.user_id)
+            );
+
+
+            const propertyName =
+                property?.name ||
+                property?.property_name ||
+                "";
+
+
+            const ownerName =
+                owner?.full_name ||
+                "";
+
+
+            const userName =
+                user?.full_name ||
+                "";
+
+
+            const searchableText = normalize(`
+                ${userName}
+                ${ownerName}
+                ${propertyName}
+                ${enquiry.message || ""}
+                ${enquiry.room_type || ""}
+                ${enquiry.renter_phone || ""}
+                ${enquiry.status || ""}
+            `);
+
+
+            return searchableText.includes(searchTerm);
+
+        });
+
+    }
+
+
+    // --------------------------------------------------------
+    // STATUS FILTER
+    // --------------------------------------------------------
+
+    if (selectedStatus !== "all") {
+
+        filtered = filtered.filter(enquiry =>
+            normalize(enquiry.status) === selectedStatus
+        );
+
+    }
+
+
+    // --------------------------------------------------------
+    // SORT
+    // --------------------------------------------------------
+
+    filtered.sort((a, b) => {
+
+        const dateA =
+            new Date(a.created_at || 0).getTime();
+
+        const dateB =
+            new Date(b.created_at || 0).getTime();
+
+
+        if (selectedSort === "oldest") {
+            return dateA - dateB;
+        }
+
+
+        return dateB - dateA;
+
+    });
+
+
+    return filtered;
+
+
+}
+
+// ============================================================
+// BIND ENQUIRY FILTERS
+// ============================================================
+
+function bindEnquiryFilters() {
+
+    const searchInput =
+        document.getElementById("enquirySearch");
+
+    const searchButton =
+        document.getElementById("enquirySearchBtn");
+
+    const statusFilter =
+        document.getElementById("enquiryStatusFilter");
+
+    const sortSelect =
+        document.getElementById("enquirySort");
+
+
+    // Search button
+    if (searchButton) {
+
+        searchButton.addEventListener("click", () => {
+
+            renderEnquiriesSection();
+
+        });
+
+    }
+
+
+    // Search while typing
+    if (searchInput) {
+
+        searchInput.addEventListener("input", () => {
+
+            renderEnquiriesSection();
+
+        });
+
+    }
+
+
+    // Status filter
+    if (statusFilter) {
+
+        statusFilter.addEventListener("change", () => {
+
+            renderEnquiriesSection();
+
+        });
+
+    }
+
+
+    // Sort
+    if (sortSelect) {
+
+        sortSelect.addEventListener("change", () => {
+
+            renderEnquiriesSection();
+
+        });
+
+    }
 
 }
 
@@ -4703,6 +5666,7 @@ document.addEventListener(
         bindClickableCards();
 
         bindModalEvents();
+        bindEnquiryFilters();
 
         bindFilterEvents();
 
@@ -4782,4 +5746,3 @@ document.addEventListener(
 console.log(
     "RoomDhundo Admin Panel loaded successfully."
 );
-
