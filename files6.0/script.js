@@ -72,6 +72,119 @@ function formatDistanceFromActiveHub(building, { includeLocation = false } = {})
     return `📍 ${dist}`;
 }
 
+function normalizeSearchText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function getSearchTokens(query) {
+    return normalizeSearchText(query).split(" ").filter((token) => token.length >= 2);
+}
+
+function getHubOnlyFromQuery(query) {
+    let q = normalizeSearchText(query);
+    if (!q) return null;
+
+    q = q.replace(/^(near|nearby|around|in|at)\s+/, "");
+    q = q.replace(/\s+(area|campus|town|bazar|more)$/, "");
+
+    const api = window.roomdhundoLocation;
+    if (api?.resolveServedHub) {
+        const hub = api.resolveServedHub(q);
+        if (hub) return hub;
+    }
+
+    const hubs = api?.hubs || [];
+    return hubs.find((hub) => {
+        const names = [hub.name, ...(hub.aliases || [])].map(normalizeSearchText);
+        return names.includes(q);
+    }) || null;
+}
+
+function applySearchHubQuietly(hub) {
+    if (!hub) return;
+    const api = window.roomdhundoLocation;
+    if (api?.setLocation) {
+        api.setLocation(hub.name, { save: true, remember: true, announce: false });
+        return;
+    }
+    api?.setActiveHub?.(hub.name, { announce: false });
+}
+
+function buildingSearchHaystack(building) {
+    return normalizeSearchText([
+        building?.name,
+        building?.location,
+        building?.type,
+        building?.description,
+        building?.owner_name,
+        ...(building?.roomTypeNames || []),
+        ...(building?.facilities || []),
+        ...(building?.facility_tags || []),
+        ...((building?.room_types || []).map((rt) => rt.room_type))
+    ].join(" "));
+}
+
+function buildingMatchesSearchQuery(building, query) {
+    const q = normalizeSearchText(query);
+    if (!q) return true;
+    if (getHubOnlyFromQuery(q)) return true;
+
+    const name = normalizeSearchText(building?.name);
+    const haystack = buildingSearchHaystack(building);
+    const tokens = getSearchTokens(q);
+
+    if (name.includes(q) || haystack.includes(q)) return true;
+    if (tokens.length && tokens.every((token) => name.includes(token))) return true;
+    if (tokens.length && tokens.every((token) => haystack.includes(token))) return true;
+
+    // A distinctive name fragment like "annapurna" should still find the listing.
+    if (tokens.some((token) => token.length >= 4 && name.includes(token))) return true;
+
+    return false;
+}
+
+function scoreBuildingSearchMatch(building, query) {
+    const q = normalizeSearchText(query);
+    const name = normalizeSearchText(building?.name);
+    if (!q) return 0;
+    if (name === q) return 100;
+    if (name.startsWith(q)) return 90;
+    if (name.includes(q)) return 80;
+
+    const tokens = getSearchTokens(q);
+    if (!tokens.length) return 0;
+    const nameHits = tokens.filter((token) => name.includes(token)).length;
+    if (nameHits === tokens.length) return 70;
+    if (nameHits > 0) return 40 + nameHits * 5;
+    return 10;
+}
+
+function sortBuildingsForHub(list, hub) {
+    const api = window.roomdhundoLocation;
+    if (api?.getBuildingDistanceToHub && hub) {
+        return [...(list || [])].sort(
+            (a, b) => api.getBuildingDistanceToHub(a, hub) - api.getBuildingDistanceToHub(b, hub)
+        );
+    }
+    return sortBuildingsForActiveHub(list);
+}
+
+function sortBuildingsBySearch(list, query) {
+    const hub = getHubOnlyFromQuery(query);
+    if (hub) return sortBuildingsForHub(list, hub);
+    if (!normalizeSearchText(query)) return sortBuildingsForActiveHub(list);
+
+    return [...(list || [])].sort((a, b) => {
+        const scoreDiff = scoreBuildingSearchMatch(b, query) - scoreBuildingSearchMatch(a, query);
+        if (scoreDiff !== 0) return scoreDiff;
+        return getBuildingHubDistance(a) - getBuildingHubDistance(b);
+    });
+}
+
 function ensureCoupleFriendlyFacilityFilter() {
     if (document.querySelector(`.facilityFilter[value="${COUPLE_FRIENDLY_TAG}"]`)) {
         return;
@@ -1177,10 +1290,7 @@ async function initHomePage() {
 
     function applyFilters(list, f) {
         return list.filter(b => {
-            if (f.query) {
-                const haystack = `${b.name} ${b.location} ${b.type || ""}`.toLowerCase();
-                if (!haystack.includes(f.query)) return false;
-            }
+            if (f.query && !buildingMatchesSearchQuery(b, f.query)) return false;
 
             const roomTypes = b.room_types || [];
 
@@ -1305,7 +1415,9 @@ async function initHomePage() {
 
     function renderPage() {
         const filters = readFilters();
-        const list = sortBuildingsForActiveHub(applyFilters(allBuildings, filters));
+        const hub = getHubOnlyFromQuery(filters.query);
+        if (hub) applySearchHubQuietly(hub);
+        const list = sortBuildingsBySearch(applyFilters(allBuildings, filters), filters.query);
 
         if (visibleCount < HOME_PAGE_SIZE) {
             visibleCount = HOME_PAGE_SIZE;
@@ -1354,9 +1466,15 @@ async function initHomePage() {
         updateBackToTopVisibility();
     }
 
-    function resetPreviewAndRender() {
+    function resetPreviewAndRender({ scrollToResults = false } = {}) {
         visibleCount = HOME_PAGE_SIZE;
         renderPage();
+        if (scrollToResults) {
+            document.querySelector(".home-listings")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
     }
 
     function updateBackToTopVisibility() {
@@ -1386,9 +1504,11 @@ async function initHomePage() {
         filterBtn.classList.toggle("active", open);
     });
 
-    searchBtn?.addEventListener("click", resetPreviewAndRender);
+    searchBtn?.addEventListener("click", () => {
+        resetPreviewAndRender({ scrollToResults: true });
+    });
     searchInput?.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") resetPreviewAndRender();
+        if (e.key === "Enter") resetPreviewAndRender({ scrollToResults: true });
     });
     applyFiltersBtn?.addEventListener("click", resetPreviewAndRender);
 
@@ -1408,7 +1528,7 @@ async function initHomePage() {
 
     seeMoreBtn?.addEventListener("click", () => {
         const filters = readFilters();
-        const list = sortBuildingsForActiveHub(applyFilters(allBuildings, filters));
+        const list = sortBuildingsBySearch(applyFilters(allBuildings, filters), filters.query);
         const previousCount = visibleCount;
         visibleCount = Math.min(visibleCount + HOME_PAGE_SIZE, list.length);
         renderPage();
@@ -1559,10 +1679,7 @@ async function initSearchPage() {
 
     function applyFilters(list, f) {
         return list.filter(b => {
-            if (f.query) {
-                const haystack = `${b.name} ${b.location}`.toLowerCase();
-                if (!haystack.includes(f.query)) return false;
-            }
+            if (f.query && !buildingMatchesSearchQuery(b, f.query)) return false;
 
             const roomTypes = b.room_types || [];
 
@@ -1620,14 +1737,14 @@ async function initSearchPage() {
         });
     }
 
-    function sortResults(list, sortKey) {
+    function sortResults(list, sortKey, query) {
         const sorted = [...list];
         switch (sortKey) {
             case "price-asc": sorted.sort((a, b) => (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity)); break;
             case "price-desc": sorted.sort((a, b) => (b.minPrice ?? -Infinity) - (a.minPrice ?? -Infinity)); break;
-            case "distance": return sortBuildingsForActiveHub(sorted);
+            case "distance": return sortBuildingsForHub(sorted, getHubOnlyFromQuery(query) || getActiveHubSafe());
             case "rating": sorted.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0)); break;
-            default: return sortBuildingsForActiveHub(sorted);
+            default: return sortBuildingsBySearch(sorted, query);
         }
         return sorted;
     }
@@ -1715,8 +1832,10 @@ async function initSearchPage() {
 
     function renderPage() {
         const filters = readFilters();
+        const hub = getHubOnlyFromQuery(filters.query);
+        if (hub) applySearchHubQuietly(hub);
         let list = applyFilters(allBuildings, filters);
-        list = sortResults(list, sortSelect ? sortSelect.value : "recommended");
+        list = sortResults(list, sortSelect ? sortSelect.value : "recommended", filters.query);
 
         resultsList.innerHTML = list.map(buildingCardHTML).join("");
         attachCardListeners();
