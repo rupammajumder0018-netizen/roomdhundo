@@ -21,6 +21,61 @@
 </script>
 
     <link rel="stylesheet" href="style.css">
+    <style>
+        .search-header .stay-selection {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            display: block !important;
+            grid-template-columns: none !important;
+        }
+
+        .search-container .results {
+            width: 100%;
+            max-width: none;
+        }
+
+        .search-filter-panel {
+            width: 100%;
+            margin-top: 16px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        body.dark .search-filter-panel,
+        [data-theme="dark"] .search-filter-panel {
+            background: #1e1e24;
+            border-color: #333;
+        }
+
+        .search-filter-panel[hidden] {
+            display: none !important;
+        }
+
+        .search-filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 8px 28px;
+        }
+
+        .search-filter-panel .filter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .search-filter-panel .apply-filter {
+            margin-top: 18px;
+        }
+    </style>
 </head>
 
 <body>
@@ -45,7 +100,7 @@
 
     </nav>
 
-    
+
 
     <!-- SEARCH HEADER -->
 
@@ -67,7 +122,7 @@
         </div>
 
 
-        <!-- STAY TYPE -->
+        <!-- STAY TYPE + FILTER -->
 
         <div class="stay-selection">
 
@@ -85,19 +140,19 @@
                 Daily / Nightly
             </button>
 
+            <button
+                type="button"
+                class="search-stay-btn"
+                id="searchFilterBtn"
+                aria-expanded="false"
+                aria-controls="searchFilterPanel"
+            >
+                Filter
+            </button>
+
         </div>
 
-    </section>
-
-
-    <!-- MAIN CONTENT -->
-
-    <main class="search-container">
-
-
-        <!-- FILTER SIDEBAR -->
-
-        <aside class="filters">
+        <div class="search-filter-panel" id="searchFilterPanel" hidden>
 
             <div class="filter-header">
 
@@ -109,8 +164,7 @@
 
             </div>
 
-
-
+            <div class="search-filter-grid">
 
 <!-- MONTHLY FILTERS -->
 
@@ -168,6 +222,7 @@
                 </div>
 
             </div>
+
 
 <!-- DAILY / NIGHTLY FILTERS -->
 
@@ -246,6 +301,7 @@
 
             </div>
 
+
             <!-- PROPERTY TYPE -->
 
             <div class="filter-section">
@@ -279,6 +335,7 @@
 
             </div>
 
+
             <!-- DISTANCE -->
 
             <div class="filter-section">
@@ -287,6 +344,7 @@
 <label>
         <input
             type="radio"
+            class="distanceFilter"
             name="distance"
             value="2"
         >
@@ -296,9 +354,9 @@
     <label>
         <input
             type="radio"
+            class="distanceFilter"
             name="distance"
             value="5"
-            checked
         >
         Within 5 km
     </label>
@@ -306,6 +364,7 @@
     <label>
         <input
             type="radio"
+            class="distanceFilter"
             name="distance"
             value="10"
         >
@@ -315,6 +374,7 @@
     <label>
         <input
             type="radio"
+            class="distanceFilter"
             name="distance"
             value="15"
         >
@@ -387,12 +447,21 @@
 
             </div>
 
+            </div>
+
 
             <button class="apply-filter" id="applyFiltersBtn">
                 Apply Filters
             </button>
 
-        </aside>
+        </div>
+
+    </section>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="search-container">
 
 
         <!-- RESULTS -->
@@ -459,6 +528,24 @@
 <script src="location.js"></script>
 <script src="script.js"></script>
 <script src="nearby.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var filterBtn = document.getElementById("searchFilterBtn");
+        var filterPanel = document.getElementById("searchFilterPanel");
+        if (!filterBtn || !filterPanel) return;
+
+        filterBtn.addEventListener("click", function () {
+            var open = filterPanel.hasAttribute("hidden");
+            if (open) {
+                filterPanel.removeAttribute("hidden");
+            } else {
+                filterPanel.setAttribute("hidden", "");
+            }
+            filterBtn.setAttribute("aria-expanded", open ? "true" : "false");
+            filterBtn.classList.toggle("active", open);
+        });
+    });
+</script>
 
 
     <!-- AUTHENTICATION MODAL -->
@@ -511,3 +598,5 @@
 
 </body>
 </html>
+
+
