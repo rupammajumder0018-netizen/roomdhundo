@@ -3330,36 +3330,68 @@ function bindFilterEvents() {
 
 function renderEnquiriesSection() {
 
-    const tableBody = document.getElementById("enquiryTableBody");
+    const tableBody =
+        document.getElementById("enquiryTableBody");
 
-    const totalCount = document.getElementById("enquiriesTotalCount");
-    const pendingCount = document.getElementById("enquiriesPendingCount");
-    const acceptedCount = document.getElementById("enquiriesAcceptedCount");
-    const contactedCount = document.getElementById("enquiriesContactedCount");
-    const enquiryCount = document.getElementById("enquiryCount");
+    const totalCount =
+        document.getElementById("enquiriesTotalCount");
+
+    const pendingCount =
+        document.getElementById("enquiriesPendingCount");
+
+    const acceptedCount =
+        document.getElementById("enquiriesAcceptedCount");
+
+    const rejectedCount =
+        document.getElementById("enquiriesRejectedCount");
+
+    const contactedCount =
+        document.getElementById("enquiriesContactedCount");
+
+    const enquiryCount =
+        document.getElementById("enquiryCount");
 
 
-    if (!tableBody) return;
+    if (!tableBody) {
+        return;
+    }
 
 
-    // --------------------------------------------------------
-    // COUNTS
-    // --------------------------------------------------------
+    // ========================================================
+    // STATUS COUNTS
+    // ========================================================
 
-    const total = enquiries.length;
+    const total =
+        enquiries.length;
 
-    const pending = enquiries.filter(
-        enquiry => normalize(enquiry.status) === "pending"
-    ).length;
+    const pending =
+        enquiries.filter(
+            enquiry =>
+                normalize(enquiry.status) === "pending"
+        ).length;
 
-    const accepted = enquiries.filter(
-        enquiry => normalize(enquiry.status) === "accepted"
-    ).length;
+    const accepted =
+        enquiries.filter(
+            enquiry =>
+                normalize(enquiry.status) === "accepted"
+        ).length;
 
-    const contacted = enquiries.filter(
-        enquiry => normalize(enquiry.status) === "contacted"
-    ).length;
+    const rejected =
+        enquiries.filter(
+            enquiry =>
+                normalize(enquiry.status) === "rejected"
+        ).length;
 
+    const contacted =
+        enquiries.filter(
+            enquiry =>
+                normalize(enquiry.status) === "contacted"
+        ).length;
+
+
+    // ========================================================
+    // UPDATE COUNTS
+    // ========================================================
 
     if (totalCount) {
         totalCount.textContent = total;
@@ -3373,19 +3405,28 @@ function renderEnquiriesSection() {
         acceptedCount.textContent = accepted;
     }
 
+    if (rejectedCount) {
+        rejectedCount.textContent = rejected;
+    }
+
     if (contactedCount) {
         contactedCount.textContent = contacted;
     }
 
     if (enquiryCount) {
+
         enquiryCount.textContent =
-            `${total} ${total === 1 ? "Enquiry" : "Enquiries"}`;
+            `${total} ${
+                total === 1
+                    ? "Enquiry"
+                    : "Enquiries"
+            }`;
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // EMPTY STATE
-    // --------------------------------------------------------
+    // ========================================================
 
     if (!enquiries.length) {
 
@@ -3403,127 +3444,575 @@ function renderEnquiriesSection() {
         return;
     }
 
-const filteredEnquiries = getFilteredEnquiries();
-    // --------------------------------------------------------
-    // TABLE ROWS
-    // --------------------------------------------------------
 
-    tableBody.innerHTML = filteredEnquiries.map(enquiry => {
+    // ========================================================
+    // FILTER
+    // ========================================================
 
-        const property = buildings.find(
-            building =>
-                String(building.id) === String(enquiry.property_id)
-        );
+    const filteredEnquiries =
+        getFilteredEnquiries();
 
 
-        const owner = profiles.find(
-            profile =>
-                String(profile.id) === String(enquiry.owner_id)
-        );
+    // ========================================================
+    // FILTERED EMPTY STATE
+    // ========================================================
 
+    if (!filteredEnquiries.length) {
 
-        const propertyName =
-            property?.name ||
-            property?.property_name ||
-            "Unknown Property";
-
-
-        const ownerName =
-            owner?.full_name ||
-            "Unknown Owner";
-
-
-        const user = profiles.find(
-            profile =>
-                String(profile.id) === String(enquiry.user_id)
-        );
-
-
-        const userName =
-            user?.full_name ||
-            "Unknown User";
-
-
-        const status =
-            normalize(enquiry.status) || "pending";
-
-
-        const formattedStatus =
-            status.charAt(0).toUpperCase() +
-            status.slice(1);
-
-
-        const statusClass =
-            `status-${status}`;
-
-
-        return `
+        tableBody.innerHTML = `
             <tr>
-
-                <td>
-                    <strong>
-                        ${escapeHTML(userName)}
-                    </strong>
+                <td
+                    colspan="7"
+                    class="empty-state"
+                >
+                    No enquiries match your search or filter.
                 </td>
-
-
-                <td>
-                    ${escapeHTML(propertyName)}
-                </td>
-
-
-                <td>
-                    ${escapeHTML(ownerName)}
-                </td>
-
-
-                <td>
-                    <span class="status-badge ${statusClass}">
-                        ${escapeHTML(formattedStatus)}
-                    </span>
-                </td>
-
-
-                <td>
-                    ${escapeHTML(
-                        formatDate(enquiry.created_at)
-                    )}
-                </td>
-
-
-                <td>
-
-               <button
-                        type="button"
-                        class="review-btn"
-                        onclick="openEnquiryModal('${enquiry.id}')"
-                    >
-                        View
-                    </button>
-
-                </td>
-
-
-                <td>
-
-                 <button
-    type="button"
-    class="action-btn delete-btn enquiry-delete-btn"
-    data-enquiry-id="${escapeHTML(enquiry.id)}"
->
-    🗑️ Delete
-</button>
-
-                </td>
-
             </tr>
         `;
 
-    }).join("");
+        return;
+    }
+
+
+    // ========================================================
+    // TABLE ROWS
+    // ========================================================
+
+    tableBody.innerHTML =
+        filteredEnquiries
+            .map(
+                enquiry => {
+
+                    const property =
+                        buildings.find(
+                            building =>
+                                String(building.id) ===
+                                String(enquiry.property_id)
+                        );
+
+
+                    const owner =
+                        profiles.find(
+                            profile =>
+                                String(profile.id) ===
+                                String(enquiry.owner_id)
+                        );
+
+
+                    const user =
+                        profiles.find(
+                            profile =>
+                                String(profile.id) ===
+                                String(enquiry.user_id)
+                        );
+
+
+                    const propertyName =
+                        property?.name ||
+                        property?.property_name ||
+                        "Unknown Property";
+
+
+                    const ownerName =
+                        owner?.full_name ||
+                        "Unknown Owner";
+
+
+                    const userName =
+                        user?.full_name ||
+                        "Unknown User";
+
+
+                    const status =
+                        normalize(enquiry.status) ||
+                        "pending";
+
+
+                    const validStatuses = [
+                        "pending",
+                        "accepted",
+                        "rejected",
+                        "contacted"
+                    ];
+
+
+                    const safeStatus =
+                        validStatuses.includes(status)
+                            ? status
+                            : "pending";
+
+
+                    return `
+                        <tr>
+
+                            <!-- USER -->
+                            <td>
+                                <strong>
+                                    ${escapeHTML(
+                                        userName
+                                    )}
+                                </strong>
+                            </td>
+
+
+                            <!-- PROPERTY -->
+                            <td>
+                                ${escapeHTML(
+                                    propertyName
+                                )}
+                            </td>
+
+
+                            <!-- OWNER -->
+                            <td>
+                                ${escapeHTML(
+                                    ownerName
+                                )}
+                            </td>
+
+
+                            <!-- STATUS -->
+                            <td>
+
+                                <div class="enquiry-status-control">
+
+                                    <select
+                                        class="enquiry-status-select status-${escapeHTML(
+                                            safeStatus
+                                        )}"
+                                        data-enquiry-id="${escapeHTML(
+                                            enquiry.id
+                                        )}"
+                                        aria-label="Change enquiry status"
+                                    >
+
+                                        <option
+                                            value="pending"
+                                            ${safeStatus === "pending" ? "selected" : ""}
+                                        >
+                                            Pending
+                                        </option>
+
+                                        <option
+                                            value="accepted"
+                                            ${safeStatus === "accepted" ? "selected" : ""}
+                                        >
+                                            Accepted
+                                        </option>
+
+                                        <option
+                                            value="rejected"
+                                            ${safeStatus === "rejected" ? "selected" : ""}
+                                        >
+                                            Rejected
+                                        </option>
+
+                                        <option
+                                            value="contacted"
+                                            ${safeStatus === "contacted" ? "selected" : ""}
+                                        >
+                                            Contacted
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- CREATED -->
+                            <td>
+                                ${escapeHTML(
+                                    formatDate(
+                                        enquiry.created_at
+                                    )
+                                )}
+                            </td>
+
+
+                            <!-- VIEW -->
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="review-btn enquiry-view-btn"
+                                    data-enquiry-id="${escapeHTML(
+                                        enquiry.id
+                                    )}"
+                                >
+                                    View
+                                </button>
+
+                            </td>
+
+
+                            <!-- DELETE -->
+                            <td>
+
+                                <button
+                                    type="button"
+                                    class="action-btn delete-btn enquiry-delete-btn"
+                                    data-enquiry-id="${escapeHTML(
+                                        enquiry.id
+                                    )}"
+                                >
+                                    🗑️ Delete
+                                </button>
+
+                            </td>
+
+                        </tr>
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    // ========================================================
+    // ATTACH EVENTS
+    // ========================================================
+
     attachEnquiryButtons();
+
+    attachEnquiryStatusEvents();
 
 }
 
+// ============================================================
+// ENQUIRY STATUS EVENTS
+// ============================================================
+
+function attachEnquiryStatusEvents() {
+
+    document
+        .querySelectorAll(
+            "#enquiryTableBody .enquiry-status-select"
+        )
+        .forEach(
+            select => {
+
+                select.addEventListener(
+                    "change",
+                    async event => {
+
+                        const enquiryId =
+                            event.target.dataset.enquiryId;
+
+                        const newStatus =
+                            normalize(
+                                event.target.value
+                            );
+
+
+                        if (
+                            ![
+                                "pending",
+                                "accepted",
+                                "rejected",
+                                "contacted"
+                            ].includes(newStatus)
+                        ) {
+
+                            return;
+                        }
+
+
+                        await updateEnquiryStatus(
+                            enquiryId,
+                            newStatus,
+                            event.target
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+// ============================================================
+// UPDATE ENQUIRY STATUS
+// ============================================================
+
+async function updateEnquiryStatus(
+    enquiryId,
+    newStatus,
+    selectElement
+) {
+
+    const enquiry = enquiries.find(
+        item =>
+            String(item.id) === String(enquiryId)
+    );
+
+    if (!enquiry) {
+        alert("Enquiry not found.");
+        return;
+    }
+
+    const oldStatus =
+        normalize(enquiry.status) || "pending";
+
+    if (oldStatus === newStatus) {
+        return;
+    }
+
+    if (selectElement) {
+        selectElement.disabled = true;
+        selectElement.classList.add("updating");
+    }
+
+    try {
+
+        // ====================================================
+        // 1. UPDATE DATABASE
+        // ====================================================
+
+        const {
+    data: updatedRows,
+    error: updateError
+} =
+    await supabaseClient
+        .from("enquiries")
+        .update({
+            status: newStatus,
+            updated_at: new Date().toISOString()
+        })
+        .eq("id", enquiryId)
+        .select("id, status, updated_at");
+
+console.log("Enquiry ID:", enquiryId);
+console.log("New Status:", newStatus);
+console.log("Updated Rows:", updatedRows);
+console.log("Update Error:", updateError);
+
+if (updateError) {
+
+    alert(
+        `Database update failed:\n\n${updateError.message}`
+    );
+
+    return;
+}
+
+if (!updatedRows || updatedRows.length === 0) {
+
+    alert(
+        "Database update matched 0 rows.\n\n" +
+        "This is most likely an RLS policy or incorrect enquiry ID issue."
+    );
+
+    return;
+}
+
+        if (updateError) {
+
+            console.error(
+                "Status update failed:",
+                updateError
+            );
+
+            if (selectElement) {
+                selectElement.value = oldStatus;
+            }
+
+            alert(
+                `Unable to save status.\n\n${updateError.message}`
+            );
+
+            return;
+        }
+
+
+        // ====================================================
+        // 2. READ BACK FROM DATABASE
+        // ====================================================
+
+        const {
+            data: savedEnquiry,
+            error: verifyError
+        } =
+            await supabaseClient
+                .from("enquiries")
+                .select(
+                    "id, status, updated_at"
+                )
+                .eq("id", enquiryId)
+                .maybeSingle();
+
+
+        if (verifyError) {
+
+            console.error(
+                "Status verification failed:",
+                verifyError
+            );
+
+            if (selectElement) {
+                selectElement.value = oldStatus;
+            }
+
+            alert(
+                `Status update could not be verified.\n\n${verifyError.message}`
+            );
+
+            return;
+        }
+
+
+        // ====================================================
+        // 3. MAKE SURE DATABASE REALLY HAS NEW STATUS
+        // ====================================================
+
+        if (
+            !savedEnquiry ||
+            normalize(savedEnquiry.status) !== newStatus
+        ) {
+
+            console.error(
+                "Database did not save the new status:",
+                savedEnquiry
+            );
+
+            if (selectElement) {
+                selectElement.value = oldStatus;
+            }
+
+            alert(
+                "Status was not saved to the database."
+            );
+
+            return;
+        }
+
+
+        // ====================================================
+        // 4. UPDATE LOCAL STATE WITH DATABASE VALUE
+        // ====================================================
+
+        const index =
+            enquiries.findIndex(
+                item =>
+                    String(item.id) ===
+                    String(enquiryId)
+            );
+
+        if (index !== -1) {
+
+            enquiries[index] = {
+                ...enquiries[index],
+                status: savedEnquiry.status,
+                updated_at: savedEnquiry.updated_at
+            };
+
+        }
+
+
+        // ====================================================
+        // 5. RE-RENDER UI
+        // ====================================================
+
+        renderEnquiriesSection();
+
+
+        // ====================================================
+        // 6. UPDATE OPEN MODAL
+        // ====================================================
+
+        const modal =
+            document.getElementById(
+                "enquiryModal"
+            );
+
+        if (
+            modal &&
+            modal.classList.contains("show")
+        ) {
+
+            const modalStatus =
+                document.getElementById(
+                    "modalEnquiryStatus"
+                );
+
+            if (modalStatus) {
+
+                const formattedStatus =
+                    String(savedEnquiry.status)
+                        .charAt(0)
+                        .toUpperCase() +
+                    String(savedEnquiry.status)
+                        .slice(1);
+
+                modalStatus.textContent =
+                    formattedStatus;
+
+                modalStatus.className =
+                    `status-badge status-${normalize(
+                        savedEnquiry.status
+                    )}`;
+
+            }
+
+
+            const modalUpdated =
+                document.getElementById(
+                    "modalEnquiryUpdated"
+                );
+
+            if (modalUpdated) {
+
+                modalUpdated.textContent =
+                    formatDate(
+                        savedEnquiry.updated_at
+                    );
+
+            }
+
+        }
+
+
+        console.log(
+            "Enquiry status successfully saved:",
+            savedEnquiry
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Unexpected status update error:",
+            error
+        );
+
+        if (selectElement) {
+            selectElement.value = oldStatus;
+        }
+
+        alert(
+            `Something went wrong while saving the status.\n\n${error.message}`
+        );
+
+    }
+
+    finally {
+
+        if (selectElement) {
+
+            selectElement.disabled = false;
+
+            selectElement.classList.remove(
+                "updating"
+            );
+
+        }
+
+    }
+
+}
 // ============================================================
 // ENQUIRY BUTTON EVENTS
 // ============================================================
