@@ -1911,6 +1911,75 @@ async function initSearchPage() {
     renderPage();
 }
 
+async function createBooking(building, room) {
+    try {
+        // User must be logged in
+        const user = await getCurrentUser();
+
+        if (!user) {
+            alert("Please log in to book a room.");
+            openAuthModal();
+            return;
+        }
+
+        // Don't allow booking if no rooms are available
+        if (Number(room.available_rooms) <= 0) {
+            alert("Sorry, this room type is currently unavailable.");
+            return;
+        }
+
+        // For now we use monthly rent.
+        // Later we can add proper date/duration selection.
+        const stayType = "monthly";
+
+        const roomRent = Number(room.price_value) || 0;
+
+        if (roomRent <= 0) {
+            alert("This room does not have a valid rent.");
+            return;
+        }
+
+        // Temporary platform/service fee: 5%
+        const platformFee = Math.round(roomRent * 0.05 * 100) / 100;
+
+        const totalAmount = roomRent + platformFee;
+
+        const { data: booking, error } = await supabaseClient
+            .from("bookings")
+            .insert({
+                user_id: user.id,
+                building_id: building.id,
+                room_type_id: room.id,
+                stay_type: stayType,
+                room_rent: roomRent,
+                platform_fee: platformFee,
+                total_amount: totalAmount,
+                status: "pending"
+            })
+            .select()
+            .single();
+
+        if (error) {
+            console.error("Booking creation error:", error);
+            alert(`Could not create booking: ${error.message}`);
+            return;
+        }
+
+        if (!booking) {
+            alert("Booking could not be created.");
+            return;
+        }
+
+        // Redirect to payment page
+        window.location.href =
+            `payment.html?booking_id=${encodeURIComponent(booking.id)}`;
+
+    } catch (error) {
+        console.error("Booking error:", error);
+        alert("Something went wrong while creating your booking.");
+    }
+}
+
 async function initPropertyPage() {
     const buildingId = new URLSearchParams(window.location.search).get("id");
     const building = buildingId ? await fetchBuildingById(buildingId) : null;
@@ -1994,35 +2063,82 @@ if (enquiryRoomType) {
 
 }
 
-    const roomTypesList = document.getElementById("roomTypesList");
-    roomTypesList.innerHTML = "";
-    (building.room_types || []).forEach(rt => {
-        const card = document.createElement("div");
-        card.classList.add("room-type-card");
-        const nightlyHtml = (rt.daily_price != null && Number(rt.daily_price) > 0)
-            ? `<div class="room-type-price">₹${Number(rt.daily_price).toLocaleString("en-IN")}<span>/ night</span></div>`
-            : "";
-        card.innerHTML = `
-            <div class="room-type-card-header">
-                <h3>${rt.room_type}</h3>
-                <div class="room-type-price">₹${Number(rt.price_value).toLocaleString("en-IN")}<span>/ month</span></div>
-                ${nightlyHtml}
+ const roomTypesList = document.getElementById("roomTypesList");
+roomTypesList.innerHTML = "";
+
+(building.room_types || []).forEach(rt => {
+
+    const card = document.createElement("div");
+    card.classList.add("room-type-card");
+
+    const nightlyAvailable =
+        rt.daily_price != null &&
+        Number(rt.daily_price) > 0;
+
+    const nightlyHtml = nightlyAvailable
+        ? `
+            <div class="room-type-price">
+                ₹${Number(rt.daily_price).toLocaleString("en-IN")}
+                <span>/ night</span>
             </div>
-            <div class="room-type-details">
-                <span>${rt.room_people} ${rt.room_people === 1 ? "person" : "people"} sharing</span>
-                <span>🟢 ${rt.available_rooms} ${rt.available_rooms === 1 ? "room" : "rooms"} available</span>
+        `
+        : "";
+
+    const isAvailable =
+        Number(rt.available_rooms) > 0;
+
+    card.innerHTML = `
+        <div class="room-type-card-header">
+
+            <h3>${rt.room_type}</h3>
+
+            <div class="room-type-price">
+                ₹${Number(rt.price_value).toLocaleString("en-IN")}
+                <span>/ month</span>
             </div>
-        `;
-        roomTypesList.appendChild(card);
+
+            ${nightlyHtml}
+
+        </div>
+
+        <div class="room-type-details">
+
+            <span>
+                ${rt.room_people}
+                ${rt.room_people === 1 ? "person" : "people"} sharing
+            </span>
+
+            <span>
+                ${isAvailable
+                    ? `🟢 ${rt.available_rooms} ${rt.available_rooms === 1 ? "room" : "rooms"} available`
+                    : "🔴 Currently unavailable"
+                }
+            </span>
+
+        </div>
+
+        <div class="room-type-actions">
+
+            <button
+                type="button"
+                class="book-now-btn"
+                ${!isAvailable ? "disabled" : ""}
+            >
+                ${isAvailable ? "Book Now" : "Unavailable"}
+            </button>
+
+        </div>
+    `;
+
+    const bookButton =
+        card.querySelector(".book-now-btn");
+
+    bookButton?.addEventListener("click", () => {
+        createBooking(building, rt);
     });
 
-    const facilityGrid = document.getElementById("facilityGrid");
-    facilityGrid.innerHTML = "";
-    (building.facilities || []).forEach(facility => {
-        const el = document.createElement("div");
-        el.textContent = facility;
-        facilityGrid.appendChild(el);
-    });
+    roomTypesList.appendChild(card);
+});
 
     if (
         building.isCoupleFriendly &&
