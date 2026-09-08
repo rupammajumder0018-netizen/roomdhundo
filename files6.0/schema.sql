@@ -1435,3 +1435,197 @@ where verification_status is null;
 
 select
     'RoomDhundo database schema updated successfully.' as message;
+
+-- ============================================================
+-- BOOKINGS
+--
+-- Created when a renter clicks "Book Now" on a property.
+-- Starts as 'pending'; only flipped to 'paid' by the
+-- verify-razorpay-payment Edge Function (using the service
+-- role key, which bypasses RLS) — never trust the browser
+-- alone to mark a booking as paid.
+--
+-- total_amount = monthly_rent + platform_fee (10% of rent).
+-- Amounts are snapshotted at booking time so later rent
+-- changes on the listing never alter what's owed on an
+-- existing booking.
+-- ============================================================
+
+create table if not exists public.bookings (
+
+    id uuid primary key default gen_random_uuid(),
+
+    user_id uuid not null
+        references auth.users(id)
+        on delete cascade,
+
+    building_id uuid not null
+        references public.buildings(id)
+        on delete cascade,
+
+    room_type_id uuid
+        references public.room_types(id)
+        on delete set null,
+
+    building_name text not null,
+
+    room_type_label text,
+
+    monthly_rent numeric not null,
+
+    platform_fee numeric not null,
+
+    total_amount numeric not null,
+
+    status text not null default 'pending'
+        check (
+            status in (
+                'pending',
+                'paid',
+                'failed',
+                'cancelled'
+            )
+        ),
+
+    razorpay_order_id text,
+
+    razorpay_payment_id text,
+
+    razorpay_signature text,
+
+    paid_at timestamptz,
+
+    created_at timestamptz not null default now(),
+
+    updated_at timestamptz not null default now()
+);
+
+
+-- ============================================================
+-- BOOKINGS UPDATED_AT
+-- ============================================================
+
+drop trigger if exists bookings_updated_at on public.bookings;
+
+create trigger bookings_updated_at
+
+before update on public.bookings
+
+for each row
+
+execute procedure public.set_updated_at();
+
+
+-- ============================================================
+-- BOOKINGS INDEXES
+-- ============================================================
+
+create index if not exists bookings_user_id_idx
+on public.bookings(user_id);
+
+create index if not exists bookings_building_id_idx
+on public.bookings(building_id);
+
+create index if not exists bookings_status_idx
+on public.bookings(status);
+
+create index if not exists bookings_razorpay_order_id_idx
+on public.bookings(razorpay_order_id);
+
+
+-- ============================================================
+-- ENABLE RLS
+-- ============================================================
+
+alter table public.bookings enable row level security;
+
+
+-- ============================================================
+-- REMOVE OLD POLICIES
+-- ============================================================
+
+drop policy if exists "Users can view their own bookings"
+on public.bookings;
+
+drop policy if exists "Users can create their own pending bookings"
+on public.bookings;
+
+drop policy if exists "Owners can view bookings for their properties"
+on public.bookings;
+
+drop policy if exists "Admins can manage bookings"
+on public.bookings;
+
+
+-- ============================================================
+-- BOOKINGS POLICIES
+-- ============================================================
+
+create policy "Users can view their own bookings"
+
+on public.bookings
+
+for select
+
+to authenticated
+
+using (
+    auth.uid() = user_id
+);
+
+
+create policy "Users can create their own pending bookings"
+
+on public.bookings
+
+for insert
+
+to authenticated
+
+with check (
+    auth.uid() = user_id
+    and status = 'pending'
+);
+
+
+create policy "Owners can view bookings for their properties"
+
+on public.bookings
+
+for select
+
+to authenticated
+
+using (
+    exists (
+        select 1
+        from public.buildings b
+        where b.id = building_id
+        and b.created_by = auth.uid()
+    )
+);
+
+
+create policy "Admins can manage bookings"
+
+on public.bookings
+
+for all
+
+to authenticated
+
+using (
+    public.is_admin()
+)
+
+with check (
+    public.is_admin()
+);
+
+
+-- ============================================================
+-- FINAL
+-- ============================================================
+
+select
+    'RoomDhundo bookings table added successfully.' as message;
