@@ -2837,6 +2837,141 @@ html[data-theme="dark"] .auth-close-btn {
 html[data-theme="dark"] .forgot-link {
     color: #a78bfa;
 }
+
+.auth-role-picker {
+    margin: 6px 0 18px;
+    text-align: left;
+}
+
+.auth-role-heading {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--rd-text, #374151);
+}
+
+.auth-role-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.auth-role-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 10px;
+    border: 1px solid var(--rd-border, #d1d5db);
+    border-radius: 12px;
+    background: var(--rd-surface-soft, #f8fafc);
+    cursor: pointer;
+    text-align: center;
+}
+
+.auth-role-card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.auth-role-card:has(input:checked),
+.auth-role-card:has(input:focus-visible) {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+.auth-role-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--rd-text, #111827);
+}
+
+.auth-role-desc {
+    font-size: 12px;
+    color: var(--rd-muted, #6b7280);
+    line-height: 1.35;
+}
+
+.owner-only-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000002;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.owner-only-modal.is-open {
+    display: flex;
+}
+
+.owner-only-card,
+.owner-only-panel {
+    width: min(420px, 100%);
+    padding: 28px 22px 22px;
+    border-radius: 18px;
+    background: var(--rd-surface, #fff);
+    border: 1px solid var(--rd-border, #e5e7eb);
+    text-align: center;
+}
+
+.owner-only-card h2,
+.owner-only-panel h2 {
+    margin: 0 0 10px;
+    font-size: 22px;
+}
+
+.owner-only-card p,
+.owner-only-panel p {
+    margin: 0 0 18px;
+    color: var(--rd-muted, #6b7280);
+    line-height: 1.45;
+}
+
+.owner-only-ok,
+.owner-only-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.owner-only-panel {
+    margin: 0 auto;
+}
+
+html[data-theme="dark"] .auth-role-heading,
+html[data-theme="dark"] .auth-role-title,
+html[data-theme="dark"] .owner-only-card h2,
+html[data-theme="dark"] .owner-only-panel h2 {
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .auth-role-card {
+    background: #0d0d0d;
+    border-color: #404040;
+}
+
+html[data-theme="dark"] .owner-only-card,
+html[data-theme="dark"] .owner-only-panel {
+    background: #171717;
+    border-color: #333;
+}
+
+@media (max-width: 520px) {
+    .auth-role-options {
+        grid-template-columns: 1fr;
+    }
+}
 /* Login page - light mode background */
 html[data-theme="light"] .auth-page {
     background:

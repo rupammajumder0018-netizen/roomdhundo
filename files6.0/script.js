@@ -1018,6 +1018,158 @@ function unlockExploreAfterAuth() {
     document.body.classList.remove("auth-modal-open");
 }
 
+function injectAuthRolePickers() {
+    function addPicker(form, groupName, required) {
+        if (!form || form.querySelector("[data-auth-role-picker]")) return;
+
+        const picker = document.createElement("div");
+        picker.className = "auth-role-picker";
+        picker.dataset.authRolePicker = "true";
+        picker.innerHTML = `
+            <p class="auth-role-heading">I am a</p>
+            <div class="auth-role-options" role="radiogroup" aria-label="Choose account type">
+                <label class="auth-role-card">
+                    <input type="radio" name="${groupName}" value="user"${required ? " required" : ""}>
+                    <span class="auth-role-title">Renter</span>
+                    <span class="auth-role-desc">Find a place to stay</span>
+                </label>
+                <label class="auth-role-card">
+                    <input type="radio" name="${groupName}" value="owner"${required ? " required" : ""}>
+                    <span class="auth-role-title">Owner</span>
+                    <span class="auth-role-desc">List my property</span>
+                </label>
+            </div>
+        `;
+
+        const submit = form.querySelector("button[type='submit']");
+        const message = form.querySelector(".auth-message, #loginMessage, #signupMessage");
+        form.insertBefore(picker, message || submit || null);
+    }
+
+    addPicker(document.getElementById("loginForm"), "loginRole", true);
+    addPicker(document.getElementById("signupForm"), "signupRole", true);
+}
+
+function getSelectedAuthRole(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return null;
+    const checked = form.querySelector(".auth-role-picker input[type='radio']:checked");
+    const value = checked?.value;
+    return value === "owner" || value === "user" ? value : null;
+}
+
+function isListingOwnerRole(role) {
+    const value = String(role || "").trim().toLowerCase();
+    return value === "owner" || value === "admin";
+}
+
+async function fetchProfileRole(userId) {
+    if (!userId) return "user";
+    const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
+    if (error) {
+        console.error("Role fetch error:", error);
+        return "user";
+    }
+    return String(data?.role || "user").trim().toLowerCase();
+}
+
+function ensureOwnerOnlyModal() {
+    let modal = document.getElementById("ownerOnlyModal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "ownerOnlyModal";
+    modal.className = "owner-only-modal";
+    modal.innerHTML = `
+        <div class="owner-only-card" role="dialog" aria-labelledby="ownerOnlyTitle" aria-modal="true">
+            <h2 id="ownerOnlyTitle">Owners only</h2>
+            <p>This area is for the owners to list property. Renters can search, save, and contact hosts, but they cannot add listings.</p>
+            <button type="button" class="owner-only-ok" id="ownerOnlyOk">OK, got it</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener("click", (event) => {
+        if (event.target === modal) hideOwnerOnlyModal();
+    });
+    document.getElementById("ownerOnlyOk")?.addEventListener("click", hideOwnerOnlyModal);
+    return modal;
+}
+
+function showOwnerOnlyModal() {
+    ensureOwnerOnlyModal().classList.add("is-open");
+}
+
+function hideOwnerOnlyModal() {
+    document.getElementById("ownerOnlyModal")?.classList.remove("is-open");
+}
+
+async function canCurrentUserListProperty() {
+    const user = await getCurrentUserFast();
+    if (!user) return { ok: false, reason: "login" };
+    const role = await fetchProfileRole(user.id);
+    if (!isListingOwnerRole(role)) return { ok: false, reason: "renter" };
+    return { ok: true, reason: "owner" };
+}
+
+function wireListPropertyAccess() {
+    document.querySelectorAll('a[href="list-property.html"], a[href^="list-property.html"]').forEach((link) => {
+        if (link.dataset.ownerOnlyWired === "true") return;
+        link.dataset.ownerOnlyWired = "true";
+        link.addEventListener("click", async (event) => {
+            event.preventDefault();
+            const href = link.getAttribute("href") || "list-property.html";
+            const access = await canCurrentUserListProperty();
+            if (access.reason === "login") {
+                setAuthMessage("loginMessage", "Log in as an owner to list a property.");
+                openAuthModal();
+                return;
+            }
+            if (!access.ok) {
+                showOwnerOnlyModal();
+                return;
+            }
+            window.location.href = href;
+        });
+    });
+}
+
+async function restrictListPropertyPageForRenters() {
+    if (getCurrentPageName() !== "list-property.html") return true;
+    const access = await canCurrentUserListProperty();
+    if (access.ok) return true;
+
+    const form = document.getElementById("listPropertyForm");
+    if (form) {
+        form.hidden = true;
+        form.querySelectorAll("input, select, textarea, button").forEach((el) => {
+            el.disabled = true;
+        });
+    }
+
+    const page = document.querySelector(".list-property-page");
+    if (page && !page.querySelector(".owner-only-panel")) {
+        const panel = document.createElement("div");
+        panel.className = "owner-only-panel";
+        panel.innerHTML = `
+            <h2>This area is for the owners to list property</h2>
+            <p>Your account is a renter account. Only owners can add PG, room, mess, or flat listings.</p>
+            <a href="index.html" class="owner-only-home">Back to Home</a>
+        `;
+        page.appendChild(panel);
+    }
+
+    if (access.reason === "login") {
+        openAuthModal();
+    } else {
+        showOwnerOnlyModal();
+    }
+    return false;
+}
+
 function wireAuthUI() {
     const authModal = document.getElementById("authModal");
     const closeAuthBtn = document.getElementById("closeAuthBtn");
@@ -1032,6 +1184,8 @@ function wireAuthUI() {
     if (signupForm?.classList.contains("auth-form") && !signupForm.classList.contains("active")) {
         signupForm.style.display = "none";
     }
+
+    injectAuthRolePickers();
 
     closeAuthBtn?.addEventListener("click", closeAuthModal);
 
@@ -1096,6 +1250,12 @@ loginForm?.addEventListener("submit", async (e) => {
         return;
     }
 
+    const selectedLoginRole = getSelectedAuthRole("loginForm");
+    if (document.querySelector("#loginForm .auth-role-picker") && !selectedLoginRole) {
+        setAuthMessage("loginMessage", "Please choose whether you are a renter or an owner.");
+        return;
+    }
+
     setAuthMessage("loginMessage", "Logging in...");
 
 
@@ -1148,10 +1308,17 @@ loginForm?.addEventListener("submit", async (e) => {
 
     const loggedInRole =
         String(
-            result?.profile?.role || "user"
+            result?.profile?.role || selectedLoginRole || "user"
         )
             .trim()
             .toLowerCase();
+
+    if (result?.profile && !result.profile.role && selectedLoginRole && loggedInUser?.id) {
+        await supabaseClient
+            .from("profiles")
+            .update({ role: selectedLoginRole })
+            .eq("id", loggedInUser.id);
+    }
 
 
     // =================================================
@@ -1265,6 +1432,12 @@ loginForm?.addEventListener("submit", async (e) => {
             return;
         }
 
+        const selectedRole = getSelectedAuthRole("signupForm");
+        if (!selectedRole) {
+            setAuthMessage("signupMessage", "Please choose whether you are a renter or an owner.");
+            return;
+        }
+
         setAuthMessage("signupMessage", "Creating your account...");
 
         const { data, error } =
@@ -1273,7 +1446,8 @@ loginForm?.addEventListener("submit", async (e) => {
                 password,
                 options: {
                     data: {
-                        full_name: name
+                        full_name: name,
+                        role: selectedRole
                     }
                 }
             });
@@ -1295,7 +1469,7 @@ loginForm?.addEventListener("submit", async (e) => {
                 .upsert({
                     id: data.user.id,
                     full_name: name,
-                    role: "user"
+                    role: selectedRole
                 });
 
         if (profileError) {
@@ -1333,12 +1507,17 @@ loginForm?.addEventListener("submit", async (e) => {
             return;
         }
 
+        localStorage.setItem("roomdhundo_role", selectedRole);
         setAuthMessage("signupMessage", "Account created successfully!");
         unlockExploreAfterAuth();
         alert(`Account created successfully!\n\nWelcome to RoomDhundo, ${name}!`);
         await updateNavForUser(session.user);
         window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
-        openRoleChoice();
+        if (selectedRole === "owner") {
+            window.location.href = "owner-dashboard.html";
+        } else {
+            window.location.href = "index.html";
+        }
     });
 }
 
@@ -3209,6 +3388,9 @@ function wireListPropertyForm() {
     const editId = urlParams.get("edit");
 
     const initializeForm = async () => {
+        const allowed = await restrictListPropertyPageForRenters();
+        if (!allowed) return;
+
         const user = await getCurrentUser();
         if (!user) return;
 
@@ -3241,6 +3423,12 @@ function wireListPropertyForm() {
         if (!user) {
             alert("Please log in first — listings are tied to your account.");
             openAuthModal();
+            return;
+        }
+
+        const access = await canCurrentUserListProperty();
+        if (!access.ok) {
+            showOwnerOnlyModal();
             return;
         }
 
@@ -3586,6 +3774,7 @@ function wireResetPasswordForm() {
 
 document.addEventListener("DOMContentLoaded", async () => {
     wireAuthUI();
+    wireListPropertyAccess();
     wireHomeStayButtons();
     wireHeroSearch();
     wireListPropertyForm();
