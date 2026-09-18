@@ -2174,8 +2174,26 @@ a.category-card:hover {
 .auth-form {
     display: none;
 }
-.auth-form.active {
-    display: block;
+.auth-message {
+    min-height: 1.2em;
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: #dc2626;
+    text-align: left;
+}
+
+.auth-modal,
+.auth-modal-content,
+.auth-modal-content * {
+    pointer-events: auto;
+    touch-action: manipulation;
+}
+
+.auth-modal-content {
+    z-index: 2000001;
+    max-height: min(90vh, 90dvh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 .auth-form h2 {
     font-size: 22px;
@@ -4734,7 +4752,6 @@ html[data-theme="dark"] .login-prompt-card {
 body.login-required,
 body.auth-modal-open {
     overflow: hidden;
-    touch-action: none;
 }
 
 body.login-required .auth-close-btn,

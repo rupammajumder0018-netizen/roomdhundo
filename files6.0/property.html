@@ -419,8 +419,8 @@
         <div class="auth-modal-content">
             <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
             <div class="auth-tabs">
-                <button class="auth-tab active" id="tabLogin">Log In</button>
-                <button class="auth-tab" id="tabSignup">Sign Up</button>
+                <button type="button" class="auth-tab active" id="tabLogin">Log In</button>
+                <button type="button" class="auth-tab" id="tabSignup">Sign Up</button>
             </div>
 
             <!-- Login Form -->
@@ -435,6 +435,7 @@
                     <label for="loginPassword">Password</label>
                     <input type="password" id="loginPassword" placeholder="••••••••" required>
                 </div>
+                <p class="auth-message" id="loginMessage"></p>
                 <button type="submit" class="auth-submit-btn">Log In</button>
             </form>
 
@@ -454,6 +455,11 @@
                     <label for="signupPassword">Password</label>
                     <input type="password" id="signupPassword" placeholder="Create a password" required>
                 </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                </div>
+                <p class="auth-message" id="signupMessage"></p>
                 <button type="submit" class="auth-submit-btn">Create Account</button>
             </form>
         </div>

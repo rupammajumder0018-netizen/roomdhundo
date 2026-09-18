@@ -967,6 +967,33 @@ function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function setAuthMessage(elementId, text) {
+    let el = document.getElementById(elementId);
+    if (!el) {
+        const formId = elementId === "loginMessage" ? "loginForm" : "signupForm";
+        const form = document.getElementById(formId);
+        if (form) {
+            el = document.createElement("p");
+            el.id = elementId;
+            el.className = "auth-message";
+            const submit = form.querySelector("button[type='submit']");
+            form.insertBefore(el, submit || null);
+        }
+    }
+    if (el) el.textContent = text || "";
+}
+
+function unlockExploreAfterAuth() {
+    setLoginRequired(false);
+    hideGuestLoginPrompt();
+    const authModal = document.getElementById("authModal");
+    if (authModal) {
+        authModal.style.display = "none";
+        authModal.classList.remove("is-open");
+    }
+    document.body.classList.remove("auth-modal-open");
+}
+
 function wireAuthUI() {
     const authModal = document.getElementById("authModal");
     const closeAuthBtn = document.getElementById("closeAuthBtn");
@@ -976,6 +1003,10 @@ function wireAuthUI() {
     const signupForm = document.getElementById("signupForm");
 
     closeAuthBtn?.addEventListener("click", closeAuthModal);
+
+    authModal?.querySelector(".auth-modal-content")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+    });
 
     window.addEventListener("click", (e) => {
         if (e.target === authModal) {
@@ -992,6 +1023,9 @@ function wireAuthUI() {
         inactiveTab?.classList.remove("active");
         showForm?.classList.add("active");
         hideForm?.classList.remove("active");
+        setAuthMessage("loginMessage", "");
+        setAuthMessage("signupMessage", "");
+        showForm?.scrollIntoView({ block: "nearest" });
     }
 
     tabLogin?.addEventListener("click", () => {
@@ -1020,31 +1054,16 @@ loginForm?.addEventListener("submit", async (e) => {
     // =================================================
 
     if (!email || !password) {
-
-        if (loginMessage) {
-            loginMessage.textContent =
-                "Please enter email and password.";
-        }
-
+        setAuthMessage("loginMessage", "Please enter email and password.");
         return;
     }
-
 
     if (!validateEmail(email)) {
-
-        if (loginMessage) {
-            loginMessage.textContent =
-                "Please enter a valid email.";
-        }
-
+        setAuthMessage("loginMessage", "Please enter a valid email.");
         return;
     }
 
-
-    if (loginMessage) {
-        loginMessage.textContent =
-            "Logging in...";
-    }
+    setAuthMessage("loginMessage", "Logging in...");
 
 
     // =================================================
@@ -1068,10 +1087,7 @@ loginForm?.addEventListener("submit", async (e) => {
             error
         );
 
-        if (loginMessage) {
-            loginMessage.textContent =
-                error.message;
-        }
+        setAuthMessage("loginMessage", error.message);
 
         return;
     }
@@ -1079,10 +1095,7 @@ loginForm?.addEventListener("submit", async (e) => {
 
     if (!data?.user) {
 
-        if (loginMessage) {
-            loginMessage.textContent =
-                "Login failed.";
-        }
+        setAuthMessage("loginMessage", "Login failed.");
 
         return;
     }
@@ -1127,10 +1140,8 @@ loginForm?.addEventListener("submit", async (e) => {
     );
 
 
-    if (loginMessage) {
-        loginMessage.textContent =
-            "Login successful!";
-    }
+    setAuthMessage("loginMessage", "Login successful!");
+    unlockExploreAfterAuth();
 
 
     window.dispatchEvent(
@@ -1197,41 +1208,31 @@ loginForm?.addEventListener("submit", async (e) => {
 
         const name = document.getElementById("signupName")?.value.trim();
         const email = document.getElementById("signupEmail")?.value.trim();
-        const password = document.getElementById("signupPassword")?.value;
-        const confirmPassword = document.getElementById("signupConfirmPassword")?.value;
-        const signupMessage = document.getElementById("signupMessage");
+        const password = document.getElementById("signupPassword")?.value || "";
+        const confirmField = document.getElementById("signupConfirmPassword");
+        const confirmPassword = confirmField ? confirmField.value : password;
 
         if (!name || name.length < 2) {
-            if (signupMessage) {
-                signupMessage.textContent = "Please enter your full name.";
-            }
+            setAuthMessage("signupMessage", "Please enter your full name.");
             return;
         }
 
         if (!validateEmail(email)) {
-            if (signupMessage) {
-                signupMessage.textContent = "Please enter a valid email.";
-            }
+            setAuthMessage("signupMessage", "Please enter a valid email.");
             return;
         }
 
         if (password.length < 6) {
-            if (signupMessage) {
-                signupMessage.textContent = "Password must be at least 6 characters.";
-            }
+            setAuthMessage("signupMessage", "Password must be at least 6 characters.");
             return;
         }
 
-        if (password !== confirmPassword) {
-            if (signupMessage) {
-                signupMessage.textContent = "Passwords do not match.";
-            }
+        if (confirmField && password !== confirmPassword) {
+            setAuthMessage("signupMessage", "Passwords do not match.");
             return;
         }
 
-        if (signupMessage) {
-            signupMessage.textContent = "Creating your account...";
-        }
+        setAuthMessage("signupMessage", "Creating your account...");
 
         const { data, error } =
             await supabaseClient.auth.signUp({
@@ -1246,16 +1247,12 @@ loginForm?.addEventListener("submit", async (e) => {
 
         if (error) {
             console.error("Signup error:", error);
-            if (signupMessage) {
-                signupMessage.textContent = error.message;
-            }
+            setAuthMessage("signupMessage", error.message);
             return;
         }
 
         if (!data.user) {
-            if (signupMessage) {
-                signupMessage.textContent = "Something went wrong.";
-            }
+            setAuthMessage("signupMessage", "Something went wrong.");
             return;
         }
 
@@ -1270,9 +1267,7 @@ loginForm?.addEventListener("submit", async (e) => {
 
         if (profileError) {
             console.error("Profile creation error:", profileError);
-            if (signupMessage) {
-                signupMessage.textContent = "Account created, but profile creation failed.";
-            }
+            setAuthMessage("signupMessage", "Account created, but profile creation failed.");
             return;
         }
 
@@ -1291,11 +1286,10 @@ loginForm?.addEventListener("submit", async (e) => {
         }
 
         if (!session) {
-            if (signupMessage) {
-                signupMessage.textContent =
-                    "Account created! Please check your email " +
-                    "to confirm your account before logging in.";
-            }
+            setAuthMessage(
+                "signupMessage",
+                "Account created! Please check your email to confirm your account before logging in."
+            );
 
             alert(
                 `Account created, ${name}!\n\n` +
@@ -1303,15 +1297,12 @@ loginForm?.addEventListener("submit", async (e) => {
                 `Please confirm your email, then log in.`
             );
 
-            closeAuthModal();
             return;
         }
 
-        if (signupMessage) {
-            signupMessage.textContent = "🎉 Account created successfully!";
-        }
-
-        alert(`🎉 Account created successfully!\n\nWelcome to RoomDhundo, ${name}!`);
+        setAuthMessage("signupMessage", "Account created successfully!");
+        unlockExploreAfterAuth();
+        alert(`Account created successfully!\n\nWelcome to RoomDhundo, ${name}!`);
         await updateNavForUser(session.user);
         window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
         openRoleChoice();
