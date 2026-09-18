@@ -2174,6 +2174,9 @@ a.category-card:hover {
 .auth-form {
     display: none;
 }
+.auth-form.active {
+    display: block !important;
+}
 .auth-message {
     min-height: 1.2em;
     margin: 0 0 12px;
@@ -2786,6 +2789,53 @@ html[data-theme="dark"] .auth-card {
     box-shadow:
         0 22px 55px rgba(0, 0, 0, 0.55),
         0 0 36px rgba(124, 58, 237, 0.12) !important;
+}
+
+html[data-theme="dark"] .auth-modal-content {
+    background: #171717 !important;
+    border: 1px solid #333;
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .auth-modal-content h2,
+html[data-theme="dark"] .auth-modal-content .form-group label,
+html[data-theme="dark"] .auth-modal-content .auth-field label {
+    color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .auth-modal-content .auth-subtitle,
+html[data-theme="dark"] .auth-modal-content .form-options {
+    color: #b6b6b6 !important;
+}
+
+html[data-theme="dark"] .auth-tabs {
+    border-bottom-color: #333;
+}
+
+html[data-theme="dark"] .auth-tab {
+    color: #b6b6b6;
+    background: transparent;
+}
+
+html[data-theme="dark"] .auth-tab.active {
+    color: #a78bfa;
+    border-bottom-color: #a78bfa;
+}
+
+html[data-theme="dark"] .auth-modal-content input[type="email"],
+html[data-theme="dark"] .auth-modal-content input[type="password"],
+html[data-theme="dark"] .auth-modal-content input[type="text"] {
+    background: #0d0d0d !important;
+    color: #f8fafc !important;
+    border-color: #404040 !important;
+}
+
+html[data-theme="dark"] .auth-close-btn {
+    color: #d1d5db;
+}
+
+html[data-theme="dark"] .forgot-link {
+    color: #a78bfa;
 }
 /* Login page - light mode background */
 html[data-theme="light"] .auth-page {

@@ -845,6 +845,14 @@ function openAuthModal() {
         authModal.style.display = "flex";
         authModal.classList.add("is-open");
         document.body.classList.add("auth-modal-open");
+        const loginForm = document.getElementById("loginForm");
+        const signupForm = document.getElementById("signupForm");
+        if (loginForm?.classList.contains("auth-form") && loginForm.classList.contains("active")) {
+            loginForm.style.display = "block";
+        }
+        if (signupForm?.classList.contains("auth-form") && !signupForm.classList.contains("active")) {
+            signupForm.style.display = "none";
+        }
     }
 }
 
@@ -1002,6 +1010,13 @@ function wireAuthUI() {
     const loginForm = document.getElementById("loginForm");
     const signupForm = document.getElementById("signupForm");
 
+    if (loginForm?.classList.contains("auth-form") && loginForm.classList.contains("active")) {
+        loginForm.style.display = "block";
+    }
+    if (signupForm?.classList.contains("auth-form") && !signupForm.classList.contains("active")) {
+        signupForm.style.display = "none";
+    }
+
     closeAuthBtn?.addEventListener("click", closeAuthModal);
 
     authModal?.querySelector(".auth-modal-content")?.addEventListener("click", (e) => {
@@ -1023,6 +1038,8 @@ function wireAuthUI() {
         inactiveTab?.classList.remove("active");
         showForm?.classList.add("active");
         hideForm?.classList.remove("active");
+        if (showForm?.classList.contains("auth-form")) showForm.style.display = "block";
+        if (hideForm?.classList.contains("auth-form")) hideForm.style.display = "none";
         setAuthMessage("loginMessage", "");
         setAuthMessage("signupMessage", "");
         showForm?.scrollIntoView({ block: "nearest" });
