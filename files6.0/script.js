@@ -841,17 +841,126 @@ async function updateNavForUser(user) {
 function openAuthModal() {
     const authModal = document.getElementById("authModal");
     if (authModal) {
+        hideGuestLoginPrompt();
         authModal.style.display = "flex";
+        authModal.classList.add("is-open");
+        document.body.classList.add("auth-modal-open");
     }
 }
 
 function closeAuthModal() {
+    if (document.body.classList.contains("login-required")) {
+        const authModal = document.getElementById("authModal");
+        if (authModal) {
+            authModal.style.display = "flex";
+            authModal.classList.add("is-open");
+        }
+        return;
+    }
     const authModal = document.getElementById("authModal");
     if (authModal) {
         authModal.style.display = "none";
+        authModal.classList.remove("is-open");
     }
+    document.body.classList.remove("auth-modal-open");
     document.getElementById("loginForm")?.reset();
     document.getElementById("signupForm")?.reset();
+}
+
+function getCurrentPageName() {
+    return (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+}
+
+function isPublicAuthPage() {
+    return ["login.html", "signup.html", "reset-password.html"].includes(getCurrentPageName());
+}
+
+function hideGuestLoginPrompt() {
+    document.getElementById("loginPrompt")?.classList.remove("is-open");
+}
+
+function setLoginRequired(required) {
+    document.body.classList.toggle("login-required", required);
+    const closeBtn = document.getElementById("closeAuthBtn");
+    if (closeBtn) closeBtn.hidden = required;
+}
+
+function ensureLoginPrompt() {
+    let prompt = document.getElementById("loginPrompt");
+    if (prompt) return prompt;
+
+    prompt = document.createElement("div");
+    prompt.id = "loginPrompt";
+    prompt.className = "login-prompt";
+    prompt.innerHTML = `
+        <div class="login-prompt-card" role="dialog" aria-modal="true" aria-labelledby="loginPromptTitle">
+            <h2 id="loginPromptTitle">Log in to explore</h2>
+            <p>Create an account or log in to search listings, view properties, and contact owners.</p>
+            <button type="button" class="login-prompt-btn" id="loginPromptBtn">Log In / Sign Up</button>
+        </div>
+    `;
+    document.body.appendChild(prompt);
+
+    document.getElementById("loginPromptBtn")?.addEventListener("click", () => {
+        hideGuestLoginPrompt();
+        openAuthModal();
+    });
+
+    return prompt;
+}
+
+function showCompulsoryLoginPrompt() {
+    const authModal = document.getElementById("authModal");
+    if (!authModal) {
+        window.location.href = "login.html";
+        return;
+    }
+    setLoginRequired(true);
+    ensureLoginPrompt().classList.add("is-open");
+    openAuthModal();
+}
+
+function requireLoginToExplore(user) {
+    if (isPublicAuthPage()) {
+        setLoginRequired(false);
+        return true;
+    }
+
+    if (user) {
+        setLoginRequired(false);
+        hideGuestLoginPrompt();
+        closeAuthModal();
+        return true;
+    }
+
+    setLoginRequired(true);
+    const homeList = document.getElementById("homeResultsList");
+    const homeCount = document.getElementById("homeResultsCount");
+    if (homeList) homeList.innerHTML = "";
+    if (homeCount) homeCount.textContent = "Log in to explore properties";
+
+    showCompulsoryLoginPrompt();
+    return false;
+}
+
+let explorePagesStarted = false;
+
+async function initExplorePages() {
+    if (explorePagesStarted) return;
+    explorePagesStarted = true;
+
+    if (document.getElementById("homeResultsList")) {
+        await initHomePage();
+    }
+    if (document.getElementById("resultsList")) {
+        await initSearchPage();
+    }
+    if (document.getElementById("propertyName")) {
+        await initPropertyPage();
+    }
+    if (document.getElementById("savedPropertiesContainer")) {
+        await initSavedPage();
+    }
 }
 
 function validateEmail(email) {
@@ -870,6 +979,10 @@ function wireAuthUI() {
 
     window.addEventListener("click", (e) => {
         if (e.target === authModal) {
+            if (document.body.classList.contains("login-required")) {
+                openAuthModal();
+                return;
+            }
             closeAuthModal();
         }
     });
@@ -3458,6 +3571,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireThemeToggle();
     wireChatbot();
 
+    if (!isPublicAuthPage()) {
+        requireLoginToExplore(null);
+    }
+
     const currentUser = await getCurrentUserFast();
     updateNavForUser(currentUser);
 
@@ -3465,24 +3582,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         await initRenterDashboard();
     }
 
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
         updateNavForUser(session ? session.user : null);
+        if (event === "INITIAL_SESSION") return;
+
+        if (event === "SIGNED_IN") {
+            if (requireLoginToExplore(session?.user || null)) {
+                closeAuthModal();
+                hideGuestLoginPrompt();
+                initExplorePages();
+            }
+            return;
+        }
+
+        if (event === "SIGNED_OUT") {
+            explorePagesStarted = false;
+            requireLoginToExplore(null);
+        }
     });
 
-    if (document.getElementById("homeResultsList")) {
-        await initHomePage();
-    }
-
-    if (document.getElementById("resultsList")) {
-        await initSearchPage();
-    }
-
-    if (document.getElementById("propertyName")) {
-        await initPropertyPage();
-    }
-
-    if (document.getElementById("savedPropertiesContainer")) {
-        await initSavedPage();
+    if (requireLoginToExplore(currentUser)) {
+        await initExplorePages();
     }
 });
 
@@ -3574,7 +3694,7 @@ function wireChatbot() {
         },
         {
             question: "Do I need an account?",
-            answer: "You can browse and search properties without an account. However, you need to create an account to use features such as saving properties, contacting owners, and managing your enquiries."
+            answer: "You need to log in or create an account to explore properties, save listings, contact owners, and manage your enquiries."
         },
         {
             question: "How does RoomDhundo work?",

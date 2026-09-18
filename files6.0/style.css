@@ -2112,12 +2112,23 @@ a.category-card:hover {
     position: fixed;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     background: rgba(0, 0, 0, 0.6);
     justify-content: center;
     align-items: center;
-    z-index: 10000;
+    padding: 16px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    z-index: 2000000;
+    -webkit-overflow-scrolling: touch;
+}
+.auth-modal.is-open {
+    display: flex !important;
 }
 .auth-modal-content {
     position: relative;
@@ -2191,7 +2202,7 @@ a.category-card:hover {
     padding: 12px 14px;
     border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 16px;
 }
 .form-group input:focus {
     outline: none;
@@ -4325,6 +4336,9 @@ html[data-theme="dark"] .nav-profile-toggle:has(.nav-profile-role.admin):hover {
 
 html, body {
     max-width: 100%;
+}
+
+body:not(.login-required):not(.auth-modal-open) {
     overflow-x: hidden;
 }
 
@@ -4533,12 +4547,54 @@ html, body {
         font-size: 13px;
     }
 
+    .auth-modal {
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
     .auth-modal-content {
-        width: calc(100vw - 24px);
-        max-width: 480px;
-        margin: 12px;
-        max-height: calc(100vh - 24px);
+        width: 100%;
+        max-width: 420px;
+        margin: 0;
+        max-height: min(88dvh, calc(100dvh - 24px));
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 24px 18px 20px;
+        border-radius: 18px;
+    }
+
+    .auth-form h2 {
+        font-size: 20px;
+    }
+
+    .auth-tabs {
+        gap: 6px;
+    }
+
+    .form-options {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .login-prompt {
+        padding: 12px;
+        padding-top: max(12px, env(safe-area-inset-top));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .login-prompt-card {
+        width: 100%;
+        max-width: 420px;
+        padding: 24px 18px 20px;
+        max-height: min(88dvh, calc(100dvh - 24px));
+        overflow-y: auto;
+    }
+
+    .login-prompt-card h2 {
+        font-size: 22px;
     }
 }
 
@@ -4578,4 +4634,133 @@ html, body {
 .book-now-btn:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+}
+
+/* =========================================================
+   GUEST LOGIN PROMPT
+   ========================================================= */
+
+.login-prompt {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    z-index: 2000000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.login-prompt.is-open {
+    display: flex !important;
+}
+
+.login-prompt-card {
+    position: relative;
+    width: min(400px, 100%);
+    padding: 32px 28px 28px;
+    border-radius: 20px;
+    background: var(--rd-surface, #fff);
+    border: 1px solid var(--rd-border, #e5e7eb);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    animation: rd-modal-in 0.28s ease;
+}
+
+.login-prompt-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--rd-muted, #6b7280);
+    font-size: 26px;
+    line-height: 1;
+    box-shadow: none;
+}
+
+.login-prompt-card h2 {
+    margin: 8px 0 8px;
+    font-size: 24px;
+    color: var(--rd-text, #111827);
+}
+
+.login-prompt-card p {
+    margin: 0 0 22px;
+    color: var(--rd-muted, #6b7280);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.login-prompt-btn {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.28);
+}
+
+.login-prompt-later {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    border: none;
+    background: transparent;
+    color: var(--rd-muted, #6b7280);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .login-prompt-card {
+    background: #171717;
+    border-color: #333;
+}
+
+body.login-required,
+body.auth-modal-open {
+    overflow: hidden;
+    touch-action: none;
+}
+
+body.login-required .auth-close-btn,
+body.login-required .login-prompt-close,
+body.login-required .login-prompt-later {
+    display: none !important;
+}
+
+body.login-required .navbar {
+    z-index: 1;
+}
+
+body.login-required .chatbot-toggle,
+body.login-required .chatbot {
+    display: none !important;
+}
+
+body.login-required .hero,
+body.login-required .home-listings,
+body.login-required .search-header,
+body.login-required .search-container,
+body.login-required .property-page,
+body.login-required .saved-page,
+body.login-required .list-property-page,
+body.login-required .list-property-form {
+    pointer-events: none;
+    user-select: none;
+    filter: blur(8px);
 }
