@@ -54,6 +54,9 @@ async function initRenterDashboard() {
     // =================================================
 
     const user =
+        (typeof getCurrentUserFast === "function"
+            ? await getCurrentUserFast()
+            : null) ||
         await getCurrentUser();
 
     if (!user) {

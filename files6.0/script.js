@@ -883,6 +883,18 @@ function isPublicAuthPage() {
     return ["login.html", "signup.html", "reset-password.html"].includes(getCurrentPageName());
 }
 
+function isExploreGatePage() {
+    const page = getCurrentPageName();
+    return [
+        "",
+        "index.html",
+        "search.html",
+        "property.html",
+        "saved.html",
+        "list-property.html"
+    ].includes(page);
+}
+
 function hideGuestLoginPrompt() {
     document.getElementById("loginPrompt")?.classList.remove("is-open");
 }
@@ -920,7 +932,6 @@ function ensureLoginPrompt() {
 function showCompulsoryLoginPrompt() {
     const authModal = document.getElementById("authModal");
     if (!authModal) {
-        window.location.href = "login.html";
         return;
     }
     setLoginRequired(true);
@@ -929,6 +940,11 @@ function showCompulsoryLoginPrompt() {
 }
 
 function requireLoginToExplore(user) {
+    if (!isExploreGatePage()) {
+        setLoginRequired(false);
+        return true;
+    }
+
     if (isPublicAuthPage()) {
         setLoginRequired(false);
         return true;
@@ -3579,10 +3595,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireThemeToggle();
     wireChatbot();
 
-    if (!isPublicAuthPage()) {
-        requireLoginToExplore(null);
-    }
-
     const currentUser = await getCurrentUserFast();
     updateNavForUser(currentUser);
 
@@ -3605,7 +3617,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (event === "SIGNED_OUT") {
             explorePagesStarted = false;
-            requireLoginToExplore(null);
+            if (isExploreGatePage()) {
+                requireLoginToExplore(null);
+            }
         }
     });
 
