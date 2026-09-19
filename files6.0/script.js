@@ -2706,19 +2706,33 @@ if (!selectedRoomType) {
     });
 
     document.getElementById("directionsBtn")?.addEventListener("click", () => {
-        if (
-            building.latitude != null &&
-            building.longitude != null &&
-            typeof openDirections === "function"
-        ) {
-            openDirections(building.latitude, building.longitude);
+        const lat = Number(building.latitude);
+        const lng = Number(building.longitude);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            alert("Property location is not available.");
             return;
         }
 
-        const loc = `${building.location}, ${building.distance_km} km from MAKAUT`;
+        const visitorLocation =
+            typeof getCurrentUserLocation === "function"
+                ? getCurrentUserLocation()
+                : null;
+
+        if (typeof openDirections === "function") {
+            openDirections(
+                lat,
+                lng,
+                visitorLocation?.latitude,
+                visitorLocation?.longitude
+            );
+            return;
+        }
+
         window.open(
-            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`,
-            "_blank"
+            `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`,
+            "_blank",
+            "noopener,noreferrer"
         );
     });
 

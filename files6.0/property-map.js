@@ -685,33 +685,28 @@ function addUserLocationToMap(
 
 function openDirections(
     latitude,
-    longitude
+    longitude,
+    originLatitude,
+    originLongitude
 ) {
+    const lat = Number(latitude);
+    const lng = Number(longitude);
 
-    if (
-        latitude == null ||
-        longitude == null
-    ) {
-
-        alert(
-            "Property location is not available."
-        );
-
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        alert("Property location is not available.");
         return;
     }
 
+    // Do not encode the comma. Google treats destination=lat,lng as
+    // coordinates, but destination=lat%2Clng as a text search.
+    let url =
+        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
 
-    const destination =
-        `${latitude},${longitude}`;
+    const originLat = Number(originLatitude);
+    const originLng = Number(originLongitude);
+    if (Number.isFinite(originLat) && Number.isFinite(originLng)) {
+        url += `&origin=${originLat},${originLng}`;
+    }
 
-
-    const url =
-        `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-
-
-    window.open(
-        url,
-        "_blank"
-    );
-
+    window.open(url, "_blank", "noopener,noreferrer");
 }
