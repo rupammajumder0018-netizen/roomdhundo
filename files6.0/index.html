@@ -194,38 +194,8 @@
 
     <script>
         (() => {
-            const storageKey = "roomdhundo-theme";
-            const root = document.documentElement;
-            const toggle = document.getElementById("themeToggle");
-
-            function applyTheme(theme) {
-                const isDark = theme === "dark";
-
-                root.dataset.theme = theme;
-                localStorage.setItem(storageKey, theme);
-
-                toggle.textContent = isDark ? "☀️" : "🌙";
-                toggle.setAttribute(
-                    "aria-label",
-                    isDark
-                        ? "Switch to light mode"
-                        : "Switch to dark mode"
-                );
-                toggle.title = toggle.getAttribute("aria-label");
-            }
-
-            const savedTheme = localStorage.getItem(storageKey);
-
-            /* Start in black/dark mode unless the user chose light mode. */
-            applyTheme(savedTheme || "dark");
-
-            toggle.addEventListener("click", () => {
-                applyTheme(
-                    root.dataset.theme === "dark"
-                        ? "light"
-                        : "dark"
-                );
-            });
+            const savedTheme = localStorage.getItem("roomdhundo-theme") || "dark";
+            document.documentElement.dataset.theme = savedTheme;
         })();
     </script>
 

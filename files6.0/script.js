@@ -32,6 +32,56 @@ function isCoupleFriendlyFacility(value) {
         .includes("couple");
 }
 
+const FACILITY_TAG_LABELS = {
+    wifi: "Wi-Fi",
+    food: "Food",
+    ac: "AC",
+    laundry: "Laundry",
+    parking: "🚗 Parking",
+    bathroom: "🚿 Attached Bathroom",
+    kitchen: "🍳 Attached Kitchen",
+    "couple-friendly": COUPLE_FRIENDLY_LABEL,
+    furnished: "🛋️ Furnished",
+    "semi-furnished": "🪑 Semi Furnished",
+    unfurnished: "🏠 Unfurnished"
+};
+
+function getBuildingFacilityLabels(building) {
+    const labels = [];
+    const seen = new Set();
+
+    function add(raw) {
+        const text = String(raw || "").trim();
+        if (!text) return;
+        const key = text
+            .toLowerCase()
+            .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+            .replace(/[^\p{L}\p{N}]+/gu, "-")
+            .replace(/^-|-$/g, "");
+        if (seen.has(key)) return;
+        seen.add(key);
+        labels.push(text);
+    }
+
+    (Array.isArray(building?.facilities) ? building.facilities : []).forEach(add);
+    (Array.isArray(building?.facility_tags) ? building.facility_tags : []).forEach((tag) => {
+        const normalized = String(tag || "").trim().toLowerCase();
+        add(FACILITY_TAG_LABELS[normalized] || tag);
+    });
+    if (building?.isCoupleFriendly) add(COUPLE_FRIENDLY_LABEL);
+    return labels;
+}
+
+function facilityPreviewBadgesHTML(building, limit = 3) {
+    const all = getBuildingFacilityLabels(building);
+    const couple = all.find(isCoupleFriendlyFacility);
+    const others = all.filter((item) => item !== couple);
+    const shown = couple
+        ? [couple, ...others.slice(0, Math.max(0, limit - 1))]
+        : others.slice(0, limit);
+    return shown.map((item) => `<span>${item}</span>`).join("");
+}
+
 function buildingHasCoupleFriendly(building) {
     const tags = building?.facility_tags || [];
     const labels = building?.facilities || [];
@@ -1660,14 +1710,7 @@ async function initHomePage() {
 
     function buildingCardHTML(b) {
         const isSaved = savedIds.includes(b.id);
-        const allFacilities = b.facilities || [];
-        const coupleFriendlyFacility = allFacilities.find(isCoupleFriendlyFacility)
-            || (b.isCoupleFriendly ? COUPLE_FRIENDLY_LABEL : null);
-        const otherFacilities = allFacilities.filter(f => f !== coupleFriendlyFacility);
-        const facilitiesToShow = coupleFriendlyFacility
-            ? [coupleFriendlyFacility, ...otherFacilities.slice(0, 2)]
-            : otherFacilities.slice(0, 3);
-        const facilityBadges = facilitiesToShow.map(f => `<span>${f}</span>`).join("");
+        const facilityBadges = facilityPreviewBadgesHTML(b);
         const daily = isDailyMode();
         const unit = daily ? "/ night" : "/ month";
         const price = daily ? b.minDailyPrice : b.minPrice;
@@ -2067,14 +2110,7 @@ async function initSearchPage() {
 
     function buildingCardHTML(b) {
         const isSaved = savedIds.includes(b.id);
-        const allFacilities = b.facilities || [];
-        const coupleFriendlyFacility = allFacilities.find(isCoupleFriendlyFacility)
-            || (b.isCoupleFriendly ? COUPLE_FRIENDLY_LABEL : null);
-        const otherFacilities = allFacilities.filter(f => f !== coupleFriendlyFacility);
-        const facilitiesToShow = coupleFriendlyFacility
-            ? [coupleFriendlyFacility, ...otherFacilities.slice(0, 2)]
-            : otherFacilities.slice(0, 3);
-        const facilityBadges = facilitiesToShow.map(f => `<span>${f}</span>`).join("");
+        const facilityBadges = facilityPreviewBadgesHTML(b);
         const daily = isDailyMode();
         const unit = daily ? "/ night" : "/ month";
         const price = daily ? b.minDailyPrice : b.minPrice;
@@ -2456,13 +2492,22 @@ roomTypesList.innerHTML = "";
     roomTypesList.appendChild(card);
 });
 
-    if (
-        building.isCoupleFriendly &&
-        !(building.facilities || []).some(isCoupleFriendlyFacility)
-    ) {
-        const el = document.createElement("div");
-        el.textContent = COUPLE_FRIENDLY_LABEL;
-        facilityGrid.appendChild(el);
+    const facilityGrid = document.getElementById("facilityGrid");
+    if (facilityGrid) {
+        facilityGrid.innerHTML = "";
+        const facilityLabels = getBuildingFacilityLabels(building);
+        if (facilityLabels.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "facility-empty";
+            empty.textContent = "No facilities listed for this property.";
+            facilityGrid.appendChild(empty);
+        } else {
+            facilityLabels.forEach((label) => {
+                const el = document.createElement("div");
+                el.textContent = label;
+                facilityGrid.appendChild(el);
+            });
+        }
     }
 
     document.getElementById("propertyLocationDetails").textContent = building.location;
@@ -3787,6 +3832,8 @@ function wireResetPasswordForm() {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+    wireMobileNav();
+    wireThemeToggle();
     wireAuthUI();
     wireListPropertyAccess();
     wireHomeStayButtons();
@@ -3794,8 +3841,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireListPropertyForm();
     wireResetPasswordForm();
     wireRoleChoice();
-    wireMobileNav();
-    wireThemeToggle();
     wireChatbot();
 
     const currentUser = await getCurrentUserFast();
@@ -4164,25 +4209,25 @@ function wireThemeToggle() {
     const storageKey = "roomdhundo-theme";
     const root = document.documentElement;
     const savedTheme = localStorage.getItem(storageKey);
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const initialTheme = savedTheme || root.dataset.theme || "dark";
 
     function setTheme(theme) {
-        root.dataset.theme = theme;
-        localStorage.setItem(storageKey, theme);
-        const button = document.querySelector(".theme-toggle");
-        if (button) {
-            const isDark = theme === "dark";
-            button.textContent = isDark ? "☀" : "☾";
+        const next = theme === "light" ? "light" : "dark";
+        root.dataset.theme = next;
+        localStorage.setItem(storageKey, next);
+        document.querySelectorAll(".theme-toggle").forEach((button) => {
+            const isDark = next === "dark";
+            button.textContent = isDark ? "☀️" : "🌙";
             button.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
             button.title = button.getAttribute("aria-label");
-        }
+        });
     }
 
     let toggle = document.querySelector(".theme-toggle");
     if (!toggle) {
         const navLinks = document.querySelector(".nav-links");
         if (!navLinks) {
-            setTheme(savedTheme || systemTheme);
+            setTheme(initialTheme);
             return;
         }
         toggle = document.createElement("button");
@@ -4199,12 +4244,14 @@ function wireThemeToggle() {
 
     if (!toggle.dataset.themeWired) {
         toggle.dataset.themeWired = "true";
-        toggle.addEventListener("click", () => {
+        toggle.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
             setTheme(root.dataset.theme === "dark" ? "light" : "dark");
         });
     }
 
-    setTheme(savedTheme || systemTheme);
+    setTheme(initialTheme);
 }
 
 // ============================================================
