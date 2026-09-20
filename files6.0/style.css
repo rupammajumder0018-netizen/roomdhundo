@@ -4857,6 +4857,8 @@ body:not(.login-required):not(.auth-modal-open) {
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
+    color: #ffffff;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
     transition: all 0.2s ease;
 }
 
@@ -4870,7 +4872,9 @@ body:not(.login-required):not(.auth-modal-open) {
 
 .book-now-btn:disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.55;
+    background: #4b5563;
+    color: #f3f4f6;
 }
 
 /* =========================================================
@@ -5000,4 +5004,193 @@ body.login-required .list-property-form {
     pointer-events: none;
     user-select: none;
     filter: blur(8px);
+}
+
+/* =========================================================
+   READABLE TEXT + BUTTONS (light / dark)
+   Leftover white cards were keeping light heading/body colors
+   from the dark-theme rules, so labels vanished.
+   ========================================================= */
+
+.contact-owner,
+.view-btn,
+.search-btn,
+.lp-submit-btn,
+.auth-submit-btn,
+.owner-cta,
+.home-apply-filters,
+.apply-filter,
+.login-prompt-btn,
+.book-now-btn:not(:disabled),
+.empty-saved a,
+.nav-links > button#navAuthBtn,
+.nav-links a.nav-auth-btn {
+    color: #ffffff !important;
+}
+
+.view-btn {
+    background: #4f46e5;
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] .property-description,
+html[data-theme="light"] .property-rules,
+html[data-theme="light"] .property-location,
+html[data-theme="light"] .breadcrumb a,
+html[data-theme="light"] .owner-detail,
+html[data-theme="light"] .connect-message p,
+html[data-theme="light"] .roomdhundo-contact > p,
+html[data-theme="light"] .privacy-message,
+html[data-theme="light"] .privacy-message p,
+html[data-theme="light"] .review p,
+html[data-theme="light"] .price span,
+html[data-theme="light"] .rating span {
+    color: #374151;
+}
+
+html[data-theme="light"] .contact-panel h2,
+html[data-theme="light"] .connect-message h3,
+html[data-theme="light"] .owner-card-header h3,
+html[data-theme="light"] .privacy-message strong,
+html[data-theme="light"] .nav-profile-name,
+html[data-theme="light"] .nav-profile-menu-text strong {
+    color: #111827 !important;
+}
+
+html[data-theme="dark"] .property-owner-card,
+html[data-theme="dark"] .contact-panel,
+html[data-theme="dark"] .privacy-message,
+html[data-theme="dark"] .write-review-box,
+html[data-theme="dark"] .booking-card,
+html[data-theme="dark"] .property-section,
+html[data-theme="dark"] .nav-profile-menu,
+html[data-theme="dark"] .home-filter-panel,
+html[data-theme="dark"] .search-filter-panel,
+html[data-theme="dark"] .chatbot,
+html[data-theme="dark"] .chatbot-header,
+html[data-theme="dark"] .auth-modal-content,
+html[data-theme="dark"] .login-prompt-card {
+    background: #121212 !important;
+    border-color: #303030 !important;
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .property-owner-card h3,
+html[data-theme="dark"] .contact-panel h2,
+html[data-theme="dark"] .connect-message h3,
+html[data-theme="dark"] .write-review-box h3,
+html[data-theme="dark"] .booking-card h2,
+html[data-theme="dark"] .booking-card h3,
+html[data-theme="dark"] .property-section h2,
+html[data-theme="dark"] .privacy-message strong,
+html[data-theme="dark"] .owner-card-header h3,
+html[data-theme="dark"] .sidebar-price,
+html[data-theme="dark"] .price-display strong,
+html[data-theme="dark"] .property-header h1,
+html[data-theme="dark"] .nav-profile-name,
+html[data-theme="dark"] .nav-profile-menu-text strong {
+    color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .property-description,
+html[data-theme="dark"] .property-rules,
+html[data-theme="dark"] .property-location,
+html[data-theme="dark"] .breadcrumb a,
+html[data-theme="dark"] .owner-detail,
+html[data-theme="dark"] .connect-message p,
+html[data-theme="dark"] .roomdhundo-contact > p,
+html[data-theme="dark"] .contact-or,
+html[data-theme="dark"] .privacy-message,
+html[data-theme="dark"] .privacy-message p,
+html[data-theme="dark"] .review p,
+html[data-theme="dark"] .price span,
+html[data-theme="dark"] .rating span,
+html[data-theme="dark"] .property-rating span,
+html[data-theme="dark"] .review-summary span,
+html[data-theme="dark"] .room-option p,
+html[data-theme="dark"] .room-type-details,
+html[data-theme="dark"] .nav-profile-menu-text span,
+html[data-theme="dark"] .nav-profile-dots,
+html[data-theme="dark"] .lp-hint,
+html[data-theme="dark"] .lp-note,
+html[data-theme="dark"] .form-group label,
+html[data-theme="dark"] .auth-subtitle,
+html[data-theme="dark"] .auth-field label,
+html[data-theme="dark"] .filter-section h3,
+html[data-theme="dark"] .filter-section label,
+html[data-theme="dark"] .home-filter-group h3,
+html[data-theme="dark"] .home-filter-group label {
+    color: #d1d5db !important;
+}
+
+html[data-theme="dark"] .nav-profile-toggle {
+    background: #1a1a1a !important;
+    color: #f8fafc !important;
+    border-color: #3a3a3a !important;
+}
+
+html[data-theme="dark"] .nav-profile-menu-item {
+    background: transparent !important;
+    color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .nav-profile-menu-item:hover,
+html[data-theme="dark"] .nav-profile-menu-item:focus-visible {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .save-property {
+    background: #1a1a1a !important;
+    color: #f8fafc !important;
+    border-color: #3a3a3a !important;
+}
+
+html[data-theme="dark"] .directions-btn,
+html[data-theme="dark"] .call-roomdhundo-btn {
+    background: #172554 !important;
+    border-color: #1e3a8a !important;
+    color: #bfdbfe !important;
+}
+
+html[data-theme="dark"] .whatsapp-roomdhundo-btn {
+    background: #052e16 !important;
+    border-color: #166534 !important;
+    color: #86efac !important;
+}
+
+html[data-theme="dark"] .remove-saved-btn {
+    background: #2e1065 !important;
+    border-color: #5b21b6 !important;
+    color: #ddd6fe !important;
+}
+
+html[data-theme="light"] .nav-profile-toggle {
+    background: #f1f5f9 !important;
+    color: #111827 !important;
+    border-color: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .nav-profile-menu {
+    background: #ffffff !important;
+    border-color: #e5e7eb !important;
+}
+
+html[data-theme="light"] .nav-profile-menu-item {
+    background: #ffffff !important;
+    color: #111827 !important;
+}
+
+html[data-theme="light"] .nav-profile-menu-text span,
+html[data-theme="light"] .nav-profile-dots {
+    color: #4b5563 !important;
+}
+
+html[data-theme="light"] .contact-panel,
+html[data-theme="light"] .property-owner-card,
+html[data-theme="light"] .privacy-message,
+html[data-theme="light"] .booking-card,
+html[data-theme="light"] .property-section {
+    background: #ffffff !important;
+    color: #111827;
 }

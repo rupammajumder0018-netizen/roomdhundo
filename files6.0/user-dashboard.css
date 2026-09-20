@@ -951,3 +951,29 @@ html[data-theme="dark"] .need-help-whatsapp-btn:hover {
     border-color: rgba(74, 222, 128, 0.45);
 }
 
+html[data-theme="dark"] .action-arrow {
+    color: #d1d5db;
+}
+
+html[data-theme="dark"] .renter-explore-box h2 {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .profile-save-btn {
+    color: #ffffff;
+}
+
+html[data-theme="light"] .action-content strong,
+html[data-theme="light"] .account-info-row strong,
+html[data-theme="light"] .renter-dashboard-header h1,
+html[data-theme="light"] .dashboard-section-title h2,
+html[data-theme="light"] .profile-edit-header h2 {
+    color: #111827;
+}
+
+html[data-theme="light"] .action-content small,
+html[data-theme="light"] .account-info-row span,
+html[data-theme="light"] .renter-dashboard-header p {
+    color: #4b5563;
+}
+
