@@ -171,6 +171,21 @@
                     <label><input type="radio" name="lpFurnishing" class="lpFacility" value="semi-furnished" data-label="🪑 Semi Furnished"> Semi Furnished</label>
                     <label><input type="radio" name="lpFurnishing" class="lpFacility" value="unfurnished" data-label="🏠 Unfurnished"> Unfurnished</label>
                 </div>
+                <div class="lp-custom-facility">
+                    <label for="lpCustomFacilityInput">Add your own facility</label>
+                    <div class="lp-custom-facility-row">
+                        <input
+                            type="text"
+                            id="lpCustomFacilityInput"
+                            maxlength="40"
+                            placeholder="e.g. CCTV, Power backup, Geyser"
+                            autocomplete="off"
+                        >
+                        <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
+                    </div>
+                    <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
+                    <p class="lp-hint">Write anything extra this property offers, then tap Add. Renters will see it under Facilities.</p>
+                </div>
                 <p class="lp-hint">Pick one furnishing type. Attached kitchen and the other facilities can be selected together.</p>
             </div>
 

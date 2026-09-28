@@ -72,6 +72,138 @@ function getBuildingFacilityLabels(building) {
     return labels;
 }
 
+function facilityKey(text) {
+    return String(text || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
+        .replace(/^-|-$/g, "");
+}
+
+function getPresetFacilityKeys() {
+    const keys = new Set();
+    document.querySelectorAll(".lpFacility").forEach((el) => {
+        keys.add(String(el.value || "").toLowerCase());
+        keys.add(facilityKey(el.dataset.label || el.value));
+    });
+    Object.keys(FACILITY_TAG_LABELS).forEach((tag) => keys.add(tag));
+    Object.values(FACILITY_TAG_LABELS).forEach((label) => keys.add(facilityKey(label)));
+    return keys;
+}
+
+function collectCustomFacilities() {
+    return Array.from(document.querySelectorAll(".lp-custom-facility-chip")).map((chip) => ({
+        tag: chip.dataset.tag,
+        label: chip.dataset.label
+    })).filter((item) => item.tag && item.label);
+}
+
+function addCustomFacilityChip(rawLabel, rawTag) {
+    const list = document.getElementById("lpCustomFacilityList");
+    if (!list) return false;
+
+    const label = String(rawLabel || "").trim().replace(/\s+/g, " ");
+    const tag = rawTag || facilityKey(label);
+    if (!label || !tag) return false;
+    if (Array.from(list.querySelectorAll(".lp-custom-facility-chip")).some((chip) => chip.dataset.tag === tag)) {
+        return false;
+    }
+
+    const chip = document.createElement("span");
+    chip.className = "lp-custom-facility-chip";
+    chip.dataset.tag = tag;
+    chip.dataset.label = label;
+
+    const text = document.createElement("span");
+    text.textContent = label;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "lp-custom-facility-remove";
+    remove.setAttribute("aria-label", `Remove ${label}`);
+    remove.textContent = "×";
+    remove.addEventListener("click", () => chip.remove());
+
+    chip.append(text, remove);
+    list.appendChild(chip);
+    return true;
+}
+
+function addOwnerCustomFacility() {
+    const input = document.getElementById("lpCustomFacilityInput");
+    if (!input) return;
+
+    const label = input.value.trim().replace(/\s+/g, " ");
+    if (label.length < 2) {
+        alert("Type a facility name of at least 2 characters.");
+        return;
+    }
+    if (label.length > 40) {
+        alert("Keep the facility name under 40 characters.");
+        return;
+    }
+
+    const tag = facilityKey(label);
+    if (!tag) {
+        alert("Please enter a valid facility name.");
+        return;
+    }
+
+    const presets = getPresetFacilityKeys();
+    if (presets.has(tag) || presets.has(label.toLowerCase())) {
+        alert("That facility is already in the list above. Tick the checkbox instead.");
+        return;
+    }
+
+    if (!addCustomFacilityChip(label, tag)) {
+        alert("You already added that facility.");
+        return;
+    }
+
+    input.value = "";
+    input.focus();
+}
+
+function restoreCustomFacilities(savedTags, savedLabels) {
+    const list = document.getElementById("lpCustomFacilityList");
+    if (list) list.innerHTML = "";
+
+    const presets = getPresetFacilityKeys();
+    const labels = Array.isArray(savedLabels) ? savedLabels : [];
+    const tags = Array.isArray(savedTags) ? savedTags : [];
+    const added = new Set();
+
+    labels.forEach((label) => {
+        const tag = facilityKey(label);
+        if (!tag || presets.has(tag) || added.has(tag)) return;
+        addCustomFacilityChip(String(label).trim(), tag);
+        added.add(tag);
+    });
+
+    tags.forEach((rawTag) => {
+        const tag = facilityKey(rawTag) || String(rawTag || "").toLowerCase();
+        if (!tag || presets.has(tag) || presets.has(String(rawTag).toLowerCase()) || added.has(tag)) return;
+        const matchingLabel = labels.find((label) => facilityKey(label) === tag);
+        addCustomFacilityChip(matchingLabel || String(rawTag).replace(/-/g, " "), tag);
+        added.add(tag);
+    });
+}
+
+function wireCustomFacilities() {
+    const addBtn = document.getElementById("lpAddCustomFacilityBtn");
+    const input = document.getElementById("lpCustomFacilityInput");
+    if (!addBtn || !input) return;
+
+    addBtn.addEventListener("click", addOwnerCustomFacility);
+    input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            addOwnerCustomFacility();
+        }
+    });
+}
+
 function facilityPreviewBadgesHTML(building, limit = 3) {
     const all = getBuildingFacilityLabels(building);
     const couple = all.find(isCoupleFriendlyFacility);
@@ -2263,75 +2395,6 @@ async function initSearchPage() {
     renderPage();
 }
 
-async function createBooking(building, room) {
-    try {
-        // User must be logged in
-        const user = await getCurrentUser();
-
-        if (!user) {
-            alert("Please log in to book a room.");
-            openAuthModal();
-            return;
-        }
-
-        // Don't allow booking if no rooms are available
-        if (Number(room.available_rooms) <= 0) {
-            alert("Sorry, this room type is currently unavailable.");
-            return;
-        }
-
-        // For now we use monthly rent.
-        // Later we can add proper date/duration selection.
-        const stayType = "monthly";
-
-        const roomRent = Number(room.price_value) || 0;
-
-        if (roomRent <= 0) {
-            alert("This room does not have a valid rent.");
-            return;
-        }
-
-        // Temporary platform/service fee: 5%
-        const platformFee = Math.round(roomRent * 0.05 * 100) / 100;
-
-        const totalAmount = roomRent + platformFee;
-
-        const { data: booking, error } = await supabaseClient
-            .from("bookings")
-            .insert({
-                user_id: user.id,
-                building_id: building.id,
-                room_type_id: room.id,
-                stay_type: stayType,
-                room_rent: roomRent,
-                platform_fee: platformFee,
-                total_amount: totalAmount,
-                status: "pending"
-            })
-            .select()
-            .single();
-
-        if (error) {
-            console.error("Booking creation error:", error);
-            alert(`Could not create booking: ${error.message}`);
-            return;
-        }
-
-        if (!booking) {
-            alert("Booking could not be created.");
-            return;
-        }
-
-        // Redirect to payment page
-        window.location.href =
-            `payment.html?booking_id=${encodeURIComponent(booking.id)}`;
-
-    } catch (error) {
-        console.error("Booking error:", error);
-        alert("Something went wrong while creating your booking.");
-    }
-}
-
 async function initPropertyPage() {
     const buildingId = new URLSearchParams(window.location.search).get("id");
     const building = buildingId ? await fetchBuildingById(buildingId) : null;
@@ -2468,26 +2531,7 @@ roomTypesList.innerHTML = "";
             </span>
 
         </div>
-
-        <div class="room-type-actions">
-
-            <button
-                type="button"
-                class="book-now-btn"
-                ${!isAvailable ? "disabled" : ""}
-            >
-                ${isAvailable ? "Book Now" : "Unavailable"}
-            </button>
-
-        </div>
     `;
-
-    const bookButton =
-        card.querySelector(".book-now-btn");
-
-    bookButton?.addEventListener("click", () => {
-        createBooking(building, rt);
-    });
 
     roomTypesList.appendChild(card);
 });
@@ -3421,6 +3465,8 @@ async function loadPropertyForEdit(buildingId, user) {
             );
     });
 
+    restoreCustomFacilities(savedFacilityTags, savedFacilities);
+
     listPropertyExistingImages = Array.isArray(property.images) ? property.images.filter(Boolean) : [];
     listPropertyExistingVideos = Array.isArray(property.videos) ? property.videos.filter(Boolean) : [];
     renderExistingPropertyMedia();
@@ -3442,6 +3488,8 @@ async function loadPropertyForEdit(buildingId, user) {
 function wireListPropertyForm() {
     const listPropertyForm = document.getElementById("listPropertyForm");
     if (!listPropertyForm) return;
+
+    wireCustomFacilities();
 
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get("edit");
@@ -3532,8 +3580,15 @@ function wireListPropertyForm() {
         }
 
         const facilityCheckboxes = Array.from(document.querySelectorAll(".lpFacility:checked"));
-        const facilityTags = facilityCheckboxes.map(checkbox => checkbox.value);
-        const facilities = facilityCheckboxes.map(checkbox => checkbox.dataset.label);
+        const customFacilities = collectCustomFacilities();
+        const facilityTags = [
+            ...facilityCheckboxes.map(checkbox => checkbox.value),
+            ...customFacilities.map(item => item.tag)
+        ];
+        const facilities = [
+            ...facilityCheckboxes.map(checkbox => checkbox.dataset.label),
+            ...customFacilities.map(item => item.label)
+        ];
 
         const rules = rulesRaw
             ? rulesRaw.split("\n").map(rule => rule.trim()).filter(Boolean)
