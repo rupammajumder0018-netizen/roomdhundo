@@ -1958,3 +1958,373 @@ table {
 .enquiry-status-select:disabled {
     cursor: wait;
 }
+
+/* ============================================================
+   PROPERTY EDITOR
+   ============================================================ */
+
+.property-view-modal {
+    width: min(720px, 100%);
+}
+
+.property-edit-modal {
+    width: min(860px, 100%);
+}
+
+
+.modal-room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.modal-room-card {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+
+.modal-room-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+
+.modal-room-name {
+    font-size: 13px;
+    font-weight: 800;
+    color: #111827;
+}
+
+
+.modal-room-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 8px;
+}
+
+
+.modal-room-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #4b5563;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.room-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 25px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+.room-status.available {
+    background: #dcfce7;
+    color: #166534;
+}
+
+
+.room-status.occupied {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+
+.room-status.unavailable {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+
+/* ============================================================
+   EDIT SECTION
+   ============================================================ */
+
+.edit-section {
+    padding: 0;
+    margin-bottom: 24px;
+}
+
+
+.edit-section:last-child {
+    margin-bottom: 0;
+}
+
+
+.edit-section-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+
+.edit-section-help {
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+
+.edit-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+
+.edit-field {
+    min-width: 0;
+}
+
+
+.edit-field-full {
+    grid-column: 1 / -1;
+}
+
+
+.edit-field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #374151;
+}
+
+
+.edit-field input,
+.edit-field select,
+.edit-field textarea,
+#editPropertyFacilities,
+#editPropertyRules {
+    width: 100%;
+    border: 1px solid #dbe1e8;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #111827;
+    outline: none;
+    font-size: 13px;
+}
+
+
+.edit-field input,
+.edit-field select {
+    height: 42px;
+    padding: 0 12px;
+}
+
+
+.edit-field textarea,
+#editPropertyFacilities,
+#editPropertyRules {
+    padding: 11px 12px;
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.55;
+}
+
+
+.edit-field input:focus,
+.edit-field select:focus,
+.edit-field textarea:focus,
+#editPropertyFacilities:focus,
+#editPropertyRules:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 3px rgba(156,163,175,0.12);
+}
+
+
+.edit-field input:disabled,
+.edit-field select:disabled,
+.edit-field textarea:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+
+.edit-field small,
+#editPropertyFacilitiesHint,
+#editPropertyRulesHint,
+#editOwnerEmailHint,
+#editStartingPriceHint,
+#editMonthlyPriceHint {
+    display: block;
+    margin-top: 6px;
+    color: #9ca3af;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   ROOM EDIT CARDS
+   ============================================================ */
+
+.property-room-edit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.property-room-edit-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 14px;
+}
+
+
+.property-room-edit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+
+.property-room-edit-header strong {
+    font-size: 13px;
+    color: #111827;
+}
+
+
+.property-room-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+
+.property-room-edit-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #6b7280;
+}
+
+
+.property-room-edit-field input,
+.property-room-edit-field select {
+    width: 100%;
+    height: 38px;
+    border: 1px solid #dbe1e8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    padding: 0 10px;
+    outline: none;
+    font-size: 12px;
+}
+
+
+.property-room-edit-field input:focus,
+.property-room-edit-field select:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 3px rgba(156,163,175,0.1);
+}
+
+
+.property-room-empty {
+    padding: 18px;
+    border: 1px dashed #d1d5db;
+    border-radius: 10px;
+    color: #6b7280;
+    font-size: 12px;
+    text-align: center;
+    background: #f9fafb;
+}
+
+
+.owner-account-box {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+
+.owner-account-box strong {
+    display: block;
+    font-size: 12px;
+    color: #111827;
+}
+
+
+.owner-account-box span {
+    display: block;
+    margin-top: 4px;
+    font-size: 10px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+
+.property-edit-message {
+    min-height: 20px;
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+@media (max-width: 700px) {
+
+    .edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-field-full {
+        grid-column: auto;
+    }
+
+    .property-room-edit-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .owner-account-box {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .owner-account-box button {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .property-room-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

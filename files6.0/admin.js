@@ -727,9 +727,7 @@ async function loadProfiles() {
         } =
             await supabaseClient
                 .from("profiles")
-                .select(
-                    "id, full_name, role, created_at"
-                )
+                .select("*")
                 .order(
                     "created_at",
                     {
@@ -1457,6 +1455,578 @@ function attachPropertyButtons() {
 // PROPERTY MODAL
 // ============================================================
 
+function getExistingFieldKey(
+    object,
+    aliases
+) {
+
+    if (!object || typeof object !== "object") {
+        return null;
+    }
+
+    for (const key of aliases) {
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                object,
+                key
+            )
+        ) {
+
+            return key;
+
+        }
+
+    }
+
+    return null;
+
+}
+
+
+function getExistingFieldValue(
+    object,
+    aliases,
+    fallback = ""
+) {
+
+    const key =
+        getExistingFieldKey(
+            object,
+            aliases
+        );
+
+    if (!key) {
+        return fallback;
+    }
+
+    return object[key] ?? fallback;
+
+}
+
+
+const PROPERTY_FIELD_MAP = {
+
+    name: [
+        "name",
+        "property_name",
+        "title"
+    ],
+
+    type: [
+        "type",
+        "property_type"
+    ],
+
+    location: [
+        "location"
+    ],
+
+    description: [
+        "description"
+    ],
+
+    about: [
+        "about",
+        "about_property",
+        "property_about"
+    ],
+
+    startingPrice: [
+        "starting_price",
+        "min_price",
+        "minimum_price"
+    ],
+
+    monthlyPrice: [
+        "monthly_price",
+        "monthly_rent"
+    ],
+
+    ownerName: [
+        "owner_name"
+    ],
+
+    ownerPhone: [
+        "owner_phone"
+    ],
+
+    ownerEmail: [
+        "owner_email"
+    ],
+
+    facilities: [
+        "facilities",
+        "amenities"
+    ],
+
+    rules: [
+        "rules",
+        "property_rules"
+    ]
+
+};
+
+
+function formatEditableJsonValue(
+    originalValue,
+    textareaValue
+) {
+
+    const lines =
+        String(
+            textareaValue || ""
+        )
+            .split("\n")
+            .map(
+                value =>
+                    value.trim()
+            )
+            .filter(Boolean);
+
+
+    if (Array.isArray(originalValue)) {
+
+        return lines;
+
+    }
+
+
+    if (
+        originalValue &&
+        typeof originalValue === "object"
+    ) {
+
+        const originalValues =
+            Object.values(
+                originalValue
+            );
+
+        const isBooleanMap =
+            originalValues.every(
+                value =>
+                    typeof value === "boolean"
+            );
+
+        if (isBooleanMap) {
+
+            const result = {};
+
+            Object.keys(
+                originalValue
+            ).forEach(
+                key => {
+
+                    result[key] =
+                        lines.includes(key);
+
+                }
+            );
+
+            return result;
+
+        }
+
+        return lines;
+
+    }
+
+
+    return String(
+        textareaValue || ""
+    ).trim();
+
+}
+
+
+function formatEditableLines(
+    value
+) {
+
+    if (Array.isArray(value)) {
+
+        return value
+            .map(
+                item =>
+                    typeof item === "string"
+                        ? item
+                        : JSON.stringify(item)
+            )
+            .join("\n");
+
+    }
+
+
+    if (
+        value &&
+        typeof value === "object"
+    ) {
+
+        return Object.keys(value)
+            .filter(
+                key =>
+                    value[key] === true
+            )
+            .join("\n");
+
+    }
+
+
+    return String(
+        value ?? ""
+    );
+
+}
+
+
+function getOwnerProfileForProperty(
+    property
+) {
+
+    if (!property) {
+        return null;
+    }
+
+    if (property.created_by) {
+
+        const owner =
+            profiles.find(
+                profile =>
+                    String(profile.id) ===
+                    String(property.created_by)
+            );
+
+        if (owner) {
+            return owner;
+        }
+
+    }
+
+    const ownerName =
+        normalize(
+            property.owner_name
+        );
+
+    if (ownerName) {
+
+        const owner =
+            profiles.find(
+                profile =>
+                    normalize(
+                        profile.full_name
+                    ) ===
+                    ownerName &&
+                    getProfileRole(
+                        profile.role
+                    ) === "owner"
+            );
+
+        if (owner) {
+            return owner;
+        }
+
+    }
+
+    return null;
+
+}
+
+
+function getOwnerEmail(
+    property,
+    ownerProfile
+) {
+
+    return (
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.ownerEmail,
+            ""
+        ) ||
+        ownerProfile?.email ||
+        ownerProfile?.owner_email ||
+        ""
+    );
+
+}
+
+
+function getOwnerPhone(
+    property,
+    ownerProfile
+) {
+
+    return (
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.ownerPhone,
+            ""
+        ) ||
+        ownerProfile?.phone ||
+        ownerProfile?.owner_phone ||
+        ""
+    );
+
+}
+
+
+function getPropertyAbout(
+    property
+) {
+
+    return (
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.about,
+            ""
+        ) ||
+        property.description ||
+        ""
+    );
+
+}
+
+
+function getPropertyStartingPrice(
+    property
+) {
+
+    const direct =
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.startingPrice,
+            ""
+        );
+
+    if (
+        direct !== "" &&
+        direct !== null &&
+        direct !== undefined
+    ) {
+
+        return direct;
+
+    }
+
+    return getMinimumRent(
+        property
+    );
+
+}
+
+
+function getPropertyMonthlyPrice(
+    property
+) {
+
+    const direct =
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.monthlyPrice,
+            ""
+        );
+
+    if (
+        direct !== "" &&
+        direct !== null &&
+        direct !== undefined
+    ) {
+
+        return direct;
+
+    }
+
+    return getMinimumRent(
+        property
+    );
+
+}
+
+
+function getRoomPriceValue(
+    room
+) {
+
+    const key =
+        getExistingFieldKey(
+            room,
+            [
+                "price_value",
+                "room_rent",
+                "daily_price"
+            ]
+        );
+
+    return {
+        key,
+        value:
+            key
+                ? room[key]
+                : ""
+    };
+
+}
+
+
+function getAvailabilityClass(
+    availability
+) {
+
+    const value =
+        normalize(
+            availability
+        );
+
+    if (value === "available") {
+        return "available";
+    }
+
+    if (value === "occupied") {
+        return "occupied";
+    }
+
+    return "unavailable";
+
+}
+
+
+function getAvailabilityLabel(
+    availability
+) {
+
+    const normalized =
+        normalize(
+            availability
+        );
+
+    if (normalized === "available") {
+        return "Available";
+    }
+
+    if (normalized === "occupied") {
+        return "Occupied";
+    }
+
+    return "Unavailable";
+
+}
+
+
+function renderPropertyRoomSummary(
+    property
+) {
+
+    const container =
+        document.getElementById(
+            "modalRoomTypes"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const rooms =
+        Array.isArray(
+            property?.room_types
+        )
+            ? property.room_types
+            : [];
+
+    if (!rooms.length) {
+
+        container.innerHTML = `
+            <div class="property-room-empty">
+                No room type information available.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    container.innerHTML =
+        rooms
+            .map(
+                room => {
+
+                    const price =
+                        getRoomPriceValue(
+                            room
+                        );
+
+                    const availability =
+                        getAvailabilityLabel(
+                            room.availability
+                        );
+
+                    const availabilityClass =
+                        getAvailabilityClass(
+                            room.availability
+                        );
+
+                    const people =
+                        room.room_people ??
+                        "—";
+
+                    const availableRooms =
+                        room.available_rooms ??
+                        "—";
+
+                    return `
+                        <div class="modal-room-card">
+
+                            <div class="modal-room-card-header">
+
+                                <span class="modal-room-name">
+                                    ${escapeHTML(
+                                        room.room_type ||
+                                        "Room"
+                                    )}
+                                </span>
+
+                                <span class="room-status ${availabilityClass}">
+                                    ${escapeHTML(
+                                        availability
+                                    )}
+                                </span>
+
+                            </div>
+
+                            <div class="modal-room-meta">
+
+                                <span>
+                                    Price:
+                                    ${formatPrice(
+                                        price.value
+                                    )}
+                                </span>
+
+                                <span>
+                                    Sharing:
+                                    ${escapeHTML(
+                                        people
+                                    )} person(s)
+                                </span>
+
+                                <span>
+                                    Rooms:
+                                    ${escapeHTML(
+                                        availableRooms
+                                    )}
+                                </span>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
 function openPropertyModal(
     propertyId
 ) {
@@ -1479,17 +2049,32 @@ function openPropertyModal(
     selectedProperty =
         property;
 
+
+    const ownerProfile =
+        getOwnerProfileForProperty(
+            property
+        );
+
+
     setText(
         "modalPropertyName",
-        property.name ||
-        "Property Details"
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.name,
+            "Property Details"
+        )
     );
+
 
     setText(
         "modalPropertyType",
-        property.type ||
-        "Property"
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.type,
+            "Property"
+        )
     );
+
 
     setText(
         "modalPropertyIcon",
@@ -1498,32 +2083,107 @@ function openPropertyModal(
         )
     );
 
+
     setText(
         "modalOwner",
-        property.owner_name ||
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.ownerName,
+            ownerProfile?.full_name ||
+            "Not specified"
+        )
+    );
+
+
+    setText(
+        "modalOwnerPhone",
+        getOwnerPhone(
+            property,
+            ownerProfile
+        ) ||
         "Not specified"
     );
+
+
+    setText(
+        "modalOwnerEmail",
+        getOwnerEmail(
+            property,
+            ownerProfile
+        ) ||
+        "Not specified"
+    );
+
 
     setText(
         "modalLocation",
-        property.location ||
-        "Not specified"
+        getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.location,
+            "Not specified"
+        )
     );
 
+
     setText(
-        "modalRent",
+        "modalStartingPrice",
         formatPrice(
-            getMinimumRent(
+            getPropertyStartingPrice(
                 property
             )
         )
     );
 
+
+    setText(
+        "modalMonthlyPrice",
+        formatPrice(
+            getPropertyMonthlyPrice(
+                property
+            )
+        )
+    );
+
+
     setText(
         "modalDescription",
-        property.description ||
+        getPropertyAbout(
+            property
+        ) ||
         "No description available."
     );
+
+
+    setText(
+        "modalFacilities",
+        formatEditableLines(
+            getExistingFieldValue(
+                property,
+                PROPERTY_FIELD_MAP.facilities,
+                ""
+            )
+        ) ||
+        "No facilities specified."
+    );
+
+
+    setText(
+        "modalRules",
+        formatEditableLines(
+            getExistingFieldValue(
+                property,
+                PROPERTY_FIELD_MAP.rules,
+                ""
+            )
+        ) ||
+        "No rules specified."
+    );
+
+
+    renderPropertyRoomSummary(
+        property
+    );
+
 
     openModalById(
         "propertyModal"
@@ -1596,6 +2256,28 @@ async function deleteProperty(propertyId) {
             );
         }
 
+        // -----------------------------------------
+// DELETE ENQUIRIES
+// -----------------------------------------
+
+const {
+    error: enquiryError
+} =
+    await supabaseClient
+        .from("enquiries")
+        .delete()
+        .eq(
+            "property_id",
+            propertyId
+        );
+
+if (enquiryError) {
+
+    throw new Error(
+        `Unable to delete property enquiries: ${enquiryError.message}`
+    );
+
+}
 
         // -----------------------------------------
         // 3. DELETE ROOM TYPES
@@ -3034,6 +3716,25 @@ function closeModalById(id) {
 function bindModalEvents() {
 
     document
+    .getElementById(
+        "deletePropertyBtn"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            if (!selectedProperty) {
+                return;
+            }
+
+            deleteProperty(
+                selectedProperty.id
+            );
+
+        }
+    );
+
+    document
         .querySelectorAll(
             ".modal-close"
         )
@@ -3204,6 +3905,8 @@ if (enquiryModal) {
     );
 
 }
+
+    bindPropertyEditorEvents();
 
 }
 
@@ -6227,6 +6930,1652 @@ document.addEventListener(
     }
 );
 
+// ============================================================
+// PROPERTY EDITOR
+// ============================================================
+
+function setEditFieldSupport(
+    inputId,
+    hintId,
+    supported,
+    message = ""
+) {
+
+    const input =
+        document.getElementById(
+            inputId
+        );
+
+    const hint =
+        document.getElementById(
+            hintId
+        );
+
+    if (input) {
+
+        input.disabled =
+            !supported;
+
+    }
+
+    if (hint) {
+
+        hint.textContent =
+            supported
+                ? ""
+                : message ||
+                  "This field is not available in the current database schema.";
+
+    }
+
+}
+
+
+function populatePropertyEditModal(
+    property
+) {
+
+    if (!property) {
+        return;
+    }
+
+    const ownerProfile =
+        getOwnerProfileForProperty(
+            property
+        );
+
+
+    const nameKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.name
+        );
+
+    const typeKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.type
+        );
+
+    const locationKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.location
+        );
+
+    const descriptionKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.description
+        );
+
+    const aboutKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.about
+        );
+
+    const startingPriceKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.startingPrice
+        );
+
+    const monthlyPriceKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.monthlyPrice
+        );
+
+    const facilitiesKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.facilities
+        );
+
+    const rulesKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.rules
+        );
+
+    const ownerNameKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.ownerName
+        );
+
+    const ownerPhoneKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.ownerPhone
+        );
+
+    const ownerEmailKey =
+        getExistingFieldKey(
+            property,
+            PROPERTY_FIELD_MAP.ownerEmail
+        );
+
+
+    const nameInput =
+        document.getElementById(
+            "editPropertyName"
+        );
+
+    if (nameInput) {
+
+        nameInput.value =
+            getExistingFieldValue(
+                property,
+                PROPERTY_FIELD_MAP.name,
+                ""
+            );
+
+    }
+
+
+    const typeInput =
+        document.getElementById(
+            "editPropertyType"
+        );
+
+    if (typeInput) {
+
+        const type =
+            getExistingFieldValue(
+                property,
+                PROPERTY_FIELD_MAP.type,
+                "PG"
+            );
+
+        const matchingOption =
+            Array.from(
+                typeInput.options
+            )
+                .find(
+                    option =>
+                        normalize(
+                            option.value
+                        ) ===
+                        normalize(
+                            type
+                        )
+                );
+
+        typeInput.value =
+            matchingOption
+                ? matchingOption.value
+                : "PG";
+
+    }
+
+
+    const startingPriceInput =
+        document.getElementById(
+            "editStartingPrice"
+        );
+
+    if (startingPriceInput) {
+
+        startingPriceInput.value =
+            getPropertyStartingPrice(
+                property
+            ) ?? "";
+
+    }
+
+
+    const monthlyPriceInput =
+        document.getElementById(
+            "editMonthlyPrice"
+        );
+
+    if (monthlyPriceInput) {
+
+        monthlyPriceInput.value =
+            getPropertyMonthlyPrice(
+                property
+            ) ?? "";
+
+    }
+
+
+    const locationInput =
+        document.getElementById(
+            "editPropertyLocation"
+        );
+
+    if (locationInput) {
+
+        locationInput.value =
+            getExistingFieldValue(
+                property,
+                PROPERTY_FIELD_MAP.location,
+                ""
+            );
+
+    }
+
+
+    const descriptionInput =
+        document.getElementById(
+            "editPropertyDescription"
+        );
+
+    if (descriptionInput) {
+
+        descriptionInput.value =
+            getPropertyAbout(
+                property
+            );
+
+    }
+
+
+    const facilitiesInput =
+        document.getElementById(
+            "editPropertyFacilities"
+        );
+
+    if (facilitiesInput) {
+
+        facilitiesInput.value =
+            formatEditableLines(
+                getExistingFieldValue(
+                    property,
+                    PROPERTY_FIELD_MAP.facilities,
+                    ""
+                )
+            );
+
+    }
+
+
+    const rulesInput =
+        document.getElementById(
+            "editPropertyRules"
+        );
+
+    if (rulesInput) {
+
+        rulesInput.value =
+            formatEditableLines(
+                getExistingFieldValue(
+                    property,
+                    PROPERTY_FIELD_MAP.rules,
+                    ""
+                )
+            );
+
+    }
+
+
+    const ownerNameInput =
+        document.getElementById(
+            "editOwnerName"
+        );
+
+    if (ownerNameInput) {
+
+        ownerNameInput.value =
+            getExistingFieldValue(
+                property,
+                PROPERTY_FIELD_MAP.ownerName,
+                ownerProfile?.full_name ||
+                ""
+            );
+
+    }
+
+
+    const ownerPhoneInput =
+        document.getElementById(
+            "editOwnerPhone"
+        );
+
+    if (ownerPhoneInput) {
+
+        ownerPhoneInput.value =
+            getOwnerPhone(
+                property,
+                ownerProfile
+            );
+
+    }
+
+
+    const ownerEmailInput =
+        document.getElementById(
+            "editOwnerEmail"
+        );
+
+    if (ownerEmailInput) {
+
+        ownerEmailInput.value =
+            getOwnerEmail(
+                property,
+                ownerProfile
+            );
+
+    }
+
+
+    const propertyEmailHint =
+        document.getElementById(
+            "editOwnerEmailHint"
+        );
+
+    if (propertyEmailHint) {
+
+        if (ownerEmailKey) {
+
+            propertyEmailHint.textContent =
+                "This value will update the property owner email field.";
+
+        }
+
+        else if (
+            ownerProfile &&
+            (
+                "email" in ownerProfile ||
+                "owner_email" in ownerProfile
+            )
+        ) {
+
+            propertyEmailHint.textContent =
+                "This updates the profile email/contact field. It does not directly change Supabase Auth login email.";
+
+        }
+
+        else {
+
+            propertyEmailHint.textContent =
+                "Owner email is not stored in the currently available database fields.";
+
+        }
+
+    }
+
+
+    setEditFieldSupport(
+        "editPropertyName",
+        null,
+        Boolean(nameKey),
+        ""
+    );
+
+
+    setEditFieldSupport(
+        "editStartingPrice",
+        "editStartingPriceHint",
+        Boolean(startingPriceKey),
+        "Starting price column not found in this property record. Current value is calculated from room types."
+    );
+
+
+    setEditFieldSupport(
+        "editMonthlyPrice",
+        "editMonthlyPriceHint",
+        Boolean(monthlyPriceKey),
+        "Monthly price column not found in this property record. Current value is calculated from room types."
+    );
+
+
+    setEditFieldSupport(
+        "editPropertyFacilities",
+        "editPropertyFacilitiesHint",
+        Boolean(facilitiesKey),
+        "Facilities field is not present in this property record."
+    );
+
+
+    setEditFieldSupport(
+        "editPropertyRules",
+        "editPropertyRulesHint",
+        Boolean(rulesKey),
+        "Rules field is not present in this property record."
+    );
+
+
+    renderPropertyRoomEditor(
+        property.room_types || []
+    );
+
+}
+
+
+function renderPropertyRoomEditor(
+    rooms
+) {
+
+    const container =
+        document.getElementById(
+            "propertyRoomEditList"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    if (
+        !Array.isArray(rooms) ||
+        !rooms.length
+    ) {
+
+        container.innerHTML = `
+            <div class="property-room-empty">
+                No room types found for this property.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        rooms
+            .map(
+                room => {
+
+                    const price =
+                        getRoomPriceValue(
+                            room
+                        );
+
+                    const availability =
+                        normalize(
+                            room.availability
+                        );
+
+
+                    const currentStatus =
+                        [
+                            "available",
+                            "occupied",
+                            "unavailable"
+                        ].includes(
+                            availability
+                        )
+                            ? availability
+                            : "unavailable";
+
+
+                    return `
+                        <div
+                            class="property-room-edit-card"
+                            data-room-edit-id="${escapeHTML(
+                                room.id
+                            )}"
+                            data-room-price-key="${escapeHTML(
+                                price.key || ""
+                            )}"
+                            data-room-availability-original="${escapeHTML(
+                                room.availability || ""
+                            )}"
+                        >
+
+                            <div class="property-room-edit-header">
+
+                                <strong>
+                                    ${escapeHTML(
+                                        room.room_type ||
+                                        "Room Type"
+                                    )}
+                                </strong>
+
+                                <span class="room-status ${getAvailabilityClass(
+                                    currentStatus
+                                )}">
+                                    ${getAvailabilityLabel(
+                                        currentStatus
+                                    )}
+                                </span>
+
+                            </div>
+
+
+                            <div class="property-room-edit-grid">
+
+                                <div class="property-room-edit-field">
+
+                                    <label>
+                                        Room Type
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        class="room-edit-type"
+                                        value="${escapeHTML(
+                                            room.room_type || ""
+                                        )}"
+                                        ${room.room_type === undefined ? "disabled" : ""}
+                                    >
+
+                                </div>
+
+
+                                <div class="property-room-edit-field">
+
+                                    <label>
+                                        Price
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        class="room-edit-price"
+                                        min="0"
+                                        step="1"
+                                        value="${escapeHTML(
+                                            price.value ?? ""
+                                        )}"
+                                        ${price.key ? "" : "disabled"}
+                                    >
+
+                                </div>
+
+
+                                <div class="property-room-edit-field">
+
+                                    <label>
+                                        Persons
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        class="room-edit-people"
+                                        min="1"
+                                        step="1"
+                                        value="${escapeHTML(
+                                            room.room_people ?? ""
+                                        )}"
+                                    >
+
+                                </div>
+
+
+                                <div class="property-room-edit-field">
+
+                                    <label>
+                                        Available Rooms
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        class="room-edit-available"
+                                        min="0"
+                                        step="1"
+                                        value="${escapeHTML(
+                                            room.available_rooms ?? ""
+                                        )}"
+                                    >
+
+                                </div>
+
+
+                                <div
+                                    class="property-room-edit-field"
+                                    style="grid-column:1/-1;"
+                                >
+
+                                    <label>
+                                        Status
+                                    </label>
+
+                                    <select class="room-edit-availability">
+
+                                        <option
+                                            value="available"
+                                            ${currentStatus === "available" ? "selected" : ""}
+                                        >
+                                            Available
+                                        </option>
+
+                                        <option
+                                            value="occupied"
+                                            ${currentStatus === "occupied" ? "selected" : ""}
+                                        >
+                                            Occupied
+                                        </option>
+
+                                        <option
+                                            value="unavailable"
+                                            ${currentStatus === "unavailable" ? "selected" : ""}
+                                        >
+                                            Unavailable
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+function makeAvailabilityDatabaseValue(
+    originalValue,
+    newValue
+) {
+
+    const original =
+        String(
+            originalValue || ""
+        );
+
+    if (
+        original &&
+        original === original.toUpperCase()
+    ) {
+
+        return newValue.toUpperCase();
+
+    }
+
+    if (
+        original &&
+        original.charAt(0) ===
+        original.charAt(0).toUpperCase()
+    ) {
+
+        return (
+            newValue.charAt(0).toUpperCase() +
+            newValue.slice(1)
+        );
+
+    }
+
+    return newValue;
+
+}
+
+
+function setPayloadFieldIfExists(
+    payload,
+    originalObject,
+    aliases,
+    value
+) {
+
+    const key =
+        getExistingFieldKey(
+            originalObject,
+            aliases
+        );
+
+    if (!key) {
+        return;
+    }
+
+    payload[key] =
+        value;
+
+}
+
+
+function openPropertyEditModal(
+    propertyId
+) {
+
+    const property =
+        getPropertyById(
+            propertyId
+        );
+
+    if (!property) {
+
+        alert(
+            "Property not found."
+        );
+
+        return;
+
+    }
+
+    selectedProperty =
+        property;
+
+
+    setText(
+        "propertyEditTitle",
+        `Edit ${getExistingFieldValue(
+            property,
+            PROPERTY_FIELD_MAP.name,
+            "Property"
+        )}`
+    );
+
+
+    setText(
+        "propertyEditSubtitle",
+        "Changes will be saved directly to Supabase."
+    );
+
+
+    const message =
+        document.getElementById(
+            "propertyEditMessage"
+        );
+
+    if (message) {
+
+        message.textContent = "";
+
+        message.style.color =
+            "#6b7280";
+
+    }
+
+
+    populatePropertyEditModal(
+        property
+    );
+
+
+    closeModalById(
+        "propertyModal"
+    );
+
+
+    openModalById(
+        "propertyEditModal"
+    );
+
+}
+
+
+async function handlePropertyEditSubmit(
+    event
+) {
+
+    event.preventDefault();
+
+
+    if (!selectedProperty) {
+
+        alert(
+            "No property selected."
+        );
+
+        return;
+
+    }
+
+
+    const property =
+        selectedProperty;
+
+
+    const saveButton =
+        document.getElementById(
+            "savePropertyBtn"
+        );
+
+
+    const message =
+        document.getElementById(
+            "propertyEditMessage"
+        );
+
+
+    if (saveButton) {
+
+        saveButton.disabled = true;
+        saveButton.textContent =
+            "💾 Saving...";
+
+    }
+
+
+    if (message) {
+
+        message.style.color =
+            "#6b7280";
+
+        message.textContent =
+            "Saving changes to Supabase...";
+
+    }
+
+
+    try {
+
+        // ====================================================
+        // BUILD PROPERTY PAYLOAD
+        // ====================================================
+
+        const propertyPayload = {};
+
+
+        setPayloadFieldIfExists(
+            propertyPayload,
+            property,
+            PROPERTY_FIELD_MAP.name,
+            document.getElementById(
+                "editPropertyName"
+            )?.value.trim()
+        );
+
+
+        setPayloadFieldIfExists(
+            propertyPayload,
+            property,
+            PROPERTY_FIELD_MAP.type,
+            document.getElementById(
+                "editPropertyType"
+            )?.value
+        );
+
+
+        setPayloadFieldIfExists(
+            propertyPayload,
+            property,
+            PROPERTY_FIELD_MAP.location,
+            document.getElementById(
+                "editPropertyLocation"
+            )?.value.trim()
+        );
+
+
+        const description =
+            document.getElementById(
+                "editPropertyDescription"
+            )?.value.trim();
+
+
+        const aboutKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.about
+            );
+
+
+        const descriptionKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.description
+            );
+
+
+        if (aboutKey) {
+
+            propertyPayload[aboutKey] =
+                description;
+
+        }
+
+        else if (descriptionKey) {
+
+            propertyPayload[descriptionKey] =
+                description;
+
+        }
+
+
+        const startingPriceKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.startingPrice
+            );
+
+
+        if (
+            startingPriceKey &&
+            document.getElementById(
+                "editStartingPrice"
+            )?.value !== ""
+        ) {
+
+            propertyPayload[startingPriceKey] =
+                Number(
+                    document.getElementById(
+                        "editStartingPrice"
+                    ).value
+                );
+
+        }
+
+
+        const monthlyPriceKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.monthlyPrice
+            );
+
+
+        if (
+            monthlyPriceKey &&
+            document.getElementById(
+                "editMonthlyPrice"
+            )?.value !== ""
+        ) {
+
+            propertyPayload[monthlyPriceKey] =
+                Number(
+                    document.getElementById(
+                        "editMonthlyPrice"
+                    ).value
+                );
+
+        }
+
+
+        const facilitiesKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.facilities
+            );
+
+
+        if (facilitiesKey) {
+
+            propertyPayload[facilitiesKey] =
+                formatEditableJsonValue(
+                    property[facilitiesKey],
+                    document.getElementById(
+                        "editPropertyFacilities"
+                    )?.value
+                );
+
+        }
+
+
+        const rulesKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.rules
+            );
+
+
+        if (rulesKey) {
+
+            propertyPayload[rulesKey] =
+                formatEditableJsonValue(
+                    property[rulesKey],
+                    document.getElementById(
+                        "editPropertyRules"
+                    )?.value
+                );
+
+        }
+
+
+        const ownerNameKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.ownerName
+            );
+
+
+        const ownerPhoneKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.ownerPhone
+            );
+
+
+        const ownerEmailKey =
+            getExistingFieldKey(
+                property,
+                PROPERTY_FIELD_MAP.ownerEmail
+            );
+
+
+        const ownerName =
+            document.getElementById(
+                "editOwnerName"
+            )?.value.trim();
+
+
+        const ownerPhone =
+            document.getElementById(
+                "editOwnerPhone"
+            )?.value.trim();
+
+
+        const ownerEmail =
+            document.getElementById(
+                "editOwnerEmail"
+            )?.value.trim();
+
+
+        if (ownerNameKey) {
+
+            propertyPayload[ownerNameKey] =
+                ownerName;
+
+        }
+
+
+        if (ownerPhoneKey) {
+
+            propertyPayload[ownerPhoneKey] =
+                ownerPhone;
+
+        }
+
+
+        if (ownerEmailKey) {
+
+            propertyPayload[ownerEmailKey] =
+                ownerEmail;
+
+        }
+
+
+        // ====================================================
+        // SAVE PROPERTY
+        // ====================================================
+
+        if (
+            Object.keys(
+                propertyPayload
+            ).length
+        ) {
+
+           const {
+    data: updatedPropertyRows,
+    error: propertyError
+} =
+    await supabaseClient
+        .from("buildings")
+        .update(propertyPayload)
+        .eq("id", property.id)
+        .select("*");
+
+if (propertyError) {
+
+    throw new Error(
+        `Property update failed: ${propertyError.message}`
+    );
+
+}
+
+if (
+    !updatedPropertyRows ||
+    updatedPropertyRows.length === 0
+) {
+
+    throw new Error(
+        "Property update affected 0 rows. Supabase RLS policy may be blocking the update."
+    );
+
+}
+
+
+            if (propertyError) {
+
+                throw new Error(
+                    `Property update failed: ${propertyError.message}`
+                );
+
+            }
+
+        }
+
+
+        // ====================================================
+        // UPDATE OWNER PROFILE
+        // ====================================================
+
+        const ownerProfile =
+            getOwnerProfileForProperty(
+                property
+            );
+
+
+        if (ownerProfile) {
+
+            const profilePayload = {};
+
+
+            const profileNameKey =
+                getExistingFieldKey(
+                    ownerProfile,
+                    [
+                        "full_name",
+                        "name"
+                    ]
+                );
+
+
+            const profilePhoneKey =
+                getExistingFieldKey(
+                    ownerProfile,
+                    [
+                        "phone",
+                        "owner_phone"
+                    ]
+                );
+
+
+            const profileEmailKey =
+                getExistingFieldKey(
+                    ownerProfile,
+                    [
+                        "email",
+                        "owner_email"
+                    ]
+                );
+
+
+            if (profileNameKey) {
+
+                profilePayload[profileNameKey] =
+                    ownerName;
+
+            }
+
+
+            if (profilePhoneKey) {
+
+                profilePayload[profilePhoneKey] =
+                    ownerPhone;
+
+            }
+
+
+            if (profileEmailKey) {
+
+                profilePayload[profileEmailKey] =
+                    ownerEmail;
+
+            }
+
+
+            if (
+                Object.keys(
+                    profilePayload
+                ).length
+            ) {
+
+                const {
+                    error: profileError
+                } =
+                    await supabaseClient
+                        .from("profiles")
+                        .update(
+                            profilePayload
+                        )
+                        .eq(
+                            "id",
+                            ownerProfile.id
+                        );
+
+
+                if (profileError) {
+
+                    throw new Error(
+                        `Owner profile update failed: ${profileError.message}`
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        // ====================================================
+        // UPDATE ROOM TYPES
+        // ====================================================
+
+        const roomCards =
+            Array.from(
+                document.querySelectorAll(
+                    "#propertyRoomEditList .property-room-edit-card"
+                )
+            );
+
+
+        for (
+            const card of roomCards
+        ) {
+
+            const roomId =
+                card.dataset.roomEditId;
+
+
+            const originalRoom =
+                property.room_types.find(
+                    room =>
+                        String(room.id) ===
+                        String(roomId)
+                );
+
+
+            if (!originalRoom) {
+                continue;
+            }
+
+
+            const roomPayload = {};
+
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    originalRoom,
+                    "room_type"
+                )
+            ) {
+
+                roomPayload.room_type =
+                    card.querySelector(
+                        ".room-edit-type"
+                    )?.value.trim() ||
+                    originalRoom.room_type;
+
+            }
+
+
+            const priceKey =
+                card.dataset.roomPriceKey;
+
+
+            if (priceKey) {
+
+                const priceInput =
+                    card.querySelector(
+                        ".room-edit-price"
+                    );
+
+
+                if (
+                    priceInput &&
+                    priceInput.value !== ""
+                ) {
+
+                    roomPayload[priceKey] =
+                        Number(
+                            priceInput.value
+                        );
+
+                }
+
+            }
+
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    originalRoom,
+                    "room_people"
+                )
+            ) {
+
+                const peopleInput =
+                    card.querySelector(
+                        ".room-edit-people"
+                    );
+
+
+                if (
+                    peopleInput &&
+                    peopleInput.value !== ""
+                ) {
+
+                    roomPayload.room_people =
+                        Number(
+                            peopleInput.value
+                        );
+
+                }
+
+            }
+
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    originalRoom,
+                    "available_rooms"
+                )
+            ) {
+
+                const availableInput =
+                    card.querySelector(
+                        ".room-edit-available"
+                    );
+
+
+                if (
+                    availableInput &&
+                    availableInput.value !== ""
+                ) {
+
+                    roomPayload.available_rooms =
+                        Number(
+                            availableInput.value
+                        );
+
+                }
+
+            }
+
+
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    originalRoom,
+                    "availability"
+                )
+            ) {
+
+                const statusSelect =
+                    card.querySelector(
+                        ".room-edit-availability"
+                    );
+
+
+                if (statusSelect) {
+
+                    roomPayload.availability =
+                        makeAvailabilityDatabaseValue(
+                            card.dataset
+                                .roomAvailabilityOriginal,
+                            statusSelect.value
+                        );
+
+                }
+
+            }
+
+
+            if (
+                Object.keys(
+                    roomPayload
+                ).length
+            ) {
+
+              const {
+    data: updatedRoomRows,
+    error: roomError
+} =
+    await supabaseClient
+        .from("room_types")
+        .update(roomPayload)
+        .eq("id", roomId)
+        .select("*");
+
+if (roomError) {
+
+    throw new Error(
+        `Room "${originalRoom.room_type || roomId}" update failed: ${roomError.message}`
+    );
+
+}
+
+if (
+    !updatedRoomRows ||
+    updatedRoomRows.length === 0
+) {
+
+    throw new Error(
+        `Room "${originalRoom.room_type || roomId}" update affected 0 rows. Supabase RLS policy may be blocking the update.`
+    );
+
+}
+
+
+                if (roomError) {
+
+                    throw new Error(
+                        `Room "${originalRoom.room_type || roomId}" update failed: ${roomError.message}`
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        // ====================================================
+        // RELOAD EVERYTHING FROM SUPABASE
+        // ====================================================
+
+        closeModalById(
+            "propertyEditModal"
+        );
+
+
+        selectedProperty =
+            null;
+
+
+        await loadAllData();
+
+
+        if (message) {
+
+            message.style.color =
+                "#16a34a";
+
+            message.textContent =
+                "Property updated successfully.";
+
+        }
+
+
+        alert(
+            "Property, room information and available owner details were updated successfully."
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Property edit error:",
+            error
+        );
+
+
+        if (message) {
+
+            message.style.color =
+                "#dc2626";
+
+            message.textContent =
+                error.message ||
+                "Unable to save property changes.";
+
+        }
+
+
+        alert(
+            `Unable to save property changes.\n\n${error.message}`
+        );
+
+    }
+
+    finally {
+
+        if (saveButton) {
+
+            saveButton.disabled = false;
+
+            saveButton.textContent =
+                "💾 Save Changes";
+
+        }
+
+    }
+
+}
+
+
+async function sendOwnerPasswordReset() {
+
+    if (!selectedProperty) {
+
+        alert(
+            "No property selected."
+        );
+
+        return;
+
+    }
+
+
+    const ownerProfile =
+        getOwnerProfileForProperty(
+            selectedProperty
+        );
+
+
+    const email =
+        getOwnerEmail(
+            selectedProperty,
+            ownerProfile
+        );
+
+
+    if (!email) {
+
+        alert(
+            "Owner email is not available. Add the owner's email first."
+        );
+
+        return;
+
+    }
+
+
+    const confirmed =
+        window.confirm(
+            `Send a password reset email to:\n\n${email}\n\nThe existing password will not be shown or exposed.`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            error
+        } =
+            await supabaseClient.auth
+                .resetPasswordForEmail(
+                    email
+                );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        alert(
+            "Password reset email sent successfully."
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Owner password reset error:",
+            error
+        );
+
+
+        alert(
+            `Password reset email could not be sent.\n\n${error.message}`
+        );
+
+    }
+
+}
+
+
+function bindPropertyEditorEvents() {
+
+    document
+        .getElementById(
+            "editPropertyBtn"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                if (!selectedProperty) {
+                    return;
+                }
+
+                openPropertyEditModal(
+                    selectedProperty.id
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "closePropertyEditModal"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeModalById(
+                    "propertyEditModal"
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "cancelPropertyEditBtn"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeModalById(
+                    "propertyEditModal"
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "propertyEditForm"
+        )
+        ?.addEventListener(
+            "submit",
+            handlePropertyEditSubmit
+        );
+
+
+    document
+        .getElementById(
+            "sendOwnerPasswordResetBtn"
+        )
+        ?.addEventListener(
+            "click",
+            sendOwnerPasswordReset
+        );
+
+}
+
 
 // ============================================================
 // DEBUG
@@ -6235,3 +8584,16 @@ document.addEventListener(
 console.log(
     "RoomDhundo Admin Panel loaded successfully."
 );
+
+document.addEventListener("click", function(e){
+
+    if(e.target.classList.contains("edit-property-btn")){
+
+        const propertyId = e.target.dataset.id;
+
+        window.location.href =
+        `edit-property.html?id=${propertyId}`;
+
+    }
+
+});

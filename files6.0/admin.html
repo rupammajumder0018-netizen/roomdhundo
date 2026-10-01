@@ -1695,114 +1695,577 @@
 
 
 
-    <!-- =====================================================
-         PROPERTY MODAL
-         ===================================================== -->
+<!-- =====================================================
+     PROPERTY VIEW MODAL
+     ===================================================== -->
+
+<div
+    class="admin-modal"
+    id="propertyModal"
+    aria-hidden="true"
+>
 
     <div
-        class="admin-modal"
-        id="propertyModal"
-        aria-hidden="true"
+        class="admin-modal-content property-view-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalPropertyName"
     >
 
-        <div
-            class="admin-modal-content"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modalPropertyName"
-        >
+        <div class="modal-header">
 
-            <div class="modal-header">
+            <div>
 
-                <div>
+                <h2 id="modalPropertyName">
+                    Property Details
+                </h2>
 
-                    <h2 id="modalPropertyName">
-                        Property Details
-                    </h2>
+                <p id="modalPropertyType">
+                    Property
+                </p>
 
-                    <p id="modalPropertyType">
-                        Property
-                    </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closePropertyModal"
+                aria-label="Close property details"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div
+                class="modal-property-icon"
+                id="modalPropertyIcon"
+            >
+                🏠
+            </div>
+
+
+            <div class="property-details">
+
+                <div class="detail-item">
+
+                    <span>
+                        Owner
+                    </span>
+
+                    <strong id="modalOwner">
+                        -
+                    </strong>
 
                 </div>
 
 
-                <button
-                    type="button"
-                    class="modal-close"
-                    id="closePropertyModal"
-                    aria-label="Close property details"
-                >
-                    &times;
-                </button>
+                <div class="detail-item">
+
+                    <span>
+                        Owner Phone
+                    </span>
+
+                    <strong id="modalOwnerPhone">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Owner Email
+                    </span>
+
+                    <strong id="modalOwnerEmail">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Location
+                    </span>
+
+                    <strong id="modalLocation">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Starting Price
+                    </span>
+
+                    <strong id="modalStartingPrice">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-item">
+
+                    <span>
+                        Monthly Price
+                    </span>
+
+                    <strong id="modalMonthlyPrice">
+                        -
+                    </strong>
+
+                </div>
 
             </div>
 
 
-            <div class="modal-body">
+            <!-- ROOM TYPES -->
+
+            <div class="modal-description">
+
+                <h3>
+                    Room Types
+                </h3>
 
                 <div
-                    class="modal-property-icon"
-                    id="modalPropertyIcon"
+                    id="modalRoomTypes"
+                    class="modal-room-list"
                 >
-                    🏠
+                    -
+                </div>
+
+            </div>
+
+
+            <!-- FACILITIES -->
+
+            <div class="modal-description">
+
+                <h3>
+                    Facilities
+                </h3>
+
+                <p id="modalFacilities">
+                    -
+                </p>
+
+            </div>
+
+
+            <!-- RULES -->
+
+            <div class="modal-description">
+
+                <h3>
+                    Property Rules
+                </h3>
+
+                <p id="modalRules">
+                    -
+                </p>
+
+            </div>
+
+
+            <!-- ABOUT -->
+
+            <div class="modal-description">
+
+                <h3>
+                    About This Property
+                </h3>
+
+                <p id="modalDescription">
+                    -
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                type="button"
+                class="modal-btn close-btn"
+                id="closePropertyBtn"
+            >
+                Close
+            </button>
+
+
+            <button
+                type="button"
+                class="modal-btn approve-btn"
+                id="editPropertyBtn"
+            >
+                ✏️ Edit Property
+            </button>
+
+
+            <button
+                type="button"
+                class="modal-btn delete-btn"
+                id="deletePropertyBtn"
+            >
+                🗑️ Delete Property
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     PROPERTY EDIT MODAL
+     ===================================================== -->
+
+<div
+    class="admin-modal"
+    id="propertyEditModal"
+    aria-hidden="true"
+>
+
+    <div
+        class="admin-modal-content property-edit-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="propertyEditTitle"
+    >
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2 id="propertyEditTitle">
+                    Edit Property
+                </h2>
+
+                <p id="propertyEditSubtitle">
+                    Update property information.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="modal-close"
+                id="closePropertyEditModal"
+                aria-label="Close property editor"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <form id="propertyEditForm">
+
+            <div class="modal-body">
+
+                <!-- BASIC INFORMATION -->
+
+                <div class="edit-section">
+
+                    <div class="edit-section-title">
+                        Basic Information
+                    </div>
+
+
+                    <div class="edit-grid">
+
+                        <div class="edit-field">
+
+                            <label for="editPropertyName">
+                                Property Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editPropertyName"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <label for="editPropertyType">
+                                Property Type
+                            </label>
+
+                            <select id="editPropertyType">
+
+                                <option value="PG">
+                                    PG
+                                </option>
+
+                                <option value="Room">
+                                    Room
+                                </option>
+
+                                <option value="Mess">
+                                    Mess
+                                </option>
+
+                                <option value="Guest House">
+                                    Guest House
+                                </option>
+
+                                <option value="Flat">
+                                    Flat
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <label for="editStartingPrice">
+                                Starting Price
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editStartingPrice"
+                                min="0"
+                                step="1"
+                                placeholder="e.g. 4500"
+                            >
+
+                            <small id="editStartingPriceHint"></small>
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <label for="editMonthlyPrice">
+                                Monthly Price
+                            </label>
+
+                            <input
+                                type="number"
+                                id="editMonthlyPrice"
+                                min="0"
+                                step="1"
+                                placeholder="e.g. 6000"
+                            >
+
+                            <small id="editMonthlyPriceHint"></small>
+
+                        </div>
+
+
+                        <div class="edit-field edit-field-full">
+
+                            <label for="editPropertyLocation">
+                                Location
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editPropertyLocation"
+                                placeholder="Property location"
+                            >
+
+                        </div>
+
+
+                        <div class="edit-field edit-field-full">
+
+                            <label for="editPropertyDescription">
+                                About This Property
+                            </label>
+
+                            <textarea
+                                id="editPropertyDescription"
+                                rows="5"
+                                placeholder="Describe this property..."
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
                 </div>
 
 
-                <div class="property-details">
+                <!-- ROOM TYPES -->
 
-                    <div class="detail-item">
+                <div class="edit-section">
 
-                        <span>
-                            Owner
-                        </span>
-
-                        <strong id="modalOwner">
-                            -
-                        </strong>
-
+                    <div class="edit-section-title">
+                        Room Types
                     </div>
 
-
-                    <div class="detail-item">
-
-                        <span>
-                            Location
-                        </span>
-
-                        <strong id="modalLocation">
-                            -
-                        </strong>
-
-                    </div>
-
-
-                    <div class="detail-item">
-
-                        <span>
-                            Rent
-                        </span>
-
-                        <strong id="modalRent">
-                            -
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="modal-description">
-
-                    <h3>
-                        Description
-                    </h3>
-
-                    <p id="modalDescription">
-                        -
+                    <p class="edit-section-help">
+                        Update price, sharing/person count, available rooms and status.
                     </p>
 
+
+                    <div
+                        id="propertyRoomEditList"
+                        class="property-room-edit-list"
+                    ></div>
+
                 </div>
+
+
+                <!-- FACILITIES -->
+
+                <div class="edit-section">
+
+                    <div class="edit-section-title">
+                        Facilities
+                    </div>
+
+                    <p class="edit-section-help">
+                        Add one facility per line.
+                    </p>
+
+                    <textarea
+                        id="editPropertyFacilities"
+                        rows="6"
+                        placeholder="Wi-Fi&#10;Parking&#10;Unfurnished"
+                    ></textarea>
+
+                    <small id="editPropertyFacilitiesHint"></small>
+
+                </div>
+
+
+                <!-- RULES -->
+
+                <div class="edit-section">
+
+                    <div class="edit-section-title">
+                        Property Rules
+                    </div>
+
+                    <p class="edit-section-help">
+                        Add one rule per line.
+                    </p>
+
+                    <textarea
+                        id="editPropertyRules"
+                        rows="6"
+                        placeholder="No smoking&#10;No loud music after 10 PM"
+                    ></textarea>
+
+                    <small id="editPropertyRulesHint"></small>
+
+                </div>
+
+
+                <!-- OWNER -->
+
+                <div class="edit-section">
+
+                    <div class="edit-section-title">
+                        Owner Details
+                    </div>
+
+
+                    <div class="edit-grid">
+
+                        <div class="edit-field">
+
+                            <label for="editOwnerName">
+                                Owner Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editOwnerName"
+                            >
+
+                        </div>
+
+
+                        <div class="edit-field">
+
+                            <label for="editOwnerPhone">
+                                Owner Phone
+                            </label>
+
+                            <input
+                                type="tel"
+                                id="editOwnerPhone"
+                            >
+
+                        </div>
+
+
+                        <div class="edit-field edit-field-full">
+
+                            <label for="editOwnerEmail">
+                                Owner Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="editOwnerEmail"
+                                placeholder="owner@example.com"
+                            >
+
+                            <small id="editOwnerEmailHint"></small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="owner-account-box">
+
+                        <div>
+
+                            <strong>
+                                Owner Account
+                            </strong>
+
+                            <span>
+                                The existing password will never be shown here.
+                                Use password reset instead.
+                            </span>
+
+                        </div>
+
+
+                        <button
+                            type="button"
+                            class="action-btn"
+                            id="sendOwnerPasswordResetBtn"
+                        >
+                            🔐 Send Password Reset
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <p
+                    id="propertyEditMessage"
+                    class="property-edit-message"
+                ></p>
 
             </div>
 
@@ -1812,25 +2275,27 @@
                 <button
                     type="button"
                     class="modal-btn close-btn"
-                    id="closePropertyBtn"
+                    id="cancelPropertyEditBtn"
                 >
-                    Close
+                    Cancel
                 </button>
 
 
                 <button
-                    type="button"
-                    class="modal-btn delete-btn"
-                    id="deletePropertyBtn"
+                    type="submit"
+                    class="modal-btn approve-btn"
+                    id="savePropertyBtn"
                 >
-                    🗑️ Delete Property
+                    💾 Save Changes
                 </button>
 
             </div>
 
-        </div>
+        </form>
 
     </div>
+
+</div>
 
 
 
