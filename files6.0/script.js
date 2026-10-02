@@ -392,6 +392,12 @@ function ensureCoupleFriendlyFacilityFilter() {
 // =====================================================
 // DATA HELPERS (buildings + room_types + reviews)
 // =====================================================
+function isRoomAvailable(rt) {
+    const status = String(rt.availability || "").trim().toLowerCase();
+    if (status === "occupied" || status === "unavailable") return false;
+    return Number(rt.available_rooms) > 0;
+}
+
 function attachComputedFields(b) {
     const reviews = b.reviews || [];
     const roomTypes = b.room_types || [];
@@ -402,7 +408,10 @@ function attachComputedFields(b) {
 
     const monthlyPrices = roomTypes.map(rt => rt.price_value);
     const dailyPrices = roomTypes.map(rt => rt.daily_price).filter(p => p != null);
-    const totalAvailable = roomTypes.reduce((sum, rt) => sum + (rt.available_rooms || 0), 0);
+    const totalAvailable = roomTypes.reduce(
+        (sum, rt) => sum + (isRoomAvailable(rt) ? Number(rt.available_rooms) : 0),
+        0
+    );
     const roomTypeNames = [...new Set(roomTypes.map(rt => rt.room_type))];
 
     return {
@@ -1882,7 +1891,11 @@ async function initHomePage() {
                     </div>
                     <p>${roomTypeSummary}</p>
                     <div class="amenities">${facilityBadges}</div>
-                    <div class="availability">🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available</div>
+                    <div class="availability">${
+                        b.totalAvailable > 0
+                            ? `🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available`
+                            : "🔴 Currently occupied"
+                    }</div>
                     <div class="card-actions">
                         <a href="property.html?id=${b.id}" class="view-btn">View Property</a>
                     </div>
@@ -2291,7 +2304,11 @@ async function initSearchPage() {
                     </div>
                     <p>${roomTypeSummary}</p>
                     <div class="amenities">${facilityBadges}</div>
-                    <div class="availability">🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available</div>
+                    <div class="availability">${
+                        b.totalAvailable > 0
+                            ? `🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available`
+                            : "🔴 Currently occupied"
+                    }</div>
                     <div class="card-actions">
                         <button class="compare-btn">Compare</button>
                         <a href="property.html?id=${b.id}" class="view-btn">View Property</a>
@@ -2436,9 +2453,11 @@ async function initPropertyPage() {
     document.getElementById("propertyPrice").textContent = `${priceLabel}${priceValue}`;
     document.getElementById("sidebarPropertyPrice").textContent = `${priceLabel}${priceValue}`;
     document.getElementById("propertyAvailability").textContent =
-        (building.room_types || []).length > 1
-            ? `${building.totalAvailable} rooms available across ${building.room_types.length} room types`
-            : (building.room_types[0]?.availability || "Room available");
+        building.totalAvailable === 0
+            ? "Currently occupied"
+            : (building.room_types || []).length > 1
+                ? `${building.totalAvailable} rooms available across ${building.room_types.length} room types`
+                : (building.room_types[0]?.availability || "Room available");
     document.getElementById("propertyName").textContent = building.name;
     document.title = `${building.name} | RoomDhundo`;
     document.getElementById("propertyLocation").textContent = formatDistanceFromActiveHub(building, { includeLocation: true });
@@ -2499,8 +2518,7 @@ roomTypesList.innerHTML = "";
         `
         : "";
 
-    const isAvailable =
-        Number(rt.available_rooms) > 0;
+    const isAvailable = isRoomAvailable(rt);
 
     card.innerHTML = `
         <div class="room-type-card-header">
