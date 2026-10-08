@@ -1,4 +1,3 @@
-
 /* ============================================================
    ROOMDHUNDO ADMIN PANEL
    SINGLE PAGE ADMIN CSS
@@ -1590,40 +1589,6 @@ table {
 
 @media (max-width: 900px) {
 
-    .sidebar {
-        position: static;
-
-        width: 100%;
-
-        min-height: auto;
-    }
-
-
-    .admin-nav {
-        flex-direction: row;
-
-        flex-wrap: wrap;
-
-        padding: 12px;
-    }
-
-
-    .nav-item {
-        width: auto;
-
-        flex: 1 1 160px;
-    }
-
-
-    .sidebar-bottom {
-        margin-top: 0;
-
-        display: grid;
-
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-    }
-
 
     .view-website-btn,
     #adminLoginBtn,
@@ -2329,3 +2294,531 @@ table {
 
 }
 
+/* ============================================================
+   ECONOMY
+   ============================================================ */
+
+.eco-card {
+    margin-bottom: 20px;
+}
+
+.eco-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 16px;
+    padding: 20px;
+}
+
+.eco-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.eco-field > span {
+    font-size: 12px;
+    font-weight: 700;
+    color: #374151;
+}
+
+.eco-field input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #dbe1e8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    outline: none;
+    font-size: 13px;
+}
+
+.eco-field input:focus,
+.eco-year-box select:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.12);
+}
+
+.eco-field-wide {
+    grid-column: span 2;
+}
+
+.eco-profit-preview {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    font-size: 15px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.eco-profit-preview.positive,
+.eco-profit-pos {
+    color: #15803d;
+}
+
+.eco-profit-preview.negative,
+.eco-profit-neg {
+    color: #b91c1c;
+}
+
+.eco-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.eco-actions .modal-btn {
+    min-width: 130px;
+}
+
+.eco-actions .modal-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.eco-message {
+    font-size: 12px;
+    font-weight: 600;
+    min-height: 18px;
+}
+
+.eco-message.error {
+    color: #b91c1c;
+}
+
+.eco-message.success {
+    color: #15803d;
+}
+
+.eco-year-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.eco-year-total {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.eco-year-box select {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #dbe1e8;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 13px;
+    outline: none;
+}
+
+.eco-chart-wrap {
+    padding: 16px 20px 20px;
+}
+
+.eco-chart-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.eco-note {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.eco-num {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+
+    .eco-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 560px) {
+
+    .eco-form {
+        grid-template-columns: 1fr;
+    }
+
+    .eco-field-wide {
+        grid-column: auto;
+    }
+
+    .eco-year-box {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+    }
+
+}
+
+
+
+/* ============================================================
+   MOBILE FRIENDLY ADMIN
+   Slide-in menu, card-style tables, bottom-sheet modals
+   ============================================================ */
+
+.mobile-bar,
+.sidebar-backdrop {
+    display: none;
+}
+
+
+/* ---------- Tablet and phone: slide-in menu ---------- */
+
+@media (max-width: 900px) {
+
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    .sidebar {
+        width: min(290px, 86vw);
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        will-change: transform;
+    }
+
+    .sidebar.open {
+        transform: none;
+        box-shadow: 8px 0 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        background: rgba(15, 23, 42, 0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .sidebar-backdrop.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    body.nav-open {
+        overflow: hidden;
+    }
+
+    .mobile-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        margin: -20px -20px 18px;
+        padding: 10px 16px;
+        background: #111827;
+        color: #ffffff;
+    }
+
+    .mobile-bar strong {
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .mobile-menu-btn {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        font-size: 22px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .mobile-menu-btn:hover,
+    .mobile-menu-btn:focus-visible {
+        background: rgba(255, 255, 255, 0.18);
+        outline: none;
+    }
+
+    .admin-nav .nav-item {
+        min-height: 46px;
+    }
+
+    .main-content {
+        min-width: 0;
+    }
+
+    .card-header {
+        flex-wrap: wrap;
+    }
+
+}
+
+
+/* ---------- Phone ---------- */
+
+@media (max-width: 700px) {
+
+    .mobile-bar {
+        margin: -16px -16px 16px;
+    }
+
+    .topbar {
+        margin-bottom: 18px;
+    }
+
+    .topbar h1 {
+        font-size: 24px;
+    }
+
+    .admin-profile {
+        width: 100%;
+    }
+
+
+    /* Two compact stat cards per row */
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px;
+        min-height: 84px;
+        gap: 10px;
+    }
+
+    .stat-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .stat-card h2 {
+        font-size: 20px;
+        overflow-wrap: anywhere;
+    }
+
+
+    /* Easier to tap, and no zoom when typing on iPhone */
+
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    .modal-btn,
+    .action-btn,
+    .view-all-btn,
+    .review-btn {
+        min-height: 42px;
+    }
+
+
+    /* Tables turn into cards */
+
+    .table-container {
+        overflow: visible;
+    }
+
+    .table-container table,
+    .table-container tbody {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .table-container thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+    }
+
+    .table-container tbody tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .table-container tbody tr:last-child {
+        border-bottom: 0;
+    }
+
+    .table-container tbody tr:hover {
+        background: transparent;
+    }
+
+    .table-container td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .table-container td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 3px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        color: #6b7280;
+    }
+
+    .table-container td:not([data-label])::before {
+        display: none;
+    }
+
+    .table-container td:first-child,
+    .table-container td.td-actions,
+    .table-container td.td-empty {
+        grid-column: 1 / -1;
+    }
+
+    .table-container td:first-child::before,
+    .table-container td.td-actions::before,
+    .table-container td.td-empty::before {
+        display: none;
+    }
+
+    .table-container td.td-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 2px;
+    }
+
+    .table-container td.td-actions .action-btn,
+    .table-container td.td-actions button {
+        flex: 1 1 auto;
+    }
+
+    .table-container td.td-empty {
+        padding: 26px 8px;
+        text-align: center;
+    }
+
+
+    /* Modals become bottom sheets */
+
+    .admin-modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .admin-modal .admin-modal-content {
+        width: 100%;
+        max-height: 92vh;
+        max-height: 92dvh;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .admin-modal .modal-header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #ffffff;
+    }
+
+    .admin-modal .modal-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        background: #ffffff;
+    }
+
+
+    /* Economy graph: keep it readable, swipe sideways */
+
+    .eco-chart-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .eco-chart-wrap svg {
+        min-width: 620px;
+    }
+
+}
+
+
+@media (max-width: 360px) {
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* ============================================================
+   DASHBOARD MONTHLY GROWTH
+   ============================================================ */
+
+.growth-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    padding: 14px 20px 0;
+}
+
+.growth-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.growth-chip i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.growth-chip strong {
+    color: #111827;
+    font-weight: 800;
+}
+
+@media (max-width: 700px) {
+
+    .growth-legend {
+        padding: 12px 16px 0;
+    }
+
+}

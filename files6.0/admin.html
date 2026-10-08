@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -35,7 +34,7 @@
          ADMIN SIDEBAR
          ===================================================== -->
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="adminSidebar">
 
         <div class="admin-logo">
 
@@ -88,6 +87,15 @@
         >
                 📩 Enquiries
              </button>
+
+
+            <button
+                type="button"
+                class="nav-item"
+                data-section="economy"
+            >
+                💰 Economy
+            </button>
 
 
             <button
@@ -152,6 +160,8 @@
 
     </aside>
 
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
 
 
     <!-- =====================================================
@@ -159,6 +169,26 @@
          ===================================================== -->
 
     <main class="main-content">
+
+        <!-- MOBILE TOP BAR (visible on phones and tablets only) -->
+
+        <div class="mobile-bar">
+
+            <button
+                type="button"
+                id="mobileMenuBtn"
+                class="mobile-menu-btn"
+                aria-label="Open menu"
+                aria-expanded="false"
+                aria-controls="adminSidebar"
+            >
+                ☰
+            </button>
+
+            <strong>RoomDhundo Admin</strong>
+
+        </div>
+
 
 
         <!-- =================================================
@@ -328,6 +358,28 @@
 
             </section>
 
+
+
+            <!-- MONTHLY GROWTH GRAPH -->
+
+            <div class="dashboard-card eco-card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Monthly Growth</h2>
+                        <p>New users, new owners, properties listed and deals sold in each month.</p>
+                    </div>
+
+                    <div class="eco-year-box">
+                        <select id="growthYearSelect" aria-label="Select year"></select>
+                    </div>
+                </div>
+
+                <div class="growth-legend" id="growthLegend"></div>
+
+                <div class="eco-chart-wrap" id="growthChart"></div>
+
+            </div>
 
 
             <!-- DASHBOARD GRID -->
@@ -1319,6 +1371,210 @@
     </div>
 
 </section>
+
+        <!-- =================================================
+             ECONOMY
+             ================================================= -->
+
+        <section
+            id="economySection"
+            class="admin-section"
+            data-section-content="economy"
+        >
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div>
+                        <span>Total Room Rent</span>
+                        <h2 id="ecoTotalAmount">₹0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🗓️</div>
+                    <div>
+                        <span>This Month's Profit</span>
+                        <h2 id="ecoMonthProfit">₹0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div>
+                        <span>Total Profit</span>
+                        <h2 id="ecoTotalProfit">₹0</h2>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🤝</div>
+                    <div>
+                        <span>Total Deals</span>
+                        <h2 id="ecoTotalDeals">0</h2>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- ADD DEAL -->
+
+            <div class="dashboard-card eco-card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Add Deal</h2>
+                        <p>Add the room rent and where the deal was done. Your profit is the commission taken from the renter (10% by default) and is calculated automatically.</p>
+                    </div>
+                </div>
+
+                <form id="ecoForm" class="eco-form" autocomplete="off">
+
+                    <label class="eco-field">
+                        <span>Date</span>
+                        <input type="date" id="ecoDate" required>
+                    </label>
+
+                    <label class="eco-field">
+                        <span>Property / Place</span>
+                        <input
+                            type="text"
+                            id="ecoProperty"
+                            list="ecoPropertyList"
+                            placeholder="Where the deal was done"
+                            required
+                        >
+                        <datalist id="ecoPropertyList"></datalist>
+                    </label>
+
+                    <label class="eco-field">
+                        <span>Renter Name</span>
+                        <input
+                            type="text"
+                            id="ecoDealWith"
+                            placeholder="Who took the room (optional)"
+                        >
+                    </label>
+
+                    <label class="eco-field">
+                        <span>Room Rent (₹)</span>
+                        <input
+                            type="number"
+                            id="ecoAmount"
+                            min="0"
+                            step="any"
+                            placeholder="e.g. 3000"
+                            required
+                        >
+                    </label>
+
+                    <label class="eco-field">
+                        <span>Commission (%)</span>
+                        <input
+                            type="number"
+                            id="ecoCommission"
+                            min="0"
+                            max="100"
+                            step="any"
+                            value="10"
+                            required
+                        >
+                    </label>
+
+                    <div class="eco-field">
+                        <span>Your Profit</span>
+                        <div class="eco-profit-preview" id="ecoProfitPreview">₹0</div>
+                    </div>
+
+                    <label class="eco-field eco-field-wide">
+                        <span>Notes</span>
+                        <input
+                            type="text"
+                            id="ecoNotes"
+                            placeholder="Anything to remember about this deal (optional)"
+                        >
+                    </label>
+
+                    <div class="eco-actions">
+                        <button type="submit" class="modal-btn approve-btn" id="ecoSubmitBtn">
+                            Add Deal
+                        </button>
+                        <p id="ecoMessage" class="eco-message" role="status"></p>
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- MONTHLY PROFIT GRAPH -->
+
+            <div class="dashboard-card eco-card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>Monthly Profit</h2>
+                        <p>Profit earned in each month of the selected year.</p>
+                    </div>
+
+                    <div class="eco-year-box">
+                        <span id="ecoYearTotal" class="eco-year-total"></span>
+                        <select id="ecoYearSelect" aria-label="Select year"></select>
+                    </div>
+                </div>
+
+                <div class="eco-chart-wrap" id="ecoChart"></div>
+
+            </div>
+
+
+            <!-- ALL DEALS -->
+
+            <div class="dashboard-card">
+
+                <div class="card-header">
+                    <div>
+                        <h2>All Deals</h2>
+                        <p>Every deal you have added, newest first.</p>
+                    </div>
+
+                    <span id="ecoCount">0 Deals</span>
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Property / Place</th>
+                                <th>Renter</th>
+                                <th>Room Rent</th>
+                                <th>Commission</th>
+                                <th>Profit</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="ecoTableBody">
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    Loading deals...
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
 
         <!-- =================================================
              REVIEWS
@@ -2778,9 +3034,6 @@
     </div>
 
 </div>
-
-
-
 
     <!-- =====================================================
          EDIT ADMIN INFORMATION MODAL

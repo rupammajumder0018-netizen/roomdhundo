@@ -1,4 +1,3 @@
-
 // ============================================================
 // ROOMDHUNDO ADMIN PANEL
 // SINGLE PAGE ADMIN.JS
@@ -420,6 +419,12 @@ function showSection(
     renderEnquiriesSection();
 }
 
+    else if (sectionName === "economy") {
+
+        loadEconomy().then(renderEconomySection);
+
+    }
+
     else if (
         sectionName ===
         "settings"
@@ -482,6 +487,16 @@ function updatePageHeader(
 
         },
 
+        economy: {
+
+            title:
+                "Economy",
+
+            subtitle:
+                "Track deals, your 10% commission and monthly profit."
+
+        },
+
         settings: {
 
             title:
@@ -521,12 +536,14 @@ async function loadAllData() {
     await loadProfiles();
     await loadReviews();
     await loadEnquiries();
+    await loadEconomy();
 
     renderDashboard();
     renderPropertySection();
    renderProfileSection();
     renderReviewSection();
     renderEnquiriesSection();
+    renderEconomySection();
 }
 
 
@@ -932,6 +949,8 @@ function renderDashboard() {
     );
 
     renderDashboardRecentProperties();
+
+    renderGrowthChart();
 
 }
 
@@ -6846,6 +6865,1420 @@ async function verifyAdminAccess() {
 
 
 // ============================================================
+// ECONOMY (DEALS, PROFIT & MONTHLY GRAPH)
+// ============================================================
+//
+// Supabase table: economy_deals  (see economy_deals.sql)
+// profit = amount x commission_percent / 100  (calculated by the database)
+// ============================================================
+
+let economyDeals = [];
+let economyLoadError = "";
+let economySubmitting = false;
+
+const ECONOMY_MONTHS = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
+
+
+function ecoNumber(value) {
+
+    const number = Number(value);
+
+    return Number.isFinite(number)
+        ? number
+        : 0;
+
+}
+
+
+function ecoPercent(deal) {
+
+    const value = Number(deal.commission_percent);
+
+    return Number.isFinite(value)
+        ? value
+        : 10;
+
+}
+
+
+function ecoProfit(deal) {
+
+    return Math.round(
+        ecoNumber(deal.amount) * ecoPercent(deal)
+    ) / 100;
+
+}
+
+
+function formatMoney(value) {
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "—";
+    }
+
+    return (
+        (number < 0 ? "-" : "") +
+        "₹" +
+        Math.abs(number).toLocaleString("en-IN")
+    );
+
+}
+
+
+function formatMoneyShort(value) {
+
+    const number = Math.abs(value);
+    const sign = value < 0 ? "-" : "";
+
+    const trim = x =>
+        String(Number(x.toFixed(1)));
+
+    if (number >= 10000000) {
+        return `${sign}₹${trim(number / 10000000)}Cr`;
+    }
+
+    if (number >= 100000) {
+        return `${sign}₹${trim(number / 100000)}L`;
+    }
+
+    if (number >= 1000) {
+        return `${sign}₹${trim(number / 1000)}k`;
+    }
+
+    return `${sign}₹${Math.round(number)}`;
+
+}
+
+
+function ecoNiceStep(raw) {
+
+    if (!(raw > 0)) {
+        return 1;
+    }
+
+    const exponent =
+        Math.pow(10, Math.floor(Math.log10(raw)));
+
+    const fraction = raw / exponent;
+
+    const nice =
+        fraction <= 1 ? 1 :
+        fraction <= 2 ? 2 :
+        fraction <= 5 ? 5 : 10;
+
+    return nice * exponent;
+
+}
+
+
+function ecoTodayISO() {
+
+    const now = new Date();
+
+    const month =
+        String(now.getMonth() + 1).padStart(2, "0");
+
+    const day =
+        String(now.getDate()).padStart(2, "0");
+
+    return `${now.getFullYear()}-${month}-${day}`;
+
+}
+
+
+function setEcoMessage(text, type) {
+
+    const message =
+        document.getElementById("ecoMessage");
+
+    if (!message) {
+        return;
+    }
+
+    message.textContent = text || "";
+
+    message.className =
+        "eco-message" + (type ? ` ${type}` : "");
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD
+// ------------------------------------------------------------
+
+async function loadEconomy() {
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .from("economy_deals")
+            .select(`
+                id,
+                deal_date,
+                property_name,
+                deal_with,
+                amount,
+                commission_percent,
+                profit,
+                notes,
+                created_at
+            `)
+            .order("deal_date", { ascending: false })
+            .order("created_at", { ascending: false });
+
+        if (error) {
+
+            console.error("Error loading economy deals:", error);
+
+            economyDeals = [];
+
+            economyLoadError =
+                error.code === "42P01"
+                    ? "The economy_deals table does not exist yet. Run economy_deals.sql in the Supabase SQL Editor."
+                    : error.message;
+
+            return;
+
+        }
+
+        economyLoadError = "";
+
+        economyDeals =
+            Array.isArray(data) ? data : [];
+
+        console.log("Economy deals loaded:", economyDeals.length);
+
+    } catch (error) {
+
+        console.error("Unexpected error loading economy deals:", error);
+
+        economyDeals = [];
+
+        economyLoadError = error.message || "Unable to load deals.";
+
+    }
+
+}
+
+
+// ------------------------------------------------------------
+// RENDER SECTION
+// ------------------------------------------------------------
+
+function renderEconomySection() {
+
+    const tableBody =
+        document.getElementById("ecoTableBody");
+
+    if (!tableBody) {
+        return;
+    }
+
+
+    // Property suggestions from existing listings
+
+    const propertyList =
+        document.getElementById("ecoPropertyList");
+
+    if (propertyList) {
+
+        const names =
+            [...new Set(
+                buildings
+                    .map(b => b.name || b.property_name)
+                    .filter(Boolean)
+            )];
+
+        propertyList.innerHTML =
+            names
+                .map(name =>
+                    `<option value="${escapeHTML(name)}"></option>`
+                )
+                .join("");
+
+    }
+
+
+    // Totals
+
+    const totalAmount =
+        economyDeals.reduce(
+            (sum, deal) => sum + ecoNumber(deal.amount), 0
+        );
+
+    const totalProfit =
+        economyDeals.reduce(
+            (sum, deal) => sum + ecoProfit(deal), 0
+        );
+
+    const thisMonth = ecoTodayISO().slice(0, 7);
+
+    const monthProfit =
+        economyDeals
+            .filter(deal =>
+                String(deal.deal_date || "").slice(0, 7) === thisMonth
+            )
+            .reduce((sum, deal) => sum + ecoProfit(deal), 0);
+
+    setText("ecoTotalAmount", formatMoney(totalAmount));
+    setText("ecoMonthProfit", formatMoney(monthProfit));
+    setText("ecoTotalProfit", formatMoney(totalProfit));
+    setText("ecoTotalDeals", economyDeals.length);
+
+    setText(
+        "ecoCount",
+        `${economyDeals.length} ${
+            economyDeals.length === 1 ? "Deal" : "Deals"
+        }`
+    );
+
+    const profitCard =
+        document.getElementById("ecoTotalProfit");
+
+    if (profitCard) {
+
+        profitCard.classList.toggle("eco-profit-pos", totalProfit > 0);
+        profitCard.classList.toggle("eco-profit-neg", totalProfit < 0);
+
+    }
+
+
+    // Table
+
+    if (economyLoadError) {
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    Unable to load deals.
+                    <br>
+                    ${escapeHTML(economyLoadError)}
+                </td>
+            </tr>
+        `;
+
+    }
+
+    else if (!economyDeals.length) {
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    No deals yet. Add your first deal above.
+                </td>
+            </tr>
+        `;
+
+    }
+
+    else {
+
+        tableBody.innerHTML =
+            economyDeals
+                .map(deal => {
+
+                    const profit = ecoProfit(deal);
+
+                    const profitClass =
+                        profit > 0 ? "eco-profit-pos" :
+                        profit < 0 ? "eco-profit-neg" : "";
+
+                    return `
+                        <tr>
+
+                            <td class="eco-num">
+                                ${escapeHTML(formatDate(deal.deal_date))}
+                            </td>
+
+                            <td>
+                                <strong>${escapeHTML(deal.property_name)}</strong>
+                                ${
+                                    deal.notes
+                                        ? `<span class="eco-note">${escapeHTML(deal.notes)}</span>`
+                                        : ""
+                                }
+                            </td>
+
+                            <td>${escapeHTML(deal.deal_with || "—")}</td>
+
+                            <td class="eco-num">
+                                ${escapeHTML(formatMoney(deal.amount))}
+                            </td>
+
+                            <td class="eco-num">
+                                ${escapeHTML(String(ecoPercent(deal)))}%
+                            </td>
+
+                            <td class="eco-num ${profitClass}">
+                                <strong>${escapeHTML(formatMoney(profit))}</strong>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    class="action-btn delete-btn eco-delete-btn"
+                                    data-deal-id="${escapeHTML(deal.id)}"
+                                >
+                                    🗑️ Delete
+                                </button>
+                            </td>
+
+                        </tr>
+                    `;
+
+                })
+                .join("");
+
+        tableBody
+            .querySelectorAll(".eco-delete-btn")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => deleteEconomyDeal(button.dataset.dealId)
+                );
+
+            });
+
+    }
+
+
+    updateEconomyYears();
+
+    renderEconomyChart();
+
+}
+
+
+// ------------------------------------------------------------
+// YEAR SELECT
+// ------------------------------------------------------------
+
+function updateEconomyYears() {
+
+    const select =
+        document.getElementById("ecoYearSelect");
+
+    if (!select) {
+        return;
+    }
+
+    const currentYear = String(new Date().getFullYear());
+
+    const years =
+        new Set([currentYear]);
+
+    economyDeals.forEach(deal => {
+
+        const year =
+            String(deal.deal_date || "").slice(0, 4);
+
+        if (/^\d{4}$/.test(year)) {
+            years.add(year);
+        }
+
+    });
+
+    const sorted =
+        [...years].sort((a, b) => b - a);
+
+    const previous = select.value;
+
+    select.innerHTML =
+        sorted
+            .map(year =>
+                `<option value="${year}">${year}</option>`
+            )
+            .join("");
+
+    select.value =
+        sorted.includes(previous)
+            ? previous
+            : currentYear;
+
+}
+
+
+// ------------------------------------------------------------
+// MONTHLY PROFIT CHART (SVG)
+// ------------------------------------------------------------
+
+function renderEconomyChart() {
+
+    const box =
+        document.getElementById("ecoChart");
+
+    const select =
+        document.getElementById("ecoYearSelect");
+
+    if (!box) {
+        return;
+    }
+
+    const year =
+        select?.value || String(new Date().getFullYear());
+
+    const profit = new Array(12).fill(0);
+    const counts = new Array(12).fill(0);
+
+    economyDeals.forEach(deal => {
+
+        const date = String(deal.deal_date || "");
+
+        if (date.slice(0, 4) !== year) {
+            return;
+        }
+
+        const month = Number(date.slice(5, 7)) - 1;
+
+        if (month < 0 || month > 11) {
+            return;
+        }
+
+        profit[month] += ecoProfit(deal);
+
+        counts[month] += 1;
+
+    });
+
+    const yearProfit =
+        profit.reduce((sum, value) => sum + value, 0);
+
+    const yearTotal =
+        document.getElementById("ecoYearTotal");
+
+    if (yearTotal) {
+
+        yearTotal.textContent =
+            `${year}: ${formatMoney(yearProfit)}`;
+
+        yearTotal.className =
+            "eco-year-total " +
+            (yearProfit > 0 ? "eco-profit-pos" :
+             yearProfit < 0 ? "eco-profit-neg" : "");
+
+    }
+
+
+    // Geometry
+
+    const W = 760, H = 320;
+    const L = 64, R = 14, T = 28, B = 36;
+
+    const plotW = W - L - R;
+    const plotH = H - T - B;
+
+    let min = Math.min(0, ...profit);
+    let max = Math.max(0, ...profit);
+
+    if (min === 0 && max === 0) {
+        max = 1000;
+    }
+
+    const step = ecoNiceStep((max - min) / 4);
+
+    const yMin = Math.floor(min / step) * step;
+    const yMax = Math.ceil(max / step) * step;
+
+    const y = value =>
+        T + plotH * (yMax - value) / (yMax - yMin);
+
+    const zero = y(0);
+
+    const slot = plotW / 12;
+    const barW = Math.min(38, slot * 0.58);
+
+
+    // Grid + y labels
+
+    let grid = "";
+
+    for (
+        let tick = yMin, guard = 0;
+        tick <= yMax + step / 2 && guard < 12;
+        tick += step, guard++
+    ) {
+
+        const ty = y(tick);
+
+        grid += `
+            <line x1="${L}" x2="${W - R}" y1="${ty}" y2="${ty}"
+                  stroke="${Math.abs(tick) < step / 1000 ? "#9ca3af" : "#eef2f7"}"
+                  stroke-width="1"></line>
+            <text x="${L - 8}" y="${ty + 4}" text-anchor="end"
+                  font-size="11" fill="#6b7280">
+                ${escapeHTML(formatMoneyShort(tick))}
+            </text>
+        `;
+
+    }
+
+
+    // Bars + labels
+
+    let bars = "";
+
+    profit.forEach((value, index) => {
+
+        const cx = L + slot * index + slot / 2;
+
+        bars += `
+            <text x="${cx}" y="${H - 12}" text-anchor="middle"
+                  font-size="12" fill="#6b7280">
+                ${ECONOMY_MONTHS[index]}
+            </text>
+        `;
+
+        if (!counts[index]) {
+            return;
+        }
+
+        const top = y(Math.max(value, 0));
+        const bottom = y(Math.min(value, 0));
+
+        const height = Math.max(bottom - top, 1);
+
+        const color =
+            value >= 0 ? "#16a34a" : "#dc2626";
+
+        const labelY =
+            value >= 0
+                ? top - 6
+                : bottom + 14;
+
+        bars += `
+            <g>
+                <title>${ECONOMY_MONTHS[index]} ${year}: ${escapeHTML(formatMoney(value))} (${counts[index]} ${counts[index] === 1 ? "deal" : "deals"})</title>
+                <rect x="${cx - barW / 2}" y="${top}"
+                      width="${barW}" height="${height}"
+                      rx="4" fill="${color}"></rect>
+                <text x="${cx}" y="${labelY}" text-anchor="middle"
+                      font-size="11" font-weight="700" fill="${color}">
+                    ${escapeHTML(formatMoneyShort(value))}
+                </text>
+            </g>
+        `;
+
+    });
+
+
+    const empty =
+        economyDeals.some(deal =>
+            String(deal.deal_date || "").slice(0, 4) === year
+        )
+            ? ""
+            : `
+                <text x="${W / 2}" y="${T + plotH / 2}" text-anchor="middle"
+                      font-size="13" fill="#6b7280">
+                    No deals added for ${year} yet.
+                </text>
+            `;
+
+
+    box.innerHTML = `
+        <svg viewBox="0 0 ${W} ${H}" role="img"
+             aria-label="Monthly profit for ${year}">
+            ${grid}
+            ${bars}
+            ${empty}
+        </svg>
+    `;
+
+}
+
+
+// ------------------------------------------------------------
+// ADD DEAL
+// ------------------------------------------------------------
+
+function updateEconomyProfitPreview() {
+
+    const preview =
+        document.getElementById("ecoProfitPreview");
+
+    const amount =
+        document.getElementById("ecoAmount");
+
+    const commission =
+        document.getElementById("ecoCommission");
+
+    if (!preview || !amount || !commission) {
+        return;
+    }
+
+    const profit =
+        Math.round(
+            ecoNumber(amount.value) * ecoNumber(commission.value)
+        ) / 100;
+
+    preview.textContent = formatMoney(profit);
+
+    preview.classList.toggle("positive", profit > 0);
+    preview.classList.toggle("negative", profit < 0);
+
+}
+
+
+async function submitEconomyDeal(event) {
+
+    event.preventDefault();
+
+    if (economySubmitting) {
+        return;
+    }
+
+    const dealDate =
+        document.getElementById("ecoDate").value;
+
+    const propertyName =
+        document.getElementById("ecoProperty").value.trim();
+
+    const dealWith =
+        document.getElementById("ecoDealWith").value.trim();
+
+    const amountRaw =
+        document.getElementById("ecoAmount").value;
+
+    const commissionRaw =
+        document.getElementById("ecoCommission").value;
+
+    const notes =
+        document.getElementById("ecoNotes").value.trim();
+
+    const amount = Number(amountRaw);
+    const commission = Number(commissionRaw);
+
+    if (!dealDate || !propertyName) {
+        setEcoMessage("Enter the date and the property or place.", "error");
+        return;
+    }
+
+    if (
+        amountRaw === "" || commissionRaw === "" ||
+        !Number.isFinite(amount) || !Number.isFinite(commission) ||
+        amount < 0 || commission < 0 || commission > 100
+    ) {
+        setEcoMessage("Room rent must be 0 or more, and commission must be between 0 and 100.", "error");
+        return;
+    }
+
+    economySubmitting = true;
+
+    const button =
+        document.getElementById("ecoSubmitBtn");
+
+    if (button) {
+        button.disabled = true;
+    }
+
+    setEcoMessage("Saving deal...", "");
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .from("economy_deals")
+            .insert({
+                deal_date: dealDate,
+                property_name: propertyName,
+                deal_with: dealWith || null,
+                amount,
+                commission_percent: commission,
+                notes: notes || null
+            })
+            .select(`
+                id, deal_date, property_name, deal_with,
+                amount, commission_percent, profit, notes, created_at
+            `)
+            .single();
+
+        if (error) {
+
+            console.error("Error adding deal:", error);
+
+            setEcoMessage(
+                error.code === "42P01"
+                    ? "The economy_deals table does not exist yet. Run economy_deals.sql in Supabase."
+                    : `Unable to save the deal: ${error.message}`,
+                "error"
+            );
+
+            return;
+
+        }
+
+        economyLoadError = "";
+
+        economyDeals.unshift(data);
+
+        economyDeals.sort((a, b) =>
+            String(b.deal_date).localeCompare(String(a.deal_date)) ||
+            String(b.created_at).localeCompare(String(a.created_at))
+        );
+
+        const select =
+            document.getElementById("ecoYearSelect");
+
+        updateEconomyYears();
+
+        if (select) {
+            select.value = String(data.deal_date).slice(0, 4);
+        }
+
+        renderEconomySection();
+
+        if (select) {
+            select.value = String(data.deal_date).slice(0, 4);
+            renderEconomyChart();
+        }
+
+        ["ecoProperty", "ecoDealWith", "ecoAmount", "ecoNotes"]
+            .forEach(id => {
+                document.getElementById(id).value = "";
+            });
+
+        updateEconomyProfitPreview();
+
+        setEcoMessage("Deal added.", "success");
+
+    } catch (error) {
+
+        console.error("Unexpected error adding deal:", error);
+
+        setEcoMessage(`Something went wrong: ${error.message}`, "error");
+
+    } finally {
+
+        economySubmitting = false;
+
+        if (button) {
+            button.disabled = false;
+        }
+
+    }
+
+}
+
+
+// ------------------------------------------------------------
+// DELETE DEAL
+// ------------------------------------------------------------
+
+async function deleteEconomyDeal(dealId) {
+
+    const deal =
+        economyDeals.find(item =>
+            String(item.id) === String(dealId)
+        );
+
+    if (!deal) {
+        return;
+    }
+
+    const confirmed =
+        window.confirm(
+            `Delete the deal at "${deal.property_name}" (${formatMoney(deal.amount)})?\n\nThis cannot be undone.`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const { data, error } = await supabaseClient
+            .from("economy_deals")
+            .delete()
+            .eq("id", dealId)
+            .select("id");
+
+        if (error) {
+            alert(`Unable to delete the deal.\n\n${error.message}`);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            alert("Nothing was deleted. Check the admin policy on economy_deals.");
+            return;
+        }
+
+        economyDeals =
+            economyDeals.filter(item =>
+                String(item.id) !== String(dealId)
+            );
+
+        renderEconomySection();
+
+    } catch (error) {
+
+        console.error("Unexpected error deleting deal:", error);
+
+        alert(`Something went wrong.\n\n${error.message}`);
+
+    }
+
+}
+
+
+// ------------------------------------------------------------
+// BIND EVENTS
+// ------------------------------------------------------------
+
+function bindEconomyEvents() {
+
+    const form =
+        document.getElementById("ecoForm");
+
+    const dateInput =
+        document.getElementById("ecoDate");
+
+    const amount =
+        document.getElementById("ecoAmount");
+
+    const commissionInput =
+        document.getElementById("ecoCommission");
+
+    const yearSelect =
+        document.getElementById("ecoYearSelect");
+
+    if (dateInput && !dateInput.value) {
+        dateInput.value = ecoTodayISO();
+    }
+
+    if (form) {
+        form.addEventListener("submit", submitEconomyDeal);
+    }
+
+    [amount, commissionInput].forEach(input => {
+
+        if (input) {
+            input.addEventListener("input", updateEconomyProfitPreview);
+        }
+
+    });
+
+    if (yearSelect) {
+        yearSelect.addEventListener("change", renderEconomyChart);
+    }
+
+}
+
+
+// ============================================================
+// DASHBOARD: MONTHLY GROWTH GRAPH
+// (new users, new owners, listed properties and deals sold per month)
+// ============================================================
+
+const GROWTH_SERIES = [
+    { key: "users",      label: "Users",      color: "#2563eb" },
+    { key: "owners",     label: "Owners",     color: "#f59e0b" },
+    { key: "properties", label: "Properties", color: "#16a34a" },
+    { key: "sold",       label: "Deals Sold", color: "#8b5cf6" }
+];
+
+
+function growthYearMonth(value) {
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return {
+        year: String(date.getFullYear()),
+        month: date.getMonth()
+    };
+
+}
+
+
+function growthDealYearMonth(value) {
+
+    const text = String(value || "");
+
+    if (!/^\d{4}-\d{2}/.test(text)) {
+        return null;
+    }
+
+    return {
+        year: text.slice(0, 4),
+        month: Number(text.slice(5, 7)) - 1
+    };
+
+}
+
+
+function updateGrowthYears() {
+
+    const select =
+        document.getElementById("growthYearSelect");
+
+    if (!select) {
+        return;
+    }
+
+    const currentYear = String(new Date().getFullYear());
+
+    const years = new Set([currentYear]);
+
+    [...profiles, ...buildings].forEach(item => {
+
+        const parsed = growthYearMonth(item.created_at);
+
+        if (parsed) {
+            years.add(parsed.year);
+        }
+
+    });
+
+    economyDeals.forEach(deal => {
+
+        const parsed = growthDealYearMonth(deal.deal_date);
+
+        if (parsed) {
+            years.add(parsed.year);
+        }
+
+    });
+
+    const sorted = [...years].sort((a, b) => b - a);
+
+    const previous = select.value;
+
+    select.innerHTML =
+        sorted
+            .map(year => `<option value="${year}">${year}</option>`)
+            .join("");
+
+    select.value =
+        sorted.includes(previous)
+            ? previous
+            : currentYear;
+
+}
+
+
+function renderGrowthChart() {
+
+    const box =
+        document.getElementById("growthChart");
+
+    const legend =
+        document.getElementById("growthLegend");
+
+    if (!box) {
+        return;
+    }
+
+    updateGrowthYears();
+
+    const select =
+        document.getElementById("growthYearSelect");
+
+    const year =
+        select?.value || String(new Date().getFullYear());
+
+    const data = {
+        users: new Array(12).fill(0),
+        owners: new Array(12).fill(0),
+        properties: new Array(12).fill(0),
+        sold: new Array(12).fill(0)
+    };
+
+    profiles.forEach(profile => {
+
+        const parsed = growthYearMonth(profile.created_at);
+
+        if (!parsed || parsed.year !== year) {
+            return;
+        }
+
+        const group = getProfileRole(profile.role);
+
+        if (group === "user") {
+            data.users[parsed.month] += 1;
+        }
+
+        else if (group === "owner") {
+            data.owners[parsed.month] += 1;
+        }
+
+    });
+
+    buildings.forEach(building => {
+
+        const parsed = growthYearMonth(building.created_at);
+
+        if (parsed && parsed.year === year) {
+            data.properties[parsed.month] += 1;
+        }
+
+    });
+
+    economyDeals.forEach(deal => {
+
+        const parsed = growthDealYearMonth(deal.deal_date);
+
+        if (
+            parsed &&
+            parsed.year === year &&
+            parsed.month >= 0 &&
+            parsed.month < 12
+        ) {
+            data.sold[parsed.month] += 1;
+        }
+
+    });
+
+
+    // Legend with yearly totals
+
+    if (legend) {
+
+        legend.innerHTML =
+            GROWTH_SERIES
+                .map(series => {
+
+                    const total =
+                        data[series.key]
+                            .reduce((sum, value) => sum + value, 0);
+
+                    return `
+                        <span class="growth-chip">
+                            <i style="background:${series.color}"></i>
+                            ${series.label}
+                            <strong>${total}</strong>
+                        </span>
+                    `;
+
+                })
+                .join("");
+
+    }
+
+
+    // Geometry
+
+    const W = 760, H = 320;
+    const L = 44, R = 14, T = 30, B = 36;
+
+    const plotW = W - L - R;
+    const plotH = H - T - B;
+
+    const max =
+        Math.max(
+            0,
+            ...GROWTH_SERIES.flatMap(series => data[series.key])
+        );
+
+    const step =
+        Math.max(1, ecoNiceStep((max || 4) / 4));
+
+    const yMax =
+        Math.max(step * 4 > 0 && max === 0 ? step * 4 : 0,
+                 Math.ceil(max / step) * step);
+
+    const y = value =>
+        T + plotH * (yMax - value) / yMax;
+
+    const slot = plotW / 12;
+    const groupW = slot * 0.8;
+    const barW = groupW / GROWTH_SERIES.length - 2;
+
+    let grid = "";
+
+    for (let tick = 0; tick <= yMax + step / 2; tick += step) {
+
+        const ty = y(tick);
+
+        grid += `
+            <line x1="${L}" x2="${W - R}" y1="${ty}" y2="${ty}"
+                  stroke="${tick === 0 ? "#9ca3af" : "#eef2f7"}"
+                  stroke-width="1"></line>
+            <text x="${L - 8}" y="${ty + 4}" text-anchor="end"
+                  font-size="11" fill="#6b7280">${tick}</text>
+        `;
+
+    }
+
+    let bars = "";
+
+    for (let month = 0; month < 12; month++) {
+
+        const cx = L + slot * month + slot / 2;
+        const startX = cx - groupW / 2;
+
+        bars += `
+            <text x="${cx}" y="${H - 12}" text-anchor="middle"
+                  font-size="12" fill="#6b7280">
+                ${ECONOMY_MONTHS[month]}
+            </text>
+        `;
+
+        const summary =
+            GROWTH_SERIES
+                .map(series =>
+                    `${series.label}: ${data[series.key][month]}`
+                )
+                .join(", ");
+
+        GROWTH_SERIES.forEach((series, index) => {
+
+            const value = data[series.key][month];
+
+            if (!value) {
+                return;
+            }
+
+            const x = startX + index * (barW + 2) + 1;
+            const top = y(value);
+
+            bars += `
+                <g>
+                    <title>${ECONOMY_MONTHS[month]} ${year} - ${summary}</title>
+                    <rect x="${x}" y="${top}" width="${barW}"
+                          height="${Math.max(y(0) - top, 1)}"
+                          rx="3" fill="${series.color}"></rect>
+                    <text x="${x + barW / 2}" y="${top - 5}"
+                          text-anchor="middle" font-size="10"
+                          font-weight="700" fill="${series.color}">
+                        ${value}
+                    </text>
+                </g>
+            `;
+
+        });
+
+    }
+
+    const hasData =
+        GROWTH_SERIES.some(series =>
+            data[series.key].some(value => value > 0)
+        );
+
+    const empty =
+        hasData
+            ? ""
+            : `
+                <text x="${W / 2}" y="${T + plotH / 2}" text-anchor="middle"
+                      font-size="13" fill="#6b7280">
+                    No activity recorded in ${year} yet.
+                </text>
+            `;
+
+    box.innerHTML = `
+        <svg viewBox="0 0 ${W} ${H}" role="img"
+             aria-label="New users, owners, properties and deals sold per month in ${year}">
+            ${grid}
+            ${bars}
+            ${empty}
+        </svg>
+    `;
+
+}
+
+
+function bindGrowthEvents() {
+
+    const select =
+        document.getElementById("growthYearSelect");
+
+    if (select) {
+        select.addEventListener("change", renderGrowthChart);
+    }
+
+}
+
+
+// ============================================================
+// MOBILE: SLIDE-IN MENU + CARD-STYLE TABLES
+// ============================================================
+
+function setSidebarOpen(open) {
+
+    const sidebar =
+        document.getElementById("adminSidebar");
+
+    const backdrop =
+        document.getElementById("sidebarBackdrop");
+
+    const button =
+        document.getElementById("mobileMenuBtn");
+
+    if (!sidebar || !backdrop || !button) {
+        return;
+    }
+
+    sidebar.classList.toggle("open", open);
+    backdrop.classList.toggle("show", open);
+    document.body.classList.toggle("nav-open", open);
+
+    button.setAttribute("aria-expanded", String(open));
+
+    button.setAttribute(
+        "aria-label",
+        open ? "Close menu" : "Open menu"
+    );
+
+}
+
+
+function bindMobileNavigation() {
+
+    const sidebar =
+        document.getElementById("adminSidebar");
+
+    const backdrop =
+        document.getElementById("sidebarBackdrop");
+
+    const button =
+        document.getElementById("mobileMenuBtn");
+
+    if (!sidebar || !backdrop || !button) {
+        return;
+    }
+
+    button.addEventListener("click", () => {
+
+        setSidebarOpen(
+            !sidebar.classList.contains("open")
+        );
+
+    });
+
+    backdrop.addEventListener("click", () => {
+        setSidebarOpen(false);
+    });
+
+    // Close the menu after choosing something in it
+    sidebar.addEventListener("click", event => {
+
+        if (event.target.closest("button, a")) {
+            setSidebarOpen(false);
+        }
+
+    });
+
+    document.addEventListener("keydown", event => {
+
+        if (event.key === "Escape") {
+            setSidebarOpen(false);
+        }
+
+    });
+
+    window
+        .matchMedia("(min-width: 901px)")
+        .addEventListener("change", event => {
+
+            if (event.matches) {
+                setSidebarOpen(false);
+            }
+
+        });
+
+}
+
+
+// Copies each column heading onto its cells so the CSS can show
+// "label: value" cards on phones. Runs again whenever a table changes.
+
+function labelResponsiveTables() {
+
+    document
+        .querySelectorAll(".table-container table")
+        .forEach(table => {
+
+            const labels =
+                [...table.querySelectorAll("thead th")]
+                    .map(th =>
+                        th.textContent
+                            .replace(/\s+/g, " ")
+                            .trim()
+                    );
+
+            table
+                .querySelectorAll("tbody tr")
+                .forEach(row => {
+
+                    [...row.children].forEach((cell, index) => {
+
+                        if (cell.tagName !== "TD") {
+                            return;
+                        }
+
+                        if (cell.colSpan > 1) {
+                            cell.classList.add("td-empty");
+                            return;
+                        }
+
+                        const label = labels[index];
+
+                        if (
+                            label &&
+                            cell.getAttribute("data-label") !== label
+                        ) {
+                            cell.setAttribute("data-label", label);
+                        }
+
+                        cell.classList.toggle(
+                            "td-actions",
+                            Boolean(cell.querySelector("button"))
+                        );
+
+                    });
+
+                });
+
+        });
+
+}
+
+
+function initResponsiveTables() {
+
+    let scheduled = false;
+
+    const schedule = () => {
+
+        if (scheduled) {
+            return;
+        }
+
+        scheduled = true;
+
+        requestAnimationFrame(() => {
+
+            scheduled = false;
+
+            labelResponsiveTables();
+
+        });
+
+    };
+
+    new MutationObserver(schedule)
+        .observe(
+            document.querySelector(".main-content") ||
+            document.body,
+            {
+                childList: true,
+                subtree: true
+            }
+        );
+
+    schedule();
+
+}
+
+
+// ============================================================
 // INITIALIZE
 // ============================================================
 
@@ -6859,6 +8292,14 @@ document.addEventListener(
 
         bindModalEvents();
         bindEnquiryFilters();
+
+        bindEconomyEvents();
+
+        bindGrowthEvents();
+
+        bindMobileNavigation();
+
+        initResponsiveTables();
 
         bindFilterEvents();
 
