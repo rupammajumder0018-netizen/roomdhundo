@@ -45,7 +45,7 @@
 
         <!-- BREADCRUMB -->
         <div class="breadcrumb">
-            <a href="search.html">← Back to search</a>
+            <a href="index.html">← Back</a>
         </div>
 
         <!-- PROPERTY HEADER -->
@@ -360,11 +360,14 @@
     class="contact-owner"
     id="contactOwnerBtn"
     type="button"
+    aria-expanded="false"
+    aria-controls="contactPanel"
 >
     📞 Contact Owner
 </button>
 
 
+<!--
 <button
     class="directions-btn"
     id="directionsBtn"
@@ -372,6 +375,7 @@
 >
     📍 Get Directions
 </button>
+-->
                 <!-- OWNER (rendered dynamically by script.js) -->
                 <div class="owner-card property-owner-card" id="ownerCard"></div>
 
@@ -380,6 +384,16 @@
         </section>
 
     </main>
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <p class="site-footer-copy">© 2026 RoomDhundo</p>
+            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent, paid once when you confirm a stay through us. This is not a monthly or repeating charge.</p>
+            <nav class="site-footer-links">
+                <a href="policies.html">Policies</a>
+                <a href="policies.html#payment">10% payment</a>
+            </nav>
+        </div>
+    </footer>
 <!-- PROPERTY VIDEOS -->
 
 <section
