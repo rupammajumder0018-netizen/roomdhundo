@@ -214,6 +214,93 @@ function facilityPreviewBadgesHTML(building, limit = 3) {
     return shown.map((item) => `<span>${item}</span>`).join("");
 }
 
+const LIST_SCROLL_KEY = "roomdhundo-list-scroll";
+
+function listScrollPageKey() {
+    return `${location.pathname}${location.search}`;
+}
+
+function readListScrollState() {
+    try {
+        return JSON.parse(sessionStorage.getItem(LIST_SCROLL_KEY) || "null");
+    } catch (error) {
+        return null;
+    }
+}
+
+function saveListScrollState({ propertyId = null, visibleCount = null } = {}) {
+    sessionStorage.setItem(LIST_SCROLL_KEY, JSON.stringify({
+        page: listScrollPageKey(),
+        path: location.pathname,
+        scrollY: window.scrollY,
+        propertyId,
+        visibleCount,
+        t: Date.now()
+    }));
+}
+
+function bindListPropertyOpeners(root, getVisibleCount) {
+    if (!root) return;
+
+    root.querySelectorAll(".property-card[data-id], .saved-property-card[data-id]").forEach((card) => {
+        if (card.dataset.listOpenBound) return;
+        card.dataset.listOpenBound = "true";
+
+        const openProperty = (event) => {
+            if (event.target.closest(".favorite, .remove-saved-btn, .compare-btn")) {
+                event.stopPropagation();
+                return;
+            }
+
+            const id = card.dataset.id;
+            if (!id) return;
+
+            saveListScrollState({
+                propertyId: id,
+                visibleCount: typeof getVisibleCount === "function" ? getVisibleCount() : null
+            });
+
+            if (event.target.closest("a[href*='property.html']")) return;
+
+            event.preventDefault();
+            window.location.href = `property.html?id=${encodeURIComponent(id)}`;
+        };
+
+        card.addEventListener("click", openProperty);
+    });
+}
+
+function restoreListScrollState(getVisibleCountSetter) {
+    const state = readListScrollState();
+    if (!state) return null;
+
+    const samePage = state.page === listScrollPageKey() || state.path === location.pathname;
+    if (!samePage) return null;
+
+    if (typeof getVisibleCountSetter === "function" && state.visibleCount) {
+        getVisibleCountSetter(state.visibleCount);
+    }
+
+    if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+    }
+
+    const apply = () => {
+        const card = state.propertyId
+            ? document.querySelector(`.property-card[data-id="${state.propertyId}"], .saved-property-card[data-id="${state.propertyId}"]`)
+            : null;
+        if (card) {
+            card.scrollIntoView({ block: "center" });
+        } else {
+            window.scrollTo(0, Number(state.scrollY) || 0);
+        }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(apply));
+    window.setTimeout(apply, 80);
+    return state;
+}
+
 function buildingHasCoupleFriendly(building) {
     const tags = building?.facility_tags || [];
     const labels = building?.facilities || [];
@@ -1769,6 +1856,10 @@ async function initHomePage() {
 
     const HOME_PAGE_SIZE = 4;
     let visibleCount = HOME_PAGE_SIZE;
+    const pendingHomeScroll = readListScrollState();
+    if (pendingHomeScroll && pendingHomeScroll.path === location.pathname && pendingHomeScroll.visibleCount) {
+        visibleCount = Math.max(HOME_PAGE_SIZE, Number(pendingHomeScroll.visibleCount) || HOME_PAGE_SIZE);
+    }
 
     const allBuildings = await fetchAllBuildings();
     const currentUser = await getCurrentUser();
@@ -1862,6 +1953,7 @@ async function initHomePage() {
 
         return `
             <div class="property-card home-property-card" data-id="${b.id}">
+                <a class="property-image-link" href="property.html?id=${b.id}" aria-label="View ${b.name}">
                 <div class="property-image">
                     ${b.images && b.images.length > 0
                         ? `
@@ -1876,6 +1968,7 @@ async function initHomePage() {
                         : `<div class="image-placeholder">Property Image</div>`
                     }
                 </div>
+                </a>
                 <div class="property-content">
                     <div class="property-title">
                         <div>
@@ -1915,6 +2008,7 @@ async function initHomePage() {
                 btn.textContent = nowSaved ? "♥" : "♡";
             });
         });
+        bindListPropertyOpeners(resultsList, () => visibleCount);
     }
 
     function renderPage() {
@@ -2048,11 +2142,12 @@ async function initHomePage() {
 
     window.addEventListener("scroll", updateBackToTopVisibility, { passive: true });
 
-    window.addEventListener("roomdhundo:location-changed", () => {
-        resetPreviewAndRender();
-    });
+    window.addEventListener("roomdhundo:location-changed", renderPage);
 
     renderPage();
+    restoreListScrollState((count) => {
+        visibleCount = Math.max(visibleCount, Number(count) || visibleCount);
+    });
 }
 
 function wireStayTypeToggle(onChange) {
@@ -2266,6 +2361,7 @@ async function initSearchPage() {
 
         return `
             <div class="property-card" data-id="${b.id}">
+                <a class="property-image-link" href="property.html?id=${b.id}" aria-label="View ${b.name}">
                 <div class="property-image">
                     ${b.images && b.images.length > 0
     ? `
@@ -2289,6 +2385,7 @@ async function initSearchPage() {
       `
 }
                 </div>
+                </a>
                 <div class="property-content">
                     <div class="property-title">
                         <div>
@@ -2329,6 +2426,7 @@ async function initSearchPage() {
                 btn.textContent = nowSaved ? "♥" : "♡";
             });
         });
+        bindListPropertyOpeners(resultsList);
     }
 
     function renderPage() {
@@ -2410,6 +2508,7 @@ async function initSearchPage() {
     window.addEventListener("roomdhundo:location-changed", renderPage);
 
     renderPage();
+    restoreListScrollState();
 }
 
 async function initPropertyPage() {
@@ -2423,6 +2522,13 @@ async function initPropertyPage() {
         if (main) main.innerHTML = `<p style="padding:60px 20px;text-align:center;">Property not found. <a href="search.html">Back to search</a></p>`;
         return;
     }
+
+    document.querySelector(".breadcrumb a")?.addEventListener("click", (event) => {
+        if (window.history.length > 1) {
+            event.preventDefault();
+            window.history.back();
+        }
+    });
     
 
     const propertyVideosSection = document.getElementById("propertyVideosSection");
@@ -2728,13 +2834,18 @@ const contactPropertyName =
         }
 
         if (contactPanel) {
+            contactPanel.classList.add("is-open");
             contactPanel.style.display = "block";
+            contactOwnerBtn?.setAttribute("aria-expanded", "true");
+            contactPanel.scrollIntoView({ block: "nearest" });
         }
     });
 
     closeContactBtn?.addEventListener("click", () => {
         if (contactPanel) {
+            contactPanel.classList.remove("is-open");
             contactPanel.style.display = "none";
+            contactOwnerBtn?.setAttribute("aria-expanded", "false");
         }
     });
 
@@ -2812,6 +2923,7 @@ if (!selectedRoomType) {
         }
     });
 
+    /*
     document.getElementById("directionsBtn")?.addEventListener("click", () => {
         const lat = Number(building.latitude);
         const lng = Number(building.longitude);
@@ -2842,6 +2954,7 @@ if (!selectedRoomType) {
             "noopener,noreferrer"
         );
     });
+    */
 
     const mainPropertyImage = document.getElementById("mainPropertyImage");
     const smallPropertyImages = document.getElementById("smallPropertyImages");
@@ -3103,10 +3216,12 @@ async function initSavedPage() {
         const priceLabel = (item.room_types || []).length > 1 ? "From ₹" : "₹";
         const priceValue = item.minPrice != null ? Number(item.minPrice).toLocaleString("en-IN") : "—";
         return `
-        <div class="saved-property-card">
+        <div class="saved-property-card" data-id="${item.id}">
+            <a class="property-image-link" href="property.html?id=${item.id}" aria-label="View ${item.name}">
             <div class="saved-property-image">
                 <img src="${(item.images && item.images[0]) || 'images/krishna-pg-1.webp'}" alt="${item.name}">
             </div>
+            </a>
             <div class="saved-property-info">
                 <h2>${item.name}</h2>
                 <p class="saved-location">📍 ${item.location}</p>
@@ -3135,6 +3250,9 @@ async function initSavedPage() {
             initSavedPage();
         });
     });
+
+    bindListPropertyOpeners(savedPropertiesContainer);
+    restoreListScrollState();
 }
 
 async function uploadPropertyImages(files, userId) {
@@ -3905,6 +4023,10 @@ function wireResetPasswordForm() {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
+    window.addEventListener("pageshow", (event) => {
+        if (event.persisted) restoreListScrollState();
+    });
+
     wireMobileNav();
     wireThemeToggle();
     wireAuthUI();

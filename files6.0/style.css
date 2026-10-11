@@ -16,10 +16,42 @@ button {
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
-footer {
+footer,
+.site-footer {
     text-align: center;
-    padding: 25px;
-    color: #666;
+    padding: 32px 8% 28px;
+    color: var(--rd-muted, #666);
+    border-top: 1px solid var(--rd-border, #e5e7eb);
+    background: var(--rd-surface, #fff);
+}
+.site-footer-inner {
+    max-width: 760px;
+    margin: 0 auto;
+}
+.site-footer-copy {
+    margin: 0 0 10px;
+    color: var(--rd-text, #111827);
+    font-weight: 700;
+}
+.site-footer-fee {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--rd-text, #374151);
+}
+.site-footer-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+}
+.site-footer-links a {
+    color: #4f46e5;
+    font-weight: 700;
+    text-decoration: none;
+}
+.site-footer-links a:hover {
+    text-decoration: underline;
 }
 /* ==========================================================================
    2. NAVBAR
@@ -779,6 +811,15 @@ a.category-card:hover {
     border-radius: 14px;
     margin-bottom: 25px;
     overflow: hidden;
+    cursor: pointer;
+}
+.property-image-link {
+    display: block;
+    height: 100%;
+    min-height: 200px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
 }
 .property-image {
     min-height: 250px;
@@ -1125,8 +1166,45 @@ a.category-card:hover {
 /* PROPERTY LAYOUT & SECTIONS */
 .property-layout {
     display: grid;
-    grid-template-columns: 1fr 330px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
     gap: 40px;
+    align-items: start;
+}
+.property-sidebar {
+    min-width: 0;
+    width: 100%;
+}
+.booking-card {
+    position: sticky;
+    top: 88px;
+    width: 100%;
+    padding: 22px;
+    border: 1px solid var(--rd-border, #e5e7eb);
+    border-radius: 18px;
+    background: var(--rd-surface, #ffffff);
+    box-sizing: border-box;
+    overflow: visible;
+}
+.sidebar-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--rd-text, #111827);
+    line-height: 1.2;
+}
+.sidebar-price span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--rd-muted, #6b7280);
+}
+.availability-status {
+    margin-bottom: 16px;
+    color: var(--rd-text, #111827);
+    font-size: 14px;
+    line-height: 1.4;
 }
 .property-section {
     background: white;
@@ -1402,16 +1480,22 @@ a.category-card:hover {
    ROOMDHUNDO CONNECT PANEL
    ===================================================== */
 .contact-panel {
-    display: none; /* hidden until #contactOwnerBtn opens it via JS */
+    display: none;
     width: 100%;
-    max-width: 340px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 22px;
-    padding: 28px;
+    max-width: none;
+    background: var(--rd-surface, #ffffff);
+    border: 1px solid var(--rd-border, #e5e7eb);
+    border-radius: 18px;
+    padding: 18px 16px 16px;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
     font-family: inherit;
     position: relative;
+    box-sizing: border-box;
+    margin: 0 0 16px;
+    overflow: visible;
+}
+.contact-panel.is-open {
+    display: block !important;
 }
 /* =====================================================
    HEADER
@@ -1449,10 +1533,10 @@ a.category-card:hover {
    TITLE
    ===================================================== */
 .contact-panel h2 {
-    margin: 0 0 22px;
-    font-size: 28px;
-    line-height: 1.15;
-    color: #111827;
+    margin: 0 0 14px;
+    font-size: 24px;
+    line-height: 1.2;
+    color: var(--rd-text, #111827);
     font-weight: 700;
 }
 .connect-divider {
@@ -1513,18 +1597,20 @@ a.category-card:hover {
     font-weight: 600;
     color: #111827;
 }
-.phone-field input {
+.phone-field input,
+.phone-field select {
     width: 100%;
     height: 46px;
     padding: 0 13px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--rd-border, #d1d5db);
     border-radius: 10px;
-    background: #ffffff;
-    color: #111827;
+    background: var(--rd-surface, #ffffff);
+    color: var(--rd-text, #111827);
     font-size: 15px;
     outline: none;
     transition: all 0.2s ease;
     box-sizing: border-box;
+    appearance: none;
 }
 .phone-field input::placeholder {
     color: #9ca3af;
@@ -1660,19 +1746,27 @@ a.category-card:hover {
    MAIN CONTACT OWNER BUTTON
    ===================================================== */
 .contact-owner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     width: 100%;
-    min-height: 56px;
-    margin-top: 18px;
+    min-height: 52px;
+    margin-top: 4px;
+    padding: 12px 16px;
     border: none;
-    border-radius: 15px;
+    border-radius: 14px;
     background: linear-gradient(
         135deg,
         #4f46e5,
         #7c3aed
     );
-    color: #ffffff;
-    font-size: 17px;
+    color: #ffffff !important;
+    font-size: 16px;
     font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(79, 70, 229, 0.22);
     transition: all 0.25s ease;
@@ -5266,4 +5360,65 @@ html[data-theme="light"] .booking-card,
 html[data-theme="light"] .property-section {
     background: #ffffff !important;
     color: #111827;
+}
+
+html[data-theme="dark"] .enquiry-property {
+    background: #1a1630 !important;
+    border-color: #43357a !important;
+}
+html[data-theme="dark"] .enquiry-property p,
+html[data-theme="dark"] .phone-field small,
+html[data-theme="dark"] .connect-label {
+    color: #d1d5db !important;
+}
+html[data-theme="dark"] .enquiry-property strong,
+html[data-theme="dark"] .phone-field label,
+html[data-theme="dark"] .close-contact-btn {
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .phone-field input,
+html[data-theme="dark"] .phone-field select,
+html[data-theme="dark"] .close-contact-btn {
+    background: #171717 !important;
+    border-color: #3a3a3a !important;
+}
+html[data-theme="dark"] .site-footer-fee,
+html[data-theme="dark"] .site-footer-copy {
+    color: #f8fafc;
+}
+
+.policies-page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 36px 5% 80px;
+}
+.policies-page h1 {
+    margin-bottom: 10px;
+}
+.policies-lead {
+    margin-bottom: 22px;
+    color: var(--rd-muted, #4b5563);
+    line-height: 1.6;
+}
+.policy-card {
+    margin: 16px 0;
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid var(--rd-border, #e5e7eb);
+    background: var(--rd-surface, #fff);
+}
+.policy-card h2 {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+.policy-card p,
+.policy-card li {
+    color: var(--rd-text, #374151);
+    line-height: 1.6;
+}
+.policy-card ul {
+    padding-left: 20px;
+}
+.policy-card li {
+    margin: 6px 0;
 }
