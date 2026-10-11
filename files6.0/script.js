@@ -646,7 +646,14 @@ async function updateNavForUser(user) {
     // PROFILE BUTTON
     // =================================================
 
+    const profileInitial =
+        String(displayName || "U").trim().charAt(0).toUpperCase() || "U";
+
     navAuthBtn.innerHTML = `
+        <span class="nav-profile-avatar" aria-hidden="true">
+            ${escapePropertyHtml(profileInitial)}
+        </span>
+
         <span class="nav-profile-info">
 
             <span class="nav-profile-name">
@@ -1764,6 +1771,7 @@ async function initHomePage() {
     const backToTopBtn = document.getElementById("homeBackToTopBtn");
 
     if (!resultsList) return;
+    
 
     resultsList.innerHTML = `<p class="no-results">Loading properties…</p>`;
 

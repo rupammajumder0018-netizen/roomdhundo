@@ -3973,3 +3973,40 @@ html[data-theme="dark"] #enquiries .enquiry-user-avatar {
 html[data-theme="dark"] #enquiries .enquiry-message p {
     color: var(--text-soft);
 }
+
+
+/* ============================================================
+   MOBILE FIXES
+   - long property names in the filter no longer widen the page
+   - inputs at 16px so iPhone does not zoom in when typing
+   - bigger tap targets
+   ============================================================ */
+
+.property-filter {
+    max-width: 100%;
+    min-width: 0;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 700px) {
+
+    .section-header {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .section-header .property-filter {
+        width: 100%;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    .view-all-btn {
+        min-height: 40px;
+    }
+
+}

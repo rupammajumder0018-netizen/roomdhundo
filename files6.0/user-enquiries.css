@@ -1135,3 +1135,15 @@ a:focus-visible {
     background: var(--blue-bg);
     color: var(--blue);
 }
+
+
+/* Mobile: easier to tap */
+@media (max-width: 650px) {
+
+    .back-dashboard {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+}
