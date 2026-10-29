@@ -1,0 +1,10 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@source "../owner-dashboard.html";
+@source "../owner-dashboard.js";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@import "./legacy-owner.css" layer(components);

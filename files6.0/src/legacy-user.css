@@ -1,0 +1,979 @@
+/* =====================================================
+   RENTER DASHBOARD - ROOMDHUNDO
+   (matches classes used in user-dashboard.html)
+   ===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+}
+
+/* =====================================================
+   DASHBOARD WRAPPER
+   ===================================================== */
+
+.renter-dashboard {
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 0 60px;
+}
+
+.renter-dashboard-container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+
+.renter-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    margin-bottom: 28px;
+}
+
+.dashboard-label {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.renter-dashboard-header h1 {
+    font-size: 28px;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+.renter-dashboard-header p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.account-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 14px;
+    border-radius: 30px;
+
+    background: #ecfdf5;
+    color: #047857;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    height: fit-content;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    display: inline-block;
+}
+
+/* =====================================================
+   STAT CARDS
+   ===================================================== */
+
+.renter-dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+
+    margin-bottom: 30px;
+}
+
+.renter-stat-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 15px;
+    padding: 20px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    transition: 0.2s ease;
+}
+
+.renter-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.stat-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+
+    border-radius: 12px;
+    background: #f3f4f6;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+}
+
+.renter-stat-card span {
+    display: block;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.renter-stat-card strong {
+    font-size: 22px;
+    color: #111827;
+}
+
+/* =====================================================
+   DASHBOARD SECTIONS
+   ===================================================== */
+
+.renter-dashboard-section {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 25px;
+
+    margin-bottom: 22px;
+}
+
+.dashboard-section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 18px;
+}
+
+.dashboard-section-title h2 {
+    font-size: 19px;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.dashboard-section-title p {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* =====================================================
+   QUICK ACTIONS
+   ===================================================== */
+
+.renter-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.renter-action-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+
+    background: #ffffff;
+    cursor: pointer;
+    text-align: left;
+
+    transition: 0.2s ease;
+}
+
+.renter-action-card:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+    transform: translateY(-2px);
+}
+
+.action-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.action-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.action-content strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.action-content small {
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.action-arrow {
+    color: #9ca3af;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* =====================================================
+   ACCOUNT INFO CARD
+   ===================================================== */
+
+.renter-account-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.account-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f1f3;
+}
+
+.account-info-row:last-child {
+    border-bottom: none;
+}
+
+.account-info-row span {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.account-info-row strong {
+    font-size: 14px;
+    color: #111827;
+}
+
+.active-account {
+    color: #047857 !important;
+}
+
+/* =====================================================
+   EXPLORE BOX
+   ===================================================== */
+
+.renter-explore-box {
+    background: #111827;
+    color: #ffffff;
+
+    border-radius: 18px;
+    padding: 30px;
+
+    margin-bottom: 22px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.renter-explore-box .dashboard-label {
+    color: #9ca3af;
+}
+
+.renter-explore-box h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.renter-explore-box p {
+    color: #d1d5db;
+    font-size: 14px;
+    max-width: 420px;
+}
+
+.renter-explore-box button {
+    padding: 12px 20px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition: 0.2s ease;
+}
+
+.renter-explore-box button:hover {
+    background: #e5e7eb;
+}
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
+
+.renter-logout-area {
+    display: flex;
+    justify-content: center;
+}
+
+#dashboardLogoutBtn {
+    padding: 11px 22px;
+
+    border: 1px solid #fecaca;
+    border-radius: 9px;
+
+    background: #fef2f2;
+    color: #dc2626;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+#dashboardLogoutBtn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .renter-dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .renter-quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .renter-dashboard-container {
+        width: 94%;
+    }
+
+    .renter-dashboard-header h1 {
+        font-size: 23px;
+    }
+
+    .renter-explore-box {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 24px;
+    }
+
+    .renter-dashboard-section {
+        padding: 18px;
+    }
+}
+
+/* =====================================================
+   ROOMDHUNDO THEME - RENTER DASHBOARD
+   ===================================================== */
+.dashboard-theme-toggle {
+    position: fixed;
+    top: 22px;
+    right: 24px;
+    z-index: 10;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(124, 58, 237, .26);
+    border-radius: 13px;
+    background: rgba(255, 255, 255, .75);
+    color: #5b21b6;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 7px 18px rgba(15, 23, 42, .12);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition: transform .22s ease, box-shadow .22s ease, background .22s ease, border-color .22s ease;
+}
+.dashboard-theme-toggle:hover { transform: translateY(-3px) rotate(8deg); border-color: rgba(124, 58, 237, .65); box-shadow: 0 12px 24px rgba(76, 29, 149, .18), 0 0 22px rgba(124, 58, 237, .18); }
+
+html[data-theme="dark"] body {
+    background: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, .14), transparent 38%), #050505;
+    color: #f8fafc;
+}
+html[data-theme="dark"] .dashboard-label,
+html[data-theme="dark"] .renter-dashboard-header p,
+html[data-theme="dark"] .renter-stat-card span,
+html[data-theme="dark"] .dashboard-section-title p,
+html[data-theme="dark"] .action-content small,
+html[data-theme="dark"] .account-info-row span { color: #a7b0c0; }
+html[data-theme="dark"] .renter-dashboard-header h1,
+html[data-theme="dark"] .renter-stat-card strong,
+html[data-theme="dark"] .dashboard-section-title h2,
+html[data-theme="dark"] .action-content strong,
+html[data-theme="dark"] .account-info-row strong { color: #f8fafc; }
+html[data-theme="dark"] .renter-stat-card,
+html[data-theme="dark"] .renter-dashboard-section,
+html[data-theme="dark"] .renter-action-card {
+    background: rgba(18, 18, 22, .88);
+    border-color: rgba(255, 255, 255, .10);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+html[data-theme="dark"] .renter-stat-card:hover,
+html[data-theme="dark"] .renter-action-card:hover {
+    background: rgba(35, 25, 52, .90);
+    border-color: rgba(167, 139, 250, .55);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .40), 0 0 24px rgba(124, 58, 237, .20);
+    transform: translateY(-4px);
+}
+html[data-theme="dark"] .stat-icon { background: rgba(124, 58, 237, .16); }
+html[data-theme="dark"] .account-info-row { border-color: rgba(255, 255, 255, .08); }
+html[data-theme="dark"] .renter-explore-box {
+    background: linear-gradient(135deg, #1b1032, #0b0b0e);
+    border: 1px solid rgba(167, 139, 250, .28);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, .45), 0 0 34px rgba(124, 58, 237, .18);
+}
+html[data-theme="dark"] .renter-explore-box button { background: #f5f3ff; color: #3b1a78; }
+html[data-theme="dark"] .dashboard-theme-toggle { background: rgba(255, 255, 255, .06); color: #ede9fe; border-color: rgba(167, 139, 250, .36); }
+
+html[data-theme="light"] body { background: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, .11), transparent 40%), #f6f5fb; }
+html[data-theme="light"] .renter-stat-card,
+html[data-theme="light"] .renter-dashboard-section { border-color: rgba(124, 58, 237, .10); box-shadow: 0 12px 30px rgba(15, 23, 42, .07), 0 0 24px rgba(124, 58, 237, .05); }
+html[data-theme="light"] .renter-stat-card:hover,
+html[data-theme="light"] .renter-action-card:hover { border-color: rgba(124, 58, 237, .35); box-shadow: 0 14px 30px rgba(15, 23, 42, .10), 0 0 22px rgba(124, 58, 237, .13); transform: translateY(-4px); }
+
+@media (max-width: 600px) { .dashboard-theme-toggle { top: 15px; right: 15px; } }
+
+/* =====================================================
+   USER DASHBOARD TOP ACTIONS
+   ===================================================== */
+
+.dashboard-top-actions {
+    position: fixed;
+    top: 18px;
+    left: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.dashboard-top-actions > * {
+    pointer-events: auto;
+}
+
+
+/* =====================================================
+   BACK TO HOME
+   ===================================================== */
+
+.dashboard-back-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 9px 15px;
+    border: 1px solid #e5e7eb;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.08);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.dashboard-back-home:hover {
+    transform: translateY(-2px);
+    background: #ffffff;
+    border-color: #c4b5fd;
+    box-shadow:
+        0 12px 24px rgba(15, 23, 42, 0.12),
+        0 0 20px rgba(124, 58, 237, 0.10);
+}
+
+
+/* =====================================================
+   STAT CARD BUTTON
+   ===================================================== */
+
+button.renter-stat-card {
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    color: inherit;
+}
+
+.stat-card-button {
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-card-button:focus-visible,
+.renter-action-card:focus-visible,
+.edit-profile-btn:focus-visible,
+.dashboard-back-home:focus-visible {
+    outline: 3px solid rgba(124, 58, 237, 0.22);
+    outline-offset: 3px;
+}
+
+
+/* =====================================================
+   SECTION HEADER WITH EDIT BUTTON
+   ===================================================== */
+
+.dashboard-section-title {
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.edit-profile-btn {
+    flex-shrink: 0;
+    min-height: 40px;
+    padding: 9px 15px;
+    border: 1px solid #ddd6fe;
+    border-radius: 10px;
+    background: #f5f3ff;
+    color: #6d28d9;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.edit-profile-btn:hover {
+    transform: translateY(-2px);
+    background: #ede9fe;
+    border-color: #c4b5fd;
+    box-shadow: 0 8px 18px rgba(109, 40, 217, 0.12);
+}
+
+
+/* =====================================================
+   ACCOUNT OPTIONS
+   ===================================================== */
+
+.account-option-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+
+/* =====================================================
+   EDIT PROFILE MODAL
+   ===================================================== */
+
+.profile-edit-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.58);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+}
+
+.profile-edit-modal.show {
+    display: flex;
+    animation: profileModalFade 0.2s ease;
+}
+
+@keyframes profileModalFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.profile-edit-modal-content {
+    width: min(500px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.24);
+    animation: profileModalIn 0.22s ease;
+}
+
+@keyframes profileModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.profile-edit-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.profile-edit-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #111827;
+}
+
+.profile-edit-header p {
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.profile-edit-close {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 9px;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.profile-edit-close:hover {
+    background: #e5e7eb;
+}
+
+.profile-edit-body {
+    padding: 20px;
+}
+
+.edit-form-group {
+    margin-bottom: 18px;
+}
+
+.edit-form-group label {
+    display: block;
+    margin-bottom: 7px;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.edit-form-group input {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 14px;
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.edit-form-group input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+.edit-form-group small {
+    display: block;
+    margin-top: 7px;
+    color: #6b7280;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.profile-edit-message {
+    min-height: 20px;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.profile-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px 20px;
+    border-top: 1px solid #eef2f7;
+}
+
+.profile-cancel-btn,
+.profile-save-btn {
+    min-height: 40px;
+    padding: 9px 15px;
+    border-radius: 9px;
+    border: none;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.profile-cancel-btn {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.profile-cancel-btn:hover {
+    background: #e5e7eb;
+}
+
+.profile-save-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #ffffff;
+}
+
+.profile-save-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.24);
+}
+
+.profile-save-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+
+/* =====================================================
+   DARK MODE
+   ===================================================== */
+
+html[data-theme="dark"] .dashboard-back-home {
+    background: rgba(18, 18, 22, 0.92);
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="dark"] .dashboard-back-home:hover {
+    background: #171717;
+    border-color: rgba(167, 139, 250, 0.55);
+}
+
+html[data-theme="dark"] .edit-profile-btn {
+    background: rgba(124, 58, 237, 0.12);
+    color: #c4b5fd;
+    border-color: rgba(167, 139, 250, 0.28);
+}
+
+html[data-theme="dark"] .edit-profile-btn:hover {
+    background: rgba(124, 58, 237, 0.20);
+    border-color: rgba(167, 139, 250, 0.55);
+}
+
+html[data-theme="dark"] .profile-edit-modal-content {
+    background: #121212;
+    border-color: #303030;
+}
+
+html[data-theme="dark"] .profile-edit-header,
+html[data-theme="dark"] .profile-edit-actions {
+    border-color: #303030;
+}
+
+html[data-theme="dark"] .profile-edit-header h2,
+html[data-theme="dark"] .edit-form-group label {
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .profile-edit-header p,
+html[data-theme="dark"] .edit-form-group small {
+    color: #a7b0c0;
+}
+
+html[data-theme="dark"] .edit-form-group input {
+    background: #171717;
+    border-color: #303030;
+    color: #f8fafc;
+}
+
+html[data-theme="dark"] .profile-edit-close,
+html[data-theme="dark"] .profile-cancel-btn {
+    background: #1f1f1f;
+    color: #e5e7eb;
+}
+
+html[data-theme="dark"] .profile-edit-close:hover,
+html[data-theme="dark"] .profile-cancel-btn:hover {
+    background: #292929;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .account-option-list {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .dashboard-top-actions {
+        top: 12px;
+        left: 15px;
+        right: 15px;
+    }
+
+    .dashboard-back-home {
+        min-height: 38px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .dashboard-section-title {
+        align-items: flex-start;
+    }
+
+    .edit-profile-btn {
+        width: 100%;
+    }
+
+    .profile-edit-actions {
+        flex-direction: column;
+    }
+
+    .profile-cancel-btn,
+    .profile-save-btn {
+        width: 100%;
+    }
+
+}
+
+
+/* =====================================================
+   NEED HELP
+   ===================================================== */
+
+.need-help-section {
+    margin-bottom: 22px;
+}
+
+.need-help-whatsapp-btn {
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 18px;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    background: #f0fdf4;
+    color: #15803d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.need-help-whatsapp-btn span {
+    font-size: 18px;
+}
+
+.need-help-whatsapp-btn:hover {
+    transform: translateY(-2px);
+    background: #dcfce7;
+    border-color: #86efac;
+    box-shadow:
+        0 10px 22px rgba(22, 163, 74, 0.12);
+}
+
+html[data-theme="dark"] .need-help-whatsapp-btn {
+    background: rgba(22, 163, 74, 0.10);
+    border-color: rgba(74, 222, 128, 0.25);
+    color: #86efac;
+}
+
+html[data-theme="dark"] .need-help-whatsapp-btn:hover {
+    background: rgba(22, 163, 74, 0.18);
+    border-color: rgba(74, 222, 128, 0.45);
+}
+
+html[data-theme="dark"] .action-arrow {
+    color: #d1d5db;
+}
+
+html[data-theme="dark"] .renter-explore-box h2 {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .profile-save-btn {
+    color: #ffffff;
+}
+
+html[data-theme="light"] .action-content strong,
+html[data-theme="light"] .account-info-row strong,
+html[data-theme="light"] .renter-dashboard-header h1,
+html[data-theme="light"] .dashboard-section-title h2,
+html[data-theme="light"] .profile-edit-header h2 {
+    color: #111827;
+}
+
+html[data-theme="light"] .action-content small,
+html[data-theme="light"] .account-info-row span,
+html[data-theme="light"] .renter-dashboard-header p {
+    color: #4b5563;
+}
+

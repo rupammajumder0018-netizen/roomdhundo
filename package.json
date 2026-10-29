@@ -1,0 +1,30 @@
+{
+  "name": "roomdhundo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "npm run build:css:public && npm run build:css:owner && npm run build:css:user && npm run build:css:admin && npm run build:css:enquiries",
+    "build:css:public": "npx @tailwindcss/cli -i files6.0/src/style.input.css -o files6.0/style.css --minify",
+    "build:css:owner": "npx @tailwindcss/cli -i files6.0/src/owner.input.css -o files6.0/owner-dashboard.css --minify",
+    "build:css:user": "npx @tailwindcss/cli -i files6.0/src/user.input.css -o files6.0/user-dashboard.css --minify",
+    "build:css:admin": "npx @tailwindcss/cli -i files6.0/src/admin.input.css -o files6.0/admin.css --minify",
+    "build:css:enquiries": "npx @tailwindcss/cli -i files6.0/src/enquiries.input.css -o files6.0/user-enquiries.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rupammajumder0018-netizen/roomdhundo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/rupammajumder0018-netizen/roomdhundo/issues"
+  },
+  "homepage": "https://github.com/rupammajumder0018-netizen/roomdhundo#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}
