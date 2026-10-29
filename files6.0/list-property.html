@@ -9,6 +9,114 @@
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
 />
     <link rel="stylesheet" href="style.css">
+    
+<style>
+.listing-type-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(8px);
+}
+
+.listing-type-modal.hidden {
+    display: none;
+}
+
+.listing-type-box {
+    width: 100%;
+    max-width: 760px;
+    padding: 30px;
+    border-radius: 22px;
+    background: var(--card-bg, #171717);
+    color: var(--text-color, #fff);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+.listing-type-box h2 {
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.listing-type-box > p {
+    text-align: center;
+    margin-bottom: 25px;
+    opacity: .75;
+}
+
+.listing-type-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.listing-type-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 12px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 16px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: transform .2s, border-color .2s;
+}
+
+.listing-type-option:hover {
+    transform: translateY(-4px);
+    border-color: #38bdf8;
+}
+
+.listing-type-option span {
+    font-size: 38px;
+}
+
+.listing-type-option strong {
+    font-size: 19px;
+}
+
+.listing-type-option small {
+    opacity: .7;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.list-property-page.listing-form-hidden {
+    display: none;
+}
+
+.listing-form-back {
+    margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+    .listing-type-box {
+        padding: 20px 14px;
+    }
+
+    .listing-type-options {
+        grid-template-columns: 1fr;
+    }
+
+    .listing-type-option {
+        flex-direction: row;
+        justify-content: flex-start;
+        text-align: left;
+        padding: 14px;
+    }
+
+    .listing-type-option span {
+        font-size: 30px;
+    }
+}
+</style>
+
 </head>
 
 <body>
@@ -24,14 +132,49 @@
             <button id="navAuthBtn" type="button" aria-label="Log in or sign up">Log In / Sign Up</button>
         </div>
     </nav>
+    
+<!-- PROPERTY TYPE SELECTION POPUP -->
+<div id="listingTypeModal" class="listing-type-modal">
+    <div class="listing-type-box">
+        <h2>What would you like to list?</h2>
+        <p>Choose the type of property you own.</p>
+
+        <div class="listing-type-options">
+            <button type="button" class="listing-type-option"
+                data-type="PG">
+                <span>🏠</span>
+                <strong>PG</strong>
+                <small>Paying guest accommodation</small>
+            </button>
+
+            <button type="button" class="listing-type-option"
+                data-type="Hotel">
+                <span>🏨</span>
+                <strong>Hotel</strong>
+                <small>Hotel rooms and guest stays</small>
+            </button>
+
+            <button type="button" class="listing-type-option"
+                data-type="Flat">
+                <span>🏢</span>
+                <strong>Flat</strong>
+                <small>Flats and apartments for rent</small>
+            </button>
+        </div>
+    </div>
+</div>
+
 
     <!-- LIST PROPERTY FORM -->
     <main class="list-property-page">
 
-        <div class="list-property-header">
-            <h1>List Your Property</h1>
-            <p>Fill in your building's details once, then add each room type it offers.</p>
-        </div>
+ 
+<div class="list-property-header">
+    <h1 id="listingFormTitle">List Your Property</h1>
+    <p id="listingFormSubtitle">
+        Enter your property details and add the rooms you offer.
+    </p>
+</div>
 
         <form class="list-property-form" id="listPropertyForm">
 
@@ -120,17 +263,22 @@
 
 </div>
 
-            <div class="form-group">
-                <label for="lpType">Property Type</label>
-                <select id="lpType" required>
-                    <option value="">Select type</option>
-                    <option value="PG">PG</option>
-                    <option value="Room">Room</option>
-                    <option value="Mess">Mess</option>
-                    <option value="Flat">Flat</option>
-                    <option value="Guest House">Guest House</option>
-                </select>
-            </div>
+      
+<div class="form-group" hidden>
+    <label for="lpType">Property Type</label>
+    <select id="lpType" required>
+        <option value="">Select type</option>
+        <option value="PG">PG</option>
+        <option value="Hotel">Hotel</option>
+        <option value="Flat">Flat</option>
+    </select>
+</div>
+
+<button type="button" id="changeListingType"
+    class="lp-secondary-btn listing-form-back">
+    ← Change Property Type
+</button>
+
 
             <div class="form-group">
                 <label for="lpImages">Property Photos (up to 5)</label>
@@ -349,6 +497,66 @@
             </form>
         </div>
     </div>
+
+    
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("listingTypeModal");
+    const page = document.querySelector(".list-property-page");
+    const typeSelect = document.getElementById("lpType");
+
+    if (!modal || !page || !typeSelect) {
+        console.error("RoomDhundo: Listing popup elements are missing.");
+        return;
+    }
+
+    const title = page.querySelector(".list-property-header h1");
+    const description = page.querySelector(".list-property-header p");
+
+    const settings = {
+        PG: {
+            title: "List Your PG",
+            description: "Add your PG details, sharing options and monthly rent."
+        },
+        Hotel: {
+            title: "List Your Hotel Rooms",
+            description: "Add your hotel details, room categories and nightly prices."
+        },
+        Flat: {
+            title: "List Your Flat",
+            description: "Add your flat details and rental information."
+        }
+    };
+
+    function showListingForm(type) {
+        if (!settings[type]) return;
+
+        typeSelect.value = type;
+
+        if (title) title.textContent = settings[type].title;
+        if (description) {
+            description.textContent = settings[type].description;
+        }
+
+        modal.classList.add("hidden");
+        page.classList.remove("listing-form-hidden");
+
+        // Update the property type before the owner submits.
+        typeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    document.querySelectorAll(".listing-type-option").forEach(button => {
+        button.addEventListener("click", function () {
+            showListingForm(this.dataset.type);
+        });
+    });
+
+    // Show the popup and hide the form when the page first loads.
+    page.classList.add("listing-form-hidden");
+    modal.classList.remove("hidden");
+});
+</script>
+
 
 </body>
 </html>
