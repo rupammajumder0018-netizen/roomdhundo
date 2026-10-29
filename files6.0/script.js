@@ -1873,6 +1873,38 @@ async function initHomePage() {
     const currentUser = await getCurrentUser();
     let savedIds = await getSavedBuildingIds(currentUser ? currentUser.id : null);
 
+    // Category tabs (All / PG-Room / Hotel / Flat) -> property types stored in buildings.type
+    const CATEGORY_TYPES = {
+        all: [],
+        pgroom: ["PG", "Room"],
+        hotel: ["Hotel", "Guest House"],
+        flat: ["Flat"]
+    };
+    let activeCategory = "all";
+    const categoryTabs = document.querySelectorAll(".home-cat-tab");
+
+    // Footer fee note + links show only on the PG / Room tab
+    function updateFooterFeeNote() {
+        const show = activeCategory === "pgroom";
+        document.querySelectorAll(".site-footer-fee, .site-footer-links").forEach(el => {
+            el.style.display = show ? "" : "none";
+        });
+    }
+    updateFooterFeeNote();
+
+    categoryTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            activeCategory = tab.dataset.category || "all";
+            updateFooterFeeNote();
+            categoryTabs.forEach(t => {
+                const on = t === tab;
+                t.classList.toggle("active", on);
+                t.setAttribute("aria-selected", on ? "true" : "false");
+            });
+            resetPreviewAndRender();
+        });
+    });
+
     function isDailyMode() {
         return !!(dailyBtn && dailyBtn.classList.contains("active"));
     }
@@ -1891,7 +1923,9 @@ async function initHomePage() {
             document.querySelectorAll(".homeFacilityFilter:checked")
         ).map(cb => cb.value);
 
-        return { query, daily, min, max, propertyTypes, facilities };
+        const categoryTypes = CATEGORY_TYPES[activeCategory] || [];
+
+        return { query, daily, min, max, propertyTypes, facilities, categoryTypes };
     }
 
     function applyFilters(list, f) {
@@ -1916,6 +1950,10 @@ async function initHomePage() {
                     return true;
                 });
                 if (!anyRoomFits) return false;
+            }
+
+            if (f.categoryTypes.length > 0 && !f.categoryTypes.includes(b.type)) {
+                return false;
             }
 
             if (f.propertyTypes.length > 0 && !f.propertyTypes.includes(b.type)) {
@@ -2116,7 +2154,16 @@ async function initHomePage() {
     searchInput?.addEventListener("keydown", (e) => {
         if (e.key === "Enter") resetPreviewAndRender({ scrollToResults: true });
     });
-    applyFiltersBtn?.addEventListener("click", resetPreviewAndRender);
+    applyFiltersBtn?.addEventListener("click", () => {
+        if (window.matchMedia("(max-width: 640px)").matches && filterPanel) {
+            filterPanel.setAttribute("hidden", "");
+            filterBtn?.setAttribute("aria-expanded", "false");
+            filterBtn?.classList.remove("active");
+            resetPreviewAndRender({ scrollToResults: true });
+        } else {
+            resetPreviewAndRender();
+        }
+    });
 
     clearFiltersBtn?.addEventListener("click", () => {
         document.querySelectorAll(".homePropertyTypeFilter, .homeFacilityFilter").forEach(cb => {
@@ -2129,6 +2176,13 @@ async function initHomePage() {
         if (searchInput) searchInput.value = "";
         monthlyBtn?.classList.add("active");
         dailyBtn?.classList.remove("active");
+        activeCategory = "all";
+        updateFooterFeeNote();
+        categoryTabs.forEach(t => {
+            const on = t.dataset.category === "all";
+            t.classList.toggle("active", on);
+            t.setAttribute("aria-selected", on ? "true" : "false");
+        });
         resetPreviewAndRender();
     });
 
