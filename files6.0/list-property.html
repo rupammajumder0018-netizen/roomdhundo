@@ -49,12 +49,15 @@
 }
 
 .listing-type-options {
+    max-width: 760px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
 }
 
 .listing-type-option {
+    text-decoration: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -87,9 +90,7 @@
     line-height: 1.5;
 }
 
-.list-property-page.listing-form-hidden {
-    display: none;
-}
+
 
 .listing-form-back {
     margin-bottom: 20px;
@@ -134,249 +135,24 @@
     </nav>
 
     
-<!-- PROPERTY TYPE SELECTION POPUP -->
-<div id="listingTypeModal" class="listing-type-modal">
-    <div class="listing-type-box">
-        <h2>What would you like to list?</h2>
-        <p>Choose the type of property you own.</p>
+    <!-- PROPERTY TYPE CHOOSER -->
+    <main class="list-property-page">
+        <div class="list-property-header">
+            <h1>What would you like to list?</h1>
+            <p>Each property type has its own form. Choose the one that fits.</p>
+        </div>
 
         <div class="listing-type-options">
-            <button type="button" class="listing-type-option"
-                data-type="PG">
-                <span>🏠</span>
-                <strong>PG</strong>
-                <small>Paying guest accommodation</small>
-            </button>
-
-            <button type="button" class="listing-type-option"
-                data-type="Hotel">
-                <span>🏨</span>
-                <strong>Hotel</strong>
-                <small>Hotel rooms and guest stays</small>
-            </button>
-
-            <button type="button" class="listing-type-option"
-                data-type="Flat">
-                <span>🏢</span>
-                <strong>Flat</strong>
-                <small>Flats and apartments for rent</small>
-            </button>
+            <a class="listing-type-option" href="list-pg.html">
+                <span>🏠</span><strong>PG</strong><small>Paying guest accommodation</small>
+            </a>
+            <a class="listing-type-option" href="list-hotel.html">
+                <span>🏨</span><strong>Hotel</strong><small>Hotel rooms and guest stays</small>
+            </a>
+            <a class="listing-type-option" href="list-flat.html">
+                <span>🏢</span><strong>Flat</strong><small>Flats and apartments for rent</small>
+            </a>
         </div>
-    </div>
-</div>
-
-
-    <!-- LIST PROPERTY FORM -->
-    <main class="list-property-page">
-
- 
-<div class="list-property-header">
-    <h1 id="listingFormTitle">List Your Property</h1>
-    <p id="listingFormSubtitle">
-        Enter your property details and add the rooms you offer.
-    </p>
-</div>
-
-        <form class="list-property-form" id="listPropertyForm">
-
-            <h2 class="lp-section-title lp-first-section-title">Building Details</h2>
-
-            <div class="form-group">
-                <label for="lpName">Property Name</label>
-                <input type="text" id="lpName" placeholder="e.g. Sunrise PG" required>
-            </div>
-
-            <div class="form-group">
-                <label for="lpLocation">Location / Area</label>
-                <input type="text" id="lpLocation" placeholder="e.g. Jaguli, near MAKAUT" required>
-            </div>
-
-<div class="form-group">
-
-    <label for="lpDistance">
-        Distance from MAKAUT (km)
-    </label>
-
-    <input
-        type="number"
-        id="lpDistance"
-        step="0.1"
-        min="0"
-        placeholder="Select property location"
-        readonly
-        required
-    >
-
-    <div class="property-location-actions">
-
-        <button
-            type="button"
-            id="usePropertyLocationBtn"
-            class="lp-secondary-btn"
-        >
-            📍 Use My Location
-        </button>
-
-        <button
-            type="button"
-            id="openPropertyMapBtn"
-            class="lp-secondary-btn"
-        >
-            🗺️ Pick Location on Map
-        </button>
-
-    </div>
-
-    <p id="ownerLocationStatus" class="lp-hint">
-        Select the property's actual location to calculate distance automatically.
-    </p>
-
-</div>
-
-<div class="form-group property-map-group">
-
-    <label>
-        Property Location
-    </label>
-
-    <div
-        id="propertyMap"
-        style="
-            width:100%;
-            height:400px;
-            border-radius:18px;
-            overflow:hidden;
-            border:1px solid #ddd;
-        "
-    ></div>
-
-    <input
-        type="hidden"
-        id="propertyLatitude"
-        name="propertyLatitude"
-    >
-
-    <input
-        type="hidden"
-        id="propertyLongitude"
-        name="propertyLongitude"
-    >
-
-</div>
-
-      
-<div class="form-group" hidden>
-    <label for="lpType">Property Type</label>
-    <select id="lpType" required>
-        <option value="">Select type</option>
-        <option value="PG">PG</option>
-        <option value="Hotel">Hotel</option>
-        <option value="Flat">Flat</option>
-    </select>
-</div>
-
-<button type="button" id="changeListingType"
-    class="lp-secondary-btn listing-form-back">
-    ← Change Property Type
-</button>
-
-
-            <div class="form-group">
-                <label for="lpImages">Property Photos (up to 5)</label>
-                <div class="media-upload-section">
-
-    <label for="lpImages">
-        Property Photos & Videos
-    </label>
-
-    <input
-        type="file"
-        id="lpImages"
-        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
-        multiple
-    >
-
-    <small>
-        Upload property photos and videos.
-        Photos up to 5MB each, videos up to 50MB each.
-    </small>
-
-</div>
-                <p class="lp-hint">JPG or PNG, up to 5MB each. Shared across all room types in this building.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Facilities</label>
-                <div class="lp-facility-grid">
-                    <label><input type="checkbox" class="lpFacility" value="wifi" data-label="📶 Wi-Fi"> Wi-Fi</label>
-                    <label><input type="checkbox" class="lpFacility" value="food" data-label="🍛 Food"> Food</label>
-                    <label><input type="checkbox" class="lpFacility" value="ac" data-label="❄️ AC"> AC</label>
-                    <label><input type="checkbox" class="lpFacility" value="laundry" data-label="🧺 Laundry"> Laundry</label>
-                    <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
-                    <label><input type="checkbox" class="lpFacility" value="bathroom" data-label="🚿 Attached Bathroom"> Attached Bathroom</label>
-                    <label><input type="checkbox" class="lpFacility" value="kitchen" data-label="🍳 Attached Kitchen"> Attached Kitchen</label>
-                    <label><input type="checkbox" class="lpFacility" value="couple-friendly" data-label="💑 Couple Friendly"> Couple Friendly</label>
-                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="furnished" data-label="🛋️ Furnished"> Furnished</label>
-                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="semi-furnished" data-label="🪑 Semi Furnished"> Semi Furnished</label>
-                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="unfurnished" data-label="🏠 Unfurnished"> Unfurnished</label>
-                </div>
-                <div class="lp-custom-facility">
-                    <label for="lpCustomFacilityInput">Add your own facility</label>
-                    <div class="lp-custom-facility-row">
-                        <input
-                            type="text"
-                            id="lpCustomFacilityInput"
-                            maxlength="40"
-                            placeholder="e.g. CCTV, Power backup, Geyser"
-                            autocomplete="off"
-                        >
-                        <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
-                    </div>
-                    <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
-                    <p class="lp-hint">Write anything extra this property offers, then tap Add. Renters will see it under Facilities.</p>
-                </div>
-                <p class="lp-hint">Pick one furnishing type. Attached kitchen and the other facilities can be selected together.</p>
-            </div>
-
-            <div class="form-group">
-                <label for="lpDescription">Description</label>
-                <textarea id="lpDescription" rows="4" placeholder="Tell renters what makes this place a good fit..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="lpRules">Property Rules (one per line)</label>
-                <textarea id="lpRules" rows="3" placeholder="No smoking inside rooms&#10;Visitors allowed until 9 PM"></textarea>
-            </div>
-
-            <h2 class="lp-section-title">Owner Contact</h2>
-
-            <div class="form-group">
-                <label for="lpOwnerName">Owner / Business Name</label>
-                <input type="text" id="lpOwnerName" placeholder="e.g. Raj Properties" required>
-            </div>
-
-            <div class="form-group">
-    <label for="lpOwnerPhone">Phone Number</label>
-    <input type="tel" id="lpOwnerPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-</div>
-
-<div class="form-group">
-    <label for="lpOwnerAltPhone">Alternative Phone Number (optional)</label>
-    <input type="tel" id="lpOwnerAltPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
-</div>
-            <h2 class="lp-section-title">Room Types</h2>
-            <p class="lp-hint lp-room-hint">Add every room option this building offers — you need at least one. Nightly stay is optional.</p>
-
-            <div id="roomTypesContainer"></div>
-
-            <button type="button" id="addRoomTypeBtn" class="lp-secondary-btn">+ Add Another Room Type</button>
-
-            <button type="submit" class="lp-submit-btn lp-submit-margin">List My Property</button>
-
-            <p class="lp-note">Note: photos and listing data are saved to your real Supabase database now, visible to everyone.</p>
-
-        </form>
-
     </main>
 
     <footer class="site-footer">
@@ -391,49 +167,7 @@
     </footer>
 
     <!-- Template for one room type block, cloned by JS -->
-    <template id="roomTypeTemplate">
-        <div class="room-type-block">
-            <button type="button" class="remove-room-type-btn" title="Remove this room type">&times;</button>
-
-            <div class="form-group">
-                <label>Room Type</label>
-                <select class="rtRoomType" required>
-                    <option value="">Select room type</option>
-                    <option value="Single">Single</option>
-                    <option value="Double Sharing">Double Sharing</option>
-                    <option value="Triple Sharing">Triple Sharing</option>
-                    <option value="4+ Sharing">4+ Sharing</option>
-                </select>
-            </div>
-
-           <div class="form-group">
-    <label>Monthly Rent (₹)</label>
-    <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
-</div>
-
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" class="rtOfferNightly">
-                    Also offer this room per night (optional)
-                </label>
-            </div>
-
-            <div class="form-group rtNightlyGroup" hidden>
-                <label>Price per Night (₹)</label>
-                <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800">
-            </div>
-
-            <div class="form-group">
-                <label>People Sharing the Room</label>
-                <input type="number" class="rtPeople" min="1" value="1" required>
-            </div>
-
-            <div class="form-group">
-                <label>Rooms/Beds Available</label>
-                <input type="number" class="rtAvailable" min="1" value="1" required>
-            </div>
-        </div>
-    </template>
+    
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 

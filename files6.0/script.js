@@ -1176,7 +1176,10 @@ function isExploreGatePage() {
         "search.html",
         "property.html",
         "saved.html",
-        "list-property.html"
+        "list-property.html",
+        "list-pg.html",
+        "list-hotel.html",
+        "list-flat.html"
     ].includes(page);
 }
 
@@ -1423,7 +1426,7 @@ function wireListPropertyAccess() {
 }
 
 async function restrictListPropertyPageForRenters() {
-    if (getCurrentPageName() !== "list-property.html") return true;
+    if (!["list-pg.html", "list-hotel.html", "list-flat.html", "list-property.html"].includes(getCurrentPageName())) return true;
     const access = await canCurrentUserListProperty();
     if (access.ok) return true;
 
@@ -3423,6 +3426,38 @@ function escapePropertyHtml(value) {
         .replaceAll("'", "&#039;");
 }
 
+/* ============================================================
+   SEPARATE LISTING FORMS
+   list-pg.html, list-hotel.html and list-flat.html each have their
+   own form. The page sets the hidden #lpType field (PG / Hotel / Flat).
+   ============================================================ */
+const LISTING_FORM_PAGES = {
+    PG: "list-pg.html",
+    Hotel: "list-hotel.html",
+    Flat: "list-flat.html"
+};
+
+function getListingFormPageForType(type) {
+    return LISTING_FORM_PAGES[type] || LISTING_FORM_PAGES.PG;
+}
+
+function formatTime12h(value) {
+    const match = /^(\d{1,2}):(\d{2})$/.exec(String(value || ""));
+    if (!match) return "";
+    let hours = Number(match[1]);
+    const suffix = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${hours}:${match[2]} ${suffix}`;
+}
+
+function parseTime12h(text) {
+    const match = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(String(text || ""));
+    if (!match) return "";
+    let hours = Number(match[1]) % 12;
+    if (match[3].toUpperCase() === "PM") hours += 12;
+    return `${String(hours).padStart(2, "0")}:${match[2]}`;
+}
+
 function addRoomTypeBlock(roomData = null) {
     const container = document.getElementById("roomTypesContainer");
     const template = document.getElementById("roomTypeTemplate");
@@ -3470,6 +3505,11 @@ function addRoomTypeBlock(roomData = null) {
         peopleInput.value = "1";
         availableInput.value = "1";
         availableInput.min = "1";
+    }
+
+    // Hotel rooms are always priced per night
+    if (block.dataset.alwaysNightly === "true" && offerNightly) {
+        offerNightly.checked = true;
     }
 
     offerNightly?.addEventListener("change", syncNightlyOffer);
@@ -3621,6 +3661,14 @@ async function loadPropertyForEdit(buildingId, user) {
         return false;
     }
 
+    const pageType = document.getElementById("lpType")?.value || "";
+    if (pageType && property.type && property.type !== pageType) {
+        window.location.replace(
+            `${getListingFormPageForType(property.type)}?edit=${encodeURIComponent(property.id)}`
+        );
+        return false;
+    }
+
     listPropertyEditMode = true;
     listPropertyEditId = property.id;
 
@@ -3637,9 +3685,25 @@ async function loadPropertyForEdit(buildingId, user) {
     document.getElementById("lpName").value = property.name || "";
     document.getElementById("lpLocation").value = property.location || "";
     document.getElementById("lpDistance").value = property.distance_km ?? "";
-    document.getElementById("lpType").value = property.type || "";
+    if (!document.getElementById("lpType").value) {
+        document.getElementById("lpType").value = property.type || "";
+    }
     document.getElementById("lpDescription").value = property.description || "";
-    document.getElementById("lpRules").value = Array.isArray(property.rules) ? property.rules.join("\n") : "";
+    const savedRules = Array.isArray(property.rules) ? property.rules : [];
+    const checkInInput = document.getElementById("lpCheckIn");
+    const checkOutInput = document.getElementById("lpCheckOut");
+    const plainRules = savedRules.filter(rule => {
+        if (checkInInput && /^check-in:/i.test(rule)) {
+            checkInInput.value = parseTime12h(rule);
+            return false;
+        }
+        if (checkOutInput && /^check-out:/i.test(rule)) {
+            checkOutInput.value = parseTime12h(rule);
+            return false;
+        }
+        return true;
+    });
+    document.getElementById("lpRules").value = plainRules.join("\n");
     document.getElementById("lpOwnerName").value = property.owner_name || "";
     document.getElementById("lpOwnerPhone").value = property.owner_phone || "";
     document.getElementById("lpOwnerAltPhone").value = property.owner_alt_phone || "";
@@ -3791,6 +3855,20 @@ function wireListPropertyForm() {
         const rules = rulesRaw
             ? rulesRaw.split("\n").map(rule => rule.trim()).filter(Boolean)
             : [];
+
+        // Hotel form only: check-in / check-out times are saved as the first two rules
+        const checkInValue = document.getElementById("lpCheckIn")?.value;
+        const checkOutValue = document.getElementById("lpCheckOut")?.value;
+        if (document.getElementById("lpCheckIn")) {
+            if (!checkInValue || !checkOutValue) {
+                alert("Please enter the hotel check-in and check-out times.");
+                return;
+            }
+            rules.unshift(
+                `Check-in: ${formatTime12h(checkInValue)}`,
+                `Check-out: ${formatTime12h(checkOutValue)}`
+            );
+        }
 
         const roomTypeBlocks = Array.from(document.querySelectorAll(".room-type-block"));
         if (roomTypeBlocks.length === 0) {

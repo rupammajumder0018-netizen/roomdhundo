@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Your PG | RoomDhundo</title>
+    <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+    <link rel="stylesheet" href="style.css">
+    
+
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">RoomDhundo</a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="list-property.html">List Property</a>
+            <a href="saved.html">Saved</a>
+            <button type="button" class="theme-toggle" aria-label="Switch to light mode" title="Switch to light mode">☀️</button>
+            <button id="navAuthBtn" type="button" aria-label="Log in or sign up">Log In / Sign Up</button>
+        </div>
+    </nav>
+
+    
+    <!-- LIST PROPERTY FORM -->
+    <main class="list-property-page">
+
+ 
+<div class="list-property-header">
+    <h1 id="listingFormTitle">List Your PG</h1>
+    <p id="listingFormSubtitle">
+        Enter your PG details and add the room/bed options you offer.
+    </p>
+</div>
+
+        <form class="list-property-form" id="listPropertyForm">
+
+            <h2 class="lp-section-title lp-first-section-title">PG Details</h2>
+
+            <div class="form-group">
+                <label for="lpName">PG Name</label>
+                <input type="text" id="lpName" placeholder="e.g. Sunrise PG" required>
+            </div>
+
+            <div class="form-group">
+                <label for="lpLocation">Location / Area</label>
+                <input type="text" id="lpLocation" placeholder="e.g. Jaguli, near MAKAUT" required>
+            </div>
+
+<div class="form-group">
+
+    <label for="lpDistance">
+        Distance from MAKAUT (km)
+    </label>
+
+    <input
+        type="number"
+        id="lpDistance"
+        step="0.1"
+        min="0"
+        placeholder="Select property location"
+        readonly
+        required
+    >
+
+    <div class="property-location-actions">
+
+        <button
+            type="button"
+            id="usePropertyLocationBtn"
+            class="lp-secondary-btn"
+        >
+            📍 Use My Location
+        </button>
+
+        <button
+            type="button"
+            id="openPropertyMapBtn"
+            class="lp-secondary-btn"
+        >
+            🗺️ Pick Location on Map
+        </button>
+
+    </div>
+
+    <p id="ownerLocationStatus" class="lp-hint">
+        Select the property's actual location to calculate distance automatically.
+    </p>
+
+</div>
+
+<div class="form-group property-map-group">
+
+    <label>
+        Property Location
+    </label>
+
+    <div
+        id="propertyMap"
+        style="
+            width:100%;
+            height:400px;
+            border-radius:18px;
+            overflow:hidden;
+            border:1px solid #ddd;
+        "
+    ></div>
+
+    <input
+        type="hidden"
+        id="propertyLatitude"
+        name="propertyLatitude"
+    >
+
+    <input
+        type="hidden"
+        id="propertyLongitude"
+        name="propertyLongitude"
+    >
+
+</div>
+
+      
+<input type="hidden" id="lpType" value="PG">
+
+<a href="list-property.html" class="lp-secondary-btn listing-form-back" style="display:inline-block;text-decoration:none;">
+    ← Change Property Type
+</a>
+
+
+            <div class="form-group">
+                <label for="lpImages">Property Photos (up to 5)</label>
+                <div class="media-upload-section">
+
+    <label for="lpImages">
+        Property Photos & Videos
+    </label>
+
+    <input
+        type="file"
+        id="lpImages"
+        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+        multiple
+    >
+
+    <small>
+        Upload property photos and videos.
+        Photos up to 5MB each, videos up to 50MB each.
+    </small>
+
+</div>
+                <p class="lp-hint">JPG or PNG, up to 5MB each. Shared across all room types in this PG.</p>
+            </div>
+
+            <div class="form-group">
+                <label>Facilities</label>
+                <div class="lp-facility-grid">
+                    <label><input type="checkbox" class="lpFacility" value="wifi" data-label="📶 Wi-Fi"> Wi-Fi</label>
+                    <label><input type="checkbox" class="lpFacility" value="food" data-label="🍛 Food"> Food</label>
+                    <label><input type="checkbox" class="lpFacility" value="ac" data-label="❄️ AC"> AC</label>
+                    <label><input type="checkbox" class="lpFacility" value="laundry" data-label="🧺 Laundry"> Laundry</label>
+                    <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
+                    <label><input type="checkbox" class="lpFacility" value="bathroom" data-label="🚿 Attached Bathroom"> Attached Bathroom</label>
+                    <label><input type="checkbox" class="lpFacility" value="kitchen" data-label="🍳 Attached Kitchen"> Attached Kitchen</label>
+                    <label><input type="checkbox" class="lpFacility" value="couple-friendly" data-label="💑 Couple Friendly"> Couple Friendly</label>
+                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="furnished" data-label="🛋️ Furnished"> Furnished</label>
+                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="semi-furnished" data-label="🪑 Semi Furnished"> Semi Furnished</label>
+                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="unfurnished" data-label="🏠 Unfurnished"> Unfurnished</label>
+                </div>
+                <div class="lp-custom-facility">
+                    <label for="lpCustomFacilityInput">Add your own facility</label>
+                    <div class="lp-custom-facility-row">
+                        <input
+                            type="text"
+                            id="lpCustomFacilityInput"
+                            maxlength="40"
+                            placeholder="e.g. CCTV, Power backup, Geyser"
+                            autocomplete="off"
+                        >
+                        <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
+                    </div>
+                    <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
+                    <p class="lp-hint">Write anything extra this property offers, then tap Add. Renters will see it under Facilities.</p>
+                </div>
+                <p class="lp-hint">Pick one furnishing type. Attached kitchen and the other facilities can be selected together.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="lpDescription">Description</label>
+                <textarea id="lpDescription" rows="4" placeholder="Tell renters what makes this PG a good fit..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="lpRules">Property Rules (one per line)</label>
+                <textarea id="lpRules" rows="3" placeholder="No smoking inside rooms&#10;Visitors allowed until 9 PM"></textarea>
+            </div>
+
+            <h2 class="lp-section-title">Owner Contact</h2>
+
+            <div class="form-group">
+                <label for="lpOwnerName">Owner / Business Name</label>
+                <input type="text" id="lpOwnerName" placeholder="e.g. Raj Properties" required>
+            </div>
+
+            <div class="form-group">
+    <label for="lpOwnerPhone">Phone Number</label>
+    <input type="tel" id="lpOwnerPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+</div>
+
+<div class="form-group">
+    <label for="lpOwnerAltPhone">Alternative Phone Number (optional)</label>
+    <input type="tel" id="lpOwnerAltPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
+</div>
+            <h2 class="lp-section-title">Room Types</h2>
+            <p class="lp-hint lp-room-hint">Add every room/bed option this PG offers — you need at least one. Nightly stay is optional.</p>
+
+            <div id="roomTypesContainer"></div>
+
+            <button type="button" id="addRoomTypeBtn" class="lp-secondary-btn">+ Add Another Room Type</button>
+
+            <button type="submit" class="lp-submit-btn lp-submit-margin">List My PG</button>
+
+            <p class="lp-note"></p>
+
+        </form>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <p class="site-footer-copy">© 2026 RoomDhundo</p>
+            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent, paid once when you confirm a stay through us. This is not a monthly or repeating charge.</p>
+            <nav class="site-footer-links">
+                <a href="policies.html">Policies</a>
+                <a href="policies.html#payment">10% payment</a>
+            </nav>
+        </div>
+    </footer>
+
+    <!-- Template for one room type block, cloned by JS -->
+    <template id="roomTypeTemplate">
+        <div class="room-type-block">
+            <button type="button" class="remove-room-type-btn" title="Remove this room">&times;</button>
+
+            <div class="form-group">
+                <label>Room Type</label>
+                <select class="rtRoomType" required>
+                    <option value="">Select room type</option>
+                    <option value="Single">Single</option>
+                    <option value="Double Sharing">Double Sharing</option>
+                    <option value="Triple Sharing">Triple Sharing</option>
+                    <option value="4+ Sharing">4+ Sharing</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Monthly Rent (₹)</label>
+                <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" class="rtOfferNightly">
+                    Also offer this room per night (optional)
+                </label>
+            </div>
+
+            <div class="form-group rtNightlyGroup" hidden>
+                <label>Price per Night (₹)</label>
+                <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800">
+            </div>
+
+            <div class="form-group">
+                <label>People Sharing the Room</label>
+                <input type="number" class="rtPeople" min="1" value="1" required>
+            </div>
+
+            <div class="form-group">
+                <label>Rooms/Beds Available</label>
+                <input type="number" class="rtAvailable" min="1" value="1" required>
+            </div>
+        </div>
+    </template>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="script.js"></script>
+
+<script src="location.js"></script>
+
+<script src="property-map.js"></script>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn" type="button" aria-label="Close authentication window" title="Close">&times;</button>
+
+            <div class="auth-tabs" role="tablist" aria-label="Authentication options">
+                <button class="auth-tab active" id="tabLogin" type="button" role="tab" aria-selected="true">Log In</button>
+                <button class="auth-tab" id="tabSignup" type="button" role="tab" aria-selected="false">Sign Up</button>
+            </div>
+
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="reset-password.html" class="forgot-link">Forgot password?</a>
+                </div>
+                <p class="auth-message" id="loginMessage"></p>
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                </div>
+                <p class="auth-message" id="signupMessage"></p>
+                <button type="submit" class="auth-submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

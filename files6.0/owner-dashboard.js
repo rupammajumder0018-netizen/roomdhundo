@@ -1508,8 +1508,23 @@ function editProperty(
     buildingId
 ) {
 
+    const property =
+        ownerProperties.find(
+            item => String(item.id) === String(buildingId)
+        );
+
+    const type =
+        String(property?.type || "").toLowerCase();
+
+    const page =
+        type === "hotel"
+            ? "list-hotel.html"
+            : type === "flat"
+                ? "list-flat.html"
+                : "list-pg.html";
+
     window.location.href =
-        `list-property.html?edit=${encodeURIComponent(
+        `${page}?edit=${encodeURIComponent(
             buildingId
         )}`;
 
