@@ -3813,10 +3813,24 @@ function wireListPropertyForm() {
                 return;
             }
 
-            if (!Number.isFinite(rent) || rent <= 0) {
-                alert("Please enter a valid monthly rent for every room type.");
-                return;
-            }
+
+const isHotel = String(type).toLowerCase() === "hotel";
+
+if (isHotel) {
+    // Hotel rooms can have no monthly rent.
+    // Their nightly price is validated separately below.
+    if (!Number.isFinite(rent) || rent < 0) {
+        alert("Please enter a valid monthly rent.");
+        return;
+    }
+} else {
+    // PG and Flat require monthly rent.
+    if (!Number.isFinite(rent) || rent <= 0) {
+        alert("Please enter a valid monthly rent for every room type.");
+        return;
+    }
+}
+
 
             let nightlyRent = null;
             if (offerNightly) {
@@ -4585,161 +4599,4 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     );
-});
-
-
-/* ROOMDHUNDO: PROPERTY LISTING TYPE SELECTOR */
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("listingTypeModal");
-    const page = document.querySelector(".list-property-page");
-    const typeSelect = document.getElementById("lpType");
-    const title = document.getElementById("listingFormTitle");
-    const subtitle = document.getElementById("listingFormSubtitle");
-    const changeButton = document.getElementById("changeListingType");
-
-    if (!modal || !page || !typeSelect) return;
-
-    const configurations = {
-        PG: {
-            title: "List Your PG",
-            subtitle: "Add your PG details, sharing options and monthly rents."
-        },
-        Hotel: {
-            title: "List Your Hotel Rooms",
-            subtitle: "Add your hotel details, room categories and nightly prices."
-        },
-        Flat: {
-            title: "List Your Flat",
-            subtitle: "Add your flat details, facilities and rental information."
-        }
-    };
-
-    function selectListingType(type) {
-        if (!configurations[type]) return;
-
-        typeSelect.value = type;
-        title.textContent = configurations[type].title;
-        subtitle.textContent = configurations[type].subtitle;
-
-        modal.classList.add("hidden");
-        page.classList.remove("listing-form-hidden");
-
-        document.querySelectorAll(".room-type-block").forEach(block => {
-            configureRoomBlock(block, type);
-        });
-    }
-
-    function configureRoomBlock(block, type) {
-        const roomType = block.querySelector(".rtRoomType");
-        const rentLabel = block.querySelector(".rtRent")
-            ?.closest(".form-group")?.querySelector("label");
-        const rentInput = block.querySelector(".rtRent");
-        const nightlyCheckbox = block.querySelector(".rtOfferNightly");
-        const nightlyGroup = block.querySelector(".rtNightlyGroup");
-        const nightlyInput = block.querySelector(".rtNightlyRent");
-        const peopleLabel = block.querySelector(".rtPeople")
-            ?.closest(".form-group")?.querySelector("label");
-        const availableLabel = block.querySelector(".rtAvailable")
-            ?.closest(".form-group")?.querySelector("label");
-
-        if (!roomType || !rentLabel || !rentInput) return;
-
-        const roomOptions = {
-            PG: ["Single", "Double Sharing", "Triple Sharing", "4+ Sharing"],
-            Hotel: ["Standard Room", "Deluxe Room", "Suite", "Family Room"],
-            Flat: ["1 BHK", "2 BHK", "3 BHK", "4+ BHK"]
-        };
-
-        const previousValue = roomType.value;
-        roomType.replaceChildren(new Option("Select room type", ""));
-
-        roomOptions[type].forEach(option => {
-            roomType.add(new Option(option, option));
-        });
-
-        roomType.value = roomOptions[type].includes(previousValue)
-            ? previousValue
-            : "";
-
-        if (type === "Hotel") {
-            rentLabel.textContent = "Monthly Rent (₹) — optional";
-            rentInput.required = false;
-            rentInput.min = "0";
-            rentInput.placeholder = "Enter only if monthly stays are offered";
-
-            if (nightlyCheckbox) {
-                nightlyCheckbox.checked = true;
-                nightlyCheckbox.closest(".form-group").hidden = true;
-                nightlyCheckbox.disabled = true;
-            }
-
-            if (nightlyGroup) nightlyGroup.hidden = false;
-
-            if (nightlyInput) {
-                nightlyInput.disabled = false;
-                nightlyInput.required = true;
-                nightlyInput.placeholder = "Hotel price per night";
-            }
-
-            if (peopleLabel) peopleLabel.textContent = "Maximum Guests";
-            if (availableLabel) availableLabel.textContent = "Rooms Available";
-        } else {
-            rentLabel.textContent = "Monthly Rent (₹)";
-            rentInput.required = true;
-            rentInput.min = "1";
-            rentInput.placeholder = "e.g. 6000";
-
-            if (nightlyCheckbox) {
-                nightlyCheckbox.disabled = false;
-                nightlyCheckbox.closest(".form-group").hidden = false;
-            }
-
-            if (nightlyInput) {
-                nightlyInput.required = false;
-                nightlyInput.placeholder = "e.g. 800";
-            }
-
-            if (nightlyGroup) {
-                nightlyGroup.hidden = !nightlyCheckbox?.checked;
-                if (nightlyCheckbox?.checked && nightlyInput) {
-                    nightlyInput.disabled = false;
-                }
-            }
-
-            if (peopleLabel) peopleLabel.textContent = "People Sharing the Room";
-            if (availableLabel) availableLabel.textContent = "Rooms/Beds Available";
-        }
-    }
-
-    document.querySelectorAll(".listing-type-option").forEach(button => {
-        button.addEventListener("click", () => {
-            selectListingType(button.dataset.type);
-        });
-    });
-
-    changeButton?.addEventListener("click", () => {
-        modal.classList.remove("hidden");
-        page.classList.add("listing-form-hidden");
-    });
-
-    // Reconfigure room blocks when owners add another room type.
-    document.getElementById("addRoomTypeBtn")?.addEventListener("click", () => {
-        requestAnimationFrame(() => {
-            document.querySelectorAll(".room-type-block").forEach(block => {
-                configureRoomBlock(block, typeSelect.value);
-            });
-        });
-    });
-
-    // Keep the selected form synchronized with the existing property editor.
-    if (new URLSearchParams(window.location.search).has("edit")) {
-        modal.classList.add("hidden");
-        page.classList.remove("listing-form-hidden");
-        selectListingType(typeSelect.value || "PG");
-    } else {
-        page.classList.add("listing-form-hidden");
-    }
-
-    // Make the configuration available to the submission handler.
-    window.roomDhundoConfigureRoomBlock = configureRoomBlock;
 });

@@ -132,6 +132,7 @@
             <button id="navAuthBtn" type="button" aria-label="Log in or sign up">Log In / Sign Up</button>
         </div>
     </nav>
+
     
 <!-- PROPERTY TYPE SELECTION POPUP -->
 <div id="listingTypeModal" class="listing-type-modal">
@@ -497,66 +498,6 @@
             </form>
         </div>
     </div>
-
-    
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const modal = document.getElementById("listingTypeModal");
-    const page = document.querySelector(".list-property-page");
-    const typeSelect = document.getElementById("lpType");
-
-    if (!modal || !page || !typeSelect) {
-        console.error("RoomDhundo: Listing popup elements are missing.");
-        return;
-    }
-
-    const title = page.querySelector(".list-property-header h1");
-    const description = page.querySelector(".list-property-header p");
-
-    const settings = {
-        PG: {
-            title: "List Your PG",
-            description: "Add your PG details, sharing options and monthly rent."
-        },
-        Hotel: {
-            title: "List Your Hotel Rooms",
-            description: "Add your hotel details, room categories and nightly prices."
-        },
-        Flat: {
-            title: "List Your Flat",
-            description: "Add your flat details and rental information."
-        }
-    };
-
-    function showListingForm(type) {
-        if (!settings[type]) return;
-
-        typeSelect.value = type;
-
-        if (title) title.textContent = settings[type].title;
-        if (description) {
-            description.textContent = settings[type].description;
-        }
-
-        modal.classList.add("hidden");
-        page.classList.remove("listing-form-hidden");
-
-        // Update the property type before the owner submits.
-        typeSelect.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    document.querySelectorAll(".listing-type-option").forEach(button => {
-        button.addEventListener("click", function () {
-            showListingForm(this.dataset.type);
-        });
-    });
-
-    // Show the popup and hide the form when the page first loads.
-    page.classList.add("listing-form-hidden");
-    modal.classList.remove("hidden");
-});
-</script>
-
 
 </body>
 </html>
