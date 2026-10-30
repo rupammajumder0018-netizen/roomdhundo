@@ -278,6 +278,9 @@
                     <option value="Standard Room">Standard Room</option>
                     <option value="Deluxe Room">Deluxe Room</option>
                     <option value="Super Deluxe Room">Super Deluxe Room</option>
+                    <option value="Premium Deluxe Room">Premium Deluxe Room</option>
+                    <option value="Family Premium Suite">Family Premium Suite</option>
+                    <option value="Corporate / Premium Suite">Corporate / Premium Suite</option>
                     <option value="Suite">Suite</option>
                     <option value="Family Room">Family Room</option>
                 </select>
@@ -288,6 +291,16 @@
             <div class="form-group rtNightlyGroup">
                 <label>Price per Night (₹)</label>
                 <input type="number" class="rtNightlyRent" min="1" placeholder="e.g. 1800" required>
+            </div>
+
+            <div class="form-group">
+                <label>Hourly Price (₹) – optional</label>
+                <input type="number" class="rtHourlyRent" min="1" placeholder="e.g. 300">
+            </div>
+
+            <div class="form-group">
+                <label>Room Description / Details</label>
+                <textarea class="rtRoomDescription" rows="2" placeholder="Bed type, AC, attached bathroom, view, amenities..."></textarea>
             </div>
 
             <div class="form-group">

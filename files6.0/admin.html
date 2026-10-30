@@ -23,6 +23,7 @@
         rel="stylesheet"
         href="admin.css"
     >
+    <link rel="stylesheet" href="hotel-bookings.css">
 
 </head>
 
@@ -87,6 +88,10 @@
         >
                 📩 Enquiries
              </button>
+
+            <button type="button" class="nav-item" data-section="hotel-bookings">
+                🏨 Hotel Bookings
+            </button>
 
 
             <button
@@ -1110,6 +1115,21 @@
             </div>
 
         </section>
+
+
+<section class="admin-section" data-section-content="hotel-bookings" id="hotelBookingsSection">
+  <div class="section-heading"><h2>Hotel Bookings</h2><p>Review every hotel booking request and manage its details across RoomDhundo.</p></div>
+  <div class="stats-grid">
+    <div class="stat-card"><span>Total Hotel Bookings</span><h2 id="adminHotelBookingTotal">0</h2></div>
+    <div class="stat-card"><span>Pending</span><h2 id="adminHotelBookingPending">0</h2></div>
+    <div class="stat-card"><span>Confirmed</span><h2 id="adminHotelBookingConfirmed">0</h2></div>
+    <div class="stat-card"><span>Rejected / Cancelled</span><h2 id="adminHotelBookingClosed">0</h2></div>
+  </div>
+  <div class="dashboard-card" style="margin-top:20px">
+    <div class="card-header"><div><h2>All Hotel Booking Requests</h2><p>Admin can update booking status, stay dates, room and total price.</p></div><button type="button" class="view-all-btn" id="refreshAdminHotelBookings">↻ Refresh</button></div>
+    <div class="table-container hotel-booking-table-wrap"><table class="hotel-booking-table"><thead><tr><th>Guest</th><th>Hotel / Room</th><th>Stay</th><th>Owner Details</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminHotelBookingsBody"><tr><td colspan="7">Loading bookings...</td></tr></tbody></table></div>
+  </div>
+</section>
 
 <!-- =================================================
      ENQUIRIES
@@ -3438,6 +3458,7 @@
 
 
     <script src="admin.js"></script>
+    <script src="hotel-bookings-admin.js"></script>
 
 
 </body>

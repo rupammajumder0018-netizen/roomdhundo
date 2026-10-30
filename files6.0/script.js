@@ -3474,6 +3474,8 @@ function addRoomTypeBlock(roomData = null) {
     const roomTypeSelect = block.querySelector(".rtRoomType");
     const rentInput = block.querySelector(".rtRent");
     const nightlyRentInput = block.querySelector(".rtNightlyRent");
+    const hourlyRentInput = block.querySelector(".rtHourlyRent");
+    const roomDescriptionInput = block.querySelector(".rtRoomDescription");
     const offerNightly = block.querySelector(".rtOfferNightly");
     const peopleInput = block.querySelector(".rtPeople");
     const availableInput = block.querySelector(".rtAvailable");
@@ -3498,6 +3500,8 @@ function addRoomTypeBlock(roomData = null) {
         if (nightlyRentInput && hasNightly) {
             nightlyRentInput.value = roomData.daily_price;
         }
+        if (hourlyRentInput) hourlyRentInput.value = roomData.hourly_price ?? "";
+        if (roomDescriptionInput) roomDescriptionInput.value = roomData.description ?? "";
         peopleInput.value = roomData.room_people ?? 1;
         availableInput.value = roomData.available_rooms ?? 0;
         availableInput.min = "0";
@@ -3883,6 +3887,8 @@ function wireListPropertyForm() {
             const rent = Number(block.querySelector(".rtRent")?.value);
             const offerNightly = block.querySelector(".rtOfferNightly")?.checked;
             const nightlyRaw = block.querySelector(".rtNightlyRent")?.value.trim();
+            const hourlyRaw = block.querySelector(".rtHourlyRent")?.value.trim();
+            const roomDescription = block.querySelector(".rtRoomDescription")?.value.trim() || "";
             const people = Number(block.querySelector(".rtPeople")?.value);
             const available = Number(block.querySelector(".rtAvailable")?.value);
 
@@ -3919,6 +3925,15 @@ if (isHotel) {
                 }
             }
 
+            let hourlyRent = null;
+            if (hourlyRaw) {
+                hourlyRent = Number(hourlyRaw);
+                if (!Number.isFinite(hourlyRent) || hourlyRent <= 0) {
+                    alert("Enter a valid hourly price, or leave it blank.");
+                    return;
+                }
+            }
+
             if (!Number.isFinite(people) || people < 1) {
                 alert("People sharing must be at least 1.");
                 return;
@@ -3934,6 +3949,8 @@ if (isHotel) {
                 roomType,
                 rent,
                 nightlyRent,
+                hourlyRent,
+                roomDescription,
                 people,
                 available
             });
@@ -4045,6 +4062,9 @@ if (isHotel) {
                         room_type: room.roomType,
                         price_value: room.rent,
                         daily_price: room.nightlyRent,
+                        hourly_price: room.hourlyRent,
+                        description: room.roomDescription,
+                        max_guests: room.people,
                         room_rent: room.rent,
                         room_people: room.people,
                         available_rooms: room.available,
@@ -4116,6 +4136,9 @@ if (isHotel) {
                 room_type: room.roomType,
                 price_value: room.rent,
                 daily_price: room.nightlyRent,
+                hourly_price: room.hourlyRent,
+                description: room.roomDescription,
+                max_guests: room.people,
                 room_rent: room.rent,
                 room_people: room.people,
                 available_rooms: room.available,

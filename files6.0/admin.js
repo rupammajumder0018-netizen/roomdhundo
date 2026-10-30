@@ -477,6 +477,11 @@ function updatePageHeader(
 
         },
 
+        "hotel-bookings": {
+            title: "Hotel Bookings",
+            subtitle: "Review and manage hotel booking requests from customers and owners."
+        },
+
         reviews: {
 
             title:

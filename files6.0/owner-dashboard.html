@@ -20,6 +20,7 @@
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
+    <link rel="stylesheet" href="hotel-bookings.css">
 </head>
 
 <body>
@@ -63,6 +64,11 @@
     <i class="fa-solid fa-envelope-open-text"></i>
     <span>Enquiries</span>
 </a>
+
+            <a href="#hotel-bookings" class="nav-link" data-section="hotel-bookings">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Hotel Bookings</span>
+            </a>
            
 
 
@@ -398,6 +404,12 @@
 </section>
 
             
+
+<section class="section-block" id="hotel-bookings">
+  <div class="section-header"><div><h2>Hotel Booking Requests</h2><p>Approve or reject requests for rooms in your hotels. Requests stay pending until you respond.</p></div><button type="button" class="view-all-btn" id="refreshOwnerHotelBookings">↻ Refresh</button></div>
+  <div class="hotel-booking-wrap"><div class="hotel-booking-table-wrap"><table class="hotel-booking-table"><thead><tr><th>Guest</th><th>Hotel / Room</th><th>Stay</th><th>Guests</th><th>Estimated Total</th><th>Status</th><th>Action</th></tr></thead><tbody id="ownerHotelBookingsBody"><tr><td colspan="7">Loading booking requests...</td></tr></tbody></table></div></div>
+</section>
+
 <!-- ================= ENQUIRIES ================= -->
 
 <section class="section-block" id="enquiries">
@@ -685,6 +697,7 @@
 </script>
 
 
+<script src="hotel-bookings-owner.js"></script>
 </body>
 
 </html>

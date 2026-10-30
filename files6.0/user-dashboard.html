@@ -8,6 +8,7 @@
     <title>My Profile | RoomDhundo</title>
 
     <link rel="stylesheet" href="user-dashboard.css">
+    <link rel="stylesheet" href="hotel-bookings.css">
 </head>
 
 <body>
@@ -422,6 +423,13 @@
 
 
 
+
+            <section class="hotel-booking-wrap" id="myHotelBookings" style="margin-top:24px">
+                <h2>My Hotel Bookings</h2>
+                <p class="hotel-booking-intro">Track your hotel booking requests and owner responses.</p>
+                <div class="hotel-booking-table-wrap"><table class="hotel-booking-table"><thead><tr><th>Hotel / Room</th><th>Stay</th><th>Guests</th><th>Total</th><th>Status</th><th>Owner Note</th></tr></thead><tbody id="myHotelBookingsBody"><tr><td colspan="6">Loading your bookings...</td></tr></tbody></table></div>
+            </section>
+
             <!-- =================================================
                  LOGOUT
                  ================================================= -->
@@ -541,6 +549,7 @@
 
     <script src="script.js"></script>
     <script src="user-dashboard.js"></script>
+        <script src="hotel-bookings-user.js"></script>
 
 
     <!-- =====================================================
