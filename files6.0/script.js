@@ -2691,7 +2691,16 @@ roomTypesList.innerHTML = "";
 
     const isAvailable = isRoomAvailable(rt);
 
+    const roomImages = Array.isArray(rt.images) ? rt.images.filter(Boolean) : [];
+    const roomImagesHtml = roomImages.length
+        ? `<div class="room-type-gallery">${roomImages.map(url => `
+            <a href="${url}" target="_blank" rel="noopener">
+                <img src="${url}" alt="${escapePropertyHtml(rt.room_type)} photo" loading="lazy">
+            </a>`).join("")}</div>`
+        : "";
+
     card.innerHTML = `
+        ${roomImagesHtml}
         <div class="room-type-card-header">
 
             <h3>${rt.room_type}</h3>
@@ -3458,6 +3467,94 @@ function parseTime12h(text) {
     return `${String(hours).padStart(2, "0")}:${match[2]}`;
 }
 
+/* ============================================================
+   PER-ROOM IMAGES (hotel form)
+   Each room block keeps its own saved photos (block._roomExistingImages)
+   and newly picked files (block._roomNewFiles).
+   ============================================================ */
+const MAX_ROOM_IMAGES = 5;
+const MAX_ROOM_IMAGE_SIZE = 5 * 1024 * 1024;
+
+function wireRoomImages(block, roomData) {
+    const input = block.querySelector(".rtImages");
+    const addBtn = block.querySelector(".rtAddImageBtn");
+    const previews = block.querySelector(".rtImagePreviews");
+    if (!input || !addBtn || !previews) return;
+
+    block._roomExistingImages = Array.isArray(roomData?.images)
+        ? roomData.images.filter(Boolean)
+        : [];
+    block._roomNewFiles = [];
+
+    function render() {
+        previews.innerHTML = "";
+
+        block._roomExistingImages.forEach((url, index) => {
+            previews.appendChild(makeThumb(url, () => {
+                block._roomExistingImages.splice(index, 1);
+                render();
+            }));
+        });
+
+        block._roomNewFiles.forEach((file, index) => {
+            const url = URL.createObjectURL(file);
+            previews.appendChild(makeThumb(url, () => {
+                URL.revokeObjectURL(url);
+                block._roomNewFiles.splice(index, 1);
+                render();
+            }));
+        });
+
+        const total = block._roomExistingImages.length + block._roomNewFiles.length;
+        addBtn.disabled = total >= MAX_ROOM_IMAGES;
+        addBtn.textContent = total >= MAX_ROOM_IMAGES
+            ? "Maximum photos added"
+            : total > 0 ? "+ Add Another Image" : "+ Add Image";
+    }
+
+    function makeThumb(src, onRemove) {
+        const wrap = document.createElement("div");
+        wrap.className = "rt-image-thumb";
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = "Room photo";
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.title = "Remove photo";
+        remove.textContent = "×";
+        remove.addEventListener("click", onRemove);
+        wrap.append(img, remove);
+        return wrap;
+    }
+
+    addBtn.addEventListener("click", () => input.click());
+
+    input.addEventListener("change", () => {
+        const picked = Array.from(input.files || []);
+        input.value = "";
+
+        for (const file of picked) {
+            const total = block._roomExistingImages.length + block._roomNewFiles.length;
+            if (total >= MAX_ROOM_IMAGES) {
+                alert(`You can add up to ${MAX_ROOM_IMAGES} photos per room.`);
+                break;
+            }
+            if (!file.type.startsWith("image/")) {
+                alert(`${file.name} is not an image.`);
+                continue;
+            }
+            if (file.size > MAX_ROOM_IMAGE_SIZE) {
+                alert(`${file.name} is larger than 5MB.`);
+                continue;
+            }
+            block._roomNewFiles.push(file);
+        }
+        render();
+    });
+
+    render();
+}
+
 function addRoomTypeBlock(roomData = null) {
     const container = document.getElementById("roomTypesContainer");
     const template = document.getElementById("roomTypeTemplate");
@@ -3474,8 +3571,6 @@ function addRoomTypeBlock(roomData = null) {
     const roomTypeSelect = block.querySelector(".rtRoomType");
     const rentInput = block.querySelector(".rtRent");
     const nightlyRentInput = block.querySelector(".rtNightlyRent");
-    const hourlyRentInput = block.querySelector(".rtHourlyRent");
-    const roomDescriptionInput = block.querySelector(".rtRoomDescription");
     const offerNightly = block.querySelector(".rtOfferNightly");
     const peopleInput = block.querySelector(".rtPeople");
     const availableInput = block.querySelector(".rtAvailable");
@@ -3500,8 +3595,6 @@ function addRoomTypeBlock(roomData = null) {
         if (nightlyRentInput && hasNightly) {
             nightlyRentInput.value = roomData.daily_price;
         }
-        if (hourlyRentInput) hourlyRentInput.value = roomData.hourly_price ?? "";
-        if (roomDescriptionInput) roomDescriptionInput.value = roomData.description ?? "";
         peopleInput.value = roomData.room_people ?? 1;
         availableInput.value = roomData.available_rooms ?? 0;
         availableInput.min = "0";
@@ -3510,6 +3603,8 @@ function addRoomTypeBlock(roomData = null) {
         availableInput.value = "1";
         availableInput.min = "1";
     }
+
+    wireRoomImages(block, roomData);
 
     // Hotel rooms are always priced per night
     if (block.dataset.alwaysNightly === "true" && offerNightly) {
@@ -3887,8 +3982,6 @@ function wireListPropertyForm() {
             const rent = Number(block.querySelector(".rtRent")?.value);
             const offerNightly = block.querySelector(".rtOfferNightly")?.checked;
             const nightlyRaw = block.querySelector(".rtNightlyRent")?.value.trim();
-            const hourlyRaw = block.querySelector(".rtHourlyRent")?.value.trim();
-            const roomDescription = block.querySelector(".rtRoomDescription")?.value.trim() || "";
             const people = Number(block.querySelector(".rtPeople")?.value);
             const available = Number(block.querySelector(".rtAvailable")?.value);
 
@@ -3925,15 +4018,6 @@ if (isHotel) {
                 }
             }
 
-            let hourlyRent = null;
-            if (hourlyRaw) {
-                hourlyRent = Number(hourlyRaw);
-                if (!Number.isFinite(hourlyRent) || hourlyRent <= 0) {
-                    alert("Enter a valid hourly price, or leave it blank.");
-                    return;
-                }
-            }
-
             if (!Number.isFinite(people) || people < 1) {
                 alert("People sharing must be at least 1.");
                 return;
@@ -3949,10 +4033,11 @@ if (isHotel) {
                 roomType,
                 rent,
                 nightlyRent,
-                hourlyRent,
-                roomDescription,
                 people,
-                available
+                available,
+                hasImageField: !!block.querySelector(".rtImages"),
+                existingImages: block._roomExistingImages || [],
+                newImageFiles: block._roomNewFiles || []
             });
         }
 
@@ -3996,6 +4081,18 @@ if (isHotel) {
                 const uploadedMedia = await uploadPropertyMedia(newMediaFiles, user.id);
                 newImages = uploadedMedia.images || [];
                 newVideos = uploadedMedia.videos || [];
+            }
+
+            // Upload each hotel room's own photos
+            for (const room of roomTypeInputs) {
+                if (!room.hasImageField) continue;
+                let uploadedRoomImages = [];
+                if (room.newImageFiles.length > 0) {
+                    if (submitButton) submitButton.textContent = "Uploading room photos...";
+                    const uploaded = await uploadPropertyMedia(room.newImageFiles, user.id);
+                    uploadedRoomImages = uploaded.images || [];
+                }
+                room.images = [...room.existingImages, ...uploadedRoomImages].slice(0, MAX_ROOM_IMAGES);
             }
 
             const finalImages = [...listPropertyExistingImages, ...newImages].slice(0, 5);
@@ -4062,14 +4159,13 @@ if (isHotel) {
                         room_type: room.roomType,
                         price_value: room.rent,
                         daily_price: room.nightlyRent,
-                        hourly_price: room.hourlyRent,
-                        description: room.roomDescription,
-                        max_guests: room.people,
                         room_rent: room.rent,
                         room_people: room.people,
                         available_rooms: room.available,
                         availability
                     };
+
+                    if (room.hasImageField) roomPayload.images = room.images || [];
 
                     if (room.id) {
                         const { error: updateRoomError } =
@@ -4136,13 +4232,11 @@ if (isHotel) {
                 room_type: room.roomType,
                 price_value: room.rent,
                 daily_price: room.nightlyRent,
-                hourly_price: room.hourlyRent,
-                description: room.roomDescription,
-                max_guests: room.people,
                 room_rent: room.rent,
                 room_people: room.people,
                 available_rooms: room.available,
-                availability: room.available > 0 ? "Just listed" : "Occupied"
+                availability: room.available > 0 ? "Just listed" : "Occupied",
+                ...(room.hasImageField ? { images: room.images || [] } : {})
             }));
 
             const { error: roomTypesError } =

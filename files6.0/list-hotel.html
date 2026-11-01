@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="style.css">
     
 
+
+<style>
+.rt-image-previews{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.rt-image-thumb{position:relative;width:84px;height:68px;border-radius:8px;overflow:hidden;border:1px solid #d1d5db;background:#f3f4f6}
+.rt-image-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.rt-image-thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:14px;line-height:1;cursor:pointer}
+</style>
 </head>
 
 <body>
@@ -278,29 +285,24 @@
                     <option value="Standard Room">Standard Room</option>
                     <option value="Deluxe Room">Deluxe Room</option>
                     <option value="Super Deluxe Room">Super Deluxe Room</option>
-                    <option value="Premium Deluxe Room">Premium Deluxe Room</option>
-                    <option value="Family Premium Suite">Family Premium Suite</option>
-                    <option value="Corporate / Premium Suite">Corporate / Premium Suite</option>
                     <option value="Suite">Suite</option>
                     <option value="Family Room">Family Room</option>
                 </select>
             </div>
+
+            <div class="form-group rt-images-group">
+    <label>Room Photos</label>
+    <input type="file" class="rtImages" accept="image/jpeg,image/png,image/webp" multiple hidden>
+    <button type="button" class="lp-secondary-btn rtAddImageBtn">+ Add Image</button>
+    <p class="lp-hint">Up to 5 photos of this room category (JPG, PNG or WebP, max 5MB each).</p>
+    <div class="rt-image-previews rtImagePreviews"></div>
+</div>
 
             <input type="checkbox" class="rtOfferNightly" checked hidden>
 
             <div class="form-group rtNightlyGroup">
                 <label>Price per Night (₹)</label>
                 <input type="number" class="rtNightlyRent" min="1" placeholder="e.g. 1800" required>
-            </div>
-
-            <div class="form-group">
-                <label>Hourly Price (₹) – optional</label>
-                <input type="number" class="rtHourlyRent" min="1" placeholder="e.g. 300">
-            </div>
-
-            <div class="form-group">
-                <label>Room Description / Details</label>
-                <textarea class="rtRoomDescription" rows="2" placeholder="Bed type, AC, attached bathroom, view, amenities..."></textarea>
             </div>
 
             <div class="form-group">
@@ -317,6 +319,8 @@
                 <label>Rooms Available</label>
                 <input type="number" class="rtAvailable" min="1" value="1" required>
             </div>
+
+         
         </div>
     </template>
 
