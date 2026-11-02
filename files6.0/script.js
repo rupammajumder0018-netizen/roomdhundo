@@ -320,13 +320,7 @@ function getBuildingHubDistance(building) {
 }
 
 function sortBuildingsForActiveHub(list) {
-    const api = window.roomdhundoLocation;
-    if (api?.sortBuildingsByActiveHub) {
-        return api.sortBuildingsByActiveHub(list);
-    }
-    return [...(list || [])].sort(
-        (a, b) => (Number(a.distance_km) || 999) - (Number(b.distance_km) || 999)
-    );
+    return [...(list || [])];
 }
 
 function isHotelListing(building) {
@@ -426,14 +420,8 @@ function hotelNightlyPrice(building) {
 }
 
 function hotelLocationLine(building) {
-    const hub = getActiveHubSafe();
-    const km = getBuildingHubDistance(building);
-    const dist = Number.isFinite(Number(km))
-        ? `${Number(km).toFixed(1)} km from ${hub.name}`
-        : `Near ${hub.name}`;
     const loc = building?.location ? escapePropertyHtml(building.location) : "";
-    const distHtml = `<span class="hotel-distance">${escapePropertyHtml(dist)}</span>`;
-    return loc ? `${loc} · ${distHtml}` : distHtml;
+    return loc || "Location not listed";
 }
 
 function hotelPackageCardHTML(building, { isSaved = false, extraClass = "", compare = false } = {}) {
@@ -494,15 +482,9 @@ function hotelPackageCardHTML(building, { isSaved = false, extraClass = "", comp
 }
 
 function formatDistanceFromActiveHub(building, { includeLocation = false } = {}) {
-    const hub = getActiveHubSafe();
-    const km = getBuildingHubDistance(building);
-    const dist = Number.isFinite(Number(km))
-        ? `${Number(km).toFixed(1)} km from ${hub.name}`
-        : `Near ${hub.name}`;
-    if (includeLocation && building?.location) {
-        return `📍 ${dist} · ${building.location}`;
-    }
-    return `📍 ${dist}`;
+    const location = String(building?.location || "").trim();
+    if (location) return includeLocation ? `📍 ${location}` : location;
+    return includeLocation ? "📍 Location not listed" : "";
 }
 
 function normalizeSearchText(value) {
@@ -596,25 +578,15 @@ function scoreBuildingSearchMatch(building, query) {
     return 10;
 }
 
-function sortBuildingsForHub(list, hub) {
-    const api = window.roomdhundoLocation;
-    if (api?.getBuildingDistanceToHub && hub) {
-        return [...(list || [])].sort(
-            (a, b) => api.getBuildingDistanceToHub(a, hub) - api.getBuildingDistanceToHub(b, hub)
-        );
-    }
+function sortBuildingsForHub(list) {
     return sortBuildingsForActiveHub(list);
 }
 
 function sortBuildingsBySearch(list, query) {
-    const hub = getHubOnlyFromQuery(query);
-    if (hub) return sortBuildingsForHub(list, hub);
     if (!normalizeSearchText(query)) return sortBuildingsForActiveHub(list);
 
     return [...(list || [])].sort((a, b) => {
-        const scoreDiff = scoreBuildingSearchMatch(b, query) - scoreBuildingSearchMatch(a, query);
-        if (scoreDiff !== 0) return scoreDiff;
-        return getBuildingHubDistance(a) - getBuildingHubDistance(b);
+        return scoreBuildingSearchMatch(b, query) - scoreBuildingSearchMatch(a, query);
     });
 }
 
@@ -2782,10 +2754,8 @@ async function initSearchPage() {
         const roomTypes = Array.from(document.querySelectorAll(".roomTypeFilter:checked")).map(cb => cb.value);
         const propertyTypes = Array.from(document.querySelectorAll(".propertyTypeFilter:checked")).map(cb => cb.value);
         const facilities = Array.from(document.querySelectorAll(".facilityFilter:checked")).map(cb => cb.value);
-        const distanceEl = document.querySelector(".distanceFilter:checked");
-        const maxDistance = distanceEl ? Number(distanceEl.value) : null;
 
-        return { query, daily, min, max, roomTypes, propertyTypes, facilities, maxDistance };
+        return { query, daily, min, max, roomTypes, propertyTypes, facilities };
     }
 
     function applyFilters(list, f) {
@@ -2819,7 +2789,6 @@ async function initSearchPage() {
             }
 
             if (f.propertyTypes.length > 0 && !f.propertyTypes.includes(b.type)) return false;
-            if (f.maxDistance !== null && getBuildingHubDistance(b) > f.maxDistance) return false;
 
             if (f.facilities.length > 0) {
                 const tags = b.facility_tags || [];
@@ -2853,7 +2822,6 @@ async function initSearchPage() {
         switch (sortKey) {
             case "price-asc": sorted.sort((a, b) => (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity)); break;
             case "price-desc": sorted.sort((a, b) => (b.minPrice ?? -Infinity) - (a.minPrice ?? -Infinity)); break;
-            case "distance": return sortBuildingsForHub(sorted, getHubOnlyFromQuery(query) || getActiveHubSafe());
             case "rating": sorted.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0)); break;
             default: return sortBuildingsBySearch(sorted, query);
         }
@@ -3010,7 +2978,6 @@ async function initSearchPage() {
 
     clearFiltersBtn?.addEventListener("click", () => {
         document.querySelectorAll(".roomTypeFilter, .propertyTypeFilter, .facilityFilter").forEach(cb => cb.checked = false);
-        document.querySelectorAll(".distanceFilter").forEach(r => r.checked = false);
         ["monthlyMin", "monthlyMax", "dailyMin", "dailyMax"].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = "";
@@ -3159,7 +3126,7 @@ function setupHotelPropertyPage(building) {
     }
 
     const locEl = document.getElementById("hotelSheetLocation");
-    if (locEl) locEl.textContent = `${building.location || ""} · ${formatDistanceFromActiveHub(building).replace(/^📍\s*/, "")}`;
+    if (locEl) locEl.textContent = building.location || "Location not listed";
 
     const mapEl = document.getElementById("roomdhundoMap");
     const mapMount = document.getElementById("hotelSheetMapMount");
@@ -3279,7 +3246,7 @@ async function initPropertyPage() {
                 : (building.room_types[0]?.availability || "Room available");
     document.getElementById("propertyName").textContent = building.name;
     document.title = `${building.name} | RoomDhundo`;
-    document.getElementById("propertyLocation").textContent = formatDistanceFromActiveHub(building, { includeLocation: true });
+    document.getElementById("propertyLocation").textContent = building.location || "Location not listed";
     document.getElementById("propertyRating").textContent = building.avgRating || "New";
     document.getElementById("propertyReviews").textContent = building.reviewCount;
     document.getElementById("propertyDescription").textContent = building.description || "";
@@ -3400,8 +3367,9 @@ roomTypesList.innerHTML = "";
         }
     }
 
-    document.getElementById("propertyLocationDetails").textContent = building.location;
-    document.getElementById("propertyDistance").textContent = formatDistanceFromActiveHub(building).replace(/^📍\s*/, "");
+    document.getElementById("propertyLocationDetails").textContent = building.location || "Location not listed";
+    const distanceEl = document.getElementById("propertyDistance");
+    if (distanceEl) distanceEl.remove();
 
     // --------------------------------------------------------
     // MAP: show the listing's location, plus the visitor's own
@@ -3947,8 +3915,7 @@ async function initSavedPage() {
             </a>
             <div class="saved-property-info">
                 <h2>${item.name}</h2>
-                <p class="saved-location">📍 ${item.location}</p>
-                <p class="saved-distance">${formatDistanceFromActiveHub(item).replace(/^📍\s*/, "")}</p>
+                <p class="saved-location">📍 ${item.location || "Location not listed"}</p>
                 <div class="saved-rating">${item.avgRating ? `⭐ ${item.avgRating} rating` : "🆕 New listing"}</div>
                 <div class="saved-price">
                     <strong>${priceLabel}${priceValue}</strong>
@@ -4205,6 +4172,51 @@ function wireRoomImages(block, roomData) {
     render();
 }
 
+function collectHourlyStayOptions(block) {
+    const enabled = !!block.querySelector(".rtOfferHourly")?.checked;
+    const pricePerHour = Number(block.querySelector(".rtHourlyRent")?.value);
+    const hours = Array.from(block.querySelectorAll(".rtHourSlot:checked"))
+        .map((input) => Number(input.value))
+        .filter((value) => Number.isFinite(value) && value > 0)
+        .sort((a, b) => a - b);
+    return {
+        enabled,
+        pricePerHour: Number.isFinite(pricePerHour) && pricePerHour > 0 ? pricePerHour : 0,
+        hours
+    };
+}
+
+function wireHourlyStayOptions(block) {
+    const toggle = block.querySelector(".rtOfferHourly");
+    const fields = block.querySelector(".rt-hourly-fields");
+    const priceInput = block.querySelector(".rtHourlyRent");
+    const preview = block.querySelector(".rtHourlyPreview");
+    if (!toggle || !fields) return;
+
+    function refresh() {
+        fields.hidden = !toggle.checked;
+        if (priceInput) priceInput.disabled = !toggle.checked;
+        const offer = collectHourlyStayOptions(block);
+        if (!preview) return;
+        if (!toggle.checked) {
+            preview.textContent = "";
+            return;
+        }
+        if (!offer.pricePerHour || !offer.hours.length) {
+            preview.textContent = "Select hour slots and enter a price per hour.";
+            return;
+        }
+        preview.textContent = offer.hours
+            .map((hours) => `${hours} hrs = ₹${(offer.pricePerHour * hours).toLocaleString("en-IN")}`)
+            .join(" · ");
+    }
+
+    toggle.addEventListener("change", refresh);
+    priceInput?.addEventListener("input", refresh);
+    block.querySelectorAll(".rtHourSlot").forEach((input) => input.addEventListener("change", refresh));
+    refresh();
+}
+
 function addRoomTypeBlock(roomData = null) {
     const container = document.getElementById("roomTypesContainer");
     const template = document.getElementById("roomTypeTemplate");
@@ -4261,7 +4273,17 @@ function addRoomTypeBlock(roomData = null) {
         setVal(".rtSize", roomData.room_size);
         setVal(".rtAdults", roomData.adults);
         setVal(".rtChildren", roomData.children);
-        setVal(".rtHourlyRent", roomData.hourly_price);
+        setVal(".rtHourlyRent", details.hourly?.pricePerHour ?? roomData.hourly_price);
+        const offerHourly = block.querySelector(".rtOfferHourly");
+        const hourlyEnabled = details.hourly?.enabled === true
+            || Number(details.hourly?.pricePerHour || roomData.hourly_price) > 0;
+        if (offerHourly) offerHourly.checked = hourlyEnabled;
+        const hourValues = Array.isArray(details.hourly?.hours) && details.hourly.hours.length
+            ? details.hourly.hours.map(String)
+            : ["3", "6"];
+        block.querySelectorAll(".rtHourSlot").forEach((input) => {
+            input.checked = hourValues.includes(input.value);
+        });
         setVal(".rtWeekendPrice", roomData.weekend_price);
         setVal(".rtExtraPerson", roomData.extra_person_charge);
         setVal(".rtTotalRooms", roomData.total_rooms || roomData.available_rooms);
@@ -4286,6 +4308,7 @@ function addRoomTypeBlock(roomData = null) {
     }
 
     wireRoomImages(block, roomData);
+    wireHourlyStayOptions(block);
 
     // Hotel rooms are always priced per night
     if (block.dataset.alwaysNightly === "true" && offerNightly) {
@@ -4464,7 +4487,6 @@ async function loadPropertyForEdit(buildingId, user) {
 
     document.getElementById("lpName").value = property.name || "";
     document.getElementById("lpLocation").value = property.location || "";
-    document.getElementById("lpDistance").value = property.distance_km ?? "";
     if (!document.getElementById("lpType").value) {
         document.getElementById("lpType").value = property.type || "";
     }
@@ -4533,21 +4555,45 @@ async function loadPropertyForEdit(buildingId, user) {
     return true;
 }
 
+function cloneSupabasePayload(payload) {
+    if (Array.isArray(payload)) return payload.map((row) => ({ ...row }));
+    return { ...payload };
+}
+
+function unknownColumnFromError(message) {
+    const text = String(message || "");
+    return text.match(/Could not find the '([^']+)' column/i)?.[1]
+        || text.match(/'([^']+)' column of/i)?.[1]
+        || text.match(/column "([^"]+)"/i)?.[1]
+        || null;
+}
+
+function stripUnknownColumn(payload, column) {
+    if (Array.isArray(payload)) {
+        return payload.map((row) => {
+            const next = { ...row };
+            delete next[column];
+            return next;
+        });
+    }
+    const next = { ...payload };
+    delete next[column];
+    return next;
+}
+
 async function supabaseMutateWithoutUnknownColumns(table, mode, payload, applyFilters) {
-    let body = { ...payload };
-    for (let attempt = 0; attempt < 14; attempt++) {
+    let body = cloneSupabasePayload(payload);
+    for (let attempt = 0; attempt < 16; attempt++) {
         let query = supabaseClient.from(table)[mode](body);
         if (typeof applyFilters === "function") query = applyFilters(query);
-        const result = await (mode === "insert" && !Array.isArray(body) ? query.select().single() : query.select());
+        const result = await (mode === "insert" && !Array.isArray(body)
+            ? query.select().single()
+            : query.select());
         if (!result.error) return result;
-        const match = String(result.error.message || "").match(/'([^']+)' column/i);
-        if (match && Object.prototype.hasOwnProperty.call(Array.isArray(body) ? body[0] || {} : body, match[1])) {
-            if (Array.isArray(body)) body = body.map((row) => {
-                const next = { ...row };
-                delete next[match[1]];
-                return next;
-            });
-            else delete body[match[1]];
+        const column = unknownColumnFromError(result.error.message);
+        const sample = Array.isArray(body) ? body[0] || {} : body;
+        if (column && Object.prototype.hasOwnProperty.call(sample, column)) {
+            body = stripUnknownColumn(body, column);
             continue;
         }
         return result;
@@ -4620,7 +4666,6 @@ function wireListPropertyForm() {
 
         const name = document.getElementById("lpName").value.trim();
         const location = document.getElementById("lpLocation").value.trim();
-        const distanceKm = Number(document.getElementById("lpDistance").value);
         const type = document.getElementById("lpType").value;
         const description = document.getElementById("lpDescription").value.trim();
         const rulesRaw = document.getElementById("lpRules").value.trim();
@@ -4696,7 +4741,7 @@ function wireListPropertyForm() {
 
         const roomTypeBlocks = Array.from(document.querySelectorAll(".room-type-block"));
         if (roomTypeBlocks.length === 0) {
-            alert("Please add at least one room type.");
+            alert("Please add at least one room type with a price per night.");
             return;
         }
 
@@ -4753,6 +4798,12 @@ if (isHotel) {
                 return;
             }
 
+            const hourlyOffer = collectHourlyStayOptions(block);
+            if (hourlyOffer.enabled && (!hourlyOffer.pricePerHour || hourlyOffer.hours.length === 0)) {
+                alert(`Choose hour slots and a price per hour for "${roomType}", or turn off hourly stay.`);
+                return;
+            }
+
             roomTypeInputs.push({
                 id: block.dataset.roomId || null,
                 roomType,
@@ -4760,7 +4811,7 @@ if (isHotel) {
                 nightlyRent,
                 people,
                 available,
-                hourlyPrice: block.querySelector(".rtHourlyRent")?.value === "" ? null : Number(block.querySelector(".rtHourlyRent")?.value),
+                hourlyPrice: hourlyOffer.enabled ? hourlyOffer.pricePerHour : null,
                 weekendPrice: block.querySelector(".rtWeekendPrice")?.value === "" ? null : Number(block.querySelector(".rtWeekendPrice")?.value),
                 extraPerson: block.querySelector(".rtExtraPerson")?.value === "" ? null : Number(block.querySelector(".rtExtraPerson")?.value),
                 totalRooms: Number(block.querySelector(".rtTotalRooms")?.value) || available,
@@ -4772,7 +4823,8 @@ if (isHotel) {
                     description: block.querySelector(".rtDescription")?.value.trim() || "",
                     beds: Array.from(block.querySelectorAll(".rtBed:checked")).map((input) => input.value),
                     amenities: Array.from(block.querySelectorAll(".rtAmenity:checked")).map((input) => input.value),
-                    tax: block.querySelector(".rtTax")?.value || "inclusive"
+                    tax: block.querySelector(".rtTax")?.value || "inclusive",
+                    hourly: hourlyOffer
                 },
                 hasImageField: !!block.querySelector(".rtImages"),
                 existingImages: block._roomExistingImages || [],
@@ -4869,7 +4921,7 @@ if (isHotel) {
             const buildingCore = {
                 name,
                 location,
-                distance_km: Number.isFinite(distanceKm) ? distanceKm : 0,
+                distance_km: 0,
                 type,
                 description,
                 rules,
@@ -4994,12 +5046,13 @@ if (isHotel) {
                         owner_verified: false,
                         owner_member_since: String(new Date().getFullYear()),
                         created_by: user.id,
-                        listing_status: isHotelWizard ? "pending" : "published",
-                        verification_status: isHotelWizard ? "pending" : "approved"
+                        listing_status: "published",
+                        verification_status: "approved"
                     }
                 );
 
             if (buildingError) throw new Error(buildingError.message);
+            if (!newBuilding?.id) throw new Error("The hotel was not saved. Please try again.");
 
             const roomTypeRows = roomTypeInputs.map(room => ({
                 building_id: newBuilding.id,
@@ -5014,20 +5067,34 @@ if (isHotel) {
             }
 
             if (isHotelWizard) {
-                document.getElementById("listPropertyForm")?.setAttribute("hidden", "hidden");
-                document.getElementById("hlNav")?.setAttribute("hidden", "hidden");
-                document.getElementById("hlSuccess")?.classList.add("is-visible");
                 const viewBtn = document.getElementById("hlViewHotelBtn");
                 if (viewBtn) viewBtn.href = `property.html?id=${encodeURIComponent(newBuilding.id)}`;
                 const badge = document.getElementById("hlStatusBadge");
-                if (badge) badge.textContent = "Pending Approval";
-                return;
+                if (badge) badge.textContent = "Listed";
+                const success = document.getElementById("hlSuccess");
+                if (success) {
+                    const title = success.querySelector("h2");
+                    const copy = success.querySelector("p");
+                    if (title) title.textContent = "Hotel listed successfully";
+                    if (copy) copy.textContent = "Your hotel is now visible to guests on RoomDhundo.";
+                    success.classList.add("is-visible");
+                    document.getElementById("listPropertyForm")?.setAttribute("hidden", "hidden");
+                    document.getElementById("hlNav")?.setAttribute("hidden", "hidden");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    return;
+                }
             }
 
             alert(`"${name}" has been listed successfully!`);
             window.location.href = "search.html";
         } catch (error) {
             console.error("Property save/update error:", error);
+            const banner = document.getElementById("hlFormBanner");
+            if (banner) {
+                banner.textContent = error.message || "Could not list this hotel. Please try again.";
+                banner.classList.add("is-visible");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            }
             alert(`Something went wrong: ${error.message}`);
 
             if (submitButton) {

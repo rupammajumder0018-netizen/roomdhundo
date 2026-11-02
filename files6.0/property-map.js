@@ -32,86 +32,6 @@ let roomMarkers = [];
 
 
 // ============================================================
-// CALCULATE DISTANCE FROM MAKAUT
-// ============================================================
-
-function calculatePropertyDistanceFromMAKAUT(
-    latitude,
-    longitude
-) {
-
-    const earthRadius = 6371;
-
-    const dLat =
-        (latitude - MAKAUT_LOCATION.latitude)
-        * Math.PI / 180;
-
-    const dLon =
-        (longitude - MAKAUT_LOCATION.longitude)
-        * Math.PI / 180;
-
-    const lat1 =
-        MAKAUT_LOCATION.latitude
-        * Math.PI / 180;
-
-    const lat2 =
-        latitude
-        * Math.PI / 180;
-
-    const a =
-        Math.sin(dLat / 2) *
-        Math.sin(dLat / 2)
-        +
-        Math.cos(lat1) *
-        Math.cos(lat2) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c =
-        2 *
-        Math.atan2(
-            Math.sqrt(a),
-            Math.sqrt(1 - a)
-        );
-
-    return earthRadius * c;
-}
-
-
-// ============================================================
-// UPDATE DISTANCE FIELD
-// ============================================================
-
-function updatePropertyDistance(
-    latitude,
-    longitude
-) {
-
-    const distanceInput =
-        document.getElementById("lpDistance");
-
-    if (!distanceInput) {
-        return;
-    }
-
-    const distance =
-        calculatePropertyDistanceFromMAKAUT(
-            latitude,
-            longitude
-        );
-
-    distanceInput.value =
-        distance.toFixed(1);
-
-    console.log(
-        "Distance from MAKAUT:",
-        distance.toFixed(2),
-        "km"
-    );
-}
-
-
-// ============================================================
 // SET PROPERTY LOCATION
 // ============================================================
 
@@ -151,13 +71,6 @@ function setPropertyLocation(
     if (lonInput) {
         lonInput.value = longitude;
     }
-
-
-    // Calculate distance
-    updatePropertyDistance(
-        latitude,
-        longitude
-    );
 
 
     // Save global location object
@@ -307,16 +220,7 @@ function setPropertyMarker(
         );
 
     if (status) {
-
-        const distance =
-            calculatePropertyDistanceFromMAKAUT(
-                latitude,
-                longitude
-            );
-
-        status.textContent =
-            `✅ Location selected • ${distance.toFixed(1)} km from MAKAUT`;
-
+        status.textContent = "✅ Location selected";
     }
 }
 
@@ -397,13 +301,6 @@ async function useOwnerCurrentLocation() {
             }
 
 
-            // Calculate distance
-            updatePropertyDistance(
-                latitude,
-                longitude
-            );
-
-
             // Show map
             initializePropertyMap(
                 latitude,
@@ -419,16 +316,7 @@ async function useOwnerCurrentLocation() {
 
 
             if (status) {
-
-                const distance =
-                    calculatePropertyDistanceFromMAKAUT(
-                        latitude,
-                        longitude
-                    );
-
-                status.textContent =
-                    `✅ Location detected • ${distance.toFixed(1)} km from MAKAUT`;
-
+                status.textContent = "✅ Location detected";
             }
 
         },

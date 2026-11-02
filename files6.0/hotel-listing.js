@@ -209,11 +209,11 @@
         }
 
         if (step === 2) {
-            const blocks = document.querySelectorAll(".room-type-block");
+            const blocks = Array.from(document.querySelectorAll(".room-type-block"));
             const boxErr = document.querySelector('[data-error-for="roomTypesContainer"]');
             if (boxErr) boxErr.textContent = "";
             if (!blocks.length) {
-                if (boxErr) boxErr.textContent = "Add at least one room category.";
+                if (boxErr) boxErr.textContent = "Add at least one room category with a price per night.";
                 ok = false;
             }
             blocks.forEach((block) => {
@@ -234,6 +234,16 @@
                 if (available !== "" && (!Number.isInteger(Number(available)) || Number(available) < 0)) {
                     if (totalErr) totalErr.textContent = "Available rooms cannot be negative.";
                     ok = false;
+                }
+                const hourlyOn = block.querySelector(".rtOfferHourly")?.checked;
+                const hourPrice = block.querySelector(".rtHourlyRent")?.value;
+                const hourSlots = block.querySelectorAll(".rtHourSlot:checked").length;
+                const hourErr = block.querySelector(".rt-hour-error");
+                if (hourlyOn && (!positiveNumber(hourPrice, false) || hourSlots === 0)) {
+                    if (hourErr) hourErr.textContent = "Enter a price per hour and select at least one hour slot.";
+                    ok = false;
+                } else if (hourErr) {
+                    hourErr.textContent = "";
                 }
                 ["rtHourlyRent", "rtWeekendPrice", "rtExtraPerson", "rtSize"].forEach((cls) => {
                     const input = block.querySelector(`.${cls}`);
@@ -314,7 +324,13 @@
             const total = block.querySelector(".rtTotalRooms")?.value || "—";
             const available = block.querySelector(".rtAvailable")?.value || "—";
             const people = block.querySelector(".rtPeople")?.value || "—";
-            return `<li><strong>${escape(name)}</strong> · ₹${escape(night)} / night · ${escape(total)} rooms (${escape(available)} available) · max ${escape(people)}</li>`;
+            const hourlyOn = block.querySelector(".rtOfferHourly")?.checked;
+            const hourPrice = block.querySelector(".rtHourlyRent")?.value;
+            const slots = Array.from(block.querySelectorAll(".rtHourSlot:checked")).map((input) => `${input.value}h`);
+            const hourlyText = hourlyOn && hourPrice
+                ? ` · ₹${escape(hourPrice)} / hour (${escape(slots.join(", ") || "no slots")})`
+                : "";
+            return `<li><strong>${escape(name)}</strong> · ₹${escape(night)} / night${hourlyText} · ${escape(total)} rooms (${escape(available)} available) · max ${escape(people)}</li>`;
         });
         const photoCount = GALLERY_CATEGORIES.reduce((sum, cat) => sum + gallery[cat.id].existing.length + gallery[cat.id].files.length, 0);
         mount.innerHTML = `
@@ -358,6 +374,9 @@
             if (input) input.value = name;
             const title = block?.querySelector(".rt-title");
             if (title) title.textContent = name;
+            input?.addEventListener("input", () => {
+                if (title) title.textContent = input.value.trim() || "Room category";
+            });
         });
     }
 
@@ -418,7 +437,15 @@
     window.hydrateHotelListing = hydrateMeta;
     window.syncHotelListingHiddenFields = syncHiddenFields;
     window.validateHotelListing = function validateHotelListing() {
-        return validateStep(1) && validateStep(2);
+        if (!validateStep(1)) {
+            goToStep(1);
+            return false;
+        }
+        if (!validateStep(2)) {
+            goToStep(2);
+            return false;
+        }
+        return true;
     };
 
     document.addEventListener("DOMContentLoaded", () => {

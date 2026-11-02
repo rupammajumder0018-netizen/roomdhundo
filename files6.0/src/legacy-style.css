@@ -4778,11 +4778,6 @@ body:has(.nav-location-dropdown.open) .hero {
     border: 1px solid #d9dce5;
 }
 
-#lpDistance {
-    background: #f8fafc;
-    cursor: not-allowed;
-}
-
 /* =========================================================
    ROOMDHUNDO ADMIN ACCOUNT MENU
    ========================================================= */

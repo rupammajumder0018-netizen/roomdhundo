@@ -10,6 +10,19 @@
     "'": "&#39;"
   }[c]));
   const money = (v) => `₹${Number(v || 0).toLocaleString("en-IN")}`;
+  function hourlyOffer(room) {
+    const details = room?.room_details && typeof room.room_details === "object" ? room.room_details : {};
+    const hourly = details.hourly && typeof details.hourly === "object" ? details.hourly : {};
+    const price = Number(hourly.pricePerHour || room?.hourly_price || 0);
+    const hours = Array.isArray(hourly.hours) && hourly.hours.length
+      ? hourly.hours.map(Number).filter((n) => n > 0)
+      : (price > 0 ? [3, 6, 12, 24] : []);
+    return {
+      enabled: hourly.enabled !== false && price > 0 && hours.length > 0,
+      price,
+      hours
+    };
+  }
   const dateValue = (d) => {
     const x = new Date(d);
     return new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
@@ -142,7 +155,8 @@
             <li>${Number(room.max_guests || room.room_people || 2)} guests</li>
             <li>${canBook ? `${Number(room.available_rooms)} available` : "Currently unavailable"}</li>
           </ul>
-          <strong>${money(room.daily_price || room.hourly_price || room.price_value)} ${room.daily_price ? "/ night" : room.hourly_price ? "/ hour" : ""}</strong>
+          <strong>${money(room.daily_price || room.hourly_price || room.price_value)} ${room.daily_price ? "/ night" : hourlyOffer(room).enabled ? "/ hour" : ""}</strong>
+          ${hourlyOffer(room).enabled ? `<small>Hourly: ${hourlyOffer(room).hours.map((h) => `${h} hrs`).join(", ")}</small>` : ""}
           <button type="button" class="hotel-room-select" ${canBook ? "" : "disabled"}>Select room</button>
         </div>
       `;
@@ -175,7 +189,7 @@
         <label>Stay type
           <select id="hbMode">
             <option value="nightly">Book by night</option>
-            <option value="hourly">Book by hour</option>
+            ${hourlyOffer(selectedRoom).enabled ? `<option value="hourly">Book by hour</option>` : ""}
           </select>
         </label>
         <label>Guests
@@ -189,10 +203,7 @@
         </label>
         <label id="hbHoursWrap" style="display:none">Number of hours
           <select id="hbHours">
-            <option value="3">3 hours</option>
-            <option value="6">6 hours</option>
-            <option value="12">12 hours</option>
-            <option value="24">24 hours</option>
+            ${hourlyOffer(selectedRoom).hours.map((hours) => `<option value="${hours}">${hours} hours · ${money(hourlyOffer(selectedRoom).price * hours)}</option>`).join("")}
           </select>
         </label>
         <label>Your full name
@@ -220,7 +231,7 @@
       const units = hourly
         ? Number(form.querySelector("#hbHours").value)
         : Math.max(1, Math.ceil((new Date(end.value) - new Date(start.value)) / 86400000));
-      const rate = Number(hourly ? selectedRoom.hourly_price : selectedRoom.daily_price);
+      const rate = Number(hourly ? hourlyOffer(selectedRoom).price : selectedRoom.daily_price);
       const total = rate * units;
       form.querySelector("#hbTotal").textContent =
         `Estimated total: ${money(total)} (${money(rate)} × ${units} ${hourly ? "hours" : "nights"})`;

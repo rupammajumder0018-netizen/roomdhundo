@@ -41,16 +41,16 @@
         <p class="hl-banner" id="hlFormBanner" role="alert"></p>
 
         <div class="hl-success" id="hlSuccess">
-            <span class="hl-badge">Pending Approval</span>
-            <h2>Hotel submitted for approval</h2>
-            <p>Your listing is not published yet. An authorized admin will review it before guests can book.</p>
+            <span class="hl-badge">Listed</span>
+            <h2>Hotel listed successfully</h2>
+            <p>Your hotel is now visible to guests on RoomDhundo.</p>
             <div class="hl-actions" style="justify-content:center">
                 <a class="hl-btn" href="owner-dashboard.html">Owner dashboard</a>
                 <a class="hl-btn hl-btn-primary" id="hlViewHotelBtn" href="owner-dashboard.html">View submitted hotel</a>
             </div>
         </div>
 
-        <form class="list-property-form" id="listPropertyForm">
+        <form class="list-property-form" id="listPropertyForm" novalidate>
             <input type="hidden" id="lpType" value="Hotel">
             <input type="hidden" id="lpLocation">
             <input type="hidden" id="lpRules">
@@ -110,19 +110,17 @@
                         <div class="form-group"><label for="lpLocality">Area / Locality</label><input id="lpLocality" placeholder="e.g. near MAKAUT"></div>
                         <div class="form-group full"><label for="lpAddress">Complete Address</label><textarea id="lpAddress" rows="3" placeholder="Street, landmark, building"></textarea><p class="hl-error" data-error-for="lpAddress"></p></div>
                         <div class="form-group"><label for="lpPostal">Postal Code</label><input id="lpPostal" inputmode="numeric"></div>
-                        <div class="form-group"><label for="lpMapsUrl">Google Maps Location (optional)</label><input id="lpMapsUrl" type="url" placeholder="https://maps.google.com/..."></div>
+                        <div class="form-group"><label for="lpMapsUrl">Google Maps Location (optional)</label><input id="lpMapsUrl" type="text" placeholder="https://maps.google.com/..."></div>
                         <div class="form-group"><label for="lpOwnerPhone">Contact Number</label><input id="lpOwnerPhone" type="tel" placeholder="10-digit mobile"><p class="hl-error" data-error-for="lpOwnerPhone"></p></div>
                         <div class="form-group"><label for="lpOwnerAltPhone">Alternate Contact (optional)</label><input id="lpOwnerAltPhone" type="tel" placeholder="10-digit mobile"></div>
                         <div class="form-group"><label for="lpOwnerEmail">Email Address</label><input id="lpOwnerEmail" type="email" placeholder="hotel@email.com"><p class="hl-error" data-error-for="lpOwnerEmail"></p></div>
-                        <div class="form-group"><label for="lpWebsite">Website (optional)</label><input id="lpWebsite" type="url" placeholder="https://"></div>
+                        <div class="form-group"><label for="lpWebsite">Website (optional)</label><input id="lpWebsite" type="text" placeholder="https://"></div>
                         <div class="form-group full">
                             <label for="lpOwnerName">Owner / Business Name</label>
                             <input id="lpOwnerName" placeholder="e.g. Harbour Hospitality">
                             <p class="hl-error" data-error-for="lpOwnerName"></p>
                         </div>
                         <div class="form-group full">
-                            <label for="lpDistance">Distance from MAKAUT (km)</label>
-                            <input type="number" id="lpDistance" step="0.1" min="0" placeholder="Select property location" readonly>
                             <div class="property-location-actions">
                                 <button type="button" id="usePropertyLocationBtn" class="lp-secondary-btn">Use My Location</button>
                                 <button type="button" id="openPropertyMapBtn" class="lp-secondary-btn">Pick Location on Map</button>
@@ -187,7 +185,7 @@
             <section class="hl-step" data-hl-step="2">
                 <div class="hl-card">
                     <h2>Room Categories &amp; Pricing</h2>
-                    <p class="hl-lead">Add every room type this hotel sells. Example names below are starting points — they are not a fixed list.</p>
+                    <p class="hl-lead">Four room categories are ready to fill. Rename them, set each price, and use Add Room Type if you have more than four.</p>
                     <div id="roomTypesContainer"></div>
                     <button type="button" id="addRoomTypeBtn" class="hl-btn">+ Add Room Type</button>
                     <p class="hl-error" data-error-for="roomTypesContainer"></p>
@@ -207,7 +205,7 @@
                 <button type="button" class="hl-btn hl-btn-primary" id="hlNextBtn">Continue</button>
                 <button type="submit" class="lp-submit-btn" id="hlSubmitBtn" hidden>Submit Hotel for Approval</button>
             </div>
-            <p class="lp-note">Listings stay pending until an authorized admin approves them.</p>
+            <p class="lp-note">Submit to publish this hotel for guests to find and book.</p>
             </div>
         </form>
     </main>
@@ -242,7 +240,28 @@
                 <div class="form-group"><label>Number of Adults</label><input type="number" class="rtAdults" min="0" value="2"></div>
                 <div class="form-group"><label>Number of Children</label><input type="number" class="rtChildren" min="0" value="0"></div>
                 <div class="form-group"><label>Price Per Night (₹)</label><input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 3200"><p class="hl-error rt-night-error"></p></div>
-                <div class="form-group"><label>Price Per Hour (₹)</label><input type="number" class="rtHourlyRent" min="0" placeholder="Optional"></div>
+                <div class="form-group full rt-hourly-box">
+                    <label class="rt-hourly-toggle">
+                        <input type="checkbox" class="rtOfferHourly">
+                        Offer hourly stay
+                    </label>
+                    <div class="rt-hourly-fields" hidden>
+                        <p class="lp-hint">Guests pick one of the hour slots you enable, then pay price × hours.</p>
+                        <div class="form-group">
+                            <label>Price per hour (₹)</label>
+                            <input type="number" class="rtHourlyRent" min="0" placeholder="e.g. 400">
+                            <p class="hl-error rt-hour-error"></p>
+                        </div>
+                        <p class="rt-hourly-label">Available hour slots</p>
+                        <div class="hl-chips rt-hour-slots">
+                            <label><input type="checkbox" class="rtHourSlot" value="3" checked> 3 hours</label>
+                            <label><input type="checkbox" class="rtHourSlot" value="6" checked> 6 hours</label>
+                            <label><input type="checkbox" class="rtHourSlot" value="12"> 12 hours</label>
+                            <label><input type="checkbox" class="rtHourSlot" value="24"> 24 hours</label>
+                        </div>
+                        <p class="lp-hint rtHourlyPreview"></p>
+                    </div>
+                </div>
                 <div class="form-group"><label>Weekend Price (₹, optional)</label><input type="number" class="rtWeekendPrice" min="0"></div>
                 <div class="form-group"><label>Extra Person Charges (₹, optional)</label><input type="number" class="rtExtraPerson" min="0"></div>
                 <div class="form-group"><label>Tax Configuration</label><select class="rtTax"><option value="inclusive">Inclusive of taxes</option><option value="exclusive">Exclusive of taxes</option><option value="gst-12">GST 12%</option><option value="gst-18">GST 18%</option></select></div>
