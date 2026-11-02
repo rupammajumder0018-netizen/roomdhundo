@@ -356,8 +356,17 @@ function hotelHasBreakfast(building) {
     return tags.includes("food") || labels.some((label) => /\bfood\b|breakfast|meal/.test(label));
 }
 
+function visibleListingRules(rules) {
+    return (Array.isArray(rules) ? rules : []).filter((rule) => !String(rule).startsWith("RD_META:"));
+}
+
+function isPubliclyListedBuilding(building) {
+    const status = String(building?.listing_status || "published").trim().toLowerCase();
+    return !building?.listing_status || status === "published";
+}
+
 function hotelCheckTimes(building) {
-    const rules = Array.isArray(building?.rules) ? building.rules : [];
+    const rules = visibleListingRules(building?.rules);
     const checkIn = rules.find((rule) => /^check-in/i.test(String(rule))) || "Check-in from 12:00";
     const checkOut = rules.find((rule) => /^check-out/i.test(String(rule))) || "Check-out until 11:00";
     const timeFrom = (rule, fallback) => {
@@ -679,7 +688,7 @@ async function fetchAllBuildings() {
         console.error("Error fetching buildings:", error);
         return [];
     }
-    return data.map(attachComputedFields);
+    return (data || []).filter(isPubliclyListedBuilding).map(attachComputedFields);
 }
 
 async function fetchBuildingById(id) {
@@ -3440,7 +3449,7 @@ roomTypesList.innerHTML = "";
 
     const propertyRules = document.getElementById("propertyRules");
     propertyRules.innerHTML = "";
-    (building.rules || []).forEach(rule => {
+    visibleListingRules(building.rules).forEach(rule => {
         const li = document.createElement("li");
         li.textContent = rule;
         propertyRules.appendChild(li);
@@ -4098,6 +4107,7 @@ function formatTime12h(value) {
     hours = hours % 12 || 12;
     return `${hours}:${match[2]} ${suffix}`;
 }
+window.formatTime12h = formatTime12h;
 
 function parseTime12h(text) {
     const match = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(String(text || ""));
@@ -4228,20 +4238,51 @@ function addRoomTypeBlock(roomData = null) {
     }
 
     if (roomData) {
-        roomTypeSelect.value = roomData.room_type || "";
-        rentInput.value = roomData.price_value ?? roomData.room_rent ?? "";
+        if (roomTypeSelect) roomTypeSelect.value = roomData.room_type || "";
+        const roomName = block.querySelector(".rtRoomName");
+        if (roomName) roomName.value = roomData.room_type || "";
+        if (rentInput) rentInput.value = roomData.price_value ?? roomData.room_rent ?? "";
         const hasNightly = roomData.daily_price != null && Number(roomData.daily_price) > 0;
-        if (offerNightly) offerNightly.checked = hasNightly;
-        if (nightlyRentInput && hasNightly) {
+        if (offerNightly) offerNightly.checked = hasNightly || block.dataset.alwaysNightly === "true";
+        if (nightlyRentInput && (hasNightly || roomData.daily_price)) {
             nightlyRentInput.value = roomData.daily_price;
         }
-        peopleInput.value = roomData.room_people ?? 1;
-        availableInput.value = roomData.available_rooms ?? 0;
-        availableInput.min = "0";
+        if (peopleInput) peopleInput.value = roomData.room_people ?? 1;
+        if (availableInput) {
+            availableInput.value = roomData.available_rooms ?? 0;
+            availableInput.min = "0";
+        }
+        const details = roomData.room_details && typeof roomData.room_details === "object" ? roomData.room_details : {};
+        const setVal = (cls, value) => {
+            const el = block.querySelector(cls);
+            if (el && value != null && value !== "") el.value = value;
+        };
+        setVal(".rtDescription", details.description || roomData.description);
+        setVal(".rtSize", roomData.room_size);
+        setVal(".rtAdults", roomData.adults);
+        setVal(".rtChildren", roomData.children);
+        setVal(".rtHourlyRent", roomData.hourly_price);
+        setVal(".rtWeekendPrice", roomData.weekend_price);
+        setVal(".rtExtraPerson", roomData.extra_person_charge);
+        setVal(".rtTotalRooms", roomData.total_rooms || roomData.available_rooms);
+        setVal(".rtStatus", roomData.availability);
+        setVal(".rtTax", details.tax);
+        const markChecked = (cls, values) => {
+            const wanted = new Set((values || []).map(String));
+            block.querySelectorAll(cls).forEach((input) => {
+                input.checked = wanted.has(input.value);
+            });
+        };
+        markChecked(".rtBed", details.beds);
+        markChecked(".rtAmenity", details.amenities);
+        const title = block.querySelector(".rt-title");
+        if (title && roomData.room_type) title.textContent = roomData.room_type;
     } else {
-        peopleInput.value = "1";
-        availableInput.value = "1";
-        availableInput.min = "1";
+        if (peopleInput) peopleInput.value = "1";
+        if (availableInput) {
+            availableInput.value = "1";
+            availableInput.min = "1";
+        }
     }
 
     wireRoomImages(block, roomData);
@@ -4428,7 +4469,7 @@ async function loadPropertyForEdit(buildingId, user) {
         document.getElementById("lpType").value = property.type || "";
     }
     document.getElementById("lpDescription").value = property.description || "";
-    const savedRules = Array.isArray(property.rules) ? property.rules : [];
+    const savedRules = visibleListingRules(property.rules);
     const checkInInput = document.getElementById("lpCheckIn");
     const checkOutInput = document.getElementById("lpCheckOut");
     const plainRules = savedRules.filter(rule => {
@@ -4442,7 +4483,9 @@ async function loadPropertyForEdit(buildingId, user) {
         }
         return true;
     });
-    document.getElementById("lpRules").value = plainRules.join("\n");
+    if (document.getElementById("lpRules")) {
+        document.getElementById("lpRules").value = plainRules.join("\n");
+    }
     document.getElementById("lpOwnerName").value = property.owner_name || "";
     document.getElementById("lpOwnerPhone").value = property.owner_phone || "";
     document.getElementById("lpOwnerAltPhone").value = property.owner_alt_phone || "";
@@ -4478,12 +4521,38 @@ async function loadPropertyForEdit(buildingId, user) {
         const roomTypes = Array.isArray(property.room_types) ? property.room_types : [];
         if (roomTypes.length > 0) {
             roomTypes.forEach(room => addRoomTypeBlock(room));
-        } else {
+        } else if (!document.getElementById("hotelListingWizard")) {
             addRoomTypeBlock();
         }
     }
 
+    if (typeof window.hydrateHotelListing === "function") {
+        window.hydrateHotelListing(property);
+    }
+
     return true;
+}
+
+async function supabaseMutateWithoutUnknownColumns(table, mode, payload, applyFilters) {
+    let body = { ...payload };
+    for (let attempt = 0; attempt < 14; attempt++) {
+        let query = supabaseClient.from(table)[mode](body);
+        if (typeof applyFilters === "function") query = applyFilters(query);
+        const result = await (mode === "insert" && !Array.isArray(body) ? query.select().single() : query.select());
+        if (!result.error) return result;
+        const match = String(result.error.message || "").match(/'([^']+)' column/i);
+        if (match && Object.prototype.hasOwnProperty.call(Array.isArray(body) ? body[0] || {} : body, match[1])) {
+            if (Array.isArray(body)) body = body.map((row) => {
+                const next = { ...row };
+                delete next[match[1]];
+                return next;
+            });
+            else delete body[match[1]];
+            continue;
+        }
+        return result;
+    }
+    return { error: new Error("Could not save because of unknown database columns.") };
 }
 
 function wireListPropertyForm() {
@@ -4512,9 +4581,10 @@ function wireListPropertyForm() {
             listPropertyExistingVideos = [];
 
             const roomContainer = document.getElementById("roomTypesContainer");
-            if (roomContainer && roomContainer.children.length === 0) {
+            if (roomContainer && roomContainer.children.length === 0 && !document.getElementById("hotelListingWizard")) {
                 addRoomTypeBlock();
             }
+            window.dispatchEvent(new Event("hotel-listing:loaded"));
         }
     };
 
@@ -4537,6 +4607,14 @@ function wireListPropertyForm() {
         const access = await canCurrentUserListProperty();
         if (!access.ok) {
             showOwnerOnlyModal();
+            return;
+        }
+
+        const isHotelWizard = !!document.getElementById("hotelListingWizard");
+        if (isHotelWizard && typeof window.syncHotelListingHiddenFields === "function") {
+            window.syncHotelListingHiddenFields();
+        }
+        if (isHotelWizard && typeof window.validateHotelListing === "function" && !window.validateHotelListing()) {
             return;
         }
 
@@ -4590,6 +4668,11 @@ function wireListPropertyForm() {
             ...facilityCheckboxes.map(checkbox => checkbox.dataset.label),
             ...customFacilities.map(item => item.label)
         ];
+        const starValue = document.querySelector(".lpStar:checked")?.value;
+        if (starValue) {
+            facilityTags.push(`star-${starValue}`);
+            facilities.push(`⭐ ${starValue} Star`);
+        }
 
         const rules = rulesRaw
             ? rulesRaw.split("\n").map(rule => rule.trim()).filter(Boolean)
@@ -4603,10 +4686,12 @@ function wireListPropertyForm() {
                 alert("Please enter the hotel check-in and check-out times.");
                 return;
             }
-            rules.unshift(
-                `Check-in: ${formatTime12h(checkInValue)}`,
-                `Check-out: ${formatTime12h(checkOutValue)}`
-            );
+            if (!rules.some((rule) => /^check-in:/i.test(rule))) {
+                rules.unshift(
+                    `Check-in: ${formatTime12h(checkInValue)}`,
+                    `Check-out: ${formatTime12h(checkOutValue)}`
+                );
+            }
         }
 
         const roomTypeBlocks = Array.from(document.querySelectorAll(".room-type-block"));
@@ -4675,6 +4760,20 @@ if (isHotel) {
                 nightlyRent,
                 people,
                 available,
+                hourlyPrice: block.querySelector(".rtHourlyRent")?.value === "" ? null : Number(block.querySelector(".rtHourlyRent")?.value),
+                weekendPrice: block.querySelector(".rtWeekendPrice")?.value === "" ? null : Number(block.querySelector(".rtWeekendPrice")?.value),
+                extraPerson: block.querySelector(".rtExtraPerson")?.value === "" ? null : Number(block.querySelector(".rtExtraPerson")?.value),
+                totalRooms: Number(block.querySelector(".rtTotalRooms")?.value) || available,
+                roomSize: block.querySelector(".rtSize")?.value === "" ? null : Number(block.querySelector(".rtSize")?.value),
+                adults: block.querySelector(".rtAdults")?.value === "" ? null : Number(block.querySelector(".rtAdults")?.value),
+                children: block.querySelector(".rtChildren")?.value === "" ? null : Number(block.querySelector(".rtChildren")?.value),
+                status: block.querySelector(".rtStatus")?.value || (available > 0 ? "Available" : "Occupied"),
+                details: {
+                    description: block.querySelector(".rtDescription")?.value.trim() || "",
+                    beds: Array.from(block.querySelectorAll(".rtBed:checked")).map((input) => input.value),
+                    amenities: Array.from(block.querySelectorAll(".rtAmenity:checked")).map((input) => input.value),
+                    tax: block.querySelector(".rtTax")?.value || "inclusive"
+                },
                 hasImageField: !!block.querySelector(".rtImages"),
                 existingImages: block._roomExistingImages || [],
                 newImageFiles: block._roomNewFiles || []
@@ -4693,13 +4792,36 @@ if (isHotel) {
 
         try {
             const mediaInput = document.getElementById("lpImages");
-            const newMediaFiles = mediaInput?.files ? Array.from(mediaInput.files) : [];
+            const hotelMedia = isHotelWizard && typeof window.collectHotelGalleryMedia === "function"
+                ? window.collectHotelGalleryMedia()
+                : null;
+            if (hotelMedia) listPropertyExistingImages = hotelMedia.existing;
+            const newMediaFiles = hotelMedia
+                ? hotelMedia.files
+                : (mediaInput?.files ? Array.from(mediaInput.files) : []);
             let newImages = [];
             let newVideos = [];
+            let hotelGalleryMap = hotelMedia?.categorized?.existing
+                ? { ...hotelMedia.categorized.existing }
+                : null;
+            const imageCap = isHotelWizard ? 32 : 5;
 
-            if (newMediaFiles.length > 0) {
+            if (hotelMedia?.categorized) {
+                if (submitButton) submitButton.textContent = "Uploading hotel photos...";
+                hotelGalleryMap = {};
+                for (const [category, files] of Object.entries(hotelMedia.categorized.files || {})) {
+                    const existing = hotelMedia.categorized.existing[category] || [];
+                    let uploaded = [];
+                    if (files.length) {
+                        const result = await uploadPropertyMedia(files, user.id);
+                        uploaded = result.images || [];
+                    }
+                    hotelGalleryMap[category] = [...existing, ...uploaded];
+                    newImages.push(...uploaded);
+                }
+            } else if (newMediaFiles.length > 0) {
                 const newImageCount = newMediaFiles.filter(file => file.type.startsWith("image/")).length;
-                const remainingImageSlots = Math.max(0, 5 - listPropertyExistingImages.length);
+                const remainingImageSlots = Math.max(0, imageCap - listPropertyExistingImages.length);
 
                 if (newImageCount > remainingImageSlots) {
                     if (submitButton) {
@@ -4707,7 +4829,7 @@ if (isHotel) {
                         submitButton.textContent = originalButtonText;
                     }
                     alert(
-                        `You can add only ${remainingImageSlots} more photo(s). Existing photos are already using ${listPropertyExistingImages.length} of 5 slots.`
+                        `You can add only ${remainingImageSlots} more photo(s). Existing photos are already using ${listPropertyExistingImages.length} of ${imageCap} slots.`
                     );
                     return;
                 }
@@ -4735,35 +4857,69 @@ if (isHotel) {
                 room.images = [...room.existingImages, ...uploadedRoomImages].slice(0, MAX_ROOM_IMAGES);
             }
 
-            const finalImages = [...listPropertyExistingImages, ...newImages].slice(0, 5);
+            const finalImages = (hotelGalleryMap
+                ? Object.values(hotelGalleryMap).flat()
+                : [...listPropertyExistingImages, ...newImages]).slice(0, imageCap);
             const finalVideos = [...listPropertyExistingVideos, ...newVideos];
+            const hotelMeta = isHotelWizard && typeof window.syncHotelListingHiddenFields === "function"
+                ? { ...window.syncHotelListingHiddenFields(), gallery: hotelGalleryMap || {} }
+                : null;
+            const latitude = Number(document.getElementById("propertyLatitude")?.value);
+            const longitude = Number(document.getElementById("propertyLongitude")?.value);
+            const buildingCore = {
+                name,
+                location,
+                distance_km: Number.isFinite(distanceKm) ? distanceKm : 0,
+                type,
+                description,
+                rules,
+                facilities,
+                facility_tags: facilityTags,
+                images: finalImages,
+                videos: finalVideos,
+                owner_name: ownerName,
+                owner_phone: ownerPhone,
+                owner_alt_phone: ownerAltPhone || null,
+                owner_whatsapp: ownerPhone,
+                owner_email: document.getElementById("lpOwnerEmail")?.value.trim() || null,
+                website: document.getElementById("lpWebsite")?.value.trim() || null,
+                latitude: Number.isFinite(latitude) ? latitude : null,
+                longitude: Number.isFinite(longitude) ? longitude : null,
+                hotel_meta: hotelMeta
+            };
+
+            function roomDbPayload(room, isNew) {
+                const availability = room.status || (room.available > 0 ? (isNew ? "Just listed" : "Available") : "Occupied");
+                return {
+                    room_type: room.roomType,
+                    price_value: Number.isFinite(room.rent) ? room.rent : 0,
+                    daily_price: room.nightlyRent,
+                    hourly_price: Number.isFinite(room.hourlyPrice) ? room.hourlyPrice : null,
+                    weekend_price: Number.isFinite(room.weekendPrice) ? room.weekendPrice : null,
+                    extra_person_charge: Number.isFinite(room.extraPerson) ? room.extraPerson : null,
+                    room_rent: Number.isFinite(room.rent) ? room.rent : 0,
+                    room_people: room.people,
+                    available_rooms: room.available,
+                    total_rooms: Number.isFinite(room.totalRooms) ? room.totalRooms : room.available,
+                    room_size: Number.isFinite(room.roomSize) ? room.roomSize : null,
+                    adults: Number.isFinite(room.adults) ? room.adults : null,
+                    children: Number.isFinite(room.children) ? room.children : null,
+                    availability,
+                    room_details: room.details || {},
+                    ...(room.hasImageField ? { images: room.images || [] } : {})
+                };
+            }
 
             if (listPropertyEditMode && listPropertyEditId) {
                 if (submitButton) submitButton.textContent = "Updating property...";
 
                 const { data: updatedBuilding, error: buildingError } =
-                    await supabaseClient
-                        .from("buildings")
-                        .update({
-                            name,
-                            location,
-                            distance_km: distanceKm,
-                            type,
-                            description,
-                            rules,
-                            facilities,
-                            facility_tags: facilityTags,
-                            images: finalImages,
-                            videos: finalVideos,
-                            owner_name: ownerName,
-                            owner_phone: ownerPhone,
-                            owner_alt_phone: ownerAltPhone || null,
-                            owner_whatsapp: ownerPhone
-                        })
-                        .eq("id", listPropertyEditId)
-                        .eq("created_by", user.id)
-                        .select()
-                        .single();
+                    await supabaseMutateWithoutUnknownColumns(
+                        "buildings",
+                        "update",
+                        buildingCore,
+                        (query) => query.eq("id", listPropertyEditId).eq("created_by", user.id)
+                    );
 
                 if (buildingError) throw new Error(buildingError.message);
                 if (!updatedBuilding) throw new Error("The property could not be updated.");
@@ -4794,38 +4950,27 @@ if (isHotel) {
                 }
 
                 for (const room of roomTypeInputs) {
-                    const availability = room.available > 0 ? "Available" : "Occupied";
-                    const roomPayload = {
-                        room_type: room.roomType,
-                        price_value: room.rent,
-                        daily_price: room.nightlyRent,
-                        room_rent: room.rent,
-                        room_people: room.people,
-                        available_rooms: room.available,
-                        availability
-                    };
-
-                    if (room.hasImageField) roomPayload.images = room.images || [];
+                    const roomPayload = roomDbPayload(room, false);
 
                     if (room.id) {
                         const { error: updateRoomError } =
-                            await supabaseClient
-                                .from("room_types")
-                                .update(roomPayload)
-                                .eq("id", room.id)
-                                .eq("building_id", listPropertyEditId);
+                            await supabaseMutateWithoutUnknownColumns(
+                                "room_types",
+                                "update",
+                                roomPayload,
+                                (query) => query.eq("id", room.id).eq("building_id", listPropertyEditId)
+                            );
 
                         if (updateRoomError) {
                             throw new Error(`Could not update room type: ${updateRoomError.message}`);
                         }
                     } else {
                         const { error: insertRoomError } =
-                            await supabaseClient
-                                .from("room_types")
-                                .insert({
-                                    building_id: listPropertyEditId,
-                                    ...roomPayload
-                                });
+                            await supabaseMutateWithoutUnknownColumns(
+                                "room_types",
+                                "insert",
+                                { building_id: listPropertyEditId, ...roomPayload }
+                            );
 
                         if (insertRoomError) {
                             throw new Error(`Could not add new room type: ${insertRoomError.message}`);
@@ -4841,49 +4986,42 @@ if (isHotel) {
             if (submitButton) submitButton.textContent = "Listing your property...";
 
             const { data: newBuilding, error: buildingError } =
-                await supabaseClient
-                    .from("buildings")
-                    .insert({
-                        name,
-                        location,
-                        distance_km: distanceKm,
-                        type,
-                        description,
-                        rules,
-                        facilities,
-                        facility_tags: facilityTags,
-                        images: finalImages,
-                        videos: finalVideos,
-                        owner_name: ownerName,
-                        owner_phone: ownerPhone,
-                        owner_alt_phone: ownerAltPhone || null,
-                        owner_whatsapp: ownerPhone,
+                await supabaseMutateWithoutUnknownColumns(
+                    "buildings",
+                    "insert",
+                    {
+                        ...buildingCore,
                         owner_verified: false,
                         owner_member_since: String(new Date().getFullYear()),
-                        created_by: user.id
-                    })
-                    .select()
-                    .single();
+                        created_by: user.id,
+                        listing_status: isHotelWizard ? "pending" : "published",
+                        verification_status: isHotelWizard ? "pending" : "approved"
+                    }
+                );
 
             if (buildingError) throw new Error(buildingError.message);
 
             const roomTypeRows = roomTypeInputs.map(room => ({
                 building_id: newBuilding.id,
-                room_type: room.roomType,
-                price_value: room.rent,
-                daily_price: room.nightlyRent,
-                room_rent: room.rent,
-                room_people: room.people,
-                available_rooms: room.available,
-                availability: room.available > 0 ? "Just listed" : "Occupied",
-                ...(room.hasImageField ? { images: room.images || [] } : {})
+                ...roomDbPayload(room, true)
             }));
 
             const { error: roomTypesError } =
-                await supabaseClient.from("room_types").insert(roomTypeRows);
+                await supabaseMutateWithoutUnknownColumns("room_types", "insert", roomTypeRows);
 
             if (roomTypesError) {
                 throw new Error(`Your property was created, but there was an issue adding room types: ${roomTypesError.message}`);
+            }
+
+            if (isHotelWizard) {
+                document.getElementById("listPropertyForm")?.setAttribute("hidden", "hidden");
+                document.getElementById("hlNav")?.setAttribute("hidden", "hidden");
+                document.getElementById("hlSuccess")?.classList.add("is-visible");
+                const viewBtn = document.getElementById("hlViewHotelBtn");
+                if (viewBtn) viewBtn.href = `property.html?id=${encodeURIComponent(newBuilding.id)}`;
+                const badge = document.getElementById("hlStatusBadge");
+                if (badge) badge.textContent = "Pending Approval";
+                return;
             }
 
             alert(`"${name}" has been listed successfully!`);

@@ -3,26 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List Your Hotel | RoomDhundo</title>
-    <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+    <title>Add New Hotel | RoomDhundo</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="style.css">
-    
-
-
-<style>
-.rt-image-previews{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
-.rt-image-thumb{position:relative;width:84px;height:68px;border-radius:8px;overflow:hidden;border:1px solid #d1d5db;background:#f3f4f6}
-.rt-image-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.rt-image-thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;padding:0;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:14px;line-height:1;cursor:pointer}
-</style>
+    <link rel="stylesheet" href="hotel-listing.css">
 </head>
-
 <body>
-
-    <!-- NAVBAR -->
     <nav class="navbar">
         <a href="index.html" class="logo">RoomDhundo</a>
         <div class="nav-links">
@@ -34,232 +20,196 @@
         </div>
     </nav>
 
-    
-    <!-- LIST PROPERTY FORM -->
-    <main class="list-property-page">
+    <main class="list-property-page hotel-listing-page">
+        <div class="hl-header">
+            <div>
+                <h1 id="listingFormTitle">Add New Hotel</h1>
+                <p id="listingFormSubtitle">Create a hotel listing and showcase your property to potential guests.</p>
+            </div>
+            <div class="hl-header-meta">
+                <span class="hl-badge" id="hlStatusBadge">New Listing</span>
+                <span class="hl-step-count" id="hlStepLabel">Step 1 of 3</span>
+            </div>
+        </div>
 
- 
-<div class="list-property-header">
-    <h1 id="listingFormTitle">List Your Hotel</h1>
-    <p id="listingFormSubtitle">
-        Enter your hotel details, then add every room category this hotel offers.
-    </p>
-</div>
+        <div class="hl-progress" role="tablist" aria-label="Listing steps">
+            <button type="button" class="is-active" data-hl-goto="1"><span class="hl-num">1</span><span>Hotel Information<small>Details, location and photos</small></span></button>
+            <button type="button" data-hl-goto="2"><span class="hl-num">2</span><span>Rooms &amp; Pricing<small>Categories, rates and inventory</small></span></button>
+            <button type="button" data-hl-goto="3"><span class="hl-num">3</span><span>Review &amp; Publish<small>Check and submit for approval</small></span></button>
+        </div>
+
+        <p class="hl-banner" id="hlFormBanner" role="alert"></p>
+
+        <div class="hl-success" id="hlSuccess">
+            <span class="hl-badge">Pending Approval</span>
+            <h2>Hotel submitted for approval</h2>
+            <p>Your listing is not published yet. An authorized admin will review it before guests can book.</p>
+            <div class="hl-actions" style="justify-content:center">
+                <a class="hl-btn" href="owner-dashboard.html">Owner dashboard</a>
+                <a class="hl-btn hl-btn-primary" id="hlViewHotelBtn" href="owner-dashboard.html">View submitted hotel</a>
+            </div>
+        </div>
 
         <form class="list-property-form" id="listPropertyForm">
+            <input type="hidden" id="lpType" value="Hotel">
+            <input type="hidden" id="lpLocation">
+            <input type="hidden" id="lpRules">
+            <div id="hotelListingWizard">
 
-            <h2 class="lp-section-title lp-first-section-title">Hotel Details</h2>
-
-            <div class="form-group">
-                <label for="lpName">Hotel Name</label>
-                <input type="text" id="lpName" placeholder="e.g. Hotel Sunrise" required>
-            </div>
-
-            <div class="form-group">
-                <label for="lpLocation">Location / Area</label>
-                <input type="text" id="lpLocation" placeholder="e.g. Haringhata, near MAKAUT" required>
-            </div>
-
-<div class="form-group">
-
-    <label for="lpDistance">
-        Distance from MAKAUT (km)
-    </label>
-
-    <input
-        type="number"
-        id="lpDistance"
-        step="0.1"
-        min="0"
-        placeholder="Select property location"
-        readonly
-        required
-    >
-
-    <div class="property-location-actions">
-
-        <button
-            type="button"
-            id="usePropertyLocationBtn"
-            class="lp-secondary-btn"
-        >
-            📍 Use My Location
-        </button>
-
-        <button
-            type="button"
-            id="openPropertyMapBtn"
-            class="lp-secondary-btn"
-        >
-            🗺️ Pick Location on Map
-        </button>
-
-    </div>
-
-    <p id="ownerLocationStatus" class="lp-hint">
-        Select the property's actual location to calculate distance automatically.
-    </p>
-
-</div>
-
-<div class="form-group property-map-group">
-
-    <label>
-        Property Location
-    </label>
-
-    <div
-        id="propertyMap"
-        style="
-            width:100%;
-            height:400px;
-            border-radius:18px;
-            overflow:hidden;
-            border:1px solid #ddd;
-        "
-    ></div>
-
-    <input
-        type="hidden"
-        id="propertyLatitude"
-        name="propertyLatitude"
-    >
-
-    <input
-        type="hidden"
-        id="propertyLongitude"
-        name="propertyLongitude"
-    >
-
-</div>
-
-      
-<input type="hidden" id="lpType" value="Hotel">
-
-<a href="list-property.html" class="lp-secondary-btn listing-form-back" style="display:inline-block;text-decoration:none;">
-    ← Change Property Type
-</a>
-
-
-            <div class="form-group">
-                <label for="lpImages">Property Photos (up to 5)</label>
-                <div class="media-upload-section">
-
-    <label for="lpImages">
-        Property Photos & Videos
-    </label>
-
-    <input
-        type="file"
-        id="lpImages"
-        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
-        multiple
-    >
-
-    <small>
-        Upload property photos and videos.
-        Photos up to 5MB each, videos up to 50MB each.
-    </small>
-
-</div>
-                <p class="lp-hint">JPG or PNG, up to 5MB each. Shared across all rooms of this hotel.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Facilities</label>
-                <div class="lp-facility-grid">
-                    <label><input type="checkbox" class="lpFacility" value="wifi" data-label="📶 Wi-Fi"> Free Wi-Fi</label>
-                    <label><input type="checkbox" class="lpFacility" value="ac" data-label="❄️ AC"> AC</label>
-                    <label><input type="checkbox" class="lpFacility" value="breakfast" data-label="🍳 Breakfast"> Breakfast Included</label>
-                    <label><input type="checkbox" class="lpFacility" value="restaurant" data-label="🍽️ Restaurant"> Restaurant</label>
-                    <label><input type="checkbox" class="lpFacility" value="room-service" data-label="🛎️ Room Service"> Room Service</label>
-                    <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
-                    <label><input type="checkbox" class="lpFacility" value="lift" data-label="🛗 Lift"> Lift</label>
-                    <label><input type="checkbox" class="lpFacility" value="power-backup" data-label="🔋 Power Backup"> Power Backup</label>
-                    <label><input type="checkbox" class="lpFacility" value="tv" data-label="📺 TV"> TV</label>
-                    <label><input type="checkbox" class="lpFacility" value="geyser" data-label="🚿 Hot Water"> 24x7 Hot Water</label>
-                    <label><input type="checkbox" class="lpFacility" value="laundry" data-label="🧺 Laundry"> Laundry</label>
-                    <label><input type="checkbox" class="lpFacility" value="couple-friendly" data-label="💑 Couple Friendly"> Couple Friendly</label>
-                </div>
-                <div class="lp-custom-facility">
-                    <label for="lpCustomFacilityInput">Add your own facility</label>
-                    <div class="lp-custom-facility-row">
-                        <input
-                            type="text"
-                            id="lpCustomFacilityInput"
-                            maxlength="40"
-                            placeholder="e.g. CCTV, Power backup, Geyser"
-                            autocomplete="off"
-                        >
-                        <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
+            <section class="hl-step is-active" data-hl-step="1">
+                <div class="hl-card">
+                    <h2>Hotel Information</h2>
+                    <p class="hl-lead">The basics guests see first.</p>
+                    <div class="hl-grid">
+                        <div class="form-group full">
+                            <label for="lpName">Hotel Name</label>
+                            <input type="text" id="lpName" placeholder="e.g. The Harbour Grand" autocomplete="organization">
+                            <p class="hl-error" data-error-for="lpName"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpPropertySubtype">Property Type</label>
+                            <select id="lpPropertySubtype">
+                                <option value="">Select type</option>
+                                <option>Hotel</option>
+                                <option>Resort</option>
+                                <option>Guest House</option>
+                                <option>Hostel</option>
+                                <option>Boutique Hotel</option>
+                                <option>Villa</option>
+                                <option>Apartment</option>
+                                <option>Homestay</option>
+                            </select>
+                            <p class="hl-error" data-error-for="lpPropertySubtype"></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Star Category</label>
+                            <div class="hl-stars" role="radiogroup" aria-label="Star category">
+                                <label><input type="radio" name="lpStar" class="lpStar" value="1"> 1 Star</label>
+                                <label><input type="radio" name="lpStar" class="lpStar" value="2"> 2 Star</label>
+                                <label><input type="radio" name="lpStar" class="lpStar" value="3"> 3 Star</label>
+                                <label><input type="radio" name="lpStar" class="lpStar" value="4"> 4 Star</label>
+                                <label><input type="radio" name="lpStar" class="lpStar" value="5"> 5 Star</label>
+                            </div>
+                            <p class="hl-error" data-error-for="lpStar"></p>
+                        </div>
+                        <div class="form-group full">
+                            <label for="lpDescription">Hotel Description</label>
+                            <textarea id="lpDescription" rows="6" placeholder="Introduce the property, neighbourhood, and what makes a stay here special."></textarea>
+                            <p class="hl-error" data-error-for="lpDescription"></p>
+                        </div>
                     </div>
-                    <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
-                    <p class="lp-hint">Write anything extra this property offers, then tap Add. Renters will see it under Facilities.</p>
                 </div>
-                
-            </div>
 
-            <div class="form-group">
-                <label>Hotel Star Rating</label>
-                <div class="lp-facility-grid">
-                    <label><input type="radio" name="lpStar" class="lpFacility" value="star-1" data-label="⭐ 1 Star" required> 1 Star</label>
-                    <label><input type="radio" name="lpStar" class="lpFacility" value="star-2" data-label="⭐ 2 Star" required> 2 Star</label>
-                    <label><input type="radio" name="lpStar" class="lpFacility" value="star-3" data-label="⭐ 3 Star" required> 3 Star</label>
-                    <label><input type="radio" name="lpStar" class="lpFacility" value="star-4" data-label="⭐ 4 Star" required> 4 Star</label>
-                    <label><input type="radio" name="lpStar" class="lpFacility" value="star-5" data-label="⭐ 5 Star" required> 5 Star</label>
-                    
+                <div class="hl-card">
+                    <h2>Location &amp; Contact</h2>
+                    <p class="hl-lead">Help guests find and reach the hotel.</p>
+                    <div class="hl-grid">
+                        <div class="form-group"><label for="lpCountry">Country</label><input id="lpCountry" value="India"><p class="hl-error" data-error-for="lpCountry"></p></div>
+                        <div class="form-group"><label for="lpState">State</label><input id="lpState" placeholder="e.g. West Bengal"><p class="hl-error" data-error-for="lpState"></p></div>
+                        <div class="form-group"><label for="lpCity">City</label><input id="lpCity" placeholder="e.g. Kalyani"><p class="hl-error" data-error-for="lpCity"></p></div>
+                        <div class="form-group"><label for="lpLocality">Area / Locality</label><input id="lpLocality" placeholder="e.g. near MAKAUT"></div>
+                        <div class="form-group full"><label for="lpAddress">Complete Address</label><textarea id="lpAddress" rows="3" placeholder="Street, landmark, building"></textarea><p class="hl-error" data-error-for="lpAddress"></p></div>
+                        <div class="form-group"><label for="lpPostal">Postal Code</label><input id="lpPostal" inputmode="numeric"></div>
+                        <div class="form-group"><label for="lpMapsUrl">Google Maps Location (optional)</label><input id="lpMapsUrl" type="url" placeholder="https://maps.google.com/..."></div>
+                        <div class="form-group"><label for="lpOwnerPhone">Contact Number</label><input id="lpOwnerPhone" type="tel" placeholder="10-digit mobile"><p class="hl-error" data-error-for="lpOwnerPhone"></p></div>
+                        <div class="form-group"><label for="lpOwnerAltPhone">Alternate Contact (optional)</label><input id="lpOwnerAltPhone" type="tel" placeholder="10-digit mobile"></div>
+                        <div class="form-group"><label for="lpOwnerEmail">Email Address</label><input id="lpOwnerEmail" type="email" placeholder="hotel@email.com"><p class="hl-error" data-error-for="lpOwnerEmail"></p></div>
+                        <div class="form-group"><label for="lpWebsite">Website (optional)</label><input id="lpWebsite" type="url" placeholder="https://"></div>
+                        <div class="form-group full">
+                            <label for="lpOwnerName">Owner / Business Name</label>
+                            <input id="lpOwnerName" placeholder="e.g. Harbour Hospitality">
+                            <p class="hl-error" data-error-for="lpOwnerName"></p>
+                        </div>
+                        <div class="form-group full">
+                            <label for="lpDistance">Distance from MAKAUT (km)</label>
+                            <input type="number" id="lpDistance" step="0.1" min="0" placeholder="Select property location" readonly>
+                            <div class="property-location-actions">
+                                <button type="button" id="usePropertyLocationBtn" class="lp-secondary-btn">Use My Location</button>
+                                <button type="button" id="openPropertyMapBtn" class="lp-secondary-btn">Pick Location on Map</button>
+                            </div>
+                            <p id="ownerLocationStatus" class="lp-hint">Optional map pin helps guests with directions.</p>
+                        </div>
+                        <div class="form-group full property-map-group">
+                            <label>Property Location</label>
+                            <div id="propertyMap" style="width:100%;height:320px;border-radius:18px;overflow:hidden;border:1px solid #e2e8f0;"></div>
+                            <input type="hidden" id="propertyLatitude" name="propertyLatitude">
+                            <input type="hidden" id="propertyLongitude" name="propertyLongitude">
+                        </div>
+                    </div>
                 </div>
+
+                <div class="hl-card">
+                    <h2>Hotel Gallery</h2>
+                    <p class="hl-lead">JPG, PNG or WebP. Max 5MB each, up to 8 photos per category. Files upload to RoomDhundo storage when you submit.</p>
+                    <div class="hl-gallery-grid" id="hlGalleryMount"></div>
+                </div>
+
+                <div class="hl-card">
+                    <h2>Hotel Facilities &amp; Policies</h2>
+                    <p class="hl-lead">Select everything the property offers.</p>
+                    <div class="hl-chips" id="hlFacilityChips">
+                        <label><input type="checkbox" class="lpFacility" value="wifi" data-label="Free Wi-Fi"> Free Wi-Fi</label>
+                        <label><input type="checkbox" class="lpFacility" value="pool" data-label="Swimming Pool"> Swimming Pool</label>
+                        <label><input type="checkbox" class="lpFacility" value="restaurant" data-label="Restaurant"> Restaurant</label>
+                        <label><input type="checkbox" class="lpFacility" value="parking" data-label="Parking"> Parking</label>
+                        <label><input type="checkbox" class="lpFacility" value="gym" data-label="Gym"> Gym</label>
+                        <label><input type="checkbox" class="lpFacility" value="room-service" data-label="Room Service"> Room Service</label>
+                        <label><input type="checkbox" class="lpFacility" value="ac" data-label="Air Conditioning"> Air Conditioning</label>
+                        <label><input type="checkbox" class="lpFacility" value="spa" data-label="Spa"> Spa</label>
+                        <label><input type="checkbox" class="lpFacility" value="bar" data-label="Bar"> Bar</label>
+                        <label><input type="checkbox" class="lpFacility" value="conference" data-label="Conference Room"> Conference Room</label>
+                        <label><input type="checkbox" class="lpFacility" value="airport-transfer" data-label="Airport Transfer"> Airport Transfer</label>
+                        <label><input type="checkbox" class="lpFacility" value="laundry" data-label="Laundry"> Laundry</label>
+                        <label><input type="checkbox" class="lpFacility" value="front-desk" data-label="24-Hour Front Desk"> 24-Hour Front Desk</label>
+                        <label><input type="checkbox" class="lpFacility" value="power-backup" data-label="Power Backup"> Power Backup</label>
+                        <label><input type="checkbox" class="lpFacility" value="pet-friendly" data-label="Pet Friendly"> Pet Friendly</label>
+                        <label><input type="checkbox" class="lpFacility" value="breakfast" data-label="Breakfast"> Breakfast</label>
+                    </div>
+                    <div class="lp-custom-facility">
+                        <label for="lpCustomFacilityInput">Add your own facility</label>
+                        <div class="lp-custom-facility-row">
+                            <input type="text" id="lpCustomFacilityInput" maxlength="40" placeholder="e.g. CCTV" autocomplete="off">
+                            <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
+                        </div>
+                        <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
+                    </div>
+                    <div class="hl-grid" style="margin-top:18px">
+                        <div class="form-group"><label for="lpCheckIn">Check-in Time</label><input type="time" id="lpCheckIn" value="14:00"></div>
+                        <div class="form-group"><label for="lpCheckOut">Check-out Time</label><input type="time" id="lpCheckOut" value="11:00"></div>
+                        <div class="form-group"><label for="lpCancelPolicy">Cancellation Policy</label><select id="lpCancelPolicy"><option value="Flexible">Flexible</option><option value="Moderate">Moderate</option><option value="Strict">Strict</option></select></div>
+                        <div class="form-group"><label for="lpChildPolicy">Child Policy</label><select id="lpChildPolicy"><option value="Children welcome">Children welcome</option><option value="Children on request">Children on request</option><option value="Adults only">Adults only</option></select></div>
+                        <div class="form-group"><label for="lpPetPolicy">Pet Policy</label><select id="lpPetPolicy"><option value="Pets not allowed">Pets not allowed</option><option value="Pets allowed">Pets allowed</option><option value="Pets on request">Pets on request</option></select></div>
+                        <div class="form-group"><label for="lpSmokePolicy">Smoking Policy</label><select id="lpSmokePolicy"><option value="Non-smoking property">Non-smoking property</option><option value="Smoking rooms available">Smoking rooms available</option></select></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hl-step" data-hl-step="2">
+                <div class="hl-card">
+                    <h2>Room Categories &amp; Pricing</h2>
+                    <p class="hl-lead">Add every room type this hotel sells. Example names below are starting points — they are not a fixed list.</p>
+                    <div id="roomTypesContainer"></div>
+                    <button type="button" id="addRoomTypeBtn" class="hl-btn">+ Add Room Type</button>
+                    <p class="hl-error" data-error-for="roomTypesContainer"></p>
+                </div>
+            </section>
+
+            <section class="hl-step" data-hl-step="3">
+                <div class="hl-card hl-review">
+                    <h2>Review &amp; Publish</h2>
+                    <p class="hl-lead">Confirm the listing, then submit it for admin approval. It will not go live automatically.</p>
+                    <div id="hlReviewMount"></div>
+                </div>
+            </section>
+
+            <div class="hl-actions" id="hlNav">
+                <button type="button" class="hl-btn" id="hlBackBtn">Back</button>
+                <button type="button" class="hl-btn hl-btn-primary" id="hlNextBtn">Continue</button>
+                <button type="submit" class="lp-submit-btn" id="hlSubmitBtn" hidden>Submit Hotel for Approval</button>
             </div>
-
-            <div class="form-group">
-                <label for="lpCheckIn">Check-in Time</label>
-                <input type="time" id="lpCheckIn" value="12:00" required>
+            <p class="lp-note">Listings stay pending until an authorized admin approves them.</p>
             </div>
-
-            <div class="form-group">
-                <label for="lpCheckOut">Check-out Time</label>
-                <input type="time" id="lpCheckOut" value="11:00" required>
-            </div>
-
-            <div class="form-group">
-                <label for="lpDescription">Description</label>
-                <textarea id="lpDescription" rows="4" placeholder="Tell guests what makes this hotel a good stay..." required></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="lpRules">Property Rules (one per line)</label>
-                <textarea id="lpRules" rows="3" placeholder="Valid ID required at check-in&#10;No outside guests after 10 PM"></textarea>
-            </div>
-
-            <h2 class="lp-section-title">Owner Contact</h2>
-
-            <div class="form-group">
-                <label for="lpOwnerName">Owner / Business Name</label>
-                <input type="text" id="lpOwnerName" placeholder="e.g. Raj Properties" required>
-            </div>
-
-            <div class="form-group">
-    <label for="lpOwnerPhone">Phone Number</label>
-    <input type="tel" id="lpOwnerPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-</div>
-
-<div class="form-group">
-    <label for="lpOwnerAltPhone">Alternative Phone Number (optional)</label>
-    <input type="tel" id="lpOwnerAltPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
-</div>
-            <h2 class="lp-section-title">Hotel Rooms</h2>
-            <p class="lp-hint lp-room-hint">Add every room category this hotel offers (e.g. Deluxe, Suite). All rooms below are saved under this hotel. Price per night is required; monthly rent is optional.</p>
-
-            <div id="roomTypesContainer"></div>
-
-            <button type="button" id="addRoomTypeBtn" class="lp-secondary-btn">+ Add Another Room Category</button>
-
-            <button type="submit" class="lp-submit-btn lp-submit-margin">List My Hotel</button>
-
-            <p class="lp-note"></p>
-
         </form>
-
     </main>
 
     <footer class="site-footer">
@@ -273,120 +223,105 @@
         </div>
     </footer>
 
-    <!-- Template for one room type block, cloned by JS -->
     <template id="roomTypeTemplate">
         <div class="room-type-block" data-always-nightly="true">
             <button type="button" class="remove-room-type-btn" title="Remove this room">&times;</button>
-
-            <div class="form-group">
-                <label>Room Type</label>
-                <select class="rtRoomType" required>
-                    <option value="">Select room type</option>
-                    <option value="Standard Room">Standard Room</option>
-                    <option value="Deluxe Room">Deluxe Room</option>
-                    <option value="Super Deluxe Room">Super Deluxe Room</option>
-                    <option value="Suite">Suite</option>
-                    <option value="Family Room">Family Room</option>
-                </select>
+            <h3 class="rt-title">Room category</h3>
+            <div class="hl-grid">
+                <div class="form-group full">
+                    <label>Room Name</label>
+                    <input type="text" class="rtRoomName rtRoomType" placeholder="e.g. Deluxe Room">
+                    <p class="hl-error rt-name-error"></p>
+                </div>
+                <div class="form-group full">
+                    <label>Room Description</label>
+                    <textarea class="rtDescription" rows="3" placeholder="Beds, view, and who this room suits."></textarea>
+                </div>
+                <div class="form-group"><label>Room Size (sq. ft.)</label><input type="number" class="rtSize" min="0" placeholder="e.g. 280"></div>
+                <div class="form-group"><label>Maximum Occupancy</label><input type="number" class="rtPeople" min="1" value="2"><p class="hl-error rt-people-error"></p></div>
+                <div class="form-group"><label>Number of Adults</label><input type="number" class="rtAdults" min="0" value="2"></div>
+                <div class="form-group"><label>Number of Children</label><input type="number" class="rtChildren" min="0" value="0"></div>
+                <div class="form-group"><label>Price Per Night (₹)</label><input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 3200"><p class="hl-error rt-night-error"></p></div>
+                <div class="form-group"><label>Price Per Hour (₹)</label><input type="number" class="rtHourlyRent" min="0" placeholder="Optional"></div>
+                <div class="form-group"><label>Weekend Price (₹, optional)</label><input type="number" class="rtWeekendPrice" min="0"></div>
+                <div class="form-group"><label>Extra Person Charges (₹, optional)</label><input type="number" class="rtExtraPerson" min="0"></div>
+                <div class="form-group"><label>Tax Configuration</label><select class="rtTax"><option value="inclusive">Inclusive of taxes</option><option value="exclusive">Exclusive of taxes</option><option value="gst-12">GST 12%</option><option value="gst-18">GST 18%</option></select></div>
+                <div class="form-group"><label>Total Number of Rooms</label><input type="number" class="rtTotalRooms" min="1" value="1"><p class="hl-error rt-total-error"></p></div>
+                <div class="form-group"><label>Available Rooms</label><input type="number" class="rtAvailable" min="0" value="1"></div>
+                <div class="form-group"><label>Room Status</label><select class="rtStatus"><option value="Available">Available</option><option value="Occupied">Occupied</option><option value="Unavailable">Unavailable</option></select></div>
+                <div class="form-group full">
+                    <label>Bed Configuration</label>
+                    <div class="hl-chips">
+                        <label><input type="checkbox" class="rtBed" value="Single Bed"> Single Bed</label>
+                        <label><input type="checkbox" class="rtBed" value="Double Bed"> Double Bed</label>
+                        <label><input type="checkbox" class="rtBed" value="Queen Bed"> Queen Bed</label>
+                        <label><input type="checkbox" class="rtBed" value="King Bed"> King Bed</label>
+                        <label><input type="checkbox" class="rtBed" value="Twin Beds"> Twin Beds</label>
+                        <label><input type="checkbox" class="rtBed" value="Sofa Bed"> Sofa Bed</label>
+                    </div>
+                </div>
+                <div class="form-group full">
+                    <label>Room Facilities</label>
+                    <div class="hl-chips">
+                        <label><input type="checkbox" class="rtAmenity" value="Air Conditioning"> Air Conditioning</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Free Wi-Fi"> Free Wi-Fi</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Television"> Television</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Wardrobe"> Wardrobe</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Work Desk"> Work Desk</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Attached Bathroom"> Attached Bathroom</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Balcony"> Balcony</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Mini Refrigerator"> Mini Refrigerator</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Electric Kettle"> Electric Kettle</label>
+                        <label><input type="checkbox" class="rtAmenity" value="Room Service"> Room Service</label>
+                    </div>
+                </div>
+                <div class="form-group full rt-images-group">
+                    <label>Room Images</label>
+                    <input type="file" class="rtImages" accept="image/jpeg,image/png,image/webp" multiple hidden>
+                    <button type="button" class="hl-btn rtAddImageBtn">+ Add Image</button>
+                    <p class="lp-hint">JPG, PNG or WebP, max 5MB, up to 5 photos.</p>
+                    <div class="rt-image-previews rtImagePreviews"></div>
+                </div>
             </div>
-
-            <div class="form-group rt-images-group">
-    <label>Room Photos</label>
-    <input type="file" class="rtImages" accept="image/jpeg,image/png,image/webp" multiple hidden>
-    <button type="button" class="lp-secondary-btn rtAddImageBtn">+ Add Image</button>
-    <p class="lp-hint">Up to 5 photos of this room category (JPG, PNG or WebP, max 5MB each).</p>
-    <div class="rt-image-previews rtImagePreviews"></div>
-</div>
-
             <input type="checkbox" class="rtOfferNightly" checked hidden>
-
-            <div class="form-group rtNightlyGroup">
-                <label>Price per Night (₹)</label>
-                <input type="number" class="rtNightlyRent" min="1" placeholder="e.g. 1800" required>
-            </div>
-
-            <div class="form-group">
-                <label>Monthly Rent (₹) – optional</label>
-                <input type="number" class="rtRent" min="0" placeholder="Optional (long stay)">
-            </div>
-
-            <div class="form-group">
-                <label>Max Guests per Room</label>
-                <input type="number" class="rtPeople" min="1" value="1" required>
-            </div>
-
-            <div class="form-group">
-                <label>Rooms Available</label>
-                <input type="number" class="rtAvailable" min="1" value="1" required>
-            </div>
-
-         
+            <input type="number" class="rtRent" value="0" hidden>
         </div>
     </template>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+    <script src="hotel-listing.js"></script>
+    <script src="location.js"></script>
+    <script src="property-map.js"></script>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script src="script.js"></script>
-
-<script src="location.js"></script>
-
-<script src="property-map.js"></script>
-
-    <!-- AUTHENTICATION MODAL -->
     <div class="auth-modal" id="authModal">
         <div class="auth-modal-content">
             <button class="auth-close-btn" id="closeAuthBtn" type="button" aria-label="Close authentication window" title="Close">&times;</button>
-
             <div class="auth-tabs" role="tablist" aria-label="Authentication options">
                 <button class="auth-tab active" id="tabLogin" type="button" role="tab" aria-selected="true">Log In</button>
                 <button class="auth-tab" id="tabSignup" type="button" role="tab" aria-selected="false">Sign Up</button>
             </div>
-
             <form class="auth-form active" id="loginForm">
                 <h2>Welcome Back</h2>
                 <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
-                <div class="form-group">
-                    <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required>
-                </div>
-                <div class="form-options">
-                    <label><input type="checkbox"> Remember me</label>
-                    <a href="reset-password.html" class="forgot-link">Forgot password?</a>
-                </div>
+                <div class="form-group"><label for="loginEmail">Email Address</label><input type="email" id="loginEmail" placeholder="name@example.com" required></div>
+                <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" placeholder="••••••••" required></div>
+                <div class="form-options"><label><input type="checkbox"> Remember me</label><a href="reset-password.html" class="forgot-link">Forgot password?</a></div>
                 <p class="auth-message" id="loginMessage"></p>
                 <button type="submit" class="auth-submit-btn">Log In</button>
             </form>
-
             <form class="auth-form" id="signupForm">
                 <h2>Create an Account</h2>
                 <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
-                <div class="form-group">
-                    <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" placeholder="John Doe" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupEmail">Email Address</label>
-                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupConfirmPassword">Confirm Password</label>
-                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
-                </div>
+                <div class="form-group"><label for="signupName">Full Name</label><input type="text" id="signupName" placeholder="John Doe" required></div>
+                <div class="form-group"><label for="signupEmail">Email Address</label><input type="email" id="signupEmail" placeholder="name@example.com" required></div>
+                <div class="form-group"><label for="signupPassword">Password</label><input type="password" id="signupPassword" placeholder="Create a strong password" required></div>
+                <div class="form-group"><label for="signupConfirmPassword">Confirm Password</label><input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required></div>
                 <p class="auth-message" id="signupMessage"></p>
                 <button type="submit" class="auth-submit-btn">Create Account</button>
             </form>
         </div>
     </div>
-
 </body>
 </html>

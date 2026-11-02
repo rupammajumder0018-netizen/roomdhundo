@@ -1,0 +1,461 @@
+.hotel-listing-page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 20px 88px;
+}
+
+.hl-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 22px;
+}
+
+.hl-header h1 {
+    margin: 0 0 6px;
+    color: #0f172a;
+    font-size: 30px;
+}
+
+.hl-header p {
+    margin: 0;
+    color: #64748b;
+    max-width: 46ch;
+}
+
+.hl-header-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.hl-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hl-step-count {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.hl-progress {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.hl-progress button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #fff;
+    color: #334155;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.hl-progress button .hl-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.hl-progress button.is-active {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.hl-progress button.is-active .hl-num,
+.hl-progress button.is-done .hl-num {
+    background: #2563eb;
+    color: #fff;
+}
+
+.hl-progress button small {
+    display: block;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.hl-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.hl-card h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.hl-card .hl-lead {
+    margin: 0 0 18px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.hl-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.hl-grid .full {
+    grid-column: 1 / -1;
+}
+
+.hl-card .form-group {
+    margin-bottom: 0;
+}
+
+.hl-card .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.hl-card input,
+.hl-card select,
+.hl-card textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 15px;
+}
+
+.hl-card textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.hl-card input:focus,
+.hl-card select:focus,
+.hl-card textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.hl-card input.is-invalid,
+.hl-card select.is-invalid,
+.hl-card textarea.is-invalid {
+    border-color: #dc2626;
+}
+
+.hl-error {
+    min-height: 1.1em;
+    margin: 6px 0 0;
+    color: #dc2626;
+    font-size: 12px;
+}
+
+.hl-stars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hl-stars label {
+    margin: 0 !important;
+    padding: 9px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px !important;
+}
+
+.hl-stars input {
+    width: auto;
+    margin-right: 6px;
+}
+
+.hl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hl-chips label {
+    margin: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-weight: 600 !important;
+    color: #334155;
+}
+
+.hl-chips input {
+    width: auto;
+    padding: 0;
+}
+
+.hl-drop {
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 18px;
+    background: #f8fafc;
+    text-align: center;
+    cursor: pointer;
+}
+
+.hl-drop.is-over {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.hl-drop p {
+    margin: 0;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.hl-drop small {
+    display: block;
+    margin-top: 4px;
+    color: #94a3b8;
+}
+
+.hl-previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.hl-thumb,
+.rt-image-thumb {
+    position: relative;
+    width: 84px;
+    height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #d1d5db;
+    background: #f3f4f6;
+}
+
+.hl-thumb img,
+.rt-image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.hl-thumb button,
+.rt-image-thumb button {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .65);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.hl-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.hl-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.hl-btn {
+    min-height: 46px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #0f172a;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.hl-btn-primary,
+.lp-submit-btn {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.hl-btn-primary:hover,
+.lp-submit-btn:hover {
+    background: #1d4ed8;
+}
+
+.hl-btn:disabled,
+.lp-submit-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.hl-step {
+    display: none;
+}
+
+.hl-step.is-active {
+    display: block;
+}
+
+.hotel-listing-page .list-property-form {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+}
+
+.hotel-listing-page .room-type-block {
+    position: relative;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    background: #fff;
+}
+
+.hotel-listing-page .remove-room-type-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.hl-review dl {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 8px 16px;
+    margin: 0;
+    font-size: 14px;
+}
+
+.hl-review dt {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.hl-review dd {
+    margin: 0;
+    color: #0f172a;
+}
+
+.hl-success {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.hl-success.is-visible {
+    display: block;
+}
+
+.hl-success h2 {
+    color: #0f172a;
+}
+
+.hl-banner {
+    display: none;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.hl-banner.is-visible {
+    display: block;
+}
+
+html[data-theme="dark"] .hl-header h1,
+html[data-theme="dark"] .hl-card h2,
+html[data-theme="dark"] .hl-success h2 {
+    color: var(--rd-text, #f3f4f6);
+}
+
+html[data-theme="dark"] .hl-card,
+html[data-theme="dark"] .hl-progress button,
+html[data-theme="dark"] .hotel-listing-page .room-type-block {
+    background: var(--rd-surface, #111);
+    border-color: var(--rd-border, #333);
+}
+
+html[data-theme="dark"] .hl-drop,
+html[data-theme="dark"] .hl-chips label {
+    background: #151515;
+    border-color: var(--rd-border, #333);
+    color: var(--rd-text, #eee);
+}
+
+@media (max-width: 800px) {
+    .hl-header,
+    .hl-actions {
+        flex-direction: column;
+    }
+
+    .hl-header-meta {
+        align-items: flex-start;
+    }
+
+    .hl-progress,
+    .hl-grid,
+    .hl-gallery-grid,
+    .hl-review dl {
+        grid-template-columns: 1fr;
+    }
+}
