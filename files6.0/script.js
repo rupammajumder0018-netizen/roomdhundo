@@ -1319,8 +1319,15 @@ function getCurrentPageName() {
     return (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
 }
 
+function isOAuthCallbackPage() {
+    const page = getCurrentPageName();
+    const path = window.location.pathname.replace(/\/+$/, "");
+    return page === "auth-callback.html" || path.endsWith("/auth/callback") || path.endsWith("/callback");
+}
+
 function isPublicAuthPage() {
-    return ["login.html", "signup.html", "reset-password.html"].includes(getCurrentPageName());
+    return ["login.html", "signup.html", "reset-password.html", "auth-callback.html"].includes(getCurrentPageName())
+        || isOAuthCallbackPage();
 }
 
 function isExploreGatePage() {
@@ -1501,6 +1508,278 @@ function getSelectedAuthRole(formId) {
     return value === "owner" || value === "user" ? value : null;
 }
 
+function getAppDirectoryPath() {
+    const path = window.location.pathname;
+    const marker = "/files6.0/";
+    const index = path.indexOf(marker);
+    if (index !== -1) return path.slice(0, index + marker.length - 1);
+    if (path.replace(/\/+$/, "").endsWith("/files6.0")) return path.replace(/\/+$/, "");
+    return "";
+}
+
+function getAuthCallbackUrl() {
+    const directory = getAppDirectoryPath();
+    if (directory) return `${window.location.origin}${directory}/auth-callback.html`;
+    const isLocal = /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+    if (isLocal) return `${window.location.origin}/auth-callback.html`;
+    return `${window.location.origin}/auth/callback`;
+}
+
+function friendlyGoogleAuthError(error, fallback) {
+    const code = String(error?.code || error?.name || "").toLowerCase();
+    const message = String(error?.message || error?.error_description || fallback || "").toLowerCase();
+    if (code.includes("access_denied") || message.includes("access_denied") || message.includes("cancelled") || message.includes("canceled")) {
+        return "Google sign-in was cancelled. You can try again or use email instead.";
+    }
+    if (message.includes("expired") || message.includes("invalid code") || message.includes("code verifier")) {
+        return "This Google sign-in link expired. Please try Continue with Google again.";
+    }
+    if (message.includes("network") || message.includes("fetch") || message.includes("failed to fetch")) {
+        return "Network problem while signing in with Google. Check your connection and try again.";
+    }
+    if (error?.message) return error.message;
+    return fallback || "Google sign-in failed. Please try again.";
+}
+
+function setGoogleAuthButtonsBusy(busy) {
+    document.querySelectorAll(".google-auth-btn").forEach((button) => {
+        button.disabled = !!busy;
+        button.classList.toggle("is-loading", !!busy);
+        button.setAttribute("aria-busy", busy ? "true" : "false");
+        const label = button.querySelector("[data-google-label]");
+        if (label) label.textContent = busy ? "Redirecting to Google..." : "Continue with Google";
+    });
+}
+
+function injectGoogleAuthButtons() {
+    ["loginForm", "signupForm"].forEach((formId) => {
+        const form = document.getElementById(formId);
+        if (!form || form.querySelector("[data-google-auth]")) return;
+
+        const wrap = document.createElement("div");
+        wrap.className = "google-auth-wrap";
+        wrap.dataset.googleAuth = "true";
+        wrap.innerHTML = `
+            <div class="auth-divider" role="separator"><span>or</span></div>
+            <button type="button" class="google-auth-btn" data-google-auth-btn data-google-message="${formId === "signupForm" ? "signupMessage" : "loginMessage"}" aria-label="Continue with Google">
+                <svg class="google-auth-icon" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true" focusable="false">
+                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.5-.4-3.5z"/>
+                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/>
+                    <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.3 35.1 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.2-3.5 5.8-6.6 7.5l6.3 5.3C37.9 38.3 44 32.5 44 24c0-1.3-.1-2.5-.4-3.5z"/>
+                </svg>
+                <span data-google-label>Continue with Google</span>
+            </button>
+        `;
+        form.appendChild(wrap);
+    });
+}
+
+function storeAuthReturnUrl() {
+    const url = new URL(window.location.href);
+    url.hash = "";
+    url.searchParams.delete("code");
+    url.searchParams.delete("error");
+    url.searchParams.delete("error_description");
+    url.searchParams.delete("state");
+    sessionStorage.setItem("roomdhundo_auth_return", url.pathname + url.search);
+}
+
+function safePostAuthPath(role) {
+    if (role === "owner") return "owner-dashboard.html";
+    const raw = sessionStorage.getItem("roomdhundo_auth_return") || "";
+    sessionStorage.removeItem("roomdhundo_auth_return");
+    try {
+        const url = new URL(raw, window.location.origin);
+        if (url.origin !== window.location.origin) return "index.html";
+        const path = url.pathname + url.search;
+        if (!path || path.includes("auth-callback") || path.endsWith("/auth/callback") || path.includes("login.html") || path.includes("signup.html")) {
+            return "index.html";
+        }
+        return path;
+    } catch (error) {
+        return "index.html";
+    }
+}
+
+async function ensureUserProfile(user, preferredRole) {
+    if (!user?.id) return { profile: null, error: new Error("Missing session") };
+
+    const requestedRole = preferredRole === "owner" ? "owner" : "user";
+    const googleName = String(user.user_metadata?.full_name || user.user_metadata?.name || "").trim();
+
+    const { data: profile, error: fetchError } = await supabaseClient
+        .from("profiles")
+        .select("id, full_name, role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (fetchError) return { profile: null, error: fetchError };
+
+    if (!profile) {
+        const { error: insertError } = await supabaseClient
+            .from("profiles")
+            .upsert({
+                id: user.id,
+                full_name: googleName || null,
+                role: requestedRole
+            });
+        if (insertError) return { profile: null, error: insertError };
+        return { profile: { id: user.id, full_name: googleName || null, role: requestedRole } };
+    }
+
+    const patch = {};
+    if (!profile.full_name && googleName) patch.full_name = googleName;
+    if (Object.keys(patch).length > 0) {
+        const { error: updateError } = await supabaseClient
+            .from("profiles")
+            .update(patch)
+            .eq("id", user.id);
+        if (updateError) return { profile, error: updateError };
+    }
+
+    return { profile };
+}
+
+async function startGoogleSignIn(messageId) {
+    const formId = messageId === "signupMessage" ? "signupForm" : "loginForm";
+    const selectedRole = getSelectedAuthRole(formId);
+    if (document.querySelector(`#${formId} .auth-role-picker`) && !selectedRole) {
+        setAuthMessage(messageId, "Please choose whether you are a renter or an owner.");
+        return;
+    }
+    if (selectedRole === "owner" || selectedRole === "user") {
+        sessionStorage.setItem("roomdhundo_oauth_role", selectedRole);
+    } else {
+        sessionStorage.removeItem("roomdhundo_oauth_role");
+    }
+    storeAuthReturnUrl();
+    setAuthMessage(messageId, "Redirecting to Google...");
+    setGoogleAuthButtonsBusy(true);
+
+    try {
+        const { error } = await supabaseClient.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+                redirectTo: getAuthCallbackUrl(),
+                queryParams: { prompt: "select_account" }
+            }
+        });
+        if (error) throw error;
+    } catch (error) {
+        console.error("Google sign-in error:", error);
+        setGoogleAuthButtonsBusy(false);
+        setAuthMessage(messageId, friendlyGoogleAuthError(error, "Could not start Google sign-in."));
+    }
+}
+
+function wireGoogleAuthButtons() {
+    injectGoogleAuthButtons();
+    document.querySelectorAll("[data-google-auth-btn]").forEach((button) => {
+        if (button.dataset.googleWired) return;
+        button.dataset.googleWired = "true";
+        button.addEventListener("click", () => {
+            startGoogleSignIn(button.dataset.googleMessage || "loginMessage");
+        });
+    });
+}
+
+function showGoogleAuthError(message) {
+    setAuthMessage("loginMessage", message);
+    if (document.getElementById("authModal") || document.getElementById("loginForm")) {
+        openAuthModal();
+    }
+}
+
+async function consumeOAuthRedirect() {
+    if (isOAuthCallbackPage() || new URLSearchParams(window.location.search).has("code")) {
+        window.__oauthHandling = true;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const errorCode = params.get("error") || hashParams.get("error");
+    const errorDescription = params.get("error_description") || hashParams.get("error_description");
+
+    if (errorCode) {
+        const message = friendlyGoogleAuthError(
+            { code: errorCode, message: errorDescription },
+            "Google sign-in was cancelled or failed."
+        );
+        history.replaceState({}, document.title, window.location.pathname);
+        if (isOAuthCallbackPage()) {
+            sessionStorage.setItem("roomdhundo_auth_error", message);
+            window.location.replace("index.html");
+            return { handled: true, ok: false, redirecting: true };
+        }
+        showGoogleAuthError(message);
+        return { handled: true, ok: false };
+    }
+
+    const storedError = sessionStorage.getItem("roomdhundo_auth_error");
+    if (storedError) {
+        sessionStorage.removeItem("roomdhundo_auth_error");
+        showGoogleAuthError(storedError);
+    }
+
+    const code = params.get("code");
+    let session = (await supabaseClient.auth.getSession()).data.session;
+
+    if (code && !session) {
+        const { data, error } = await supabaseClient.auth.exchangeCodeForSession(code);
+        if (error) {
+            console.error("OAuth code exchange error:", error);
+            history.replaceState({}, document.title, window.location.pathname);
+            const message = friendlyGoogleAuthError(error, "Could not complete Google sign-in.");
+            if (isOAuthCallbackPage()) {
+                sessionStorage.setItem("roomdhundo_auth_error", message);
+                window.location.replace("index.html");
+                return { handled: true, ok: false, redirecting: true };
+            }
+            showGoogleAuthError(message);
+            return { handled: true, ok: false };
+        }
+        session = data.session;
+    }
+
+    if (code || isOAuthCallbackPage()) {
+        history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (!session?.user) {
+        if (isOAuthCallbackPage()) {
+            const message = "Google sign-in did not create a session. Please try again.";
+            sessionStorage.setItem("roomdhundo_auth_error", message);
+            window.location.replace("index.html");
+            return { handled: true, ok: false, redirecting: true };
+        }
+        return { handled: false, ok: null };
+    }
+
+    if (!code && !isOAuthCallbackPage()) {
+        return { handled: false, ok: true, session };
+    }
+
+    const pendingRole = sessionStorage.getItem("roomdhundo_oauth_role");
+    sessionStorage.removeItem("roomdhundo_oauth_role");
+    const { profile, error: profileError } = await ensureUserProfile(session.user, pendingRole);
+    if (profileError) {
+        console.error("Google profile error:", profileError);
+        showGoogleAuthError("Signed in with Google, but we could not save your profile. Please try again.");
+    }
+
+    const role = String(profile?.role || pendingRole || "user").toLowerCase();
+    await updateNavForUser(session.user);
+    unlockExploreAfterAuth();
+    window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
+
+    if (isOAuthCallbackPage() || code) {
+        window.location.replace(safePostAuthPath(role));
+        return { handled: true, ok: true, session, redirecting: true };
+    }
+
+    return { handled: true, ok: true, session };
+}
+
 function isListingOwnerRole(role) {
     const value = String(role || "").trim().toLowerCase();
     return value === "owner" || value === "admin";
@@ -1629,6 +1908,7 @@ function wireAuthUI() {
     }
 
     injectAuthRolePickers();
+    wireGoogleAuthButtons();
 
     closeAuthBtn?.addEventListener("click", closeAuthModal);
 
@@ -4669,6 +4949,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     wireRoleChoice();
     wireChatbot();
 
+    const oauthResult = await consumeOAuthRedirect();
+    if (oauthResult?.redirecting) return;
+
     const currentUser = await getCurrentUserFast();
     updateNavForUser(currentUser);
 
@@ -4679,6 +4962,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     supabaseClient.auth.onAuthStateChange((event, session) => {
         updateNavForUser(session ? session.user : null);
         if (event === "INITIAL_SESSION") return;
+        if (window.__oauthHandling) return;
 
         if (event === "SIGNED_IN") {
             if (requireLoginToExplore(session?.user || null)) {

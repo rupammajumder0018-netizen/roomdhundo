@@ -2393,6 +2393,87 @@ a.category-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
 }
+.google-auth-wrap {
+    margin-top: 16px;
+}
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 14px;
+    color: var(--rd-muted, #6b7280);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rd-border, #e5e7eb);
+}
+.google-auth-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid var(--rd-border, #d1d5db);
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.google-auth-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: #f9fafb;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+.google-auth-btn:focus-visible {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+.google-auth-btn:disabled,
+.google-auth-btn.is-loading {
+    cursor: wait;
+    opacity: 0.72;
+    transform: none;
+    box-shadow: none;
+}
+.google-auth-icon {
+    flex-shrink: 0;
+}
+.oauth-callback-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+.oauth-callback-card {
+    width: min(420px, 100%);
+    text-align: center;
+    background: var(--rd-surface, #fff);
+    border: 1px solid var(--rd-border, #e5e7eb);
+    border-radius: 16px;
+    padding: 32px 24px;
+    box-shadow: var(--rd-shadow, 0 8px 24px rgba(15, 23, 42, 0.08));
+}
+html[data-theme="dark"] .google-auth-btn {
+    background: var(--rd-surface);
+    color: var(--rd-text);
+    border-color: var(--rd-border);
+}
+html[data-theme="dark"] .google-auth-btn:hover:not(:disabled) {
+    background: var(--rd-elevated, #151515);
+}
 /* ==========================================================================
    11. LIST PROPERTY PAGE
    ========================================================================== */
