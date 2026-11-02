@@ -2829,12 +2829,29 @@ html[data-theme="dark"] {
 }
 html[data-theme="light"] {
     color-scheme: light;
+    --rd-bg: #f8fafc;
+    --rd-surface: #ffffff;
+    --rd-surface-soft: #f8fafc;
+    --rd-text: #1f2937;
+    --rd-muted: #64748b;
+    --rd-border: #e2e8f0;
+    --rd-accent: #4f46e5;
+    --rd-focus: rgba(79, 70, 229, .20);
+    --rd-shadow: 0 14px 34px rgba(15, 23, 42, .08);
 }
 body { background: var(--rd-bg); color: var(--rd-text); transition: background-color .25s ease, color .25s ease; }
+html[data-theme="dark"] body {
+    background-color: var(--rd-bg) !important;
+    color: var(--rd-text) !important;
+}
+html[data-theme="light"] body {
+    background-color: var(--rd-bg) !important;
+    color: var(--rd-text) !important;
+}
 .theme-toggle { width: 42px; height: 42px; border: 1px solid var(--rd-border); border-radius: 50%; background: var(--rd-surface); color: var(--rd-text); display: inline-grid; place-items: center; font-size: 18px; box-shadow: 0 4px 12px rgba(15,23,42,.08); }
 .theme-toggle:hover { transform: translateY(-2px) rotate(8deg); border-color: var(--rd-accent); }
 .theme-toggle:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--rd-focus); outline-offset: 2px; }
-html[data-theme="dark"] .navbar, html[data-theme="dark"] .search-header, html[data-theme="dark"] .search-box, html[data-theme="dark"] .filters, html[data-theme="dark"] .property-card, html[data-theme="dark"] .property-section, html[data-theme="dark"] .booking-card, html[data-theme="dark"] .list-property-form, html[data-theme="dark"] .auth-modal-content, html[data-theme="dark"] .auth-card, html[data-theme="dark"] .role-choice-box, html[data-theme="dark"] .saved-property-card, html[data-theme="dark"] .nav-profile-menu, html[data-theme="dark"] .owner-section, html[data-theme="dark"] .category-card, html[data-theme="dark"] .feature-grid div, html[data-theme="dark"] .room-type-card, html[data-theme="dark"] .room-type-block, html[data-theme="dark"] .room-option { background: var(--rd-surface); border-color: var(--rd-border); box-shadow: var(--rd-shadow); }
+html[data-theme="dark"] .navbar, html[data-theme="dark"] .search-header, html[data-theme="dark"] .search-box, html[data-theme="dark"] .filters, html[data-theme="dark"] .property-card, html[data-theme="dark"] .hotel-package-card, html[data-theme="dark"] .property-section, html[data-theme="dark"] .booking-card, html[data-theme="dark"] .list-property-form, html[data-theme="dark"] .auth-modal-content, html[data-theme="dark"] .auth-card, html[data-theme="dark"] .role-choice-box, html[data-theme="dark"] .saved-property-card, html[data-theme="dark"] .nav-profile-menu, html[data-theme="dark"] .owner-section, html[data-theme="dark"] .category-card, html[data-theme="dark"] .feature-grid div, html[data-theme="dark"] .room-type-card, html[data-theme="dark"] .room-type-block, html[data-theme="dark"] .room-option { background: var(--rd-surface); border-color: var(--rd-border); box-shadow: var(--rd-shadow); }
 html[data-theme="dark"] .logo, html[data-theme="dark"] .nav-links a, html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] .form-group label, html[data-theme="dark"] .nav-profile-name, html[data-theme="dark"] .nav-profile-menu-text strong, html[data-theme="dark"] .role-choice-box h2, html[data-theme="dark"] .role-option-text h3 { color: var(--rd-text); }
 html[data-theme="dark"] p, html[data-theme="dark"] .lp-hint, html[data-theme="dark"] .lp-note, html[data-theme="dark"] .property-location, html[data-theme="dark"] .results-top p, html[data-theme="dark"] .nav-profile-menu-text span, html[data-theme="dark"] .room-type-details, html[data-theme="dark"] .auth-subtitle, html[data-theme="dark"] .saved-header p, html[data-theme="dark"] footer { color: var(--rd-muted); }
 html[data-theme="dark"] input, html[data-theme="dark"] select, html[data-theme="dark"] textarea, html[data-theme="dark"] .stay-btn, html[data-theme="dark"] .search-stay-btn, html[data-theme="dark"] .favorite, html[data-theme="dark"] .compare-btn, html[data-theme="dark"] .save-property, html[data-theme="dark"] .remove-room-type-btn, html[data-theme="dark"] .guest-counter button { background: var(--rd-surface-soft); color: var(--rd-text); border-color: var(--rd-border); }
@@ -3232,6 +3249,7 @@ html[data-theme="light"] .navbar {
 html[data-theme="light"] .search-box,
 html[data-theme="light"] .category-card,
 html[data-theme="light"] .property-card,
+html[data-theme="light"] .hotel-package-card,
 html[data-theme="light"] .saved-property-card,
 html[data-theme="light"] .filters,
 html[data-theme="light"] .property-section,

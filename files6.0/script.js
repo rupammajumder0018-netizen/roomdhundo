@@ -242,7 +242,7 @@ function saveListScrollState({ propertyId = null, visibleCount = null } = {}) {
 function bindListPropertyOpeners(root, getVisibleCount) {
     if (!root) return;
 
-    root.querySelectorAll(".property-card[data-id], .saved-property-card[data-id]").forEach((card) => {
+    root.querySelectorAll(".property-card[data-id], .saved-property-card[data-id], .hotel-package-card[data-id]").forEach((card) => {
         if (card.dataset.listOpenBound) return;
         card.dataset.listOpenBound = "true";
 
@@ -287,7 +287,7 @@ function restoreListScrollState(getVisibleCountSetter) {
 
     const apply = () => {
         const card = state.propertyId
-            ? document.querySelector(`.property-card[data-id="${state.propertyId}"], .saved-property-card[data-id="${state.propertyId}"]`)
+            ? document.querySelector(`.property-card[data-id="${state.propertyId}"], .saved-property-card[data-id="${state.propertyId}"], .hotel-package-card[data-id="${state.propertyId}"]`)
             : null;
         if (card) {
             card.scrollIntoView({ block: "center" });
@@ -327,6 +327,161 @@ function sortBuildingsForActiveHub(list) {
     return [...(list || [])].sort(
         (a, b) => (Number(a.distance_km) || 999) - (Number(b.distance_km) || 999)
     );
+}
+
+function isHotelListing(building) {
+    return String(building?.type || "").toLowerCase() === "hotel";
+}
+
+function hotelStarCount(building) {
+    const tags = (building?.facility_tags || []).map((tag) => String(tag || "").toLowerCase());
+    const blob = `${tags.join(" ")} ${getBuildingFacilityLabels(building).join(" ")}`.toLowerCase();
+    for (let i = 5; i >= 1; i--) {
+        if (tags.includes(`star-${i}`) || blob.includes(`${i} star`) || blob.includes(`⭐ ${i}`)) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+function hotelStarsHtml(count) {
+    const stars = Math.max(0, Math.min(5, Number(count) || 0));
+    if (!stars) return "";
+    return `<span class="hotel-star-row" aria-label="${stars} star hotel">${"★".repeat(stars)}</span>`;
+}
+
+function hotelHasBreakfast(building) {
+    const tags = (building?.facility_tags || []).map((tag) => String(tag || "").toLowerCase());
+    const labels = getBuildingFacilityLabels(building).map((label) => label.toLowerCase());
+    return tags.includes("food") || labels.some((label) => /\bfood\b|breakfast|meal/.test(label));
+}
+
+function hotelCheckTimes(building) {
+    const rules = Array.isArray(building?.rules) ? building.rules : [];
+    const checkIn = rules.find((rule) => /^check-in/i.test(String(rule))) || "Check-in from 12:00";
+    const checkOut = rules.find((rule) => /^check-out/i.test(String(rule))) || "Check-out until 11:00";
+    const timeFrom = (rule, fallback) => {
+        const match = String(rule).match(/(\d{1,2}:\d{2}\s*(?:AM|PM)?)/i);
+        return match ? match[1] : fallback;
+    };
+    return {
+        checkIn,
+        checkOut,
+        checkInTime: timeFrom(checkIn, "12:00"),
+        checkOutTime: timeFrom(checkOut, "11:00")
+    };
+}
+
+function hotelStayWindow() {
+    const checkIn = new Date();
+    checkIn.setHours(14, 0, 0, 0);
+    const checkOut = new Date(checkIn);
+    checkOut.setDate(checkOut.getDate() + 1);
+    const fmt = (date) => date.toLocaleDateString("en-IN", {
+        weekday: "short",
+        day: "numeric",
+        month: "short"
+    });
+    return {
+        nights: 1,
+        checkInLabel: fmt(checkIn),
+        checkOutLabel: fmt(checkOut)
+    };
+}
+
+function hotelPopularFacilities(building, limit = 6) {
+    const labels = getBuildingFacilityLabels(building).filter((label) => {
+        const key = facilityKey(label);
+        return !key.includes("star");
+    });
+    const preferred = ["wifi", "wi-fi", "food", "ac", "parking", "cctv"];
+    const ranked = [];
+    preferred.forEach((key) => {
+        const match = labels.find((label) => {
+            const text = label.toLowerCase();
+            return facilityKey(label).includes(key.replace("-", "")) || text.includes(key);
+        });
+        if (match && !ranked.includes(match)) ranked.push(match);
+    });
+    labels.forEach((label) => {
+        if (ranked.length >= limit) return;
+        if (!ranked.includes(label)) ranked.push(label);
+    });
+    return ranked.slice(0, limit);
+}
+
+function hotelNightlyPrice(building) {
+    if (building?.minDailyPrice != null) return Number(building.minDailyPrice);
+    if (building?.minPrice != null) return Number(building.minPrice);
+    return null;
+}
+
+function hotelLocationLine(building) {
+    const hub = getActiveHubSafe();
+    const km = getBuildingHubDistance(building);
+    const dist = Number.isFinite(Number(km))
+        ? `${Number(km).toFixed(1)} km from ${hub.name}`
+        : `Near ${hub.name}`;
+    const loc = building?.location ? escapePropertyHtml(building.location) : "";
+    const distHtml = `<span class="hotel-distance">${escapePropertyHtml(dist)}</span>`;
+    return loc ? `${loc} · ${distHtml}` : distHtml;
+}
+
+function hotelPackageCardHTML(building, { isSaved = false, extraClass = "", compare = false } = {}) {
+    const name = escapePropertyHtml(building.name);
+    const price = hotelNightlyPrice(building);
+    const priceText = price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
+    const stars = hotelStarCount(building);
+    const starBadge = stars ? `${stars} Star` : "Hotel";
+    const rating = building.avgRating ? String(building.avgRating) : "New";
+    const reviews = Number(building.reviewCount || 0);
+    const roomSummary = (building.roomTypeNames || []).slice(0, 3).join(", ") || "Hotel room";
+    const board = hotelHasBreakfast(building) ? "Breakfast available" : "Room only";
+    const photo = building.images && building.images[0]
+        ? `<img src="${escapePropertyHtml(building.images[0])}" alt="${name}" loading="lazy">`
+        : `<div class="image-placeholder">Hotel photo</div>`;
+    const availability = building.totalAvailable > 0
+        ? `${building.totalAvailable} ${building.totalAvailable === 1 ? "room" : "rooms"} available`
+        : "Currently occupied";
+
+    return `
+        <article class="hotel-package-card ${extraClass}" data-id="${building.id}">
+            <a class="hotel-package-photo" href="property.html?id=${building.id}" aria-label="View ${name}">
+                ${photo}
+                <div class="hotel-package-badges">
+                    <span>Hotel</span>
+                    <span>${escapePropertyHtml(starBadge)}</span>
+                </div>
+            </a>
+            <div class="hotel-package-body">
+                <div class="hotel-package-title-row">
+                    <div>
+                        <h2>${name} ${hotelStarsHtml(stars)}</h2>
+                        <p class="hotel-package-location">${hotelLocationLine(building)}</p>
+                    </div>
+                    <button type="button" class="favorite${isSaved ? " saved" : ""}" data-id="${building.id}">${isSaved ? "♥" : "♡"}</button>
+                </div>
+                <div class="hotel-package-rating">
+                    <strong>${escapePropertyHtml(rating)}</strong>
+                    <span class="hotel-rating-dots" aria-hidden="true"></span>
+                    <span>${reviews.toLocaleString("en-IN")} reviews</span>
+                </div>
+                <ul class="hotel-package-facts">
+                    <li>${escapePropertyHtml(roomSummary)}</li>
+                    <li>${escapePropertyHtml(board)}</li>
+                    <li>${escapePropertyHtml(availability)}</li>
+                </ul>
+                <div class="hotel-package-price">
+                    <strong>${priceText}</strong>
+                    <span>/ night</span>
+                </div>
+                <div class="hotel-package-actions">
+                    ${compare ? `<button type="button" class="compare-btn">Compare</button>` : ""}
+                    <a class="hotel-package-cta" href="property.html?id=${building.id}">View hotel</a>
+                </div>
+            </div>
+        </article>
+    `;
 }
 
 function formatDistanceFromActiveHub(building, { includeLocation = false } = {}) {
@@ -1991,6 +2146,9 @@ async function initHomePage() {
 
     function buildingCardHTML(b) {
         const isSaved = savedIds.includes(b.id);
+        if (isHotelListing(b)) {
+            return hotelPackageCardHTML(b, { isSaved, extraClass: "home-property-card" });
+        }
         const facilityBadges = facilityPreviewBadgesHTML(b);
         const daily = isDailyMode();
         const unit = daily ? "/ night" : "/ month";
@@ -2415,6 +2573,9 @@ async function initSearchPage() {
 
     function buildingCardHTML(b) {
         const isSaved = savedIds.includes(b.id);
+        if (isHotelListing(b)) {
+            return hotelPackageCardHTML(b, { isSaved, compare: true });
+        }
         const facilityBadges = facilityPreviewBadgesHTML(b);
         const daily = isDailyMode();
         const unit = daily ? "/ night" : "/ month";
@@ -2574,6 +2735,204 @@ async function initSearchPage() {
 
     renderPage();
     restoreListScrollState();
+}
+
+function setupHotelPropertyPage(building) {
+    if (!isHotelListing(building)) return;
+
+    const page = document.querySelector(".property-page");
+    if (!page || document.getElementById("hotelStayRoot")) return;
+
+    document.body.classList.add("is-hotel-page");
+
+    const images = Array.isArray(building.images)
+        ? building.images.filter((src) => typeof src === "string" && src.trim())
+        : [];
+    const stars = hotelStarCount(building);
+    const price = hotelNightlyPrice(building);
+    const priceText = price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
+    const rating = building.avgRating ? String(building.avgRating) : "New";
+    const reviews = Number(building.reviewCount || 0);
+    const times = hotelCheckTimes(building);
+    const stay = hotelStayWindow();
+    const breakfast = hotelHasBreakfast(building);
+    const facilities = hotelPopularFacilities(building, 6);
+    const photo = images[0]
+        ? `<img id="hotelHeroImage" src="${escapePropertyHtml(images[0])}" alt="${escapePropertyHtml(building.name)}">`
+        : `<div class="image-placeholder">Hotel photo</div>`;
+    const starBadge = stars ? `${stars} Star` : "Hotel";
+
+    const root = document.createElement("div");
+    root.id = "hotelStayRoot";
+    root.className = "hotel-stay";
+    root.innerHTML = `
+        <div class="hotel-stay-toolbar">
+            <button type="button" class="hotel-back-link" id="hotelHeroBack">← Back to search</button>
+            <button type="button" class="hotel-share-link" id="hotelHeroShare">Share</button>
+        </div>
+        <div class="hotel-stay-top">
+            <div class="hotel-hero">
+                ${photo}
+                <div class="hotel-package-badges">
+                    <span>Hotel</span>
+                    <span>${escapePropertyHtml(starBadge)}</span>
+                </div>
+                <span class="hotel-photo-count" id="hotelPhotoCount">${images.length} photo${images.length === 1 ? "" : "s"}</span>
+            </div>
+            <div class="hotel-stay-summary">
+                <h1>${escapePropertyHtml(building.name)} ${hotelStarsHtml(stars)}</h1>
+                <div class="hotel-package-rating">
+                    <strong>${escapePropertyHtml(rating)}</strong>
+                    <span class="hotel-rating-dots" aria-hidden="true"></span>
+                    <span>${reviews.toLocaleString("en-IN")} reviews</span>
+                </div>
+                <div class="hotel-check-row">
+                    <div>
+                        <span>Check-in</span>
+                        <strong>${escapePropertyHtml(stay.checkInLabel)}</strong>
+                        <small>from ${escapePropertyHtml(times.checkInTime)}</small>
+                    </div>
+                    <div class="hotel-check-nights">${stay.nights} night${stay.nights === 1 ? "" : "s"}</div>
+                    <div>
+                        <span>Check-out</span>
+                        <strong>${escapePropertyHtml(stay.checkOutLabel)}</strong>
+                        <small>until ${escapePropertyHtml(times.checkOutTime)}</small>
+                    </div>
+                </div>
+                <div class="hotel-stay-links">
+                    <button type="button" id="hotelViewDetails">View details</button>
+                    <button type="button" id="hotelViewMap">View map</button>
+                </div>
+            </div>
+        </div>
+        <section class="hotel-rooms-block">
+            <h2>Select room and board type</h2>
+            <div class="hotel-board-pills" id="hotelBoardMount"></div>
+            <div id="hotelStayRooms"></div>
+        </section>
+        <div class="hotel-sheet" id="hotelSheet" hidden>
+            <div class="hotel-sheet-panel">
+                <div class="hotel-sheet-head">
+                    <strong>${escapePropertyHtml(building.name)}</strong>
+                    <button type="button" id="hotelSheetClose" aria-label="Close">×</button>
+                </div>
+                <div class="hotel-sheet-tabs" role="tablist">
+                    <button type="button" class="is-active" data-hotel-tab="overview">Overview</button>
+                    <button type="button" data-hotel-tab="facilities">Facilities</button>
+                    <button type="button" data-hotel-tab="reviews">Reviews</button>
+                    <button type="button" data-hotel-tab="location">Location</button>
+                </div>
+                <div class="hotel-sheet-body">
+                    <div class="hotel-tab-panel is-active" data-hotel-panel="overview">
+                        <h3>Check-in and check-out</h3>
+                        <p>${escapePropertyHtml(times.checkIn)}</p>
+                        <p>${escapePropertyHtml(times.checkOut)}</p>
+                        <h3>About this property</h3>
+                        <p id="hotelSheetDescription"></p>
+                    </div>
+                    <div class="hotel-tab-panel" data-hotel-panel="facilities">
+                        <h3>Facilities</h3>
+                        <ul class="hotel-facility-list">
+                            ${facilities.length
+                                ? facilities.map((item) => `<li>${escapePropertyHtml(item)}</li>`).join("")
+                                : "<li>No facilities listed yet.</li>"}
+                        </ul>
+                    </div>
+                    <div class="hotel-tab-panel" data-hotel-panel="reviews" id="hotelSheetReviews"></div>
+                    <div class="hotel-tab-panel" data-hotel-panel="location">
+                        <p id="hotelSheetLocation"></p>
+                        <div id="hotelSheetMapMount"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hotel-sticky-bar">
+            <div>
+                <strong>${priceText}</strong>
+                <span>/ night</span>
+            </div>
+            <button type="button" id="hotelStickyBook">Book now</button>
+        </div>
+    `;
+
+    page.prepend(root);
+
+    const desc = document.getElementById("propertyDescription");
+    const sheetDesc = document.getElementById("hotelSheetDescription");
+    if (sheetDesc) sheetDesc.textContent = desc?.textContent || building.description || "";
+
+    const reviewsBox = document.getElementById("reviewsContainer");
+    const writeReview = document.querySelector(".write-review-box");
+    const sheetReviews = document.getElementById("hotelSheetReviews");
+    if (sheetReviews) {
+        if (reviewsBox) sheetReviews.appendChild(reviewsBox);
+        if (writeReview) sheetReviews.appendChild(writeReview);
+    }
+
+    const locEl = document.getElementById("hotelSheetLocation");
+    if (locEl) locEl.textContent = `${building.location || ""} · ${formatDistanceFromActiveHub(building).replace(/^📍\s*/, "")}`;
+
+    const mapEl = document.getElementById("roomdhundoMap");
+    const mapMount = document.getElementById("hotelSheetMapMount");
+    if (mapEl && mapMount) mapMount.appendChild(mapEl);
+
+    const sheet = document.getElementById("hotelSheet");
+    const openSheet = (tab) => {
+        sheet.hidden = false;
+        sheet.querySelectorAll("[data-hotel-tab]").forEach((btn) => {
+            btn.classList.toggle("is-active", btn.dataset.hotelTab === tab);
+        });
+        sheet.querySelectorAll("[data-hotel-panel]").forEach((panel) => {
+            panel.classList.toggle("is-active", panel.dataset.hotelPanel === tab);
+        });
+        if (tab === "location" && mapEl) {
+            mapEl.style.display = "block";
+            mapEl.style.height = "280px";
+        }
+    };
+
+    document.getElementById("hotelViewDetails")?.addEventListener("click", () => openSheet("overview"));
+    document.getElementById("hotelViewMap")?.addEventListener("click", () => openSheet("location"));
+    document.getElementById("hotelSheetClose")?.addEventListener("click", () => {
+        sheet.hidden = true;
+    });
+    sheet.querySelectorAll("[data-hotel-tab]").forEach((btn) => {
+        btn.addEventListener("click", () => openSheet(btn.dataset.hotelTab));
+    });
+
+    document.getElementById("hotelHeroBack")?.addEventListener("click", () => {
+        if (window.history.length > 1) window.history.back();
+        else window.location.href = "index.html";
+    });
+    document.getElementById("hotelHeroShare")?.addEventListener("click", async () => {
+        const shareData = { title: building.name, url: window.location.href };
+        try {
+            if (navigator.share) await navigator.share(shareData);
+            else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("Link copied.");
+            }
+        } catch (error) {
+            if (error?.name !== "AbortError") alert("Could not share this hotel.");
+        }
+    });
+    document.getElementById("hotelStickyBook")?.addEventListener("click", () => {
+        document.getElementById("hotelStayRooms")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    let photoIndex = 0;
+    const heroImg = document.getElementById("hotelHeroImage");
+    const photoCount = document.getElementById("hotelPhotoCount");
+    const showPhoto = (index) => {
+        if (!heroImg || images.length === 0) return;
+        photoIndex = (index + images.length) % images.length;
+        heroImg.src = images[photoIndex];
+        if (photoCount) photoCount.textContent = `${images.length} photo${images.length === 1 ? "" : "s"}`;
+    };
+    heroImg?.addEventListener("click", () => showPhoto(photoIndex + 1));
+
+    document.dispatchEvent(new CustomEvent("roomdhundo:hotel-page", { detail: { building } }));
+    if (typeof window.initHotelStay === "function") window.initHotelStay(building);
 }
 
 async function initPropertyPage() {
@@ -3182,6 +3541,7 @@ if (!selectedRoomType) {
     }
 
     wireReviewForm(building.id);
+    setupHotelPropertyPage(building);
 }
 
 function wireReviewForm(buildingId) {
@@ -4708,14 +5068,15 @@ function wireThemeToggle() {
         tools.insertBefore(toggle, menuToggle || null);
     }
 
-    if (!toggle.dataset.themeWired) {
-        toggle.dataset.themeWired = "true";
-        toggle.addEventListener("click", (event) => {
+    document.querySelectorAll(".theme-toggle").forEach((button) => {
+        if (button.dataset.themeWired) return;
+        button.dataset.themeWired = "true";
+        button.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             setTheme(root.dataset.theme === "dark" ? "light" : "dark");
         });
-    }
+    });
 
     setTheme(initialTheme);
 }

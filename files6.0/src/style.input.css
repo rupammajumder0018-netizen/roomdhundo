@@ -24,10 +24,32 @@
 
   html[data-theme="light"] {
     color-scheme: light;
+    --rd-bg: #f8fafc;
+    --rd-surface: #ffffff;
+    --rd-surface-soft: #f8fafc;
+    --rd-text: #1f2937;
+    --rd-muted: #64748b;
+    --rd-border: #e2e8f0;
+    --color-rd-bg: #f8fafc;
+    --color-rd-surface: #ffffff;
+    --color-rd-text: #1f2937;
+    --color-rd-muted: #64748b;
+    --color-rd-border: #e2e8f0;
   }
 
   html[data-theme="dark"] {
     color-scheme: dark;
+    --rd-bg: #000000;
+    --rd-surface: #0d0d0d;
+    --rd-surface-soft: #171717;
+    --rd-text: #f8fafc;
+    --rd-muted: #b6b6b6;
+    --rd-border: #303030;
+    --color-rd-bg: #000000;
+    --color-rd-surface: #0d0d0d;
+    --color-rd-text: #f8fafc;
+    --color-rd-muted: #b6b6b6;
+    --color-rd-border: #303030;
   }
 
   body {
