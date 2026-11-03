@@ -1,7 +1,7 @@
 (() => {
   const URL = "https://vyusxdilgwrcgmqqvzsp.supabase.co";
-  const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGciOiJIUzI1NiIsInJlZiI6InZ5dXN4ZGlsZ3dyY2dtcXF2enNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNjYyNTYsImV4cCI6MjEwMjc0MjI1Nn0.X6FbzDad06d5-kj1aK4zQkPSPrrLUW_O7CdfZ-ghwrM";
-  const db = window.supabase.createClient(URL, KEY);
+  const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dXN4ZGlsZ3dyY2dtcXF2enNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNjYyNTYsImV4cCI6MjEwMjc0MjI1Nn0.X6FbzDad06d5-kj1aK4zQkPSPrrLUW_O7CdfZ-ghwrM";
+  const db = window.supabaseClient || window.supabase.createClient(URL, KEY);
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({
     "&": "&amp;",
     "<": "&lt;",
@@ -36,6 +36,23 @@
   let loadPromise = null;
   let authWired = false;
 
+  async function readSignedInUser() {
+    if (typeof window.getSignedInUser === "function") {
+      return window.getSignedInUser();
+    }
+    const session = (await db.auth.getSession()).data.session;
+    if (session?.user) return session.user;
+    const { data } = await db.auth.getUser();
+    return data?.user || null;
+  }
+
+  function updateBookingButton() {
+    const submit = document.querySelector("#hotelBookingForm .hotel-booking-submit");
+    if (!submit) return;
+    submit.disabled = false;
+    submit.textContent = user ? "Book now" : "Log in to book";
+  }
+
   document.addEventListener("DOMContentLoaded", init);
   document.addEventListener("roomdhundo:hotel-page", init);
   window.initHotelStay = init;
@@ -52,17 +69,17 @@
 
     if (!document.getElementById("roomTypesList") && !document.getElementById("hotelStayRooms")) return;
 
-    const { data: auth } = await db.auth.getUser();
-    user = auth?.user;
+    user = await readSignedInUser();
     if (!authWired) {
       authWired = true;
-      db.auth.onAuthStateChange((_event, session) => {
-        user = session?.user || null;
-        const submit = document.querySelector("#hotelBookingForm .hotel-booking-submit");
-        if (submit) {
-          submit.disabled = false;
-          submit.textContent = user ? "Book now" : "Log in to book";
-        }
+      db.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT") user = null;
+        else if (session?.user) user = session.user;
+        updateBookingButton();
+      });
+      window.addEventListener("roomdhundo:auth-changed", async () => {
+        user = await readSignedInUser();
+        updateBookingButton();
       });
     }
 
@@ -79,6 +96,7 @@
     }
 
     renderStay();
+    updateBookingButton();
   }
 
   function hasBreakfast() {
@@ -246,6 +264,7 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      user = user || await readSignedInUser();
       if (!user) {
         alert("Please log in first, then submit your booking request.");
         document.getElementById("navAuthBtn")?.click();

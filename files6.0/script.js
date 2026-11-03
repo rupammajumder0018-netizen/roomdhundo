@@ -7,6 +7,7 @@
 const SUPABASE_URL = "https://vyusxdilgwrcgmqqvzsp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dXN4ZGlsZ3dyY2dtcXF2enNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxNjYyNTYsImV4cCI6MjEwMjc0MjI1Nn0.X6FbzDad06d5-kj1aK4zQkPSPrrLUW_O7CdfZ-ghwrM";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.supabaseClient = supabaseClient;
 // =====================================================
 // ROOMDHUNDO ADMIN ACCOUNT
 // =====================================================
@@ -679,6 +680,8 @@ async function fetchBuildingById(id) {
 }
 
 async function getCurrentUser() {
+    const fromSession = await getCurrentUserFast();
+    if (fromSession) return fromSession;
     const { data } = await supabaseClient.auth.getUser();
     return data.user || null;
 }
@@ -687,6 +690,18 @@ async function getCurrentUserFast() {
     const { data } = await supabaseClient.auth.getSession();
     return data.session?.user || null;
 }
+
+async function getSignedInUser() {
+    const fromSession = await getCurrentUserFast();
+    if (fromSession) return fromSession;
+    try {
+        return await getCurrentUser();
+    } catch (error) {
+        console.error("Auth user lookup error:", error);
+        return null;
+    }
+}
+window.getSignedInUser = getSignedInUser;
 
 async function getCurrentUserProfile() {
     const user = await getCurrentUser();
@@ -1318,11 +1333,7 @@ function isExploreGatePage() {
         "index.html",
         "search.html",
         "property.html",
-        "saved.html",
-        "list-property.html",
-        "list-pg.html",
-        "list-hotel.html",
-        "list-flat.html"
+        "saved.html"
     ].includes(page);
 }
 
@@ -1811,7 +1822,7 @@ function hideOwnerOnlyModal() {
 }
 
 async function canCurrentUserListProperty() {
-    const user = await getCurrentUserFast();
+    const user = await getSignedInUser();
     if (!user) return { ok: false, reason: "login" };
     const role = await fetchProfileRole(user.id);
     if (!isListingOwnerRole(role)) return { ok: false, reason: "renter" };
@@ -1840,10 +1851,26 @@ function wireListPropertyAccess() {
     });
 }
 
+function restoreListPropertyForm() {
+    const form = document.getElementById("listPropertyForm");
+    if (form) {
+        form.hidden = false;
+        form.querySelectorAll("input, select, textarea, button").forEach((el) => {
+            el.disabled = false;
+        });
+    }
+    document.querySelector(".owner-only-panel")?.remove();
+    hideOwnerOnlyModal();
+    closeAuthModal();
+}
+
 async function restrictListPropertyPageForRenters() {
     if (!["list-pg.html", "list-hotel.html", "list-flat.html", "list-property.html"].includes(getCurrentPageName())) return true;
     const access = await canCurrentUserListProperty();
-    if (access.ok) return true;
+    if (access.ok) {
+        restoreListPropertyForm();
+        return true;
+    }
 
     const form = document.getElementById("listPropertyForm");
     if (form) {
@@ -1854,7 +1881,7 @@ async function restrictListPropertyPageForRenters() {
     }
 
     const page = document.querySelector(".list-property-page");
-    if (page && !page.querySelector(".owner-only-panel")) {
+    if (access.reason === "renter" && page && !page.querySelector(".owner-only-panel")) {
         const panel = document.createElement("div");
         panel.className = "owner-only-panel";
         panel.innerHTML = `
@@ -3494,7 +3521,7 @@ const contactPropertyName =
     });
 
     contactOwnerBtn?.addEventListener("click", async () => {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await getSignedInUser();
 
         if (!user) {
             alert("Please log in or create an account before contacting the owner.");
@@ -3540,9 +3567,9 @@ const contactPropertyName =
     });
 
     submitEnquiryBtn?.addEventListener("click", async () => {
-        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+        const user = await getSignedInUser();
 
-        if (authError || !user) {
+        if (!user) {
             alert("Please log in before submitting an enquiry.");
             return;
         }
@@ -4614,7 +4641,7 @@ function wireListPropertyForm() {
         const allowed = await restrictListPropertyPageForRenters();
         if (!allowed) return;
 
-        const user = await getCurrentUser();
+        const user = await getSignedInUser();
         if (!user) return;
 
         if (editId) {
@@ -4635,6 +4662,9 @@ function wireListPropertyForm() {
     };
 
     initializeForm();
+    window.addEventListener("roomdhundo:auth-changed", () => {
+        initializeForm();
+    });
 
     document.getElementById("addRoomTypeBtn")?.addEventListener("click", () => {
         addRoomTypeBlock();
@@ -4643,7 +4673,7 @@ function wireListPropertyForm() {
     listPropertyForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const user = await getCurrentUser();
+        const user = await getSignedInUser();
         if (!user) {
             alert("Please log in first — listings are tied to your account.");
             openAuthModal();
