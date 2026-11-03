@@ -24,6 +24,7 @@
         href="admin.css"
     >
     <link rel="stylesheet" href="hotel-bookings.css">
+    <link rel="stylesheet" href="admin-hotel-bookings.css">
 
 </head>
 
@@ -91,6 +92,7 @@
 
             <button type="button" class="nav-item" data-section="hotel-bookings">
                 🏨 Hotel Bookings
+                <span id="adminHotelBookingsNavBadge" class="hb-nav-badge" hidden>0</span>
             </button>
 
 
@@ -1126,17 +1128,101 @@
 
 
 <section class="admin-section" data-section-content="hotel-bookings" id="hotelBookingsSection">
-  <div class="section-heading"><h2>Hotel Bookings</h2><p>Review every hotel booking request and manage its details across RoomDhundo.</p></div>
-  <div class="stats-grid">
-    <div class="stat-card"><span>Total Hotel Bookings</span><h2 id="adminHotelBookingTotal">0</h2></div>
-    <div class="stat-card"><span>Pending</span><h2 id="adminHotelBookingPending">0</h2></div>
-    <div class="stat-card"><span>Confirmed</span><h2 id="adminHotelBookingConfirmed">0</h2></div>
-    <div class="stat-card"><span>Rejected / Cancelled</span><h2 id="adminHotelBookingClosed">0</h2></div>
-  </div>
-  <div class="dashboard-card" style="margin-top:20px">
-    <div class="card-header"><div><h2>All Hotel Booking Requests</h2><p>Admin can update booking status, stay dates, room and total price.</p></div><button type="button" class="view-all-btn" id="refreshAdminHotelBookings">↻ Refresh</button></div>
-    <div class="table-container hotel-booking-table-wrap"><table class="hotel-booking-table"><thead><tr><th>Guest</th><th>Hotel / Room</th><th>Stay</th><th>Owner Details</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead><tbody id="adminHotelBookingsBody"><tr><td colspan="7">Loading bookings...</td></tr></tbody></table></div>
-  </div>
+    <div class="hb-stats" role="toolbar" aria-label="Hotel booking statistics">
+        <button type="button" class="hb-stat is-active" data-hb-stat="all">
+            <span class="hb-stat-icon" aria-hidden="true">📋</span>
+            <span>Total</span>
+            <strong id="adminHotelBookingTotal">0</strong>
+        </button>
+        <button type="button" class="hb-stat hb-stat-pending" data-hb-stat="pending">
+            <span class="hb-stat-icon" aria-hidden="true">⏳</span>
+            <span>Pending</span>
+            <strong id="adminHotelBookingPending">0</strong>
+        </button>
+        <button type="button" class="hb-stat hb-stat-confirmed" data-hb-stat="confirmed">
+            <span class="hb-stat-icon" aria-hidden="true">✅</span>
+            <span>Confirmed</span>
+            <strong id="adminHotelBookingConfirmed">0</strong>
+        </button>
+        <button type="button" class="hb-stat hb-stat-closed" data-hb-stat="closed">
+            <span class="hb-stat-icon" aria-hidden="true">⛔</span>
+            <span>Rejected / Cancelled</span>
+            <strong id="adminHotelBookingClosed">0</strong>
+        </button>
+        <button type="button" class="hb-stat hb-stat-checkin" data-hb-stat="checkin-today">
+            <span class="hb-stat-icon" aria-hidden="true">🛎️</span>
+            <span>Today's Check-ins</span>
+            <strong id="adminHotelBookingCheckins">0</strong>
+        </button>
+        <button type="button" class="hb-stat hb-stat-revenue" data-hb-stat="revenue">
+            <span class="hb-stat-icon" aria-hidden="true">₹</span>
+            <span>Revenue</span>
+            <strong id="adminHotelBookingRevenue">₹0</strong>
+        </button>
+    </div>
+
+    <div class="dashboard-card hb-card">
+        <div class="hb-toolbar">
+            <label class="hb-search">
+                <span class="hb-sr-only">Search bookings</span>
+                <input id="hbSearch" type="search" placeholder="Search guest, phone, hotel, owner, ID" autocomplete="off">
+            </label>
+            <select id="hbStatusFilter" aria-label="Filter by status">
+                <option value="">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="completed">Completed</option>
+            </select>
+            <select id="hbHotelFilter" aria-label="Filter by hotel">
+                <option value="">All hotels</option>
+            </select>
+            <label class="hb-date">
+                <span>From</span>
+                <input id="hbCheckInFrom" type="date" aria-label="Check-in from">
+            </label>
+            <label class="hb-date">
+                <span>To</span>
+                <input id="hbCheckInTo" type="date" aria-label="Check-in to">
+            </label>
+            <select id="hbSort" aria-label="Sort bookings">
+                <option value="newest">Newest first</option>
+                <option value="checkin">Check-in date</option>
+                <option value="price-high">Price high to low</option>
+                <option value="price-low">Price low to high</option>
+            </select>
+            <button type="button" class="hb-btn" id="hbClearFilters">Clear filters</button>
+            <button type="button" class="hb-btn" id="refreshAdminHotelBookings">Refresh</button>
+            <button type="button" class="hb-btn hb-btn-primary" id="hbExportCsv">Export CSV</button>
+            <label class="hb-pause">
+                <input type="checkbox" id="hbPauseRefresh">
+                Pause auto-refresh
+            </label>
+            <p class="hb-updated" id="hbLastUpdated">Last updated —</p>
+        </div>
+
+        <div class="hb-table-wrap" id="hbTableWrap">
+            <table class="hb-table" id="hbTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Booking</th>
+                        <th scope="col">Guest</th>
+                        <th scope="col">Hotel / Room</th>
+                        <th scope="col">Stay</th>
+                        <th scope="col">Owner</th>
+                        <th scope="col" class="hb-num">Price</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminHotelBookingsBody">
+                    <tr><td colspan="8">Loading bookings...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="hb-pager" id="hbPager" hidden></div>
+    </div>
 </section>
 
 <!-- =================================================
