@@ -100,9 +100,9 @@
                 </div>
             </div>
 
-            <a href="index.html" class="back-home-btn">
+            <a href="index.html" class="back-home-btn" id="dashboardBackBtn">
                 <i class="fa-solid fa-arrow-left"></i>
-                Back to Home
+                Back
             </a>
 
             <button class="logout-btn" id="logoutBtn">
@@ -675,11 +675,11 @@
          * Use the previously selected
          * RoomDhundo theme.
          *
-         * Default = dark
+         * Default = light
          */
 
         applyTheme(
-            localStorage.getItem(key) || "dark"
+            localStorage.getItem(key) || "light"
         );
 
 
@@ -694,6 +694,21 @@
         });
 
     })();
+</script>
+<script>
+    document.getElementById("dashboardBackBtn")?.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (document.referrer) {
+            try {
+                const url = new URL(document.referrer);
+                if (url.origin === location.origin && url.href !== location.href) {
+                    history.back();
+                    return;
+                }
+            } catch (error) {}
+        }
+        if (history.length > 1) history.back();
+    });
 </script>
 
 

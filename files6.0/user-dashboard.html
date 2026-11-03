@@ -19,8 +19,8 @@
 
     <div class="dashboard-top-actions">
 
-        <a href="index.html" class="dashboard-back-home">
-            ← Back to Home
+        <a href="index.html" class="dashboard-back-home" id="dashboardBackBtn">
+            ← Back
         </a>
 
         <button type="button" class="dashboard-theme-toggle" id="dashboardThemeToggle" aria-label="Switch to dark mode"
@@ -614,7 +614,7 @@
 
             applyTheme(
                 localStorage.getItem(key) ||
-                "dark"
+                "light"
             );
 
 

@@ -156,7 +156,7 @@
 }
 .hotel-package-price strong { font-size: 26px; }
 .hotel-package-price span { color: var(--rd-muted) !important; }
-.hotel-package-actions { display: grid; gap: 8px; }
+.hotel-package-actions { display: grid; gap: 8px; margin-top: auto; }
 .hotel-package-cta,
 .hotel-room-select,
 .hotel-sticky-bar button,
@@ -334,9 +334,11 @@ body.is-hotel-page #roomdhundoMap { height: 280px !important; border-radius: 14p
     border-radius: 18px;
     overflow: hidden;
     background: var(--rd-surface);
+    min-height: 220px;
+    align-items: stretch;
 }
 .hotel-room-pick-card.selected { border-color: #0b57d0; box-shadow: 0 0 0 2px #0b57d033; }
-.hotel-room-pick-photo { min-height: 160px; background: var(--rd-surface-soft); }
+.hotel-room-pick-photo { min-height: 220px; height: 100%; background: var(--rd-surface-soft); }
 .hotel-room-pick-photo img,
 .hotel-room-pick-photo .image-placeholder {
     width: 100%;
@@ -348,7 +350,8 @@ body.is-hotel-page #roomdhundoMap { height: 280px !important; border-radius: 14p
     color: #fff !important;
     text-shadow: 0 1px 8px #000;
 }
-.hotel-room-pick-body { padding: 16px 18px; }
+.hotel-room-pick-body { padding: 16px 18px; display: flex; flex-direction: column; min-height: 220px; }
+.hotel-room-pick-body .hotel-room-select { margin-top: auto; }
 .hotel-room-pick-body h3 { margin: 0 0 6px; font-size: 22px; }
 .hotel-room-left { color: #ea580c !important; font-weight: 700; margin: 0 0 8px; }
 .hotel-room-pick-body strong { display: block; margin: 12px 0; font-size: 18px; }
@@ -448,7 +451,16 @@ html[data-theme="dark"] .hotel-package-card .favorite.saved {
 @media (min-width: 900px) {
     .home-results-list .hotel-package-card,
     #resultsList .hotel-package-card {
-        max-width: 560px;
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+        max-width: none;
+        min-height: 240px;
+        align-items: stretch;
+    }
+    .home-results-list .hotel-package-photo,
+    #resultsList .hotel-package-photo {
+        height: auto;
+        min-height: 240px;
     }
     body.is-hotel-page { padding-bottom: 24px; }
     .hotel-sticky-bar { display: none; }

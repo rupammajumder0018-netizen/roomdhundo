@@ -18,6 +18,9 @@
         gtag("config", "G-0TKM9DNE73");
     </script>
 
+    <script>
+        document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "light";
+    </script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="hotel-bookings.css">
 </head>
@@ -68,6 +71,10 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
                 <span>Flat</span>
             </button>
+        </div>
+        <div class="home-flat-offer" id="homeFlatOffer" hidden role="tablist" aria-label="Choose flats on rent or for sale">
+            <button type="button" class="home-flat-offer-btn is-active" data-flat-offer="rent" role="tab" aria-selected="true">On rent</button>
+            <button type="button" class="home-flat-offer-btn" data-flat-offer="sale" role="tab" aria-selected="false">For sale</button>
         </div>
 
         <div class="home-search-panel">
@@ -131,12 +138,6 @@
 
         <div class="home-results-list" id="homeResultsList"></div>
 
-        <div class="home-see-more-wrap" id="homeSeeMoreWrap" style="display:none;">
-            <button type="button" class="home-see-more-btn" id="homeSeeMoreBtn">
-                See more
-            </button>
-        </div>
-
         <p class="no-results" id="homeNoResults" style="display:none;">
             No properties match your search. Try clearing filters or searching another area.
         </p>
@@ -156,7 +157,7 @@
     <footer class="site-footer">
         <div class="site-footer-inner">
             <p class="site-footer-copy">© 2026 RoomDhundo</p>
-            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent, paid once when you confirm a stay through us. This is not a monthly or repeating charge.</p>
+            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent on PG and flat bookings only, paid once when you confirm a stay through us. Hotels are not included. This is not a monthly or repeating charge.</p>
             <nav class="site-footer-links">
                 <a href="policies.html">Policies</a>
                 <a href="policies.html#payment">10% payment</a>
@@ -170,7 +171,7 @@
 
     <script>
         (() => {
-            const savedTheme = localStorage.getItem("roomdhundo-theme") || "dark";
+            const savedTheme = localStorage.getItem("roomdhundo-theme") || "light";
             document.documentElement.dataset.theme = savedTheme;
         })();
     </script>

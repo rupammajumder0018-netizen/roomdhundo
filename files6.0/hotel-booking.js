@@ -164,7 +164,7 @@
             : `<div class="image-placeholder">No photos provided by the hotel</div>`}
         </div>
         <div class="hotel-room-pick-body">
-          <h3>${esc(room.room_type)}</h3>
+          <h3>${esc(room.room_type || "Room")}</h3>
           ${canBook && Number(room.available_rooms) <= 5
             ? `<p class="hotel-room-left">Only ${Number(room.available_rooms)} room${Number(room.available_rooms) === 1 ? "" : "s"} left</p>`
             : ""}

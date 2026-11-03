@@ -44,6 +44,15 @@
             <h2 class="lp-section-title lp-first-section-title">Flat Details</h2>
 
             <div class="form-group">
+                <label>Listing type</label>
+                <div class="lp-facility-grid">
+                    <label><input type="radio" name="lpFlatOffer" value="sale"> For sale</label>
+                    <label><input type="radio" name="lpFlatOffer" value="rent" checked> On rent</label>
+                </div>
+                <p class="lp-hint">Choose whether this listing is a flat for sale or a flat on rent.</p>
+            </div>
+
+            <div class="form-group">
                 <label for="lpName">Flat / Apartment Name</label>
                 <input type="text" id="lpName" placeholder="e.g. Green View Apartment" required>
             </div>
@@ -221,7 +230,7 @@
     <footer class="site-footer">
         <div class="site-footer-inner">
             <p class="site-footer-copy">© 2026 RoomDhundo</p>
-            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent, paid once when you confirm a stay through us. This is not a monthly or repeating charge.</p>
+            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent on PG and flat bookings only, paid once when you confirm a stay through us. Hotels are not included. This is not a monthly or repeating charge.</p>
             <nav class="site-footer-links">
                 <a href="policies.html">Policies</a>
                 <a href="policies.html#payment">10% payment</a>

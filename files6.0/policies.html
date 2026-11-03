@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Policies | RoomDhundo</title>
+    <script>
+        document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "light";
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,10 +28,12 @@
         <section class="policy-card" id="payment">
             <h2>10% one-time payment</h2>
             <p>
-                When a stay is confirmed through RoomDhundo, we charge a <strong>one-time service fee of 10% of the total rent</strong>.
+                When a <strong>PG or flat</strong> stay is confirmed through RoomDhundo, we charge a <strong>one-time service fee of 10% of the total rent</strong>.
+                <strong>Hotel bookings are not included</strong> in this charge.
             </p>
             <ul>
-                <li>This 10% is calculated on the total rent for that booking.</li>
+                <li>This 10% applies only to PG and flat bookings, calculated on the total rent for that booking.</li>
+                <li>Hotels are not charged this 10% service fee.</li>
                 <li>It is a one-time payment only. It is not charged every month after that.</li>
                 <li>The fee helps RoomDhundo connect renters with owners, verify listings, and support both sides.</li>
             </ul>
@@ -59,7 +64,7 @@
     <footer class="site-footer">
         <div class="site-footer-inner">
             <p class="site-footer-copy">© 2026 RoomDhundo</p>
-            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent, paid once when you confirm a stay through us. This is not a monthly or repeating charge.</p>
+            <p class="site-footer-fee">One-time service fee: RoomDhundo charges 10% of the total rent on PG and flat bookings only, paid once when you confirm a stay through us. Hotels are not included. This is not a monthly or repeating charge.</p>
             <nav class="site-footer-links">
                 <a href="policies.html">Policies</a>
                 <a href="policies.html#payment">10% payment</a>
@@ -67,8 +72,5 @@
         </div>
     </footer>
 
-    <script>
-        document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "dark";
-    </script>
 </body>
 </html>

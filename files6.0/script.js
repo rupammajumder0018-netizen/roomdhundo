@@ -25,6 +25,8 @@ function isAdminEmail(user) {
 const COUPLE_FRIENDLY_TAG = "couple-friendly";
 const COUPLE_FRIENDLY_LABEL = "💑 Couple Friendly";
 const FURNISHING_TAGS = ["furnished", "semi-furnished", "unfurnished"];
+const FLAT_SALE_TAG = "flat-for-sale";
+const FLAT_RENT_TAG = "flat-on-rent";
 
 function isCoupleFriendlyFacility(value) {
     return String(value || "")
@@ -320,12 +322,34 @@ function getBuildingHubDistance(building) {
     return Number(building?.distance_km);
 }
 
+function availabilityRank(building) {
+    return Number(building?.totalAvailable || 0) > 0 ? 0 : 1;
+}
+
+function compareAvailability(a, b) {
+    const byFlag = availabilityRank(a) - availabilityRank(b);
+    if (byFlag) return byFlag;
+    return Number(b?.totalAvailable || 0) - Number(a?.totalAvailable || 0);
+}
+
 function sortBuildingsForActiveHub(list) {
-    return [...(list || [])];
+    return [...(list || [])].sort(compareAvailability);
 }
 
 function isHotelListing(building) {
     return String(building?.type || "").toLowerCase() === "hotel";
+}
+
+function isFlatListing(building) {
+    return String(building?.type || "").toLowerCase() === "flat";
+}
+
+function isFlatForSale(building) {
+    if (!isFlatListing(building)) return false;
+    const tags = (building?.facility_tags || []).map((tag) => String(tag || "").toLowerCase());
+    const labels = (building?.facilities || []).map((label) => String(label || "").toLowerCase());
+    if (tags.includes(FLAT_RENT_TAG) || labels.includes("on rent")) return false;
+    return tags.includes(FLAT_SALE_TAG) || labels.includes("for sale");
 }
 
 function hotelStarCount(building) {
@@ -587,6 +611,8 @@ function sortBuildingsBySearch(list, query) {
     if (!normalizeSearchText(query)) return sortBuildingsForActiveHub(list);
 
     return [...(list || [])].sort((a, b) => {
+        const byAvailability = compareAvailability(a, b);
+        if (byAvailability) return byAvailability;
         return scoreBuildingSearchMatch(b, query) - scoreBuildingSearchMatch(a, query);
     });
 }
@@ -2299,21 +2325,11 @@ async function initHomePage() {
     const filterPanel = document.getElementById("homeFilterPanel");
     const applyFiltersBtn = document.getElementById("homeApplyFiltersBtn");
     const clearFiltersBtn = document.getElementById("homeClearFiltersBtn");
-    const seeMoreWrap = document.getElementById("homeSeeMoreWrap");
-    const seeMoreBtn = document.getElementById("homeSeeMoreBtn");
     const backToTopBtn = document.getElementById("homeBackToTopBtn");
 
     if (!resultsList) return;
-    
 
     resultsList.innerHTML = `<p class="no-results">Loading properties…</p>`;
-
-    const HOME_PAGE_SIZE = 4;
-    let visibleCount = HOME_PAGE_SIZE;
-    const pendingHomeScroll = readListScrollState();
-    if (pendingHomeScroll && pendingHomeScroll.path === location.pathname && pendingHomeScroll.visibleCount) {
-        visibleCount = Math.max(HOME_PAGE_SIZE, Number(pendingHomeScroll.visibleCount) || HOME_PAGE_SIZE);
-    }
 
     const allBuildings = await fetchAllBuildings();
     const currentUser = await getCurrentUser();
@@ -2327,21 +2343,42 @@ async function initHomePage() {
         flat: ["Flat"]
     };
     let activeCategory = "all";
+    let flatOffer = "rent";
     const categoryTabs = document.querySelectorAll(".home-cat-tab");
+    const flatOfferWrap = document.getElementById("homeFlatOffer");
 
-    // Footer fee note + links show only on the PG / Room tab
+    function syncFlatOfferButtons() {
+        if (!flatOfferWrap) return;
+        const show = activeCategory === "flat";
+        flatOfferWrap.hidden = !show;
+        flatOfferWrap.querySelectorAll("[data-flat-offer]").forEach((btn) => {
+            const on = btn.dataset.flatOffer === flatOffer;
+            btn.classList.toggle("is-active", on);
+            btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+    }
+
+    flatOfferWrap?.querySelectorAll("[data-flat-offer]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            flatOffer = btn.dataset.flatOffer === "sale" ? "sale" : "rent";
+            syncFlatOfferButtons();
+            resetPreviewAndRender();
+        });
+    });
+
     function updateFooterFeeNote() {
-        const show = activeCategory === "pgroom";
-        document.querySelectorAll(".site-footer-fee, .site-footer-links").forEach(el => {
-            el.style.display = show ? "" : "none";
+        document.querySelectorAll(".site-footer-fee, .site-footer-links").forEach((el) => {
+            el.style.display = "";
         });
     }
     updateFooterFeeNote();
+    syncFlatOfferButtons();
 
     categoryTabs.forEach(tab => {
         tab.addEventListener("click", () => {
             activeCategory = tab.dataset.category || "all";
             updateFooterFeeNote();
+            syncFlatOfferButtons();
             categoryTabs.forEach(t => {
                 const on = t === tab;
                 t.classList.toggle("active", on);
@@ -2439,12 +2476,16 @@ async function initHomePage() {
         }
         const facilityBadges = facilityPreviewBadgesHTML(b);
         const daily = isDailyMode();
-        const unit = daily ? "/ night" : "/ month";
-        const price = daily ? b.minDailyPrice : b.minPrice;
+        const forSale = isFlatForSale(b);
+        const unit = forSale ? "" : daily ? "/ night" : "/ month";
+        const price = daily && !forSale ? b.minDailyPrice : b.minPrice;
         const priceToShow = price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
-        const priceLabel = (b.room_types || []).length > 1 ? "From" : "";
+        const priceLabel = forSale ? "Sale" : ((b.room_types || []).length > 1 ? "From" : "");
         const ratingLabel = b.avgRating ? `⭐ ${b.avgRating}` : "🆕 New";
         const roomTypeSummary = (b.roomTypeNames || []).join(", ");
+        const offerBadge = isFlatListing(b)
+            ? `<span class="flat-offer-badge">${forSale ? "For sale" : "On rent"}</span>`
+            : "";
 
         return `
             <div class="property-card home-property-card" data-id="${b.id}">
@@ -2469,6 +2510,7 @@ async function initHomePage() {
                         <div>
                             <h2>${b.name}</h2>
                             <p>${formatDistanceFromActiveHub(b, { includeLocation: true })}</p>
+                            ${offerBadge}
                         </div>
                         <button class="favorite${isSaved ? " saved" : ""}" data-id="${b.id}">${isSaved ? "♥" : "♡"}</button>
                     </div>
@@ -2481,7 +2523,7 @@ async function initHomePage() {
                     <div class="amenities">${facilityBadges}</div>
                     <div class="availability">${
                         b.totalAvailable > 0
-                            ? `🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available`
+                            ? `🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? (isFlatListing(b) ? "flat" : "room") : (isFlatListing(b) ? "flats" : "rooms")} available`
                             : "🔴 Currently occupied"
                     }</div>
                     <div class="card-actions">
@@ -2503,64 +2545,52 @@ async function initHomePage() {
                 btn.textContent = nowSaved ? "♥" : "♡";
             });
         });
-        bindListPropertyOpeners(resultsList, () => visibleCount);
+        bindListPropertyOpeners(resultsList);
     }
 
     function renderPage() {
         const filters = readFilters();
         const hub = getHubOnlyFromQuery(filters.query);
         if (hub) applySearchHubQuietly(hub);
-        const list = sortBuildingsBySearch(applyFilters(allBuildings, filters), filters.query);
-
-        if (visibleCount < HOME_PAGE_SIZE) {
-            visibleCount = HOME_PAGE_SIZE;
-        }
-        if (visibleCount > list.length) {
-            visibleCount = list.length || HOME_PAGE_SIZE;
+        let list = sortBuildingsBySearch(applyFilters(allBuildings, filters), filters.query);
+        if (activeCategory === "flat") {
+            list = list.filter((b) => (flatOffer === "sale" ? isFlatForSale(b) : !isFlatForSale(b)));
         }
 
-        const visibleList = list.slice(0, visibleCount);
-
-        resultsList.innerHTML = visibleList.map(buildingCardHTML).join("");
+        resultsList.innerHTML = list.length
+            ? list.map(buildingCardHTML).join("")
+            : "";
         attachCardListeners();
 
         if (resultsCountEl) {
-            if (list.length === 0) {
-                resultsCountEl.textContent = "0 properties found";
-            } else if (visibleCount >= list.length) {
-                resultsCountEl.textContent =
-                    `${list.length} ${list.length === 1 ? "property" : "properties"} found`;
-            } else {
-                resultsCountEl.textContent =
-                    `Showing ${visibleCount} of ${list.length} properties`;
-            }
+            const one = activeCategory === "flat"
+                ? (flatOffer === "sale" ? "flat for sale" : "flat on rent")
+                : "property";
+            const many = activeCategory === "flat"
+                ? (flatOffer === "sale" ? "flats for sale" : "flats on rent")
+                : "properties";
+            resultsCountEl.textContent = list.length === 0
+                ? `0 ${many} found`
+                : `${list.length} ${list.length === 1 ? one : many} found`;
         }
 
         if (noResultsMessage) {
             noResultsMessage.style.display = list.length === 0 ? "block" : "none";
+            if (list.length === 0 && activeCategory === "flat") {
+                noResultsMessage.textContent = flatOffer === "sale"
+                    ? "No flats for sale match your search. Try On rent, or clear filters."
+                    : "No flats on rent match your search. Try For sale, or clear filters.";
+            } else if (list.length === 0) {
+                noResultsMessage.textContent = "No properties match your search. Try clearing filters or searching another area.";
+            }
         }
 
         resultsList.style.display = list.length === 0 ? "none" : "grid";
-
-        if (seeMoreWrap && seeMoreBtn) {
-            if (list.length > visibleCount) {
-                const remaining = list.length - visibleCount;
-                const nextBatch = Math.min(HOME_PAGE_SIZE, remaining);
-                seeMoreWrap.style.display = "flex";
-                seeMoreBtn.textContent =
-                    nextBatch === remaining
-                        ? `See more (${remaining})`
-                        : `See more (+${nextBatch})`;
-            } else {
-                seeMoreWrap.style.display = "none";
-            }
-        }
 
         updateBackToTopVisibility();
     }
 
     function resetPreviewAndRender({ scrollToResults = false } = {}) {
-        visibleCount = HOME_PAGE_SIZE;
         renderPage();
         if (scrollToResults) {
             document.querySelector(".home-listings")?.scrollIntoView({
@@ -2572,7 +2602,7 @@ async function initHomePage() {
 
     function updateBackToTopVisibility() {
         if (!backToTopBtn) return;
-        const shouldShow = window.scrollY > 420 || visibleCount > HOME_PAGE_SIZE;
+        const shouldShow = window.scrollY > 420;
         backToTopBtn.hidden = !shouldShow;
     }
 
@@ -2635,18 +2665,6 @@ async function initHomePage() {
         resetPreviewAndRender();
     });
 
-    seeMoreBtn?.addEventListener("click", () => {
-        const filters = readFilters();
-        const list = sortBuildingsBySearch(applyFilters(allBuildings, filters), filters.query);
-        const previousCount = visibleCount;
-        visibleCount = Math.min(visibleCount + HOME_PAGE_SIZE, list.length);
-        renderPage();
-
-        const cards = resultsList.querySelectorAll(".home-property-card");
-        const firstNewCard = cards[previousCount];
-        firstNewCard?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
     backToTopBtn?.addEventListener("click", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -2656,9 +2674,7 @@ async function initHomePage() {
     window.addEventListener("roomdhundo:location-changed", renderPage);
 
     renderPage();
-    restoreListScrollState((count) => {
-        visibleCount = Math.max(visibleCount, Number(count) || visibleCount);
-    });
+    restoreListScrollState();
 }
 
 function wireStayTypeToggle(onChange) {
@@ -2847,10 +2863,29 @@ async function initSearchPage() {
     function sortResults(list, sortKey, query) {
         const sorted = [...list];
         switch (sortKey) {
-            case "price-asc": sorted.sort((a, b) => (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity)); break;
-            case "price-desc": sorted.sort((a, b) => (b.minPrice ?? -Infinity) - (a.minPrice ?? -Infinity)); break;
-            case "rating": sorted.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0)); break;
-            default: return sortBuildingsBySearch(sorted, query);
+            case "price-asc":
+                sorted.sort((a, b) => {
+                    const byAvailability = compareAvailability(a, b);
+                    if (byAvailability) return byAvailability;
+                    return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
+                });
+                break;
+            case "price-desc":
+                sorted.sort((a, b) => {
+                    const byAvailability = compareAvailability(a, b);
+                    if (byAvailability) return byAvailability;
+                    return (b.minPrice ?? -Infinity) - (a.minPrice ?? -Infinity);
+                });
+                break;
+            case "rating":
+                sorted.sort((a, b) => {
+                    const byAvailability = compareAvailability(a, b);
+                    if (byAvailability) return byAvailability;
+                    return (b.avgRating || 0) - (a.avgRating || 0);
+                });
+                break;
+            default:
+                return sortBuildingsBySearch(sorted, query);
         }
         return sorted;
     }
@@ -2862,12 +2897,16 @@ async function initSearchPage() {
         }
         const facilityBadges = facilityPreviewBadgesHTML(b);
         const daily = isDailyMode();
-        const unit = daily ? "/ night" : "/ month";
-        const price = daily ? b.minDailyPrice : b.minPrice;
+        const forSale = isFlatForSale(b);
+        const unit = forSale ? "" : daily ? "/ night" : "/ month";
+        const price = daily && !forSale ? b.minDailyPrice : b.minPrice;
         const priceToShow = price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
-        const priceLabel = (b.room_types || []).length > 1 ? "From" : "";
+        const priceLabel = forSale ? "Sale" : ((b.room_types || []).length > 1 ? "From" : "");
         const ratingLabel = b.avgRating ? `⭐ ${b.avgRating}` : "🆕 New";
         const roomTypeSummary = b.roomTypeNames.join(", ");
+        const offerBadge = isFlatListing(b)
+            ? `<span class="flat-offer-badge">${forSale ? "For sale" : "On rent"}</span>`
+            : "";
 
         return `
             <div class="property-card" data-id="${b.id}">
@@ -2901,6 +2940,7 @@ async function initSearchPage() {
                         <div>
                             <h2>${b.name}</h2>
                             <p>${formatDistanceFromActiveHub(b)}</p>
+                            ${offerBadge}
                         </div>
                         <button class="favorite${isSaved ? " saved" : ""}" data-id="${b.id}">${isSaved ? "♥" : "♡"}</button>
                     </div>
@@ -2913,7 +2953,7 @@ async function initSearchPage() {
                     <div class="amenities">${facilityBadges}</div>
                     <div class="availability">${
                         b.totalAvailable > 0
-                            ? `🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? "room" : "rooms"} available`
+                            ? `🟢 ${b.totalAvailable} ${b.totalAvailable === 1 ? (isFlatListing(b) ? "flat" : "room") : (isFlatListing(b) ? "flats" : "rooms")} available`
                             : "🔴 Currently occupied"
                     }</div>
                     <div class="card-actions">
@@ -3050,7 +3090,7 @@ function setupHotelPropertyPage(building) {
     root.className = "hotel-stay";
     root.innerHTML = `
         <div class="hotel-stay-toolbar">
-            <button type="button" class="hotel-back-link" id="hotelHeroBack">← Back to search</button>
+            <button type="button" class="hotel-back-link" id="hotelHeroBack">← Back</button>
             <button type="button" class="hotel-share-link" id="hotelHeroShare">Share</button>
         </div>
         <div class="hotel-stay-top">
@@ -3183,10 +3223,7 @@ function setupHotelPropertyPage(building) {
         btn.addEventListener("click", () => openSheet(btn.dataset.hotelTab));
     });
 
-    document.getElementById("hotelHeroBack")?.addEventListener("click", () => {
-        if (window.history.length > 1) window.history.back();
-        else window.location.href = "index.html";
-    });
+    document.getElementById("hotelHeroBack")?.addEventListener("click", goToPreviousPage);
     document.getElementById("hotelHeroShare")?.addEventListener("click", async () => {
         const shareData = { title: building.name, url: window.location.href };
         try {
@@ -3230,12 +3267,7 @@ async function initPropertyPage() {
         return;
     }
 
-    document.querySelector(".breadcrumb a")?.addEventListener("click", (event) => {
-        if (window.history.length > 1) {
-            event.preventDefault();
-            window.history.back();
-        }
-    });
+    document.querySelector(".breadcrumb a")?.addEventListener("click", goToPreviousPage);
     
 
     const propertyVideosSection = document.getElementById("propertyVideosSection");
@@ -4355,6 +4387,7 @@ function addRoomTypeBlock(roomData = null) {
     });
 
     container.appendChild(clone);
+    if (typeof syncFlatOfferLabels === "function") syncFlatOfferLabels();
 }
 
 function renderExistingPropertyMedia() {
@@ -4535,6 +4568,15 @@ async function loadPropertyForEdit(buildingId, user) {
     if (document.getElementById("lpRules")) {
         document.getElementById("lpRules").value = plainRules.join("\n");
     }
+    const flatOfferSale = document.querySelector('input[name="lpFlatOffer"][value="sale"]');
+    const flatOfferRent = document.querySelector('input[name="lpFlatOffer"][value="rent"]');
+    if (flatOfferSale && flatOfferRent) {
+        const sale = isFlatForSale(property);
+        flatOfferSale.checked = sale;
+        flatOfferRent.checked = !sale;
+        syncFlatOfferLabels();
+    }
+
     document.getElementById("lpOwnerName").value = property.owner_name || "";
     document.getElementById("lpOwnerPhone").value = property.owner_phone || "";
     document.getElementById("lpOwnerAltPhone").value = property.owner_alt_phone || "";
@@ -4628,11 +4670,67 @@ async function supabaseMutateWithoutUnknownColumns(table, mode, payload, applyFi
     return { error: new Error("Could not save because of unknown database columns.") };
 }
 
+function syncFlatOfferLabels() {
+    const offer = document.querySelector('input[name="lpFlatOffer"]:checked')?.value === "sale" ? "sale" : "rent";
+    document.querySelectorAll(".rtRent").forEach((input) => {
+        const label = input.closest(".form-group")?.querySelector("label");
+        if (label && /rent|sale price/i.test(label.textContent)) {
+            label.textContent = offer === "sale" ? "Sale Price (₹)" : "Monthly Rent (₹)";
+        }
+        if (offer === "sale") input.placeholder = "e.g. 3500000";
+        else if (input.placeholder.includes("3500000") || input.placeholder.includes("12000")) {
+            input.placeholder = "e.g. 12000";
+        }
+    });
+}
+
+function wireFlatOfferType() {
+    const radios = document.querySelectorAll('input[name="lpFlatOffer"]');
+    if (!radios.length) return;
+    radios.forEach((radio) => radio.addEventListener("change", syncFlatOfferLabels));
+    syncFlatOfferLabels();
+}
+
+function goToPreviousPage(event) {
+    event?.preventDefault();
+    try {
+        if (document.referrer) {
+            const url = new URL(document.referrer);
+            const samePage = url.href.split("#")[0] === location.href.split("#")[0];
+            if (url.origin === location.origin && !samePage) {
+                if (window.history.length > 1) {
+                    window.history.back();
+                    return;
+                }
+                window.location.href = url.href;
+                return;
+            }
+        }
+    } catch (error) {
+        console.error("Back navigation error:", error);
+    }
+    if (window.history.length > 1) {
+        window.history.back();
+    }
+}
+
+function wireSiteBackButton() {
+    const page = getCurrentPageName();
+    if (["", "index.html"].includes(page)) return;
+
+    document.querySelectorAll(".breadcrumb a, .dashboard-back-home, .back-home-btn, #hotelHeroBack").forEach((el) => {
+        if (el.dataset.siteBackWired === "true") return;
+        el.dataset.siteBackWired = "true";
+        el.addEventListener("click", goToPreviousPage);
+    });
+}
+
 function wireListPropertyForm() {
     const listPropertyForm = document.getElementById("listPropertyForm");
     if (!listPropertyForm) return;
 
     wireCustomFacilities();
+    wireFlatOfferType();
 
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get("edit");
@@ -4749,6 +4847,18 @@ function wireListPropertyForm() {
             facilities.push(`⭐ ${starValue} Star`);
         }
 
+        if (String(type).toLowerCase() === "flat") {
+            const offer = document.querySelector('input[name="lpFlatOffer"]:checked')?.value === "sale" ? "sale" : "rent";
+            const cleanedTags = facilityTags.filter((tag) => tag !== FLAT_SALE_TAG && tag !== FLAT_RENT_TAG);
+            const cleanedLabels = facilities.filter((label) => label !== "For Sale" && label !== "On Rent");
+            cleanedTags.push(offer === "sale" ? FLAT_SALE_TAG : FLAT_RENT_TAG);
+            cleanedLabels.push(offer === "sale" ? "For Sale" : "On Rent");
+            facilityTags.length = 0;
+            facilities.length = 0;
+            facilityTags.push(...cleanedTags);
+            facilities.push(...cleanedLabels);
+        }
+
         const rules = rulesRaw
             ? rulesRaw.split("\n").map(rule => rule.trim()).filter(Boolean)
             : [];
@@ -4801,9 +4911,12 @@ if (isHotel) {
         return;
     }
 } else {
-    // PG and Flat require monthly rent.
     if (!Number.isFinite(rent) || rent <= 0) {
-        alert("Please enter a valid monthly rent for every room type.");
+        const saleFlat = String(type).toLowerCase() === "flat"
+            && document.querySelector('input[name="lpFlatOffer"]:checked')?.value === "sale";
+        alert(saleFlat
+            ? "Please enter a valid sale price for every flat option."
+            : "Please enter a valid monthly rent for every room type.");
         return;
     }
 }
@@ -5175,6 +5288,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     wireMobileNav();
     wireThemeToggle();
+    wireSiteBackButton();
     wireAuthUI();
     wireListPropertyAccess();
     wireHomeStayButtons();
@@ -5313,7 +5427,7 @@ function wireChatbot() {
         },
         {
             question: "How does RoomDhundo work?",
-            answer: "RoomDhundo helps you discover accommodation such as PGs, rooms, messes, guest houses, and flats. Search by location and your requirements, compare available properties, view details, and contact the owner through RoomDhundo."
+            answer: "RoomDhundo helps you discover accommodation such as PGs, rooms, messes, guest houses, hotels, and flats. Search by location and your requirements, compare available properties, view details, and contact the owner through RoomDhundo. A one-time 10% service fee applies to PG and flat bookings only, not hotels."
         },
         {
             question: "How can I report a problem?",
@@ -5554,7 +5668,7 @@ function wireThemeToggle() {
     const storageKey = "roomdhundo-theme";
     const root = document.documentElement;
     const savedTheme = localStorage.getItem(storageKey);
-    const initialTheme = savedTheme || root.dataset.theme || "dark";
+    const initialTheme = savedTheme || root.dataset.theme || "light";
 
     function setTheme(theme) {
         const next = theme === "light" ? "light" : "dark";
