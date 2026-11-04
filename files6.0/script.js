@@ -913,12 +913,17 @@ async function updateNavForUser(user) {
         profileRole === "owner";
 
 
+    const isPendingAgent = !isAdmin && isPendingAgentUser(user, profileRole);
+    const isAgent = !isAdmin && (profileRole === "agent" || isPendingAgent);
+
     const roleLabel =
         isAdmin
             ? "Super Admin"
             : isOwner
                 ? "Owner"
-                : "Renter";
+                : isAgent
+                    ? (profileRole === "agent" ? "Agent" : "Agent (pending)")
+                    : "Renter";
 
 
     const roleClass =
@@ -926,7 +931,9 @@ async function updateNavForUser(user) {
             ? "admin"
             : isOwner
                 ? "owner"
-                : "renter";
+                : isAgent
+                    ? "owner"
+                    : "renter";
 
 
     // =================================================
@@ -1060,7 +1067,7 @@ async function updateNavForUser(user) {
     // OWNER MENU
     // =================================================
 
-    else if (isOwner) {
+    else if (isOwner || profileRole === "agent") {
 
         menuItems.push({
 
@@ -1068,7 +1075,7 @@ async function updateNavForUser(user) {
 
             title: "My Profile",
 
-            subtitle: "Owner Dashboard",
+            subtitle: profileRole === "agent" ? "Agent listings" : "Owner Dashboard",
 
             action: () => {
 
@@ -1529,6 +1536,11 @@ function injectAuthRolePickers() {
                     <span class="auth-role-title">Owner</span>
                     <span class="auth-role-desc">List my property</span>
                 </label>
+                <label class="auth-role-card">
+                    <input type="radio" name="${groupName}" value="agent"${required ? " required" : ""}>
+                    <span class="auth-role-title">Agent</span>
+                    <span class="auth-role-desc">List for property owners</span>
+                </label>
             </div>
         `;
 
@@ -1546,7 +1558,7 @@ function getSelectedAuthRole(formId) {
     if (!form) return null;
     const checked = form.querySelector(".auth-role-picker input[type='radio']:checked");
     const value = checked?.value;
-    return value === "owner" || value === "user" ? value : null;
+    return value === "owner" || value === "user" || value === "agent" ? value : null;
 }
 
 function getAppDirectoryPath() {
@@ -1627,6 +1639,7 @@ function storeAuthReturnUrl() {
 }
 
 function safePostAuthPath(role) {
+    if (role === "agent" || role === "agent_pending") return "be-an-agent.html";
     if (role === "owner") return "owner-dashboard.html";
     const raw = sessionStorage.getItem("roomdhundo_auth_return") || "";
     sessionStorage.removeItem("roomdhundo_auth_return");
@@ -1646,7 +1659,9 @@ function safePostAuthPath(role) {
 async function ensureUserProfile(user, preferredRole) {
     if (!user?.id) return { profile: null, error: new Error("Missing session") };
 
-    const requestedRole = preferredRole === "owner" ? "owner" : "user";
+    const requestedRole = preferredRole === "owner"
+        ? "owner"
+        : (preferredRole === "agent" || preferredRole === "agent_pending" ? "agent_pending" : "user");
     const googleName = String(user.user_metadata?.full_name || user.user_metadata?.name || "").trim();
 
     const { data: profile, error: fetchError } = await supabaseClient
@@ -1658,15 +1673,12 @@ async function ensureUserProfile(user, preferredRole) {
     if (fetchError) return { profile: null, error: fetchError };
 
     if (!profile) {
-        const { error: insertError } = await supabaseClient
-            .from("profiles")
-            .upsert({
-                id: user.id,
-                full_name: googleName || null,
-                role: requestedRole
-            });
-        if (insertError) return { profile: null, error: insertError };
-        return { profile: { id: user.id, full_name: googleName || null, role: requestedRole } };
+        const saved = await upsertProfileSafe(user.id, {
+            full_name: googleName || null,
+            role: requestedRole
+        });
+        if (saved.error) return { profile: null, error: saved.error };
+        return { profile: { id: user.id, full_name: googleName || null, role: saved.role } };
     }
 
     const patch = {};
@@ -1686,10 +1698,10 @@ async function startGoogleSignIn(messageId) {
     const formId = messageId === "signupMessage" ? "signupForm" : "loginForm";
     const selectedRole = getSelectedAuthRole(formId);
     if (document.querySelector(`#${formId} .auth-role-picker`) && !selectedRole) {
-        setAuthMessage(messageId, "Please choose whether you are a renter or an owner.");
+        setAuthMessage(messageId, "Please choose whether you are a renter, an owner, or an agent.");
         return;
     }
-    if (selectedRole === "owner" || selectedRole === "user") {
+    if (selectedRole === "owner" || selectedRole === "user" || selectedRole === "agent") {
         sessionStorage.setItem("roomdhundo_oauth_role", selectedRole);
     } else {
         sessionStorage.removeItem("roomdhundo_oauth_role");
@@ -1807,8 +1819,20 @@ async function consumeOAuthRedirect() {
         console.error("Google profile error:", profileError);
         showGoogleAuthError("Signed in with Google, but we could not save your profile. Please try again.");
     }
+    if (pendingRole === "agent") {
+        markAgentPendingLock();
+        try {
+            await supabaseClient.auth.updateUser({
+                data: { role: "agent", agent_status: "pending" }
+            });
+        } catch (metaError) {
+            console.error("Agent metadata error:", metaError);
+        }
+    }
 
-    const role = String(profile?.role || pendingRole || "user").toLowerCase();
+    const role = pendingRole === "agent"
+        ? "agent_pending"
+        : String(profile?.role || pendingRole || "user").toLowerCase();
     await updateNavForUser(session.user);
     unlockExploreAfterAuth();
     window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
@@ -1823,7 +1847,7 @@ async function consumeOAuthRedirect() {
 
 function isListingOwnerRole(role) {
     const value = String(role || "").trim().toLowerCase();
-    return value === "owner" || value === "admin";
+    return value === "owner" || value === "admin" || value === "agent";
 }
 
 async function fetchProfileRole(userId) {
@@ -1840,6 +1864,97 @@ async function fetchProfileRole(userId) {
     return String(data?.role || "user").trim().toLowerCase();
 }
 
+async function upsertProfileSafe(userId, fields) {
+    const requested = String(fields.role || "user").trim().toLowerCase();
+    const roles = requested === "agent" || requested === "agent_pending"
+        ? ["agent_pending", "user"]
+        : [requested];
+    let lastError = null;
+    for (const role of roles) {
+        const { error } = await supabaseClient.from("profiles").upsert({
+            ...fields,
+            id: userId,
+            role
+        });
+        if (!error) return { role, error: null };
+        lastError = error;
+    }
+    return { role: null, error: lastError };
+}
+
+async function fetchAgentApplicationStatus(userId) {
+    if (!userId) return null;
+    const { data, error } = await supabaseClient
+        .from("agent_applications")
+        .select("status")
+        .eq("user_id", userId)
+        .maybeSingle();
+    if (error) return null;
+    return String(data?.status || "").trim().toLowerCase() || null;
+}
+
+function markAgentPendingLock() {
+    try {
+        sessionStorage.setItem("roomdhundo_agent_lock", "pending");
+        localStorage.setItem("roomdhundo_role", "agent_pending");
+    } catch (error) {}
+}
+
+function clearAgentPendingLock() {
+    try {
+        sessionStorage.removeItem("roomdhundo_agent_lock");
+        if (localStorage.getItem("roomdhundo_role") === "agent_pending") {
+            localStorage.setItem("roomdhundo_role", "agent");
+        }
+    } catch (error) {}
+}
+
+function hasAgentPendingLock() {
+    try {
+        const lock = sessionStorage.getItem("roomdhundo_agent_lock");
+        const stored = localStorage.getItem("roomdhundo_role");
+        return lock === "pending" || lock === "rejected" || stored === "agent_pending";
+    } catch (error) {
+        return false;
+    }
+}
+
+function goToAgentApplication() {
+    markAgentPendingLock();
+    if (getCurrentPageName() === "be-an-agent.html") return;
+    document.documentElement.style.visibility = "hidden";
+    window.location.replace("be-an-agent.html");
+}
+
+function isPendingAgentUser(user, profileRole) {
+    const role = String(profileRole || "").trim().toLowerCase();
+    if (role === "agent") return false;
+    if (role === "agent_pending") return true;
+    const metaRole = String(user?.user_metadata?.role || "").trim().toLowerCase();
+    const metaStatus = String(user?.user_metadata?.agent_status || "").trim().toLowerCase();
+    return metaRole === "agent" || metaStatus === "pending" || hasAgentPendingLock();
+}
+
+async function resolveAgentState(user, profileRole) {
+    const role = String(profileRole || "").trim().toLowerCase();
+    if (role === "agent") {
+        clearAgentPendingLock();
+        return "approved";
+    }
+    if (role === "agent_pending") return "pending";
+    const appStatus = await fetchAgentApplicationStatus(user?.id);
+    if (appStatus === "approved") {
+        clearAgentPendingLock();
+        return "approved";
+    }
+    if (appStatus === "pending") return "pending";
+    if (appStatus === "rejected") return "rejected";
+    const metaRole = String(user?.user_metadata?.role || "").trim().toLowerCase();
+    const metaStatus = String(user?.user_metadata?.agent_status || "").trim().toLowerCase();
+    if (metaRole === "agent" || metaStatus === "pending" || hasAgentPendingLock()) return "pending";
+    return "none";
+}
+
 function ensureOwnerOnlyModal() {
     let modal = document.getElementById("ownerOnlyModal");
     if (modal) return modal;
@@ -1850,7 +1965,7 @@ function ensureOwnerOnlyModal() {
     modal.innerHTML = `
         <div class="owner-only-card" role="dialog" aria-labelledby="ownerOnlyTitle" aria-modal="true">
             <h2 id="ownerOnlyTitle">Owners only</h2>
-            <p>This area is for the owners to list property. Renters can search, save, and contact hosts, but they cannot add listings.</p>
+            <p>This area is for owners and approved agents to list property. Renters can search, save, and contact hosts, but they cannot add listings.</p>
             <button type="button" class="owner-only-ok" id="ownerOnlyOk">OK, got it</button>
         </div>
     `;
@@ -1887,7 +2002,7 @@ function wireListPropertyAccess() {
             const href = link.getAttribute("href") || "list-property.html";
             const access = await canCurrentUserListProperty();
             if (access.reason === "login") {
-                setAuthMessage("loginMessage", "Log in as an owner to list a property.");
+                setAuthMessage("loginMessage", "Log in as an owner or approved agent to list a property.");
                 openAuthModal();
                 return;
             }
@@ -2032,11 +2147,14 @@ loginForm?.addEventListener("submit", async (e) => {
 
     const selectedLoginRole = getSelectedAuthRole("loginForm");
     if (document.querySelector("#loginForm .auth-role-picker") && !selectedLoginRole) {
-        setAuthMessage("loginMessage", "Please choose whether you are a renter or an owner.");
+        setAuthMessage("loginMessage", "Please choose whether you are a renter, an owner, or an agent.");
         return;
     }
 
     setAuthMessage("loginMessage", "Logging in...");
+    if (selectedLoginRole === "agent") {
+        markAgentPendingLock();
+    }
 
 
     // =================================================
@@ -2070,6 +2188,11 @@ loginForm?.addEventListener("submit", async (e) => {
 
         setAuthMessage("loginMessage", "Login failed.");
 
+        return;
+    }
+
+    if (selectedLoginRole === "agent") {
+        goToAgentApplication();
         return;
     }
 
@@ -2169,6 +2292,16 @@ loginForm?.addEventListener("submit", async (e) => {
         return;
     }
 
+    const agentState = await resolveAgentState(loggedInUser, loggedInRole);
+    if (agentState === "approved") {
+        window.location.replace("index.html");
+        return;
+    }
+    if (agentState === "pending" || agentState === "rejected") {
+        goToAgentApplication();
+        return;
+    }
+
 
     // =================================================
     // NORMAL USER
@@ -2214,11 +2347,14 @@ loginForm?.addEventListener("submit", async (e) => {
 
         const selectedRole = getSelectedAuthRole("signupForm");
         if (!selectedRole) {
-            setAuthMessage("signupMessage", "Please choose whether you are a renter or an owner.");
+            setAuthMessage("signupMessage", "Please choose whether you are a renter, an owner, or an agent.");
             return;
         }
 
         setAuthMessage("signupMessage", "Creating your account...");
+        if (selectedRole === "agent") {
+            markAgentPendingLock();
+        }
 
         const { data, error } =
             await supabaseClient.auth.signUp({
@@ -2243,21 +2379,6 @@ loginForm?.addEventListener("submit", async (e) => {
             return;
         }
 
-        const { error: profileError } =
-            await supabaseClient
-                .from("profiles")
-                .upsert({
-                    id: data.user.id,
-                    full_name: name,
-                    role: selectedRole
-                });
-
-        if (profileError) {
-            console.error("Profile creation error:", profileError);
-            setAuthMessage("signupMessage", "Account created, but profile creation failed.");
-            return;
-        }
-
         let session = data.session;
 
         if (!session) {
@@ -2272,10 +2393,31 @@ loginForm?.addEventListener("submit", async (e) => {
             }
         }
 
+        const profileRole = selectedRole === "agent" ? "agent_pending" : selectedRole;
+        const savedProfile = await upsertProfileSafe(data.user.id, {
+            full_name: name,
+            name,
+            role: profileRole
+        });
+        if (savedProfile.error) {
+            console.error("Profile creation error:", savedProfile.error);
+        }
+        if (selectedRole === "agent") {
+            try {
+                await supabaseClient.auth.updateUser({
+                    data: { role: "agent", agent_status: "pending", full_name: name }
+                });
+            } catch (metaError) {
+                console.error("Agent metadata error:", metaError);
+            }
+        }
+
         if (!session) {
             setAuthMessage(
                 "signupMessage",
-                "Account created! Please check your email to confirm your account before logging in."
+                selectedRole === "agent"
+                    ? "Account created. Confirm your email, then log in as Agent to finish the application."
+                    : "Account created! Please check your email to confirm your account before logging in."
             );
 
             alert(
@@ -2287,6 +2429,11 @@ loginForm?.addEventListener("submit", async (e) => {
             return;
         }
 
+        if (selectedRole === "agent") {
+            goToAgentApplication();
+            return;
+        }
+
         localStorage.setItem("roomdhundo_role", selectedRole);
         setAuthMessage("signupMessage", "Account created successfully!");
         unlockExploreAfterAuth();
@@ -2294,9 +2441,9 @@ loginForm?.addEventListener("submit", async (e) => {
         await updateNavForUser(session.user);
         window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
         if (selectedRole === "owner") {
-            window.location.href = "owner-dashboard.html";
+            window.location.replace("owner-dashboard.html");
         } else {
-            window.location.href = "index.html";
+            window.location.replace("index.html");
         }
     });
 }
@@ -2431,11 +2578,13 @@ async function initHomePage() {
 
         const categoryTypes = CATEGORY_TYPES[activeCategory] || [];
 
-        return { query, daily, min, max, propertyTypes, facilities, categoryTypes };
+        const agentId = new URLSearchParams(window.location.search).get("agent") || "";
+        return { query, daily, min, max, propertyTypes, facilities, categoryTypes, agentId };
     }
 
     function applyFilters(list, f) {
         return list.filter(b => {
+            if (f.agentId && String(b.created_by) !== String(f.agentId)) return false;
             if (f.query && !buildingMatchesSearchQuery(b, f.query)) return false;
 
             const roomTypes = b.room_types || [];
@@ -5527,6 +5676,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (oauthResult?.redirecting) return;
 
     const currentUser = await getCurrentUserFast();
+    await enforceAgentPendingGate(currentUser);
     updateNavForUser(currentUser);
 
         if (typeof initRenterDashboard === "function") {
@@ -5539,6 +5689,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (window.__oauthHandling) return;
 
         if (event === "SIGNED_IN") {
+            const choseAgent = getSelectedAuthRole("loginForm") === "agent" || getSelectedAuthRole("signupForm") === "agent";
+            if (choseAgent || hasAgentPendingLock()) {
+                goToAgentApplication();
+                return;
+            }
             if (requireLoginToExplore(session?.user || null)) {
                 closeAuthModal();
                 hideGuestLoginPrompt();
@@ -5558,7 +5713,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (requireLoginToExplore(currentUser)) {
         await initExplorePages();
     }
+    await showAgentListingBanner(currentUser);
 });
+
+async function enforceAgentPendingGate(user) {
+    const page = getCurrentPageName();
+    const allowed = ["be-an-agent.html", "login.html", "signup.html", "reset-password.html", "auth-callback.html", "policies.html"];
+    if (allowed.includes(page)) return;
+    if (!user?.id) {
+        if (hasAgentPendingLock()) goToAgentApplication();
+        return;
+    }
+    const role = await fetchProfileRole(user.id);
+    if (role === "agent") {
+        clearAgentPendingLock();
+        return;
+    }
+    const agentState = await resolveAgentState(user, role);
+    if (agentState === "approved") return;
+    if (agentState === "pending" || agentState === "rejected" || hasAgentPendingLock()) {
+        goToAgentApplication();
+    }
+}
+
+async function showAgentListingBanner(user) {
+    if (!user?.id) return;
+    if (!["list-pg.html", "list-hotel.html", "list-flat.html", "list-property.html"].includes(getCurrentPageName())) return;
+    const role = await fetchProfileRole(user.id);
+    if (role !== "agent") return;
+    const form = document.getElementById("listPropertyForm");
+    if (!form || form.querySelector(".agent-list-banner")) return;
+    const banner = document.createElement("div");
+    banner.className = "agent-list-banner";
+    banner.innerHTML = "<strong>Listing as an agent.</strong> Fill the owner name and phone with the actual property owner. You are registering this listing in your agent account.";
+    form.prepend(banner);
+    const ownerHeading = Array.from(form.querySelectorAll("h2, .lp-section-title")).find((el) => /owner contact/i.test(el.textContent || ""));
+    if (ownerHeading) ownerHeading.textContent = "Property owner contact";
+}
 
 function openRoleChoice() {
     const modal = document.getElementById("roleChoiceModal");
@@ -5579,28 +5770,41 @@ async function selectUserRole(role) {
 
     const renterOption = document.getElementById("renterOption");
     const ownerOption = document.getElementById("ownerOption");
+    const agentOption = document.getElementById("agentOption");
     if (renterOption) renterOption.disabled = true;
     if (ownerOption) ownerOption.disabled = true;
+    if (agentOption) agentOption.disabled = true;
 
-    const { error } = await supabaseClient
-        .from("profiles")
-        .update({ role: role })
-        .eq("id", user.id);
-
-    if (error) {
-        console.error("Role update error:", error);
-        alert("We couldn't save your selection. Please try again.");
-        if (renterOption) renterOption.disabled = false;
-        if (ownerOption) ownerOption.disabled = false;
+    const savedRole = role === "agent" ? "agent_pending" : role;
+    const savedProfile = await upsertProfileSafe(user.id, { role: savedRole });
+    if (savedProfile.error) {
+        console.error("Role update error:", savedProfile.error);
+        if (role !== "agent") {
+            alert("We couldn't save your selection. Please try again.");
+            if (renterOption) renterOption.disabled = false;
+            if (ownerOption) ownerOption.disabled = false;
+            if (agentOption) agentOption.disabled = false;
+            return;
+        }
+    }
+    if (role === "agent") {
+        try {
+            await supabaseClient.auth.updateUser({
+                data: { role: "agent", agent_status: "pending" }
+            });
+        } catch (metaError) {
+            console.error("Agent metadata error:", metaError);
+        }
+        goToAgentApplication();
         return;
     }
 
     localStorage.setItem("roomdhundo_role", role);
 
     if (role === "owner") {
-        window.location.href = "owner-dashboard.html";
+        window.location.replace("owner-dashboard.html");
     } else {
-        window.location.href = "index.html";
+        window.location.replace("index.html");
     }
 }
 
@@ -5612,6 +5816,7 @@ function wireRoleChoice() {
 
     renterOption?.addEventListener("click", () => selectUserRole("user"));
     ownerOption?.addEventListener("click", () => selectUserRole("owner"));
+    document.getElementById("agentOption")?.addEventListener("click", () => selectUserRole("agent"));
     closeButton?.addEventListener("click", () => closeRoleChoice());
     modal?.addEventListener("click", (event) => {
         if (event.target === modal) closeRoleChoice();

@@ -21,6 +21,7 @@
     <script>
         document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "light";
     </script>
+    <script src="agent-gate.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="hotel-bookings.css">
 </head>
@@ -143,6 +144,14 @@
         </p>
     </section>
 
+    <section class="home-agents" id="homeAgentsSection" hidden>
+        <div class="home-agents-header">
+            <h2>RoomDhundo Agents</h2>
+            <p>Approved agents who list properties on behalf of owners.</p>
+        </div>
+        <div class="home-agents-list" id="homeAgentsList"></div>
+    </section>
+
     <button
         type="button"
         class="home-back-to-top"
@@ -174,6 +183,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="location.js"></script>
 <script src="script.js"></script>
+<script src="agent.js"></script>
 
     <script>
         (() => {

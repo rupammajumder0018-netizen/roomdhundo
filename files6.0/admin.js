@@ -288,6 +288,10 @@ function getProfileRole(role) {
 
     }
 
+    if (value === "agent" || value === "agent_pending") {
+        return "agent";
+    }
+
     return "user";
 
 }
@@ -308,6 +312,10 @@ function getProfileRoleLabel(role) {
 
         return "Admin";
 
+    }
+
+    if (group === "agent") {
+        return "Agent";
     }
 
     return "User";
@@ -419,6 +427,10 @@ function showSection(
     renderEnquiriesSection();
 }
 
+    else if (sectionName === "agents") {
+        if (typeof window.loadAdminAgents === "function") window.loadAdminAgents();
+    }
+
     else if (sectionName === "economy") {
 
         loadEconomy().then(renderEconomySection);
@@ -474,6 +486,16 @@ function updatePageHeader(
 
             subtitle:
                 "View all profiles registered on RoomDhundo."
+
+        },
+
+        agents: {
+
+            title:
+                "Agents",
+
+            subtitle:
+                "Approve or reject agent applications."
 
         },
 

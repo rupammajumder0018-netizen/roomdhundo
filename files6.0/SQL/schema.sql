@@ -76,10 +76,10 @@ create table if not exists public.profiles (
     pincode text,
 
     role text not null default 'user'
-        check (role in ('user', 'owner', 'admin')),
+        check (role in ('user', 'owner', 'admin', 'agent', 'agent_pending')),
 
     user_type text default 'renter'
-        check (user_type in ('renter', 'owner', 'admin')),
+        check (user_type in ('renter', 'owner', 'admin', 'agent')),
 
     status text not null default 'active'
         check (status in ('active', 'suspended', 'blocked')),

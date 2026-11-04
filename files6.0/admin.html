@@ -95,6 +95,10 @@
                 <span id="adminHotelBookingsNavBadge" class="hb-nav-badge" hidden>0</span>
             </button>
 
+            <button type="button" class="nav-item" data-section="agents">
+                🤝 Agents
+            </button>
+
 
             <button
                 type="button"
@@ -1126,6 +1130,42 @@
 
         </section>
 
+
+<section class="admin-section" data-section-content="agents" id="agentsSection">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div>
+                <p>Pending</p>
+                <h2 id="adminAgentsPendingCount">0</h2>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div>
+                <p>Approved</p>
+                <h2 id="adminAgentsApprovedCount">0</h2>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-card">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="adminAgentsBody"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
 
 <section class="admin-section" data-section-content="hotel-bookings" id="hotelBookingsSection">
     <div class="hb-stats" role="toolbar" aria-label="Hotel booking statistics">
@@ -3553,6 +3593,7 @@
 
     <script src="admin.js"></script>
     <script src="hotel-bookings-admin.js"></script>
+    <script src="agents-admin.js"></script>
 
 
 </body>

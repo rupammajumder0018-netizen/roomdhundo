@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be an Agent | RoomDhundo</title>
+    <script>
+        document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "light";
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="hotel-bookings.css">
+</head>
+<body class="agent-apply-page">
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="index.html" class="logo">RoomDhundo</a>
+        </div>
+        <div class="nav-links">
+            <button type="button" class="theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode">🌙</button>
+            <div id="authLinks" class="auth-links">
+                <a href="login.html" class="nav-auth-btn" id="navAuthBtn">Log In / Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="list-property-page agent-apply-main">
+        <div class="list-property-header">
+            <h1>Be an Agent</h1>
+            <p>Fill this form to register as a RoomDhundo agent. You can list properties for owners after we approve your request.</p>
+        </div>
+
+        <form class="list-property-form" id="agentApplyForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="agentFirstName">First name</label>
+                    <input type="text" id="agentFirstName" autocomplete="given-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="agentLastName">Last name</label>
+                    <input type="text" id="agentLastName" autocomplete="family-name" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="agentPhone">Phone number</label>
+                <input type="tel" id="agentPhone" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" required>
+            </div>
+            <div class="form-group">
+                <label for="agentEmail">Email</label>
+                <input type="email" id="agentEmail" autocomplete="email" required>
+            </div>
+            <div class="form-group">
+                <label for="agentLocation">Where are you situated?</label>
+                <input type="text" id="agentLocation" placeholder="City / locality" required>
+            </div>
+            <div class="form-group">
+                <label for="agentPincode">Pin code</label>
+                <input type="text" id="agentPincode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit pin code" required>
+            </div>
+            <p class="auth-message" id="agentApplyMessage"></p>
+            <button type="submit" class="lp-submit-btn">Submit</button>
+        </form>
+
+        <section class="agent-waiting-card" id="agentWaitingCard" hidden>
+            <div class="agent-success-mark" aria-hidden="true">✓</div>
+            <h2>Request submitted</h2>
+            <p>Your request for becoming an agent is submitted. Wait for the approval from RoomDhundo. You cannot use the rest of the site until an admin approves you.</p>
+            <button type="button" class="lp-secondary-btn" id="agentLogoutBtn">Log out</button>
+        </section>
+    </main>
+
+    <div class="agent-success-modal" id="agentSuccessModal" hidden>
+        <div class="agent-success-card" role="dialog" aria-modal="true" aria-labelledby="agentSuccessTitle">
+            <div class="agent-success-mark" aria-hidden="true">✓</div>
+            <h2 id="agentSuccessTitle">Done</h2>
+            <p>Your request for becoming an agent is submitted. Wait for the approval from RoomDhundo.</p>
+            <button type="button" class="lp-submit-btn" id="agentSuccessOk">OK</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="script.js"></script>
+    <script src="agent.js"></script>
+</body>
+</html>
