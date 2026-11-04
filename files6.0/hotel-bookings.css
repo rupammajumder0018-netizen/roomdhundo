@@ -188,6 +188,8 @@ body.is-hotel-page .breadcrumb,
 body.is-hotel-page .property-header,
 body.is-hotel-page .property-gallery,
 body.is-hotel-page .property-layout { display: none !important; }
+.property-page > #roomdhundoMap,
+body:not(.is-hotel-page) #roomdhundoMap { display: none !important; }
 body.is-hotel-page #roomdhundoMap { height: 280px !important; border-radius: 14px; }
 
 .hotel-stay {

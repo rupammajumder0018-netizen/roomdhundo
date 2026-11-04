@@ -2179,7 +2179,7 @@ loginForm?.addEventListener("submit", async (e) => {
     );
 
     window.location.href =
-        "search.html";
+        "index.html";
 
 });
 
@@ -3548,28 +3548,8 @@ if (!hotelRoom) (building.room_types || []).forEach(rt => {
     // location when we already have it saved.
     // --------------------------------------------------------
     const roomdhundoMapEl = document.getElementById("roomdhundoMap");
-    if (roomdhundoMapEl && hotelRoom) {
+    if (roomdhundoMapEl) {
         roomdhundoMapEl.style.display = "none";
-    } else if (roomdhundoMapEl) {
-        if (
-            building.latitude != null &&
-            building.longitude != null &&
-            typeof initializeRoomDhundoMap === "function"
-        ) {
-            initializeRoomDhundoMap(building.latitude, building.longitude);
-            addPropertyLocationToMap(building.latitude, building.longitude, building.name);
-
-            const visitorLocation =
-                typeof getCurrentUserLocation === "function"
-                    ? getCurrentUserLocation()
-                    : null;
-
-            if (visitorLocation) {
-                addUserLocationToMap(visitorLocation.latitude, visitorLocation.longitude);
-            }
-        } else {
-            roomdhundoMapEl.style.display = "none";
-        }
     }
 
     const reviewsContainer = document.getElementById("reviewsContainer");
@@ -5474,7 +5454,7 @@ if (isHotel) {
             }
 
             alert(`"${name}" has been listed successfully!`);
-            window.location.href = "search.html";
+            window.location.href = "index.html";
         } catch (error) {
             console.error("Property save/update error:", error);
             const banner = document.getElementById("hlFormBanner");
@@ -5620,7 +5600,7 @@ async function selectUserRole(role) {
     if (role === "owner") {
         window.location.href = "owner-dashboard.html";
     } else {
-        window.location.href = "search.html";
+        window.location.href = "index.html";
     }
 }
 
