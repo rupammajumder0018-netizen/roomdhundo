@@ -37,10 +37,22 @@ footer,
     font-weight: 700;
 }
 .site-footer-fee {
-    margin: 0 0 12px;
+    margin: 0 0 18px;
     font-size: 14px;
     line-height: 1.55;
     color: var(--rd-text, #374151);
+}
+.site-footer-social {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    margin: 0 0 16px;
+}
+.site-footer-social-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--rd-text, #111827);
 }
 .site-footer-links {
     display: flex;
@@ -55,6 +67,24 @@ footer,
 }
 .site-footer-links a:hover {
     text-decoration: underline;
+}
+.site-footer-instagram {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: #fff !important;
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    text-decoration: none !important;
+}
+.site-footer-instagram:hover {
+    transform: scale(1.08);
+    text-decoration: none !important;
+}
+.site-footer-instagram svg {
+    display: block;
 }
 /* ==========================================================================
    2. NAVBAR
@@ -5930,7 +5960,8 @@ html[data-theme="dark"] .close-contact-btn {
     border-color: #3a3a3a !important;
 }
 html[data-theme="dark"] .site-footer-fee,
-html[data-theme="dark"] .site-footer-copy {
+html[data-theme="dark"] .site-footer-copy,
+html[data-theme="dark"] .site-footer-social-title {
     color: #f8fafc;
 }
 
