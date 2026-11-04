@@ -10,6 +10,8 @@
     "'": "&#39;"
   }[c]));
   const money = (v) => `₹${Number(v || 0).toLocaleString("en-IN")}`;
+  const BREAKFAST_FEE = 300;
+  let refreshQuote = () => {};
   function hourlyOffer(room) {
     const details = room?.room_details && typeof room.room_details === "object" ? room.room_details : {};
     const hourly = details.hourly && typeof details.hourly === "object" ? details.hourly : {};
@@ -95,8 +97,107 @@
       rooms = building.room_types || [];
     }
 
-    renderStay();
+    if (selectedRoomId()) renderRoomPageBooking();
+    else renderStay();
     updateBookingButton();
+  }
+
+  function selectedRoomId() {
+    return new URLSearchParams(location.search).get("room");
+  }
+
+  function openRoomPage(room) {
+    if (!hotel?.id || !room?.id) return;
+    window.location.href = `property.html?id=${encodeURIComponent(hotel.id)}&room=${encodeURIComponent(room.id)}`;
+  }
+
+  function ensureSidebarFormMount() {
+    let mount = document.getElementById("hotelBookingFormMount");
+    if (mount) return mount;
+    const card = document.querySelector(".booking-card");
+    if (!card) return null;
+    mount = document.createElement("div");
+    mount.id = "hotelBookingFormMount";
+    const contact = document.getElementById("contactOwnerBtn");
+    if (contact) card.insertBefore(mount, contact);
+    else card.appendChild(mount);
+    return mount;
+  }
+
+  function wireBoardPills(root) {
+    root.querySelectorAll("[data-board]:not(:disabled)").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        board = btn.dataset.board;
+        root.querySelectorAll("[data-board]").forEach((el) => {
+          el.classList.toggle("is-active", el === btn);
+          const small = el.querySelector("small");
+          if (!small || el.disabled || el.classList.contains("is-disabled")) return;
+          if (el.dataset.board === "breakfast") return;
+          small.textContent = el === btn ? "Selected" : "";
+        });
+        document.querySelectorAll(".hotel-room-board-label").forEach((el) => {
+          el.textContent = board === "breakfast" ? "Breakfast (+₹300 + taxes)" : "Room only";
+        });
+        refreshQuote();
+      });
+    });
+  }
+
+  function boardPillsHtml() {
+    return `
+        <button type="button" class="hotel-board-pill is-active" data-board="room-only">Room only<br><small>Selected</small></button>
+        <button type="button" class="hotel-board-pill" data-board="breakfast">Breakfast<br><span class="hotel-board-extra">+₹300 + taxes</span></button>
+    `;
+  }
+
+  function roomTaxInfo(room) {
+    const tax = String(room?.room_details?.tax || "inclusive").toLowerCase();
+    if (tax === "gst-12") return { mode: "exclusive", rate: 0.12, label: "GST 12%" };
+    if (tax === "gst-18") return { mode: "exclusive", rate: 0.18, label: "GST 18%" };
+    if (tax === "exclusive") return { mode: "exclusive", rate: 0.18, label: "GST 18%" };
+    return { mode: "inclusive", rate: 0.18, label: "GST 18%" };
+  }
+
+  function quoteStay({ hourly, units, rate }) {
+    const roomSubtotal = Number(rate || 0) * Number(units || 0);
+    const breakfastUnits = board === "breakfast" ? (hourly ? 1 : Number(units || 0)) : 0;
+    const breakfast = BREAKFAST_FEE * breakfastUnits;
+    const taxInfo = roomTaxInfo(selectedRoom);
+    let taxable = 0;
+    if (taxInfo.mode === "exclusive") taxable = roomSubtotal + breakfast;
+    else taxable = breakfast;
+    const taxAmount = Math.round(taxable * taxInfo.rate);
+    const total = roomSubtotal + breakfast + taxAmount;
+    return {
+      hourly,
+      units,
+      rate,
+      roomSubtotal,
+      breakfast,
+      breakfastUnits,
+      taxAmount,
+      taxLabel: taxInfo.label,
+      taxMode: taxInfo.mode,
+      total
+    };
+  }
+
+  function renderRoomPageBooking() {
+    document.getElementById("hotelBookingSection")?.remove();
+    const roomId = selectedRoomId();
+    selectedRoom = rooms.find((room) => String(room.id) === String(roomId)) || null;
+    const wrap = ensureSidebarFormMount();
+    if (!wrap) return;
+    if (!selectedRoom) {
+      wrap.innerHTML = `<p class="hotel-booking-notice">This room is no longer listed. Go back and pick another room.</p>`;
+      return;
+    }
+    wrap.innerHTML = `
+      <div class="hotel-board-pills hotel-board-pills-compact">${boardPillsHtml()}</div>
+      <div id="hotelBookingFormInner"></div>
+    `;
+    wireBoardPills(wrap);
+    renderForm();
   }
 
   function hasBreakfast() {
@@ -118,35 +219,13 @@
         || document.querySelector(".property-main-content")?.prepend(section);
     }
 
-    const breakfast = hasBreakfast();
-    const pills = `
-        <button type="button" class="hotel-board-pill is-active" data-board="room-only">Room only<br><small>Selected</small></button>
-        <button type="button" class="hotel-board-pill${breakfast ? "" : " is-disabled"}" data-board="breakfast" ${breakfast ? "" : "disabled"}>Breakfast<br><small>${breakfast ? "Available" : "Not available"}</small></button>
-    `;
+    const pills = boardPillsHtml();
     if (boardMount) boardMount.innerHTML = pills;
     section.innerHTML = `
       ${boardMount ? "" : `<h2>Select room and board type</h2><div class="hotel-board-pills">${pills}</div>`}
       <div class="hotel-room-pick" id="hotelRoomOptions"></div>
-      <div id="hotelBookingFormMount"></div>
     `;
-
-    const pillRoot = boardMount || section;
-    pillRoot.querySelectorAll("[data-board]:not(:disabled)").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        board = btn.dataset.board;
-        pillRoot.querySelectorAll("[data-board]").forEach((el) => {
-          el.classList.toggle("is-active", el === btn);
-          const small = el.querySelector("small");
-          if (!small || el.disabled || el.classList.contains("is-disabled")) return;
-          if (el === btn) small.textContent = "Selected";
-          else if (el.dataset.board === "breakfast") small.textContent = "Available";
-          else small.textContent = "";
-        });
-        document.querySelectorAll(".hotel-room-board-label").forEach((el) => {
-          el.textContent = board === "breakfast" ? "Breakfast" : "Room only";
-        });
-      });
-    });
+    wireBoardPills(boardMount || section);
 
     const grid = section.querySelector("#hotelRoomOptions");
     const hotelPhotos = Array.isArray(hotel.images) ? hotel.images.filter(Boolean) : [];
@@ -162,6 +241,7 @@
           ${photo
             ? `<img src="${esc(photo)}" alt="${esc(room.room_type)}">`
             : `<div class="image-placeholder">No photos provided by the hotel</div>`}
+          ${roomPhotos.length > 1 ? `<span class="hotel-room-photo-count">${roomPhotos.length} photos</span>` : ""}
         </div>
         <div class="hotel-room-pick-body">
           <h3>${esc(room.room_type || "Room")}</h3>
@@ -175,12 +255,10 @@
           </ul>
           <strong>${money(room.daily_price || room.hourly_price || room.price_value)} ${room.daily_price ? "/ night" : hourlyOffer(room).enabled ? "/ hour" : ""}</strong>
           ${hourlyOffer(room).enabled ? `<small>Hourly: ${hourlyOffer(room).hours.map((h) => `${h} hrs`).join(", ")}</small>` : ""}
-          <button type="button" class="hotel-room-select" ${canBook ? "" : "disabled"}>Select room</button>
+          <button type="button" class="hotel-room-select">View photos & book</button>
         </div>
       `;
-      if (canBook) {
-        card.querySelector(".hotel-room-select").addEventListener("click", () => selectRoom(room, card));
-      }
+      card.addEventListener("click", () => openRoomPage(room));
       grid.append(card);
     });
 
@@ -191,15 +269,8 @@
     }
   }
 
-  function selectRoom(room, card) {
-    selectedRoom = room;
-    document.querySelectorAll(".hotel-room-pick-card").forEach((el) => el.classList.toggle("selected", el === card));
-    renderForm();
-    document.getElementById("hotelBookingFormMount")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
-
   function renderForm() {
-    const mount = document.getElementById("hotelBookingFormMount");
+    const mount = document.getElementById("hotelBookingFormInner") || document.getElementById("hotelBookingFormMount");
     if (!selectedRoom || !mount) return;
     mount.innerHTML = `
       <h3>Booking details</h3>
@@ -230,7 +301,7 @@
         <label>Phone number
           <input id="hbPhone" type="tel" pattern="[0-9+ ]{10,15}" required placeholder="Your contact number">
         </label>
-        <div class="hotel-total full" id="hbTotal">Estimated total: ${money(0)}</div>
+        <div class="hotel-total full" id="hbTotal"></div>
         <p class="hotel-booking-notice full">This is a booking request. The owner confirms it after review.</p>
         <button class="hotel-booking-submit full" type="submit">${user ? "Book now" : "Log in to book"}</button>
       </form>
@@ -250,15 +321,27 @@
         ? Number(form.querySelector("#hbHours").value)
         : Math.max(1, Math.ceil((new Date(end.value) - new Date(start.value)) / 86400000));
       const rate = Number(hourly ? hourlyOffer(selectedRoom).price : selectedRoom.daily_price);
-      const total = rate * units;
-      form.querySelector("#hbTotal").textContent =
-        `Estimated total: ${money(total)} (${money(rate)} × ${units} ${hourly ? "hours" : "nights"})`;
-      return { hourly, units, rate, total };
+      const quote = quoteStay({ hourly, units, rate });
+      const unitLabel = hourly ? "hours" : "nights";
+      const taxLine = quote.taxMode === "inclusive" && quote.breakfast
+        ? `${quote.taxLabel} on breakfast: ${money(quote.taxAmount)}`
+        : quote.taxMode === "exclusive"
+          ? `${quote.taxLabel}: ${money(quote.taxAmount)}`
+          : `${quote.taxLabel}: ${money(0)} (included in room rate)`;
+      form.querySelector("#hbTotal").innerHTML = `
+        <div class="hotel-total-breakdown">
+          <div>Room: ${money(quote.roomSubtotal)} (${money(quote.rate)} × ${quote.units} ${unitLabel})</div>
+          ${quote.breakfast ? `<div>Breakfast: ${money(quote.breakfast)}${quote.breakfastUnits > 1 ? ` (${money(BREAKFAST_FEE)} × ${quote.breakfastUnits} ${unitLabel})` : ""}</div>` : `<div>Breakfast: ${money(0)}</div>`}
+          <div>${taxLine}</div>
+          <div class="hotel-total-pay">Payable total: ${money(quote.total)}</div>
+        </div>`;
+      return quote;
     }
 
+    refreshQuote = calc;
     mode.addEventListener("change", calc);
     ["input", "change"].forEach((evt) => {
-      [start, end, form.querySelector("#hbHours")].forEach((el) => el.addEventListener(evt, calc));
+      [start, end, form.querySelector("#hbHours")].filter(Boolean).forEach((el) => el.addEventListener(evt, calc));
     });
     calc();
 

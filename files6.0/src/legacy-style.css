@@ -77,24 +77,28 @@ footer,
 .navbar {
     gap: 12px;
 }
-.site-back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+.page-back-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
     border: 1px solid var(--rd-border, #e5e7eb);
     background: var(--rd-surface, #fff);
     color: var(--rd-text, #111827);
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 14px;
+    border-radius: 50%;
+    font-size: 18px;
     font-weight: 700;
+    line-height: 1;
     cursor: pointer;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
     text-decoration: none;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
-.site-back-btn:hover {
+.page-back-btn:hover {
     border-color: var(--rd-accent, #4f46e5);
     color: var(--rd-accent, #4f46e5);
+    transform: translateY(-1px);
 }
 .breadcrumb a {
     text-decoration: none;
@@ -1090,6 +1094,63 @@ a.category-card:hover {
     background: #fef2f2;
     color: #ef4444;
     border-color: #fca5a5;
+}
+.rt-flexible-toggle label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-weight: 700;
+}
+.rt-occupancy-title {
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+.rt-occupancy-rows {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.rt-occupancy-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(140px, 1fr) minmax(120px, 1fr) 36px;
+    gap: 10px;
+    align-items: end;
+    padding: 12px;
+    border: 1px solid var(--rd-border, #e5e7eb);
+    border-radius: 12px;
+    background: var(--rd-surface, #fff);
+}
+.rt-occupancy-row .form-group { margin-bottom: 0; }
+.rtRemoveOccupancy {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--rd-border, #e5e7eb);
+    border-radius: 8px;
+    background: var(--rd-surface, #fff);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+.rtOccupancyGroup .rtAddOccupancy { margin-bottom: 16px; }
+.room-occupancy-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: grid;
+    gap: 6px;
+}
+.room-occupancy-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--rd-surface-soft, #f8fafc);
+    font-size: 14px;
+}
+@media (max-width: 700px) {
+    .rt-occupancy-row { grid-template-columns: 1fr 1fr; }
+    .rtRemoveOccupancy { grid-column: 1 / -1; width: 100%; }
 }
 .lp-secondary-btn {
     width: 100%;
@@ -3045,7 +3106,7 @@ html[data-theme="light"] body {
 .theme-toggle { width: 42px; height: 42px; border: 1px solid var(--rd-border); border-radius: 50%; background: var(--rd-surface); color: var(--rd-text); display: inline-grid; place-items: center; font-size: 18px; box-shadow: 0 4px 12px rgba(15,23,42,.08); }
 .theme-toggle:hover { transform: translateY(-2px) rotate(8deg); border-color: var(--rd-accent); }
 .theme-toggle:focus-visible, button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid var(--rd-focus); outline-offset: 2px; }
-html[data-theme="dark"] .navbar, html[data-theme="dark"] .search-header, html[data-theme="dark"] .search-box, html[data-theme="dark"] .filters, html[data-theme="dark"] .property-card, html[data-theme="dark"] .hotel-package-card, html[data-theme="dark"] .property-section, html[data-theme="dark"] .booking-card, html[data-theme="dark"] .list-property-form, html[data-theme="dark"] .auth-modal-content, html[data-theme="dark"] .auth-card, html[data-theme="dark"] .role-choice-box, html[data-theme="dark"] .saved-property-card, html[data-theme="dark"] .nav-profile-menu, html[data-theme="dark"] .owner-section, html[data-theme="dark"] .category-card, html[data-theme="dark"] .feature-grid div, html[data-theme="dark"] .room-type-card, html[data-theme="dark"] .room-type-block, html[data-theme="dark"] .room-option, html[data-theme="dark"] .site-back-btn { background: var(--rd-surface); border-color: var(--rd-border); box-shadow: var(--rd-shadow); }
+html[data-theme="dark"] .navbar, html[data-theme="dark"] .search-header, html[data-theme="dark"] .search-box, html[data-theme="dark"] .filters, html[data-theme="dark"] .property-card, html[data-theme="dark"] .hotel-package-card, html[data-theme="dark"] .property-section, html[data-theme="dark"] .booking-card, html[data-theme="dark"] .list-property-form, html[data-theme="dark"] .auth-modal-content, html[data-theme="dark"] .auth-card, html[data-theme="dark"] .role-choice-box, html[data-theme="dark"] .saved-property-card, html[data-theme="dark"] .nav-profile-menu, html[data-theme="dark"] .owner-section, html[data-theme="dark"] .category-card, html[data-theme="dark"] .feature-grid div, html[data-theme="dark"] .room-type-card, html[data-theme="dark"] .room-type-block, html[data-theme="dark"] .room-option, html[data-theme="dark"] .page-back-btn { background: var(--rd-surface); border-color: var(--rd-border); box-shadow: var(--rd-shadow); }
 html[data-theme="dark"] .flat-offer-badge { background: rgba(139, 124, 255, 0.18); color: #c4b5fd; }
 html[data-theme="dark"] .logo, html[data-theme="dark"] .nav-links a, html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] .form-group label, html[data-theme="dark"] .nav-profile-name, html[data-theme="dark"] .nav-profile-menu-text strong, html[data-theme="dark"] .role-choice-box h2, html[data-theme="dark"] .role-option-text h3 { color: var(--rd-text); }
 html[data-theme="dark"] p, html[data-theme="dark"] .lp-hint, html[data-theme="dark"] .lp-note, html[data-theme="dark"] .property-location, html[data-theme="dark"] .results-top p, html[data-theme="dark"] .nav-profile-menu-text span, html[data-theme="dark"] .room-type-details, html[data-theme="dark"] .auth-subtitle, html[data-theme="dark"] .saved-header p, html[data-theme="dark"] footer { color: var(--rd-muted); }

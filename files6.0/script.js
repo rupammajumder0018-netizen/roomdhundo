@@ -648,6 +648,29 @@ function isRoomAvailable(rt) {
     return Number(rt.available_rooms) > 0;
 }
 
+function occupancyOptionsFromRoom(rt) {
+    const details = rt?.room_details && typeof rt.room_details === "object" ? rt.room_details : {};
+    const raw = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
+    return raw.map((option) => ({
+        people: Number(option.people),
+        rent: Number(option.rent),
+        nightly: option.nightly == null || option.nightly === "" ? null : Number(option.nightly)
+    })).filter((option) => option.people >= 1 && Number.isFinite(option.rent) && option.rent > 0);
+}
+
+function roomMonthlyPriceList(rt) {
+    const options = occupancyOptionsFromRoom(rt);
+    if (options.length) return options.map((option) => option.rent);
+    const price = Number(rt?.price_value);
+    return Number.isFinite(price) ? [price] : [];
+}
+
+function occupancyLabelFromOptions(options) {
+    const people = [...new Set((options || []).map((option) => Number(option.people)).filter((n) => n >= 1))].sort((a, b) => a - b);
+    if (!people.length) return "Flexible Sharing";
+    return people.map((count) => (count === 1 ? "Single" : `${count} Sharing`)).join(" / ");
+}
+
 function attachComputedFields(b) {
     const reviews = b.reviews || [];
     const roomTypes = b.room_types || [];
@@ -656,7 +679,7 @@ function attachComputedFields(b) {
         ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
         : null;
 
-    const monthlyPrices = roomTypes.map(rt => rt.price_value);
+    const monthlyPrices = roomTypes.flatMap(rt => roomMonthlyPriceList(rt));
     const dailyPrices = roomTypes.map(rt => rt.daily_price).filter(p => p != null);
     const totalAvailable = roomTypes.reduce(
         (sum, rt) => sum + (isRoomAvailable(rt) ? Number(rt.available_rooms) : 0),
@@ -3060,8 +3083,84 @@ async function initSearchPage() {
     restoreListScrollState();
 }
 
+function getHotelRoomFromUrl(building) {
+    if (!isHotelListing(building)) return null;
+    const roomId = new URLSearchParams(window.location.search).get("room");
+    if (!roomId) return null;
+    return (building.room_types || []).find((rt) => String(rt.id) === String(roomId)) || null;
+}
+
+function setupHotelRoomDetailPage(building, room) {
+    document.body.classList.add("is-hotel-room-page");
+    document.body.classList.remove("is-hotel-page");
+    const mapEl = document.getElementById("roomdhundoMap");
+    if (mapEl) mapEl.style.display = "none";
+    const roomTitle = `${room.room_type || "Room"} · ${building.name || "Hotel"}`;
+    document.title = `${roomTitle} | RoomDhundo`;
+    const nameEl = document.getElementById("propertyName");
+    if (nameEl) nameEl.textContent = room.room_type || "Room";
+    const locEl = document.getElementById("propertyLocation");
+    if (locEl) locEl.textContent = building.name ? `${building.name} · ${building.location || ""}`.trim() : (building.location || "Location not listed");
+
+    const nightly = Number(room.daily_price || 0);
+    const hourly = Number(room.hourly_price || room.room_details?.hourly?.pricePerHour || 0);
+    const priceText = nightly > 0
+        ? `₹${nightly.toLocaleString("en-IN")}`
+        : (hourly > 0 ? `₹${hourly.toLocaleString("en-IN")}` : "—");
+    const unit = nightly > 0 ? "/ night" : (hourly > 0 ? "/ hour" : "");
+    const priceEl = document.getElementById("propertyPrice");
+    const unitEl = document.getElementById("propertyPriceUnit");
+    const sidePrice = document.getElementById("sidebarPropertyPrice");
+    const sideUnit = sidePrice?.nextElementSibling;
+    if (priceEl) priceEl.textContent = priceText;
+    if (unitEl) unitEl.textContent = unit;
+    if (sidePrice) sidePrice.textContent = priceText;
+    if (sideUnit && sideUnit.tagName === "SPAN") sideUnit.textContent = unit || "/ night";
+
+    const canBook = isRoomAvailable(room);
+    const availEl = document.getElementById("propertyAvailability");
+    if (availEl) {
+        availEl.textContent = canBook
+            ? `${Number(room.available_rooms)} ${Number(room.available_rooms) === 1 ? "room" : "rooms"} available`
+            : "Currently unavailable";
+    }
+
+    const details = room.room_details && typeof room.room_details === "object" ? room.room_details : {};
+    const descEl = document.getElementById("propertyDescription");
+    if (descEl) {
+        const roomDesc = String(details.description || "").trim();
+        descEl.textContent = roomDesc || building.description || "";
+    }
+
+    const roomTypesList = document.getElementById("roomTypesList");
+    const roomSection = roomTypesList?.closest(".property-section");
+    if (roomSection) {
+        const heading = roomSection.querySelector("h2");
+        if (heading) heading.textContent = "This room";
+    }
+    if (roomTypesList) {
+        const beds = Array.isArray(details.beds) ? details.beds : [];
+        const amenities = Array.isArray(details.amenities) ? details.amenities : [];
+        roomTypesList.innerHTML = `
+            <div class="room-type-card">
+                <div class="room-type-card-header">
+                    <h3>${escapePropertyHtml(room.room_type || "Room")}</h3>
+                </div>
+                <div class="room-type-details">
+                    <span>${Number(room.max_guests || room.room_people || 2)} guests</span>
+                    <span>${canBook ? `🟢 ${Number(room.available_rooms)} available` : "🔴 Currently unavailable"}</span>
+                    ${beds.length ? `<span>Beds: ${escapePropertyHtml(beds.join(", "))}</span>` : ""}
+                    ${amenities.length ? `<span>${escapePropertyHtml(amenities.join(" · "))}</span>` : ""}
+                </div>
+            </div>`;
+    }
+
+    if (typeof window.initHotelStay === "function") window.initHotelStay(building);
+}
+
 function setupHotelPropertyPage(building) {
     if (!isHotelListing(building)) return;
+    if (getHotelRoomFromUrl(building)) return;
 
     const page = document.querySelector(".property-page");
     if (!page || document.getElementById("hotelStayRoot")) return;
@@ -3090,7 +3189,7 @@ function setupHotelPropertyPage(building) {
     root.className = "hotel-stay";
     root.innerHTML = `
         <div class="hotel-stay-toolbar">
-            <button type="button" class="hotel-back-link" id="hotelHeroBack">← Back</button>
+            <button type="button" class="hotel-back-link page-back-btn" id="hotelHeroBack" aria-label="Go to the previous page" title="Go to the previous page"><span aria-hidden="true">←</span></button>
             <button type="button" class="hotel-share-link" id="hotelHeroShare">Share</button>
         </div>
         <div class="hotel-stay-top">
@@ -3268,7 +3367,7 @@ async function initPropertyPage() {
     }
 
     document.querySelector(".breadcrumb a")?.addEventListener("click", goToPreviousPage);
-    
+    const hotelRoom = getHotelRoomFromUrl(building);
 
     const propertyVideosSection = document.getElementById("propertyVideosSection");
     const propertyVideos = document.getElementById("propertyVideos");
@@ -3324,20 +3423,22 @@ if (enquiryRoomType) {
     `;
 
     (building.room_types || []).forEach(rt => {
+        const occupancy = occupancyOptionsFromRoom(rt);
+        if (occupancy.length) {
+            occupancy.forEach((option) => {
+                const el = document.createElement("option");
+                const peopleLabel = option.people === 1 ? "Single" : `${option.people} sharing`;
+                el.value = `${rt.room_type || "Room"} · ${peopleLabel}`;
+                el.textContent = `${rt.room_type || "Room"} · ${peopleLabel} · ₹${Number(option.rent).toLocaleString("en-IN")}/month`;
+                enquiryRoomType.appendChild(el);
+            });
+            return;
+        }
 
-        const option =
-            document.createElement("option");
-
-        option.value =
-            rt.room_type || "";
-
-        option.textContent =
-            rt.room_type || "Room";
-
-        enquiryRoomType.appendChild(
-            option
-        );
-
+        const option = document.createElement("option");
+        option.value = rt.room_type || "";
+        option.textContent = rt.room_type || "Room";
+        enquiryRoomType.appendChild(option);
     });
 
 }
@@ -3345,25 +3446,35 @@ if (enquiryRoomType) {
  const roomTypesList = document.getElementById("roomTypesList");
 roomTypesList.innerHTML = "";
 
-(building.room_types || []).forEach(rt => {
+if (!hotelRoom) (building.room_types || []).forEach(rt => {
 
     const card = document.createElement("div");
     card.classList.add("room-type-card");
 
-    const nightlyAvailable =
-        rt.daily_price != null &&
-        Number(rt.daily_price) > 0;
+    const occupancy = occupancyOptionsFromRoom(rt);
+    const monthlyPrices = occupancy.length ? occupancy.map((option) => option.rent) : [Number(rt.price_value)];
+    const fromPrice = monthlyPrices.filter((price) => Number.isFinite(price)).sort((a, b) => a - b)[0];
+    const nightlyPrices = occupancy.map((option) => option.nightly).filter((price) => Number.isFinite(price) && price > 0);
+    const nightlyAvailable = nightlyPrices.length > 0 || (rt.daily_price != null && Number(rt.daily_price) > 0);
+    const nightlyValue = nightlyPrices.length ? Math.min(...nightlyPrices) : rt.daily_price;
 
     const nightlyHtml = nightlyAvailable
         ? `
             <div class="room-type-price">
-                ₹${Number(rt.daily_price).toLocaleString("en-IN")}
+                ₹${Number(nightlyValue).toLocaleString("en-IN")}
                 <span>/ night</span>
             </div>
         `
         : "";
 
     const isAvailable = isRoomAvailable(rt);
+    const occupancyHtml = occupancy.length
+        ? `<ul class="room-occupancy-list">${occupancy.map((option) => `
+            <li>
+                <span>${option.people === 1 ? "Single occupancy" : `${option.people} sharing`}</span>
+                <strong>₹${Number(option.rent).toLocaleString("en-IN")} / month${option.nightly ? ` · ₹${Number(option.nightly).toLocaleString("en-IN")} / night` : ""}</strong>
+            </li>`).join("")}</ul>`
+        : "";
 
     const roomImages = Array.isArray(rt.images) ? rt.images.filter(Boolean) : [];
     const roomImagesHtml = roomImages.length
@@ -3380,7 +3491,7 @@ roomTypesList.innerHTML = "";
             <h3>${rt.room_type}</h3>
 
             <div class="room-type-price">
-                ₹${Number(rt.price_value).toLocaleString("en-IN")}
+                ${occupancy.length > 1 ? "From " : ""}₹${Number(fromPrice || 0).toLocaleString("en-IN")}
                 <span>/ month</span>
             </div>
 
@@ -3391,8 +3502,9 @@ roomTypesList.innerHTML = "";
         <div class="room-type-details">
 
             <span>
-                ${rt.room_people}
-                ${rt.room_people === 1 ? "person" : "people"} sharing
+                ${occupancy.length
+                    ? occupancy.map((option) => (option.people === 1 ? "Single" : `${option.people} sharing`)).join(" or ")
+                    : `${rt.room_people} ${rt.room_people === 1 ? "person" : "people"} sharing`}
             </span>
 
             <span>
@@ -3403,6 +3515,7 @@ roomTypesList.innerHTML = "";
             </span>
 
         </div>
+        ${occupancyHtml}
     `;
 
     roomTypesList.appendChild(card);
@@ -3435,7 +3548,9 @@ roomTypesList.innerHTML = "";
     // location when we already have it saved.
     // --------------------------------------------------------
     const roomdhundoMapEl = document.getElementById("roomdhundoMap");
-    if (roomdhundoMapEl) {
+    if (roomdhundoMapEl && hotelRoom) {
+        roomdhundoMapEl.style.display = "none";
+    } else if (roomdhundoMapEl) {
         if (
             building.latitude != null &&
             building.longitude != null &&
@@ -3710,8 +3825,11 @@ if (!selectedRoomType) {
     const galleryPrev = document.getElementById("galleryPrev");
     const galleryNext = document.getElementById("galleryNext");
 
-    const galleryImages = Array.isArray(building.images)
-        ? building.images.filter(src => typeof src === "string" && src.trim() !== "")
+    const gallerySource = hotelRoom && Array.isArray(hotelRoom.images) && hotelRoom.images.length
+        ? hotelRoom.images
+        : building.images;
+    const galleryImages = Array.isArray(gallerySource)
+        ? gallerySource.filter(src => typeof src === "string" && src.trim() !== "")
         : [];
 
     let currentImageIndex = 0;
@@ -3724,7 +3842,7 @@ if (!selectedRoomType) {
 
         if (mainPropertyImage) {
             mainPropertyImage.src = galleryImages[currentImageIndex];
-            mainPropertyImage.alt = `${building.name || "Property"} Image ${currentImageIndex + 1}`;
+            mainPropertyImage.alt = `${hotelRoom?.room_type || building.name || "Property"} Image ${currentImageIndex + 1}`;
         }
 
         galleryThumbnails.forEach((thumb, i) => {
@@ -3857,7 +3975,8 @@ if (!selectedRoomType) {
     }
 
     wireReviewForm(building.id);
-    setupHotelPropertyPage(building);
+    if (hotelRoom) setupHotelRoomDetailPage(building, hotelRoom);
+    else setupHotelPropertyPage(building);
 }
 
 function wireReviewForm(buildingId) {
@@ -4377,6 +4496,98 @@ function addRoomTypeBlock(roomData = null) {
     offerNightly?.addEventListener("change", syncNightlyOffer);
     syncNightlyOffer();
 
+    const flexibleToggle = block.querySelector(".rtFlexibleOccupancy");
+    const occupancyGroup = block.querySelector(".rtOccupancyGroup");
+    const occupancyRows = block.querySelector(".rt-occupancy-rows");
+    const simplePricing = block.querySelector(".rtSimplePricing");
+
+    function occupancyRowEl(people = "2", rent = "", nightly = "") {
+        const row = document.createElement("div");
+        row.className = "rt-occupancy-row";
+        row.innerHTML = `
+            <div class="form-group">
+                <label>Sharing for</label>
+                <select class="rtOccPeople">
+                    <option value="1">1 person (single)</option>
+                    <option value="2">2 sharing</option>
+                    <option value="3">3 sharing</option>
+                    <option value="4">4 sharing</option>
+                    <option value="5">5 sharing</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Monthly rent (₹)</label>
+                <input type="number" class="rtOccRent" min="1" placeholder="e.g. 3000" required>
+            </div>
+            <div class="form-group">
+                <label>Per night (optional)</label>
+                <input type="number" class="rtOccNightly" min="0" placeholder="optional">
+            </div>
+            <button type="button" class="rtRemoveOccupancy" title="Remove this sharing price">&times;</button>
+        `;
+        row.querySelector(".rtOccPeople").value = String(people);
+        if (rent !== "" && rent != null) row.querySelector(".rtOccRent").value = rent;
+        if (nightly !== "" && nightly != null) row.querySelector(".rtOccNightly").value = nightly;
+        row.querySelector(".rtRemoveOccupancy").addEventListener("click", () => {
+            const rows = occupancyRows.querySelectorAll(".rt-occupancy-row");
+            if (rows.length <= 2) {
+                alert("Keep at least two sharing prices, or turn off “same room, different sharing prices”.");
+                return;
+            }
+            row.remove();
+        });
+        return row;
+    }
+
+    function syncFlexibleOccupancy() {
+        const on = !!(flexibleToggle && flexibleToggle.checked);
+        if (occupancyGroup) occupancyGroup.hidden = !on;
+        if (simplePricing) simplePricing.hidden = on;
+        if (rentInput) {
+            rentInput.required = !on;
+            rentInput.disabled = on;
+        }
+        if (peopleInput) {
+            peopleInput.required = !on;
+            peopleInput.disabled = on;
+        }
+        occupancyRows?.querySelectorAll(".rtOccRent").forEach((input) => {
+            input.required = on;
+        });
+        if (on && occupancyRows && occupancyRows.children.length === 0) {
+            occupancyRows.append(occupancyRowEl("2"), occupancyRowEl("3"));
+        }
+        if (on && roomTypeSelect && (!roomTypeSelect.value || roomTypeSelect.value === "Double Sharing" || roomTypeSelect.value === "Triple Sharing")) {
+            const flexOption = Array.from(roomTypeSelect.options).find((option) => option.value === "Flexible Sharing");
+            if (flexOption) roomTypeSelect.value = "Flexible Sharing";
+        }
+    }
+
+    if (flexibleToggle && occupancyRows) {
+        const existingOccupancy = occupancyOptionsFromRoom(roomData || {});
+        if (existingOccupancy.length >= 2) {
+            flexibleToggle.checked = true;
+            occupancyRows.innerHTML = "";
+            existingOccupancy.forEach((option) => {
+                occupancyRows.append(occupancyRowEl(option.people, option.rent, option.nightly || ""));
+            });
+        }
+        flexibleToggle.addEventListener("change", syncFlexibleOccupancy);
+        roomTypeSelect?.addEventListener("change", () => {
+            if (roomTypeSelect.value === "Flexible Sharing" && !flexibleToggle.checked) {
+                flexibleToggle.checked = true;
+                syncFlexibleOccupancy();
+            }
+        });
+        block.querySelector(".rtAddOccupancy")?.addEventListener("click", () => {
+            const used = new Set(Array.from(occupancyRows.querySelectorAll(".rtOccPeople")).map((el) => el.value));
+            const next = ["2", "3", "4", "1", "5"].find((value) => !used.has(value)) || "4";
+            occupancyRows.append(occupancyRowEl(next));
+            syncFlexibleOccupancy();
+        });
+        syncFlexibleOccupancy();
+    }
+
     block.querySelector(".remove-room-type-btn")?.addEventListener("click", () => {
         const allBlocks = container.querySelectorAll(".room-type-block");
         if (allBlocks.length <= 1) {
@@ -4888,12 +5099,42 @@ function wireListPropertyForm() {
         const roomTypeInputs = [];
 
         for (const block of roomTypeBlocks) {
-            const roomType = block.querySelector(".rtRoomType")?.value.trim();
-            const rent = Number(block.querySelector(".rtRent")?.value);
+            const flexible = !!block.querySelector(".rtFlexibleOccupancy")?.checked;
+            let roomType = block.querySelector(".rtRoomType")?.value.trim();
+            let rent = Number(block.querySelector(".rtRent")?.value);
             const offerNightly = block.querySelector(".rtOfferNightly")?.checked;
             const nightlyRaw = block.querySelector(".rtNightlyRent")?.value.trim();
-            const people = Number(block.querySelector(".rtPeople")?.value);
+            let people = Number(block.querySelector(".rtPeople")?.value);
             const available = Number(block.querySelector(".rtAvailable")?.value);
+            let occupancyOptions = [];
+
+            if (flexible) {
+                occupancyOptions = Array.from(block.querySelectorAll(".rt-occupancy-row")).map((row) => ({
+                    people: Number(row.querySelector(".rtOccPeople")?.value),
+                    rent: Number(row.querySelector(".rtOccRent")?.value),
+                    nightly: row.querySelector(".rtOccNightly")?.value === "" ? null : Number(row.querySelector(".rtOccNightly")?.value)
+                }));
+                const peopleSet = new Set(occupancyOptions.map((option) => option.people));
+                if (occupancyOptions.length < 2) {
+                    alert("Add at least two sharing prices for the same room, or turn off “same room, different sharing prices”.");
+                    return;
+                }
+                if (peopleSet.size !== occupancyOptions.length) {
+                    alert("Each sharing option on the same room must be a different occupancy (for example 2 sharing and 3 sharing).");
+                    return;
+                }
+                if (occupancyOptions.some((option) => !Number.isFinite(option.people) || option.people < 1 || !Number.isFinite(option.rent) || option.rent <= 0)) {
+                    alert("Enter a valid monthly rent for every sharing option on this room.");
+                    return;
+                }
+                if (occupancyOptions.some((option) => option.nightly != null && (!Number.isFinite(option.nightly) || option.nightly < 0))) {
+                    alert("Nightly prices on sharing options must be valid numbers, or left blank.");
+                    return;
+                }
+                people = Math.max(...occupancyOptions.map((option) => option.people));
+                rent = Math.min(...occupancyOptions.map((option) => option.rent));
+                roomType = occupancyLabelFromOptions(occupancyOptions);
+            }
 
             if (!roomType) {
                 alert("Please select a room type for every room.");
@@ -4923,7 +5164,10 @@ if (isHotel) {
 
 
             let nightlyRent = null;
-            if (offerNightly) {
+            if (flexible) {
+                const occupancyNightly = occupancyOptions.map((option) => option.nightly).filter((price) => Number.isFinite(price) && price > 0);
+                nightlyRent = occupancyNightly.length ? Math.min(...occupancyNightly) : null;
+            } else if (offerNightly) {
                 nightlyRent = Number(nightlyRaw);
                 if (!Number.isFinite(nightlyRent) || nightlyRent <= 0) {
                     alert("Enter a valid price per night, or uncheck nightly stay.");
@@ -4967,7 +5211,8 @@ if (isHotel) {
                     beds: Array.from(block.querySelectorAll(".rtBed:checked")).map((input) => input.value),
                     amenities: Array.from(block.querySelectorAll(".rtAmenity:checked")).map((input) => input.value),
                     tax: block.querySelector(".rtTax")?.value || "inclusive",
-                    hourly: hourlyOffer
+                    hourly: hourlyOffer,
+                    occupancy_options: occupancyOptions
                 },
                 hasImageField: !!block.querySelector(".rtImages"),
                 existingImages: block._roomExistingImages || [],

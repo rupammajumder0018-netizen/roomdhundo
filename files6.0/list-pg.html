@@ -204,7 +204,7 @@
     <input type="tel" id="lpOwnerAltPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
 </div>
             <h2 class="lp-section-title">Room Types</h2>
-            <p class="lp-hint lp-room-hint">Add every room/bed option this PG offers — you need at least one. Nightly stay is optional.</p>
+            <p class="lp-hint lp-room-hint">Add each physical room once. If the same room can be 2-sharing at one rent and 3-sharing at another, turn on “same room, different sharing prices” instead of adding two rooms.</p>
 
             <div id="roomTypesContainer"></div>
 
@@ -235,41 +235,59 @@
             <button type="button" class="remove-room-type-btn" title="Remove this room">&times;</button>
 
             <div class="form-group">
-                <label>Room Type</label>
+                <label>Room Type / Name</label>
                 <select class="rtRoomType" required>
                     <option value="">Select room type</option>
                     <option value="Single">Single</option>
                     <option value="Double Sharing">Double Sharing</option>
                     <option value="Triple Sharing">Triple Sharing</option>
                     <option value="4+ Sharing">4+ Sharing</option>
+                    <option value="Flexible Sharing">Flexible Sharing (same room, different prices)</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label>Monthly Rent (₹)</label>
-                <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" class="rtOfferNightly">
-                    Also offer this room per night (optional)
-                </label>
-            </div>
-
-            <div class="form-group rtNightlyGroup" hidden>
-                <label>Price per Night (₹)</label>
-                <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800">
-            </div>
-
-            <div class="form-group">
-                <label>People Sharing the Room</label>
-                <input type="number" class="rtPeople" min="1" value="1" required>
-            </div>
-
-            <div class="form-group">
-                <label>Rooms/Beds Available</label>
+                <label>How many of this physical room?</label>
                 <input type="number" class="rtAvailable" min="1" value="1" required>
+                <p class="lp-hint">Count the actual rooms, not sharing options. Example: one room that can be 2-sharing or 3-sharing is still 1.</p>
+            </div>
+
+            <div class="form-group rt-flexible-toggle">
+                <label>
+                    <input type="checkbox" class="rtFlexibleOccupancy">
+                    Same room, different sharing prices
+                </label>
+                <p class="lp-hint">Use this when 2-sharing is ₹3,000 and 3-sharing is ₹6,000 for the same room. Guests pick one occupancy; you still have only one room.</p>
+            </div>
+
+            <div class="rtOccupancyGroup" hidden>
+                <p class="rt-occupancy-title">Sharing prices for this room</p>
+                <div class="rt-occupancy-rows"></div>
+                <button type="button" class="rtAddOccupancy lp-secondary-btn">+ Add another sharing price</button>
+            </div>
+
+            <div class="rtSimplePricing">
+                <div class="form-group">
+                    <label>Monthly Rent (₹)</label>
+                    <input type="number" class="rtRent" min="0" placeholder="e.g. 6000" required>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" class="rtOfferNightly">
+                        Also offer this room per night (optional)
+                    </label>
+                </div>
+
+                <div class="form-group rtNightlyGroup" hidden>
+                    <label>Price per Night (₹)</label>
+                    <input type="number" class="rtNightlyRent" min="0" placeholder="e.g. 800">
+                </div>
+
+                <div class="form-group">
+                    <label>People Sharing the Room</label>
+                    <input type="number" class="rtPeople" min="1" value="1" required>
+                </div>
             </div>
         </div>
     </template>
