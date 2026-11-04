@@ -724,7 +724,12 @@ async function fetchBuildingById(id) {
         console.error("Error fetching building:", error);
         return null;
     }
-    console.log("Full building data:", data);
+    if (!isPubliclyListedBuilding(data)) {
+        const user = await getCurrentUser();
+        const isOwner = user && String(user.id) === String(data.created_by);
+        const isAdmin = user && (isAdminEmail(user) || (await fetchProfileRole(user.id)) === "admin");
+        if (!isOwner && !isAdmin) return null;
+    }
     return attachComputedFields(data);
 }
 
@@ -4952,13 +4957,16 @@ async function loadPropertyForEdit(buildingId, user) {
         const roomTypes = Array.isArray(property.room_types) ? property.room_types : [];
         if (roomTypes.length > 0) {
             roomTypes.forEach(room => addRoomTypeBlock(room));
-        } else if (!document.getElementById("hotelListingWizard")) {
+        } else if (!document.getElementById("hotelListingWizard") && !document.getElementById("flatListingWizard")) {
             addRoomTypeBlock();
         }
     }
 
     if (typeof window.hydrateHotelListing === "function") {
         window.hydrateHotelListing(property);
+    }
+    if (typeof window.hydrateFlatListing === "function") {
+        window.hydrateFlatListing(property);
     }
 
     return true;
@@ -5092,7 +5100,12 @@ function wireListPropertyForm() {
             listPropertyExistingVideos = [];
 
             const roomContainer = document.getElementById("roomTypesContainer");
-            if (roomContainer && roomContainer.children.length === 0 && !document.getElementById("hotelListingWizard")) {
+            if (
+                roomContainer
+                && roomContainer.children.length === 0
+                && !document.getElementById("hotelListingWizard")
+                && !document.getElementById("flatListingWizard")
+            ) {
                 addRoomTypeBlock();
             }
             window.dispatchEvent(new Event("hotel-listing:loaded"));
@@ -5125,10 +5138,17 @@ function wireListPropertyForm() {
         }
 
         const isHotelWizard = !!document.getElementById("hotelListingWizard");
+        const isFlatWizard = !!document.getElementById("flatListingWizard");
         if (isHotelWizard && typeof window.syncHotelListingHiddenFields === "function") {
             window.syncHotelListingHiddenFields();
         }
+        if (isFlatWizard && typeof window.syncFlatListingHiddenFields === "function") {
+            window.syncFlatListingHiddenFields();
+        }
         if (isHotelWizard && typeof window.validateHotelListing === "function" && !window.validateHotelListing()) {
+            return;
+        }
+        if (isFlatWizard && typeof window.validateFlatListing === "function" && !window.validateFlatListing()) {
             return;
         }
 
@@ -5320,6 +5340,12 @@ if (isHotel) {
                 return;
             }
 
+            let flatMeta = {};
+            const flatMetaRaw = block.querySelector(".rtFlatMeta")?.value;
+            if (flatMetaRaw) {
+                try { flatMeta = JSON.parse(flatMetaRaw) || {}; } catch (error) { flatMeta = {}; }
+            }
+
             roomTypeInputs.push({
                 id: block.dataset.roomId || null,
                 roomType,
@@ -5341,7 +5367,8 @@ if (isHotel) {
                     amenities: Array.from(block.querySelectorAll(".rtAmenity:checked")).map((input) => input.value),
                     tax: block.querySelector(".rtTax")?.value || "inclusive",
                     hourly: hourlyOffer,
-                    occupancy_options: occupancyOptions
+                    occupancy_options: occupancyOptions,
+                    ...flatMeta
                 },
                 hasImageField: !!block.querySelector(".rtImages"),
                 existingImages: block._roomExistingImages || [],
@@ -5364,22 +5391,26 @@ if (isHotel) {
             const hotelMedia = isHotelWizard && typeof window.collectHotelGalleryMedia === "function"
                 ? window.collectHotelGalleryMedia()
                 : null;
-            if (hotelMedia) listPropertyExistingImages = hotelMedia.existing;
-            const newMediaFiles = hotelMedia
-                ? hotelMedia.files
+            const flatMedia = isFlatWizard && typeof window.collectFlatGalleryMedia === "function"
+                ? window.collectFlatGalleryMedia()
+                : null;
+            const galleryMedia = hotelMedia || flatMedia;
+            if (galleryMedia) listPropertyExistingImages = galleryMedia.existing;
+            const newMediaFiles = galleryMedia
+                ? galleryMedia.files
                 : (mediaInput?.files ? Array.from(mediaInput.files) : []);
             let newImages = [];
             let newVideos = [];
-            let hotelGalleryMap = hotelMedia?.categorized?.existing
-                ? { ...hotelMedia.categorized.existing }
+            let hotelGalleryMap = galleryMedia?.categorized?.existing
+                ? { ...galleryMedia.categorized.existing }
                 : null;
-            const imageCap = isHotelWizard ? 32 : 5;
+            const imageCap = isHotelWizard || isFlatWizard ? 36 : 5;
 
-            if (hotelMedia?.categorized) {
-                if (submitButton) submitButton.textContent = "Uploading hotel photos...";
+            if (galleryMedia?.categorized) {
+                if (submitButton) submitButton.textContent = isFlatWizard ? "Uploading flat photos..." : "Uploading hotel photos...";
                 hotelGalleryMap = {};
-                for (const [category, files] of Object.entries(hotelMedia.categorized.files || {})) {
-                    const existing = hotelMedia.categorized.existing[category] || [];
+                for (const [category, files] of Object.entries(galleryMedia.categorized.files || {})) {
+                    const existing = galleryMedia.categorized.existing[category] || [];
                     let uploaded = [];
                     if (files.length) {
                         const result = await uploadPropertyMedia(files, user.id);
@@ -5430,6 +5461,16 @@ if (isHotel) {
                 ? Object.values(hotelGalleryMap).flat()
                 : [...listPropertyExistingImages, ...newImages]).slice(0, imageCap);
             const finalVideos = [...listPropertyExistingVideos, ...newVideos];
+            if (isFlatWizard && hotelGalleryMap && typeof window.applyFlatGalleryUploads === "function") {
+                window.applyFlatGalleryUploads(hotelGalleryMap);
+                if (typeof window.syncFlatListingHiddenFields === "function") {
+                    window.syncFlatListingHiddenFields();
+                    const refreshed = document.getElementById("lpRules")?.value.trim();
+                    if (refreshed) {
+                        rules.splice(0, rules.length, ...refreshed.split("\n").map((rule) => rule.trim()).filter(Boolean));
+                    }
+                }
+            }
             const hotelMeta = isHotelWizard && typeof window.syncHotelListingHiddenFields === "function"
                 ? { ...window.syncHotelListingHiddenFields(), gallery: hotelGalleryMap || {} }
                 : null;
@@ -5563,8 +5604,8 @@ if (isHotel) {
                         owner_verified: false,
                         owner_member_since: String(new Date().getFullYear()),
                         created_by: user.id,
-                        listing_status: "published",
-                        verification_status: "approved"
+                        listing_status: isFlatWizard ? "pending" : "published",
+                        verification_status: isFlatWizard ? "pending" : "approved"
                     }
                 );
 
@@ -5602,13 +5643,30 @@ if (isHotel) {
                 }
             }
 
+            if (isFlatWizard) {
+                const success = document.getElementById("flSuccess");
+                if (success) {
+                    const copy = success.querySelector("p");
+                    if (copy) {
+                        copy.textContent = "Your flat was submitted for admin review. It will not appear in search until RoomDhundo approves it.";
+                    }
+                    const badge = document.getElementById("flStatusBadge");
+                    if (badge) badge.textContent = "Pending review";
+                    success.classList.add("is-visible");
+                    document.getElementById("listPropertyForm")?.setAttribute("hidden", "hidden");
+                    document.getElementById("flNav")?.setAttribute("hidden", "hidden");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    return;
+                }
+            }
+
             alert(`"${name}" has been listed successfully!`);
             window.location.href = "index.html";
         } catch (error) {
             console.error("Property save/update error:", error);
-            const banner = document.getElementById("hlFormBanner");
+            const banner = document.getElementById("hlFormBanner") || document.getElementById("flFormBanner");
             if (banner) {
-                banner.textContent = error.message || "Could not list this hotel. Please try again.";
+                banner.textContent = error.message || "Could not save this listing. Please try again.";
                 banner.classList.add("is-visible");
                 window.scrollTo({ top: 0, behavior: "smooth" });
             }

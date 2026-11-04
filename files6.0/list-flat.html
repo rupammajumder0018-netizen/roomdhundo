@@ -4,18 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>List Your Flat | RoomDhundo</title>
-    <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="style.css">
-    
-
+    <link rel="stylesheet" href="hotel-listing.css">
+    <link rel="stylesheet" href="flat-listing.css">
 </head>
-
 <body>
-
-    <!-- NAVBAR -->
     <nav class="navbar">
         <a href="index.html" class="logo">RoomDhundo</a>
         <div class="nav-links">
@@ -27,204 +21,317 @@
         </div>
     </nav>
 
-    
-    <!-- LIST PROPERTY FORM -->
-    <main class="list-property-page">
+    <main class="list-property-page hotel-listing-page flat-listing-page">
+        <div class="hl-header list-property-header">
+            <div>
+                <h1 id="listingFormTitle">List Your Flat</h1>
+                <p id="listingFormSubtitle">List a flat for rent in eight short steps. Your details stay saved as you move between steps.</p>
+            </div>
+            <div class="hl-header-meta">
+                <span class="hl-badge" id="flStatusBadge">New Listing</span>
+                <span class="hl-step-count" id="flStepLabel">Step 1 of 9</span>
+            </div>
+        </div>
 
- 
-<div class="list-property-header">
-    <h1 id="listingFormTitle">List Your Flat</h1>
-    <p id="listingFormSubtitle">
-        Enter your flat details and add the flat options you offer.
-    </p>
-</div>
+        <div class="hl-success" id="flSuccess">
+            <span class="hl-badge">Pending review</span>
+            <h2>Flat listing submitted</h2>
+            <p>Your flat was submitted for admin review. It will not appear in search until RoomDhundo approves it.</p>
+            <div class="hl-actions" style="justify-content:center">
+                <a class="hl-btn" href="owner-dashboard.html">Owner dashboard</a>
+                <a class="hl-btn hl-btn-primary" href="index.html">Back to home</a>
+            </div>
+        </div>
 
-        <form class="list-property-form" id="listPropertyForm">
+        <form class="list-property-form" id="listPropertyForm" novalidate>
+            <input type="hidden" id="lpType" value="Flat">
+            <input type="hidden" id="lpLocation">
+            <input type="hidden" id="lpRules">
+            <input type="hidden" id="lpDescription">
+            <input type="hidden" name="lpFlatOffer" value="rent">
+            <input type="radio" name="lpFlatOffer" value="rent" checked class="fl-hidden-sync" tabindex="-1" aria-hidden="true">
+            <input type="file" id="lpImages" accept="image/jpeg,image/png,image/webp" multiple class="fl-hidden-sync" tabindex="-1" aria-hidden="true">
+            <input type="tel" id="lpOwnerAltPhone" class="fl-hidden-sync" tabindex="-1" aria-hidden="true">
 
-            <h2 class="lp-section-title lp-first-section-title">Flat Details</h2>
-
-            <div class="form-group">
-                <label>Listing type</label>
-                <div class="lp-facility-grid">
-                    <label><input type="radio" name="lpFlatOffer" value="sale"> For sale</label>
-                    <label><input type="radio" name="lpFlatOffer" value="rent" checked> On rent</label>
-                </div>
-                <p class="lp-hint">Choose whether this listing is a flat for sale or a flat on rent.</p>
+            <div class="hl-progress" role="tablist" aria-label="Flat listing steps">
+                <button type="button" class="is-active" data-fl-goto="1"><span class="hl-num">1</span><span>Basics</span></button>
+                <button type="button" data-fl-goto="2"><span class="hl-num">2</span><span>Location</span></button>
+                <button type="button" data-fl-goto="3"><span class="hl-num">3</span><span>Layout</span></button>
+                <button type="button" data-fl-goto="4"><span class="hl-num">4</span><span>Rent</span></button>
+                <button type="button" data-fl-goto="5"><span class="hl-num">5</span><span>Amenities</span></button>
+                <button type="button" data-fl-goto="6"><span class="hl-num">6</span><span>Tenants</span></button>
+                <button type="button" data-fl-goto="7"><span class="hl-num">7</span><span>Photos</span></button>
+                <button type="button" data-fl-goto="8"><span class="hl-num">8</span><span>Contact</span></button>
+                <button type="button" data-fl-goto="9"><span class="hl-num">9</span><span>Review</span></button>
             </div>
 
-            <div class="form-group">
-                <label for="lpName">Flat / Apartment Name</label>
-                <input type="text" id="lpName" placeholder="e.g. Green View Apartment" required>
-            </div>
+            <p class="hl-banner" id="flFormBanner" role="alert"></p>
 
-            <div class="form-group">
-                <label for="lpLocation">Location / Area</label>
-                <input type="text" id="lpLocation" placeholder="e.g. Jaguli, near MAKAUT" required>
-            </div>
-
-<div class="form-group">
-
-    <div class="property-location-actions">
-
-        <button
-            type="button"
-            id="usePropertyLocationBtn"
-            class="lp-secondary-btn"
-        >
-            📍 Use My Location
-        </button>
-
-        <button
-            type="button"
-            id="openPropertyMapBtn"
-            class="lp-secondary-btn"
-        >
-            🗺️ Pick Location on Map
-        </button>
-
-    </div>
-
-    <p id="ownerLocationStatus" class="lp-hint">
-        Pin the property on the map so guests can get directions.
-    </p>
-
-</div>
-
-<div class="form-group property-map-group">
-
-    <label>
-        Property Location
-    </label>
-
-    <div
-        id="propertyMap"
-        style="
-            width:100%;
-            height:400px;
-            border-radius:18px;
-            overflow:hidden;
-            border:1px solid #ddd;
-        "
-    ></div>
-
-    <input
-        type="hidden"
-        id="propertyLatitude"
-        name="propertyLatitude"
-    >
-
-    <input
-        type="hidden"
-        id="propertyLongitude"
-        name="propertyLongitude"
-    >
-
-</div>
-
-      
-<input type="hidden" id="lpType" value="Flat">
-
-<a href="list-property.html" class="lp-secondary-btn listing-form-back" style="display:inline-block;text-decoration:none;">
-    ← Change Property Type
-</a>
-
-
-            <div class="form-group">
-                <label for="lpImages">Property Photos (up to 5)</label>
-                <div class="media-upload-section">
-
-    <label for="lpImages">
-        Property Photos & Videos
-    </label>
-
-    <input
-        type="file"
-        id="lpImages"
-        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
-        multiple
-    >
-
-    <small>
-        Upload property photos and videos.
-        Photos up to 5MB each, videos up to 50MB each.
-    </small>
-
-</div>
-                <p class="lp-hint">JPG or PNG, up to 5MB each. Shared across all flats in this building.</p>
-            </div>
-
-            <div class="form-group">
-                <label>Facilities</label>
-                <div class="lp-facility-grid">
-                    <label><input type="checkbox" class="lpFacility" value="wifi" data-label="📶 Wi-Fi"> Wi-Fi</label>
-                    <label><input type="checkbox" class="lpFacility" value="ac" data-label="❄️ AC"> AC</label>
-                    <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
-                    <label><input type="checkbox" class="lpFacility" value="bathroom" data-label="🚿 Attached Bathroom"> Attached Bathroom</label>
-                    <label><input type="checkbox" class="lpFacility" value="kitchen" data-label="🍳 Attached Kitchen"> Attached Kitchen</label>
-                    <label><input type="checkbox" class="lpFacility" value="lift" data-label="🛗 Lift"> Lift</label>
-                    <label><input type="checkbox" class="lpFacility" value="power-backup" data-label="🔋 Power Backup"> Power Backup</label>
-                    <label><input type="checkbox" class="lpFacility" value="couple-friendly" data-label="💑 Couple Friendly"> Couple Friendly</label>
-                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="furnished" data-label="🛋️ Furnished"> Furnished</label>
-                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="semi-furnished" data-label="🪑 Semi Furnished"> Semi Furnished</label>
-                    <label><input type="radio" name="lpFurnishing" class="lpFacility" value="unfurnished" data-label="🏠 Unfurnished"> Unfurnished</label>
-                </div>
-                <div class="lp-custom-facility">
-                    <label for="lpCustomFacilityInput">Add your own facility</label>
-                    <div class="lp-custom-facility-row">
-                        <input
-                            type="text"
-                            id="lpCustomFacilityInput"
-                            maxlength="40"
-                            placeholder="e.g. CCTV, Power backup, Geyser"
-                            autocomplete="off"
-                        >
-                        <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
+            <div id="flatListingWizard">
+            <section class="hl-step is-active" data-fl-step="1">
+                <div class="hl-card">
+                    <h2>Basic property details</h2>
+                    <p class="hl-lead">What tenants see first when they open this listing.</p>
+                    <div class="hl-grid">
+                        <div class="form-group full">
+                            <label for="lpName">Property Title</label>
+                            <input type="text" id="lpName" placeholder="e.g. 2BHK near MAKAUT with balcony" autocomplete="off">
+                            <p class="hl-error" data-error-for="lpName"></p>
+                        </div>
+                        <div class="form-group full">
+                            <label>Flat Type</label>
+                            <div class="fl-choices" role="radiogroup" aria-label="Flat type">
+                                <label><input type="radio" name="lpFlatType" value="1 BHK"> 1BHK</label>
+                                <label><input type="radio" name="lpFlatType" value="2 BHK"> 2BHK</label>
+                                <label><input type="radio" name="lpFlatType" value="3 BHK"> 3BHK</label>
+                                <label><input type="radio" name="lpFlatType" value="4 BHK"> 4BHK</label>
+                                <label><input type="radio" name="lpFlatType" value="4+ BHK"> 5BHK+</label>
+                                <label><input type="radio" name="lpFlatType" value="1 RK"> Studio Apartment</label>
+                            </div>
+                            <p class="hl-error" data-error-for="lpFlatType"></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Property Status</label>
+                            <div class="fl-choices">
+                                <label><input type="radio" name="lpPropertyStatus" value="Ready to Move"> Ready to Move</label>
+                                <label><input type="radio" name="lpPropertyStatus" value="Under Construction"> Under Construction</label>
+                            </div>
+                            <p class="hl-error" data-error-for="lpPropertyStatus"></p>
+                        </div>
+                        <div class="form-group">
+                            <label>Furnishing Status</label>
+                            <div class="fl-choices">
+                                <label><input type="radio" name="lpFurnishing" class="lpFacility" value="furnished" data-label="🛋️ Furnished"> Fully Furnished</label>
+                                <label><input type="radio" name="lpFurnishing" class="lpFacility" value="semi-furnished" data-label="🪑 Semi Furnished"> Semi Furnished</label>
+                                <label><input type="radio" name="lpFurnishing" class="lpFacility" value="unfurnished" data-label="🏠 Unfurnished"> Unfurnished</label>
+                            </div>
+                            <p class="hl-error" data-error-for="lpFurnishing"></p>
+                        </div>
                     </div>
-                    <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
-                    <p class="lp-hint">Write anything extra this property offers, then tap Add. Renters will see it under Facilities.</p>
                 </div>
-                <p class="lp-hint">Pick one furnishing type. Attached kitchen and the other facilities can be selected together.</p>
+            </section>
+
+            <section class="hl-step" data-fl-step="2">
+                <div class="hl-card">
+                    <h2>Location details</h2>
+                    <p class="hl-lead">Structured address fields help people find this flat in search later.</p>
+                    <div class="hl-grid">
+                        <div class="form-group full">
+                            <label for="lpAddress">Full Property Address</label>
+                            <textarea id="lpAddress" rows="3" placeholder="House / flat number, street, society"></textarea>
+                            <p class="hl-error" data-error-for="lpAddress"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpLocality">Area / Locality</label>
+                            <input id="lpLocality" placeholder="e.g. Jaguli">
+                            <p class="hl-error" data-error-for="lpLocality"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpCity">City</label>
+                            <input id="lpCity" placeholder="e.g. Kalyani">
+                            <p class="hl-error" data-error-for="lpCity"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpDistrict">District</label>
+                            <input id="lpDistrict" placeholder="e.g. Nadia">
+                            <p class="hl-error" data-error-for="lpDistrict"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpState">State</label>
+                            <input id="lpState" placeholder="e.g. West Bengal">
+                            <p class="hl-error" data-error-for="lpState"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpPostal">PIN Code</label>
+                            <input id="lpPostal" inputmode="numeric" maxlength="6" placeholder="6-digit PIN">
+                            <p class="hl-error" data-error-for="lpPostal"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpLandmark">Nearby Landmark</label>
+                            <input id="lpLandmark" placeholder="e.g. near MAKAUT">
+                        </div>
+                        <div class="form-group">
+                            <label for="lpMapsUrl">Google Maps Location (optional)</label>
+                            <input id="lpMapsUrl" type="url" placeholder="https://maps.google.com/...">
+                            <p class="hl-error" data-error-for="lpMapsUrl"></p>
+                        </div>
+                        <div class="form-group full">
+                            <div class="property-location-actions">
+                                <button type="button" id="usePropertyLocationBtn" class="lp-secondary-btn">Use My Location</button>
+                                <button type="button" id="openPropertyMapBtn" class="lp-secondary-btn">Pick Location on Map</button>
+                            </div>
+                            <p id="ownerLocationStatus" class="lp-hint">Optional map pin helps tenants with directions.</p>
+                        </div>
+                        <div class="form-group full property-map-group">
+                            <label>Property Location</label>
+                            <div id="propertyMap" style="width:100%;height:320px;border-radius:18px;overflow:hidden;border:1px solid #e2e8f0;"></div>
+                            <input type="hidden" id="propertyLatitude" name="propertyLatitude">
+                            <input type="hidden" id="propertyLongitude" name="propertyLongitude">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="3">
+                <div class="hl-card">
+                    <h2>Flat configuration</h2>
+                    <p class="hl-lead">Tell tenants how the home is laid out.</p>
+                    <div class="hl-grid">
+                        <div class="form-group"><label for="lpBedrooms">Number of Bedrooms</label><input type="number" id="lpBedrooms" min="0" placeholder="e.g. 2"><p class="hl-error" data-error-for="lpBedrooms"></p></div>
+                        <div class="form-group"><label for="lpBathrooms">Number of Bathrooms</label><input type="number" id="lpBathrooms" min="0" placeholder="e.g. 2"><p class="hl-error" data-error-for="lpBathrooms"></p></div>
+                        <div class="form-group"><label for="lpBalconies">Number of Balconies</label><input type="number" id="lpBalconies" min="0" placeholder="e.g. 1"><p class="hl-error" data-error-for="lpBalconies"></p></div>
+                        <div class="form-group"><label for="lpFloor">Floor Number</label><input type="number" id="lpFloor" min="0" placeholder="e.g. 3"><p class="hl-error" data-error-for="lpFloor"></p></div>
+                        <div class="form-group"><label for="lpTotalFloors">Total Floors in Building</label><input type="number" id="lpTotalFloors" min="1" placeholder="e.g. 8"><p class="hl-error" data-error-for="lpTotalFloors"></p></div>
+                        <div class="form-group"><label for="lpBuiltUp">Built-up Area (sq. ft.)</label><input type="number" id="lpBuiltUp" min="1" placeholder="e.g. 950"><p class="hl-error" data-error-for="lpBuiltUp"></p></div>
+                        <div class="form-group full">
+                            <label>Parking Availability</label>
+                            <div class="fl-choices">
+                                <label><input type="radio" name="lpParking" value="Available"> Available</label>
+                                <label><input type="radio" name="lpParking" value="Not Available"> Not Available</label>
+                            </div>
+                            <p class="hl-error" data-error-for="lpParking"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="4">
+                <div class="hl-card">
+                    <h2>Rental &amp; pricing</h2>
+                    <p class="hl-lead">All amounts are in Indian Rupees. RoomDhundo’s booking fee is not part of this rent.</p>
+                    <p class="fl-fee-note">The owner’s monthly rent, deposit, and maintenance go here. RoomDhundo’s 10% service fee is charged later at booking, not added to these numbers.</p>
+                    <div class="hl-grid">
+                        <div class="form-group">
+                            <label for="lpMonthlyRent">Monthly Rent</label>
+                            <div class="fl-rupee"><span>₹</span><input type="number" id="lpMonthlyRent" min="1" placeholder="e.g. 12000"></div>
+                            <p class="hl-error" data-error-for="lpMonthlyRent"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpDeposit">Security Deposit</label>
+                            <div class="fl-rupee"><span>₹</span><input type="number" id="lpDeposit" min="0" placeholder="e.g. 24000"></div>
+                            <p class="hl-error" data-error-for="lpDeposit"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpMaintenance">Maintenance Charges (per month)</label>
+                            <div class="fl-rupee"><span>₹</span><input type="number" id="lpMaintenance" min="0" placeholder="e.g. 1500"></div>
+                            <p class="hl-error" data-error-for="lpMaintenance"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpAvailableFrom">Available From</label>
+                            <input type="date" id="lpAvailableFrom">
+                            <p class="hl-error" data-error-for="lpAvailableFrom"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="5">
+                <div class="hl-card">
+                    <h2>Facilities &amp; amenities</h2>
+                    <p class="hl-lead">Select everything this flat offers. You can choose more than one.</p>
+                    <div class="fl-choices">
+                        <label><input type="checkbox" class="lpFacility" value="wifi" data-label="Wi-Fi"> Wi-Fi</label>
+                        <label><input type="checkbox" class="lpFacility" value="water-supply" data-label="Water Supply"> Water Supply</label>
+                        <label><input type="checkbox" class="lpFacility" value="electricity" data-label="Electricity"> Electricity</label>
+                        <label><input type="checkbox" class="lpFacility" value="lift" data-label="Lift"> Lift</label>
+                        <label><input type="checkbox" class="lpFacility" value="parking" data-label="🚗 Parking"> Parking</label>
+                        <label><input type="checkbox" class="lpFacility" value="power-backup" data-label="Power Backup"> Power Backup</label>
+                        <label><input type="checkbox" class="lpFacility" value="ac" data-label="❄️ AC"> Air Conditioning</label>
+                        <label><input type="checkbox" class="lpFacility" value="geyser" data-label="Geyser"> Geyser</label>
+                        <label><input type="checkbox" class="lpFacility" value="modular-kitchen" data-label="Modular Kitchen"> Modular Kitchen</label>
+                        <label><input type="checkbox" class="lpFacility" value="security" data-label="Security"> Security</label>
+                        <label><input type="checkbox" class="lpFacility" value="cctv" data-label="CCTV"> CCTV</label>
+                        <label><input type="checkbox" class="lpFacility" value="balcony" data-label="Balcony"> Balcony</label>
+                    </div>
+                    <p class="hl-error" data-error-for="lpAmenities"></p>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="6">
+                <div class="hl-card">
+                    <h2>Tenant preferences</h2>
+                    <p class="hl-lead">Choose who this flat is listed for. More than one option is allowed.</p>
+                    <div class="fl-choices" id="flTenantChoices">
+                        <label><input type="checkbox" class="lpTenant" value="Anyone"> Anyone</label>
+                        <label><input type="checkbox" class="lpTenant" value="Family"> Family</label>
+                        <label><input type="checkbox" class="lpTenant" value="Bachelors"> Bachelors</label>
+                        <label><input type="checkbox" class="lpTenant" value="Students"> Students</label>
+                        <label><input type="checkbox" class="lpTenant" value="Working Professionals"> Working Professionals</label>
+                    </div>
+                    <p class="hl-error" data-error-for="lpTenants"></p>
+                    <div class="form-group" style="margin-top:18px">
+                        <label>Pets Allowed?</label>
+                        <div class="fl-choices">
+                            <label><input type="radio" name="lpPets" value="Yes"> Yes</label>
+                            <label><input type="radio" name="lpPets" value="No"> No</label>
+                        </div>
+                        <p class="hl-error" data-error-for="lpPets"></p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="7">
+                <div class="hl-card">
+                    <h2>Property photos</h2>
+                    <p class="hl-lead">JPG, PNG or WebP. Max 5MB each, up to 6 photos per category. Files upload to RoomDhundo storage when you submit.</p>
+                    <div class="hl-gallery-grid" id="flGalleryMount"></div>
+                    <p class="hl-error" data-error-for="lpPhotos"></p>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="8">
+                <div class="hl-card">
+                    <h2>Owner / contact details</h2>
+                    <p class="hl-lead">This stays with the listing account. Public pages still follow RoomDhundo’s existing contact rules.</p>
+                    <div class="form-group">
+                        <label>Listing By</label>
+                        <div class="fl-choices">
+                            <label><input type="radio" name="lpListedBy" value="Property Owner"> Property Owner</label>
+                            <label><input type="radio" name="lpListedBy" value="Broker / Agent"> Broker / Agent</label>
+                        </div>
+                        <p class="hl-error" data-error-for="lpListedBy"></p>
+                    </div>
+                    <div class="hl-grid">
+                        <div class="form-group">
+                            <label for="lpOwnerName">Full Name</label>
+                            <input id="lpOwnerName" placeholder="Name on the listing" autocomplete="name">
+                            <p class="hl-error" data-error-for="lpOwnerName"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="lpOwnerPhone">Mobile Number</label>
+                            <input id="lpOwnerPhone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile" autocomplete="tel">
+                            <p class="hl-error" data-error-for="lpOwnerPhone"></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="hl-step" data-fl-step="9">
+                <div class="hl-card hl-review">
+                    <h2>Review your listing</h2>
+                    <p class="hl-lead">Check every section, then submit. You can edit a section without losing the rest.</p>
+                    <div id="flReviewMount"></div>
+                </div>
+            </section>
+
+            <div class="hl-actions" id="flNav">
+                <button type="button" class="hl-btn" id="flBackBtn">Back</button>
+                <button type="button" class="hl-btn hl-btn-primary" id="flNextBtn">Continue</button>
+                <button type="submit" class="lp-submit-btn" id="flSubmitBtn" hidden>Submit Flat Listing</button>
+            </div>
+            <p class="lp-note">Submit when the review looks correct. Duplicate clicks are blocked while it saves.</p>
             </div>
 
-            <div class="form-group">
-                <label for="lpDescription">Description</label>
-                <textarea id="lpDescription" rows="4" placeholder="Tell renters what makes this flat a good fit..." required></textarea>
+            <div id="roomTypesContainer" class="fl-hidden-sync" aria-hidden="true">
+                <div class="room-type-block">
+                    <input type="text" class="rtRoomType" value="1 BHK">
+                    <input type="number" class="rtRent" value="0">
+                    <input type="number" class="rtPeople" value="2">
+                    <input type="number" class="rtAvailable" value="1">
+                    <input type="hidden" class="rtFlatMeta" value="{}">
+                </div>
             </div>
-
-            <div class="form-group">
-                <label for="lpRules">Property Rules (one per line)</label>
-                <textarea id="lpRules" rows="3" placeholder="No pets&#10;Maintenance paid by tenant"></textarea>
-            </div>
-
-            <h2 class="lp-section-title">Owner Contact</h2>
-
-            <div class="form-group">
-                <label for="lpOwnerName">Owner / Business Name</label>
-                <input type="text" id="lpOwnerName" placeholder="e.g. Raj Properties" required>
-            </div>
-
-            <div class="form-group">
-    <label for="lpOwnerPhone">Phone Number</label>
-    <input type="tel" id="lpOwnerPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-</div>
-
-<div class="form-group">
-    <label for="lpOwnerAltPhone">Alternative Phone Number (optional)</label>
-    <input type="tel" id="lpOwnerAltPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}">
-</div>
-            <h2 class="lp-section-title">Flat Options</h2>
-            <p class="lp-hint lp-room-hint">Add every flat option available in this building — you need at least one.</p>
-
-            <div id="roomTypesContainer"></div>
-
-            <button type="button" id="addRoomTypeBtn" class="lp-secondary-btn">+ Add Another Flat Option</button>
-
-            <button type="submit" class="lp-submit-btn lp-submit-margin">List My Flat</button>
-
-            <p class="lp-note"></p>
-
         </form>
-
     </main>
 
     <footer class="site-footer">
@@ -244,103 +351,50 @@
         </div>
     </footer>
 
-    <!-- Template for one room type block, cloned by JS -->
     <template id="roomTypeTemplate">
         <div class="room-type-block">
-            <button type="button" class="remove-room-type-btn" title="Remove this room">&times;</button>
-
-            <div class="form-group">
-                <label>Room Type</label>
-                <select class="rtRoomType" required>
-                    <option value="">Select room type</option>
-                    <option value="1 RK">1 RK</option>
-                    <option value="1 BHK">1 BHK</option>
-                    <option value="2 BHK">2 BHK</option>
-                    <option value="3 BHK">3 BHK</option>
-                    <option value="4+ BHK">4+ BHK</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Monthly Rent (₹)</label>
-                <input type="number" class="rtRent" min="0" placeholder="e.g. 12000" required>
-            </div>
-
-            <div class="form-group">
-                <label>People Allowed</label>
-                <input type="number" class="rtPeople" min="1" value="1" required>
-            </div>
-
-            <div class="form-group">
-                <label>Flats Available</label>
-                <input type="number" class="rtAvailable" min="1" value="1" required>
-            </div>
+            <input type="text" class="rtRoomType">
+            <input type="number" class="rtRent" min="0">
+            <input type="number" class="rtPeople" min="1" value="1">
+            <input type="number" class="rtAvailable" min="1" value="1">
+            <input type="hidden" class="rtFlatMeta" value="{}">
         </div>
     </template>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+    <script src="flat-listing.js"></script>
+    <script src="location.js"></script>
+    <script src="property-map.js"></script>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script src="script.js"></script>
-
-<script src="location.js"></script>
-
-<script src="property-map.js"></script>
-
-    <!-- AUTHENTICATION MODAL -->
     <div class="auth-modal" id="authModal">
         <div class="auth-modal-content">
             <button class="auth-close-btn" id="closeAuthBtn" type="button" aria-label="Close authentication window" title="Close">&times;</button>
-
             <div class="auth-tabs" role="tablist" aria-label="Authentication options">
                 <button class="auth-tab active" id="tabLogin" type="button" role="tab" aria-selected="true">Log In</button>
                 <button class="auth-tab" id="tabSignup" type="button" role="tab" aria-selected="false">Sign Up</button>
             </div>
-
             <form class="auth-form active" id="loginForm">
                 <h2>Welcome Back</h2>
                 <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
-                <div class="form-group">
-                    <label for="loginEmail">Email Address</label>
-                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required>
-                </div>
-                <div class="form-options">
-                    <label><input type="checkbox"> Remember me</label>
-                    <a href="reset-password.html" class="forgot-link">Forgot password?</a>
-                </div>
+                <div class="form-group"><label for="loginEmail">Email Address</label><input type="email" id="loginEmail" placeholder="name@example.com" required></div>
+                <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" placeholder="••••••••" required></div>
+                <div class="form-options"><label><input type="checkbox"> Remember me</label><a href="reset-password.html" class="forgot-link">Forgot password?</a></div>
                 <p class="auth-message" id="loginMessage"></p>
                 <button type="submit" class="auth-submit-btn">Log In</button>
             </form>
-
             <form class="auth-form" id="signupForm">
                 <h2>Create an Account</h2>
                 <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
-                <div class="form-group">
-                    <label for="signupName">Full Name</label>
-                    <input type="text" id="signupName" placeholder="John Doe" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupEmail">Email Address</label>
-                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupPassword">Password</label>
-                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
-                </div>
-                <div class="form-group">
-                    <label for="signupConfirmPassword">Confirm Password</label>
-                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
-                </div>
+                <div class="form-group"><label for="signupName">Full Name</label><input type="text" id="signupName" placeholder="John Doe" required></div>
+                <div class="form-group"><label for="signupEmail">Email Address</label><input type="email" id="signupEmail" placeholder="name@example.com" required></div>
+                <div class="form-group"><label for="signupPassword">Password</label><input type="password" id="signupPassword" placeholder="Create a strong password" required></div>
+                <div class="form-group"><label for="signupConfirmPassword">Confirm Password</label><input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required></div>
                 <p class="auth-message" id="signupMessage"></p>
                 <button type="submit" class="auth-submit-btn">Create Account</button>
             </form>
         </div>
     </div>
-
 </body>
 </html>

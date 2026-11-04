@@ -649,16 +649,26 @@ function createPropertyCard(
             <span
                 class="
                     property-status-badge
-                    ${isAvailable
-                        ? "available"
-                        : "occupied"}
+                    ${
+                        String(property.listing_status || "").toLowerCase() === "pending"
+                            ? "occupied"
+                            : String(property.listing_status || "").toLowerCase() === "rejected"
+                                ? "occupied"
+                                : isAvailable
+                                    ? "available"
+                                    : "occupied"
+                    }
                 "
             >
 
                 ${
-                    isAvailable
-                        ? "🟢 Available"
-                        : "🔴 Occupied"
+                    String(property.listing_status || "").toLowerCase() === "pending"
+                        ? "Pending review"
+                        : String(property.listing_status || "").toLowerCase() === "rejected"
+                            ? "Rejected"
+                            : isAvailable
+                                ? "🟢 Available"
+                                : "🔴 Occupied"
                 }
 
             </span>

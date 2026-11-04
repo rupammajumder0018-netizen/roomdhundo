@@ -1,0 +1,159 @@
+.flat-listing-page .hl-progress {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.flat-listing-page #flBackBtn[hidden],
+.flat-listing-page #flNextBtn[hidden],
+.flat-listing-page #flSubmitBtn[hidden] {
+    display: none !important;
+}
+
+.flat-listing-page .hl-progress button {
+    min-height: 64px;
+    align-items: flex-start;
+}
+
+.flat-listing-page .hl-progress button small {
+    display: none;
+}
+
+.fl-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 10px;
+}
+
+.fl-choices label {
+    margin: 0 !important;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #1e293b;
+    line-height: 1.35;
+}
+
+.fl-choices label small {
+    display: block;
+    margin-top: 2px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.fl-choices input {
+    width: auto;
+    margin-top: 2px;
+    padding: 0;
+    accent-color: #2563eb;
+}
+
+.fl-choices label:has(input:checked) {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.fl-rupee {
+    display: flex;
+    align-items: stretch;
+}
+
+.fl-rupee span {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    border: 1px solid #e2e8f0;
+    border-right: 0;
+    border-radius: 12px 0 0 12px;
+    background: #f8fafc;
+    color: #334155;
+    font-weight: 800;
+}
+
+.fl-rupee input {
+    border-radius: 0 12px 12px 0 !important;
+}
+
+.fl-fee-note {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 13px;
+}
+
+.fl-review-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    margin: 22px 0 10px;
+}
+
+.fl-review-head h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.fl-review-photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.fl-review-photos img {
+    width: 84px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.fl-hidden-sync {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.fl-upload-status {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+html[data-theme="dark"] .fl-choices label,
+html[data-theme="dark"] .fl-rupee span,
+html[data-theme="dark"] .fl-fee-note {
+    background: #151515;
+    border-color: var(--rd-border, #333);
+    color: var(--rd-text, #eee);
+}
+
+html[data-theme="dark"] .fl-choices label:has(input:checked) {
+    background: rgba(37, 99, 235, 0.16);
+}
+
+html[data-theme="dark"] .fl-choices label small,
+html[data-theme="dark"] .fl-upload-status {
+    color: #94a3b8;
+}
+
+@media (max-width: 800px) {
+    .flat-listing-page .hl-progress {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .flat-listing-page .hl-progress button span:not(.hl-num) {
+        font-size: 11px;
+    }
+}

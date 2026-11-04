@@ -615,7 +615,7 @@ async function loadBuildings() {
                 table.innerHTML = `
                     <tr>
                         <td
-                            colspan="7"
+                            colspan="8"
                             class="empty-state"
                         >
                             Unable to load properties.
@@ -1103,6 +1103,15 @@ function renderDashboardRecentProperties() {
 // PROPERTIES
 // ============================================================
 
+function listingStatusLabel(property) {
+    const listing = normalize(property?.listing_status || "published");
+    const verification = normalize(property?.verification_status || "");
+    if (listing === "pending" || verification === "pending") return "Pending review";
+    if (listing === "rejected" || verification === "rejected") return "Rejected";
+    if (listing === "archived") return "Archived";
+    return "Live";
+}
+
 function renderPropertySection() {
 
     const tableBody =
@@ -1271,7 +1280,7 @@ function renderPropertySection() {
         tableBody.innerHTML = `
             <tr>
                 <td
-                    colspan="7"
+                    colspan="8"
                     class="empty-state"
                 >
                     No properties found.
@@ -1407,6 +1416,38 @@ function renderPropertySection() {
                             </td>
 
                             <td>
+                                ${escapeHTML(
+                                    listingStatusLabel(
+                                        property
+                                    )
+                                )}
+                                ${
+                                    String(property.listing_status || "").toLowerCase() === "pending"
+                                        ? `
+                                            <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+                                                <button
+                                                    type="button"
+                                                    class="action-btn view-btn listing-status-btn"
+                                                    data-property-id="${escapeHTML(property.id)}"
+                                                    data-listing-status="published"
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="action-btn delete-btn listing-status-btn"
+                                                    data-property-id="${escapeHTML(property.id)}"
+                                                    data-listing-status="rejected"
+                                                >
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        `
+                                        : ""
+                                }
+                            </td>
+
+                            <td>
 
                                 <button
                                     type="button"
@@ -1454,7 +1495,7 @@ function attachPropertyButtons() {
 
     document
         .querySelectorAll(
-            "#propertyTableBody .view-btn"
+            "#propertyTableBody .view-btn:not(.listing-status-btn)"
         )
         .forEach(
             button => {
@@ -1475,7 +1516,7 @@ function attachPropertyButtons() {
 
     document
         .querySelectorAll(
-            "#propertyTableBody .delete-btn"
+            "#propertyTableBody .delete-btn:not(.listing-status-btn)"
         )
         .forEach(
             button => {
@@ -1494,6 +1535,55 @@ function attachPropertyButtons() {
             }
         );
 
+    document
+        .querySelectorAll(
+            "#propertyTableBody .listing-status-btn"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        setPropertyListingStatus(
+                            button.dataset.propertyId,
+                            button.dataset.listingStatus
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+async function setPropertyListingStatus(propertyId, listingStatus) {
+    const nextListing = listingStatus === "rejected" ? "rejected" : "published";
+    const nextVerification = nextListing === "published" ? "approved" : "rejected";
+    const { error } = await supabaseClient
+        .from("buildings")
+        .update({
+            listing_status: nextListing,
+            verification_status: nextVerification
+        })
+        .eq("id", propertyId);
+
+    if (error) {
+        alert(error.message || "Could not update listing status.");
+        return;
+    }
+
+    buildings = buildings.map((property) => {
+        if (String(property.id) !== String(propertyId)) return property;
+        return {
+            ...property,
+            listing_status: nextListing,
+            verification_status: nextVerification
+        };
+    });
+    renderPropertySection();
 }
 
 
