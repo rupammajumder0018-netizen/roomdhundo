@@ -213,7 +213,7 @@
             const listed = counts[agent.user_id] || 0;
             return `
                 <article class="home-agent-card">
-                    <p class="home-agent-badge">RoomDhundo Agent</p>
+                    <p class="home-agent-badge">Pg Dhundo Agent</p>
                     <h3>${esc(name)}</h3>
                     <p class="home-agent-meta">${esc(agent.location || "Location on file")}</p>
                     <div class="home-agent-stats">

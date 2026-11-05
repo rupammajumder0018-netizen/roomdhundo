@@ -1047,7 +1047,7 @@ async function updateNavForUser(user) {
 
             title: "Admin Dashboard",
 
-            subtitle: "Manage RoomDhundo",
+            subtitle: "Manage Pg Dhundo",
 
             action: () => {
 
@@ -1145,7 +1145,7 @@ async function updateNavForUser(user) {
 
         title: "Logout",
 
-        subtitle: "Sign out of RoomDhundo",
+        subtitle: "Sign out of Pg Dhundo",
 
         danger: true,
 
@@ -2642,7 +2642,7 @@ loginForm?.addEventListener("submit", async (e) => {
         localStorage.setItem("roomdhundo_role", selectedRole);
         setAuthMessage("signupMessage", "Account created successfully!");
         unlockExploreAfterAuth();
-        alert(`Account created successfully!\n\nWelcome to RoomDhundo, ${name}!`);
+        alert(`Account created successfully!\n\nWelcome to Pg Dhundo, ${name}!`);
         await updateNavForUser(session.user);
         window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
         if (selectedRole === "owner") {
@@ -3450,7 +3450,7 @@ function setupHotelRoomDetailPage(building, room) {
     const mapEl = document.getElementById("roomdhundoMap");
     if (mapEl) mapEl.style.display = "none";
     const roomTitle = `${room.room_type || "Room"} · ${building.name || "Hotel"}`;
-    document.title = `${roomTitle} | RoomDhundo`;
+    document.title = `${roomTitle} | Pg Dhundo`;
     const nameEl = document.getElementById("propertyName");
     if (nameEl) nameEl.textContent = room.room_type || "Room";
     const locEl = document.getElementById("propertyLocation");
@@ -3757,7 +3757,7 @@ async function initPropertyPage() {
                 ? `${building.totalAvailable} rooms available across ${building.room_types.length} room types`
                 : (building.room_types[0]?.availability || "Room available");
     document.getElementById("propertyName").textContent = building.name;
-    document.title = `${building.name} | RoomDhundo`;
+    document.title = `${building.name} | Pg Dhundo`;
     document.getElementById("propertyLocation").textContent = building.location || "Location not listed";
     document.getElementById("propertyRating").textContent = building.avgRating || "New";
     document.getElementById("propertyReviews").textContent = building.reviewCount;
@@ -3990,13 +3990,13 @@ const contactPropertyName =
     const ROOMDHUNDO_PHONE = "6295456503";
     const ROOMDHUNDO_WHATSAPP = "93829 91409";
 
-    document.getElementById("callRoomDhundoBtn")?.addEventListener("click", () => {
+    document.getElementById("callPg DhundoBtn")?.addEventListener("click", () => {
         window.location.href = `tel:${ROOMDHUNDO_PHONE}`;
     });
 
-    document.getElementById("whatsappRoomDhundoBtn")?.addEventListener("click", () => {
+    document.getElementById("whatsappPg DhundoBtn")?.addEventListener("click", () => {
         const propertyName = building?.name || building?.property_name || "this property";
-        const message = `Hello RoomDhundo, I am interested in ${propertyName}. I would like to connect with the property owner.`;
+        const message = `Hello Pg Dhundo, I am interested in ${propertyName}. I would like to connect with the property owner.`;
         const whatsappUrl = `https://wa.me/91${ROOMDHUNDO_WHATSAPP}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, "_blank");
     });
@@ -5834,7 +5834,7 @@ if (isHotel) {
                     const title = success.querySelector("h2");
                     const copy = success.querySelector("p");
                     if (title) title.textContent = "Hotel listed successfully";
-                    if (copy) copy.textContent = "Your hotel is now visible to guests on RoomDhundo.";
+                    if (copy) copy.textContent = "Your hotel is now visible to guests on Pg Dhundo.";
                     success.classList.add("is-visible");
                     document.getElementById("listPropertyForm")?.setAttribute("hidden", "hidden");
                     document.getElementById("hlNav")?.setAttribute("hidden", "hidden");
@@ -5848,7 +5848,7 @@ if (isHotel) {
                 if (success) {
                     const copy = success.querySelector("p");
                     if (copy) {
-                        copy.textContent = "Your flat was submitted for admin review. It will not appear in search until RoomDhundo approves it.";
+                        copy.textContent = "Your flat was submitted for admin review. It will not appear in search until Pg Dhundo approves it.";
                     }
                     const badge = document.getElementById("flStatusBadge");
                     if (badge) badge.textContent = "Pending review";
@@ -6116,16 +6116,16 @@ function wireChatbot() {
 
     const EMAIL = "roomdhundo18@gmail.com";
     const WHATSAPP_NUMBER = "9382991409";
-    const WHATSAPP_MESSAGE = "Hello RoomDhundo, I need help with a query.";
+    const WHATSAPP_MESSAGE = "Hello Pg Dhundo, I need help with a query.";
     const WHATSAPP_URL =
         `https://wa.me/91${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
     const EMAIL_URL =
-        `mailto:${EMAIL}?subject=${encodeURIComponent("RoomDhundo enquiry")}&body=${encodeURIComponent("Hello RoomDhundo,\n\nI need help with a query.\n")}`;
+        `mailto:${EMAIL}?subject=${encodeURIComponent("Pg Dhundo enquiry")}&body=${encodeURIComponent("Hello Pg Dhundo,\n\nI need help with a query.\n")}`;
 
     const FAQ_ITEMS = [
         {
             question: "How do I contact a property owner?",
-            answer: "Open the property you are interested in and use the Contact Owner option. You can submit your enquiry with your phone number after logging in, and RoomDhundo will help connect you with the owner."
+            answer: "Open the property you are interested in and use the Contact Owner option. You can submit your enquiry with your phone number after logging in, and Pg Dhundo will help connect you with the owner."
         },
         {
             question: "How do I list my property?",
@@ -6136,26 +6136,26 @@ function wireChatbot() {
             answer: "You need to log in or create an account to explore properties, save listings, contact owners, and manage your enquiries."
         },
         {
-            question: "How does RoomDhundo work?",
-            answer: "RoomDhundo helps you discover accommodation such as PGs, rooms, messes, guest houses, hotels, and flats. Search by location and your requirements, compare available properties, view details, and contact the owner through RoomDhundo. A one-time 10% service fee applies to PG and flat bookings only, not hotels."
+            question: "How does Pg Dhundo work?",
+            answer: "Pg Dhundo helps you discover accommodation such as PGs, rooms, messes, guest houses, hotels, and flats. Search by location and your requirements, compare available properties, view details, and contact the owner through Pg Dhundo. A one-time 10% service fee applies to PG and flat bookings only, not hotels."
         },
         {
             question: "How can I report a problem?",
-            answer: "You can contact the RoomDhundo team through WhatsApp or Email. Tell us about the issue and include the relevant property name or details so we can assist you properly."
+            answer: "You can contact the Pg Dhundo team through WhatsApp or Email. Tell us about the issue and include the relevant property name or details so we can assist you properly."
         }
     ];
 
     function openChat() {
         chatbot.classList.add("open");
         toggle.setAttribute("aria-expanded", "true");
-        toggle.setAttribute("aria-label", "Close RoomDhundo Chat");
+        toggle.setAttribute("aria-label", "Close Pg Dhundo Chat");
         input?.focus();
     }
 
     function closeChat() {
         chatbot.classList.remove("open");
         toggle.setAttribute("aria-expanded", "false");
-        toggle.setAttribute("aria-label", "Open RoomDhundo Chat");
+        toggle.setAttribute("aria-label", "Open Pg Dhundo Chat");
     }
 
     function scrollMessages() {
@@ -6185,14 +6185,14 @@ function wireChatbot() {
     }
 
     function openWhatsApp(fromButton) {
-        if (fromButton) addMessage("WhatsApp RoomDhundo", "user");
-        addMessage("Opening WhatsApp so you can message RoomDhundo.", "bot");
+        if (fromButton) addMessage("WhatsApp Pg Dhundo", "user");
+        addMessage("Opening WhatsApp so you can message Pg Dhundo.", "bot");
         window.open(WHATSAPP_URL, "_blank");
         promptContinue();
     }
 
     function openEmail(fromButton) {
-        if (fromButton) addMessage("Email RoomDhundo", "user");
+        if (fromButton) addMessage("Email Pg Dhundo", "user");
         addMessage(`Opening your email app to write to ${EMAIL}.`, "bot");
         window.location.href = EMAIL_URL;
         promptContinue();
@@ -6203,8 +6203,8 @@ function wireChatbot() {
 
         options.innerHTML = `
             <button type="button" class="chatbot-option" id="chatbotFaqBtn">❓ Common Questions</button>
-            <button type="button" class="chatbot-option" id="chatbotWhatsAppBtn">💬 WhatsApp RoomDhundo</button>
-            <button type="button" class="chatbot-option" id="chatbotEmailBtn">📧 Email RoomDhundo</button>
+            <button type="button" class="chatbot-option" id="chatbotWhatsAppBtn">💬 WhatsApp Pg Dhundo</button>
+            <button type="button" class="chatbot-option" id="chatbotEmailBtn">📧 Email Pg Dhundo</button>
         `;
 
         document.getElementById("chatbotFaqBtn")?.addEventListener("click", showFaqMenu);
@@ -6261,7 +6261,7 @@ function wireChatbot() {
         if (q.includes("account") || q.includes("sign up") || q.includes("login") || q.includes("log in")) {
             return FAQ_ITEMS[2];
         }
-        if (q.includes("how does") || q.includes("how do you work") || q.includes("what is roomdhundo")) {
+        if (q.includes("how does") || q.includes("how do you work") || q.includes("what is roomdhundo") || q.includes("what is pg dhundo") || q.includes("what is pgdhundo")) {
             return FAQ_ITEMS[3];
         }
         if (q.includes("report") || q.includes("problem") || q.includes("issue") || q.includes("complaint")) {

@@ -469,7 +469,7 @@ function updatePageHeader(
                 "Dashboard",
 
             subtitle:
-                "Welcome back, Admin. Here's what's happening on RoomDhundo today."
+                "Welcome back, Admin. Here's what's happening on Pg Dhundo today."
 
         },
 
@@ -479,7 +479,7 @@ function updatePageHeader(
                 "Properties",
 
             subtitle:
-                "Manage the property listings currently available on RoomDhundo."
+                "Manage the property listings currently available on Pg Dhundo."
 
         },
 
@@ -489,7 +489,7 @@ function updatePageHeader(
                 "Registered Profiles",
 
             subtitle:
-                "View all profiles registered on RoomDhundo."
+                "View all profiles registered on Pg Dhundo."
 
         },
 
@@ -514,7 +514,7 @@ function updatePageHeader(
                 "Reviews",
 
             subtitle:
-                "View reviews submitted for RoomDhundo properties."
+                "View reviews submitted for Pg Dhundo properties."
 
         },
 
@@ -534,7 +534,7 @@ function updatePageHeader(
                 "Settings",
 
             subtitle:
-                "Manage your RoomDhundo administrator information."
+                "Manage your Pg Dhundo administrator information."
 
         }
 
@@ -3131,7 +3131,7 @@ async function deleteProfile(profileId) {
         // -----------------------------------------
 
         alert(
-            `"${name}" profile was permanently deleted from RoomDhundo.`
+            `"${name}" profile was permanently deleted from Pg Dhundo.`
         );
 
     }
@@ -10156,7 +10156,7 @@ function bindPropertyEditorEvents() {
 // ============================================================
 
 console.log(
-    "RoomDhundo Admin Panel loaded successfully."
+    "Pg Dhundo Admin Panel loaded successfully."
 );
 
 document.addEventListener("click", function(e){

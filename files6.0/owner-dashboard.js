@@ -1848,7 +1848,7 @@ function setupDashboardButtons() {
     /*
        SIDEBAR: "Need Help?" box opens a
        small popup with WhatsApp / SMS /
-       Call options for RoomDhundo support.
+       Call options for Pg Dhundo support.
     */
 
     setupHelpBox();
@@ -1863,7 +1863,7 @@ function setupDashboardButtons() {
 }
 
 
-// TODO: replace with RoomDhundo's real support number (with country code, no + or spaces).
+// TODO: replace with Pg Dhundo's real support number (with country code, no + or spaces).
 const SUPPORT_PHONE = "9382991409";
 
 function setupHelpBox() {
