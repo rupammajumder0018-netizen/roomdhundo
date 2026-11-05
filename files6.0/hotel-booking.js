@@ -12,6 +12,7 @@
   const money = (v) => `₹${Number(v || 0).toLocaleString("en-IN")}`;
   const BREAKFAST_FEE = 300;
   let refreshQuote = () => {};
+  const MEAL_NAMES = ["breakfast", "lunch", "dinner"];
   function hourlyOffer(room) {
     const details = room?.room_details && typeof room.room_details === "object" ? room.room_details : {};
     const hourly = details.hourly && typeof details.hourly === "object" ? details.hourly : {};
@@ -29,12 +30,15 @@
     const x = new Date(d);
     return new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   };
+  const datePart = (d) => dateValue(d).slice(0, 10);
+  const timePart = (d) => dateValue(d).slice(11, 16);
+  const fromParts = (dateStr, timeStr) => new Date(`${dateStr}T${timeStr || "12:00"}`);
 
   let user;
   let hotel;
   let rooms = [];
   let selectedRoom = null;
-  let board = "room-only";
+  let selectedMeals = [];
   let loadPromise = null;
   let authWired = false;
 
@@ -89,7 +93,7 @@
       const id = new URLSearchParams(location.search).get("id");
       if (!id) return;
       if (!loadPromise) {
-        loadPromise = db.from("buildings").select("id,name,type,created_by,facility_tags,facilities,images,room_types(*)").eq("id", id).single();
+        loadPromise = db.from("buildings").select("id,name,type,created_by,facility_tags,facilities,images,rules,hotel_meta,room_types(*)").eq("id", id).single();
       }
       const { data: building, error } = await loadPromise;
       if (error || !building || String(building.type).toLowerCase() !== "hotel") return;
@@ -116,6 +120,7 @@
     if (mount) return mount;
     const card = document.querySelector(".booking-card");
     if (!card) return null;
+    card.classList.add("hotel-room-booking-card");
     mount = document.createElement("div");
     mount.id = "hotelBookingFormMount";
     const contact = document.getElementById("contactOwnerBtn");
@@ -124,19 +129,64 @@
     return mount;
   }
 
+  function hotelMeta() {
+    if (typeof window.listingMetaFromBuilding === "function") return window.listingMetaFromBuilding(hotel) || {};
+    return hotel?.hotel_meta && typeof hotel.hotel_meta === "object" ? hotel.hotel_meta : {};
+  }
+
+  function hasMeal(meal) {
+    if (typeof window.hotelHasMeal === "function") return window.hotelHasMeal(hotel, meal);
+    const tags = (hotel?.facility_tags || []).map((tag) => String(tag).toLowerCase());
+    const labels = (hotel?.facilities || []).map((label) => String(label).toLowerCase());
+    return tags.includes(`meal-${meal}`) || tags.includes(meal) || labels.includes(meal);
+  }
+
+  function mealPrice(meal) {
+    if (typeof window.hotelMealPrice === "function") return window.hotelMealPrice(hotel, meal);
+    const amount = Number(hotelMeta()?.meal_prices?.[meal]);
+    if (Number.isFinite(amount) && amount >= 0) return amount;
+    return meal === "breakfast" && hasMeal("breakfast") ? BREAKFAST_FEE : 0;
+  }
+
+  function paidMeals() {
+    return MEAL_NAMES.filter((meal) => hasMeal(meal) && mealPrice(meal) > 0);
+  }
+
+  function includedMeals() {
+    return MEAL_NAMES.filter((meal) => hasMeal(meal) && mealPrice(meal) <= 0);
+  }
+
+  function mealLabel(meal) {
+    return meal.charAt(0).toUpperCase() + meal.slice(1);
+  }
+
+  function selectedMealText() {
+    if (!selectedMeals.length) {
+      const included = includedMeals();
+      return included.length ? `Room only · ${included.map(mealLabel).join(", ")} included` : "Room only";
+    }
+    return selectedMeals.map((meal) => `${mealLabel(meal)} (+${money(mealPrice(meal))} + taxes)`).join(", ");
+  }
+
   function wireBoardPills(root) {
     root.querySelectorAll("[data-board]:not(:disabled)").forEach((btn) => {
       btn.addEventListener("click", () => {
-        board = btn.dataset.board;
+        const meal = btn.dataset.board;
+        if (meal === "room-only") {
+          selectedMeals = [];
+        } else if (selectedMeals.includes(meal)) {
+          selectedMeals = selectedMeals.filter((item) => item !== meal);
+        } else {
+          selectedMeals = [...selectedMeals, meal];
+        }
         root.querySelectorAll("[data-board]").forEach((el) => {
-          el.classList.toggle("is-active", el === btn);
+          const on = el.dataset.board === "room-only" ? selectedMeals.length === 0 : selectedMeals.includes(el.dataset.board);
+          el.classList.toggle("is-active", on);
           const small = el.querySelector("small");
-          if (!small || el.disabled || el.classList.contains("is-disabled")) return;
-          if (el.dataset.board === "breakfast") return;
-          small.textContent = el === btn ? "Selected" : "";
+          if (small && el.dataset.board === "room-only") small.textContent = on ? "Selected" : "";
         });
         document.querySelectorAll(".hotel-room-board-label").forEach((el) => {
-          el.textContent = board === "breakfast" ? "Breakfast (+₹300 + taxes)" : "Room only";
+          el.textContent = selectedMealText();
         });
         refreshQuote();
       });
@@ -144,9 +194,23 @@
   }
 
   function boardPillsHtml() {
+    const paid = paidMeals();
+    const included = includedMeals();
+    const includedNote = included.length
+      ? `<p class="hotel-booking-notice">${included.map(mealLabel).join(", ")} included in the room rate.</p>`
+      : "";
+    if (!paid.length) {
+      selectedMeals = [];
+      return `<button type="button" class="hotel-board-pill is-active" data-board="room-only">Room only<br><small>${included.length ? "Meals included" : "No extra meals"}</small></button>${includedNote}`;
+    }
+    selectedMeals = selectedMeals.filter((meal) => paid.includes(meal));
+    const mealButtons = paid.map((meal) => `
+        <button type="button" class="hotel-board-pill${selectedMeals.includes(meal) ? " is-active" : ""}" data-board="${meal}">${esc(mealLabel(meal))}<br><span class="hotel-board-extra">+${money(mealPrice(meal))} + taxes</span></button>
+    `).join("");
     return `
-        <button type="button" class="hotel-board-pill is-active" data-board="room-only">Room only<br><small>Selected</small></button>
-        <button type="button" class="hotel-board-pill" data-board="breakfast">Breakfast<br><span class="hotel-board-extra">+₹300 + taxes</span></button>
+        <button type="button" class="hotel-board-pill${selectedMeals.length ? "" : " is-active"}" data-board="room-only">Room only<br><small>Selected</small></button>
+        ${mealButtons}
+        ${includedNote}
     `;
   }
 
@@ -160,21 +224,28 @@
 
   function quoteStay({ hourly, units, rate }) {
     const roomSubtotal = Number(rate || 0) * Number(units || 0);
-    const breakfastUnits = board === "breakfast" ? (hourly ? 1 : Number(units || 0)) : 0;
-    const breakfast = BREAKFAST_FEE * breakfastUnits;
+    const mealUnits = hourly ? 1 : Number(units || 0);
+    const mealLines = selectedMeals.map((meal) => {
+      const fee = mealPrice(meal);
+      return { meal, fee, units: mealUnits, total: fee * mealUnits };
+    }).filter((line) => line.fee > 0);
+    const mealsTotal = mealLines.reduce((sum, line) => sum + line.total, 0);
+    const breakfastLine = mealLines.find((line) => line.meal === "breakfast");
     const taxInfo = roomTaxInfo(selectedRoom);
     let taxable = 0;
-    if (taxInfo.mode === "exclusive") taxable = roomSubtotal + breakfast;
-    else taxable = breakfast;
+    if (taxInfo.mode === "exclusive") taxable = roomSubtotal + mealsTotal;
+    else taxable = mealsTotal;
     const taxAmount = Math.round(taxable * taxInfo.rate);
-    const total = roomSubtotal + breakfast + taxAmount;
+    const total = roomSubtotal + mealsTotal + taxAmount;
     return {
       hourly,
       units,
       rate,
       roomSubtotal,
-      breakfast,
-      breakfastUnits,
+      breakfast: breakfastLine ? breakfastLine.total : 0,
+      breakfastUnits: breakfastLine ? breakfastLine.units : 0,
+      mealLines,
+      mealsTotal,
       taxAmount,
       taxLabel: taxInfo.label,
       taxMode: taxInfo.mode,
@@ -201,9 +272,11 @@
   }
 
   function hasBreakfast() {
+    if (typeof window.hotelHasBreakfast === "function") return window.hotelHasBreakfast(hotel);
     const tags = (hotel.facility_tags || []).map((tag) => String(tag).toLowerCase());
     const labels = (hotel.facilities || []).map((label) => String(label).toLowerCase());
-    return tags.includes("food") || labels.some((label) => /\bfood\b|breakfast|meal/.test(label));
+    if (tags.includes("room-only") && !tags.includes("meal-breakfast") && !tags.includes("breakfast")) return false;
+    return tags.includes("meal-breakfast") || tags.includes("breakfast") || labels.includes("breakfast");
   }
 
   function renderStay() {
@@ -249,7 +322,7 @@
             ? `<p class="hotel-room-left">Only ${Number(room.available_rooms)} room${Number(room.available_rooms) === 1 ? "" : "s"} left</p>`
             : ""}
           <ul class="hotel-package-facts">
-            <li class="hotel-room-board-label">${board === "breakfast" ? "Breakfast" : "Room only"}</li>
+            <li class="hotel-room-board-label">${esc(selectedMealText())}</li>
             <li>${Number(room.max_guests || room.room_people || 2)} guests</li>
             <li>${canBook ? `${Number(room.available_rooms)} available` : "Currently unavailable"}</li>
           </ul>
@@ -272,6 +345,8 @@
   function renderForm() {
     const mount = document.getElementById("hotelBookingFormInner") || document.getElementById("hotelBookingFormMount");
     if (!selectedRoom || !mount) return;
+    const startDefault = new Date(Date.now() + 3600000);
+    const endDefault = new Date(startDefault.getTime() + 86400000);
     mount.innerHTML = `
       <h3>Booking details</h3>
       <form class="hotel-booking-form" id="hotelBookingForm">
@@ -282,24 +357,34 @@
           </select>
         </label>
         <label>Guests
-          <input id="hbGuests" type="number" min="1" max="${Number(selectedRoom.max_guests || selectedRoom.room_people || 2)}" value="1" required>
+          <input id="hbGuests" type="number" inputmode="numeric" min="1" max="${Number(selectedRoom.max_guests || selectedRoom.room_people || 2)}" value="1" required>
         </label>
-        <label class="full">Check-in date & time
-          <input id="hbStart" type="datetime-local" min="${dateValue(new Date())}" value="${dateValue(new Date(Date.now() + 3600000))}" required>
-        </label>
-        <label id="hbEndWrap" class="full">Check-out date & time
-          <input id="hbEnd" type="datetime-local" required>
-        </label>
-        <label id="hbHoursWrap" style="display:none">Number of hours
+        <div class="hotel-booking-datetime full" id="hbStartWrap">
+          <label>Check-in date
+            <input id="hbStartDate" type="date" min="${datePart(new Date())}" value="${datePart(startDefault)}" required>
+          </label>
+          <label>Check-in time
+            <input id="hbStartTime" type="time" value="${timePart(startDefault)}" required>
+          </label>
+        </div>
+        <div class="hotel-booking-datetime full" id="hbEndWrap">
+          <label>Check-out date
+            <input id="hbEndDate" type="date" value="${datePart(endDefault)}" required>
+          </label>
+          <label>Check-out time
+            <input id="hbEndTime" type="time" value="${timePart(endDefault)}" required>
+          </label>
+        </div>
+        <label id="hbHoursWrap" class="full" hidden>Number of hours
           <select id="hbHours">
             ${hourlyOffer(selectedRoom).hours.map((hours) => `<option value="${hours}">${hours} hours · ${money(hourlyOffer(selectedRoom).price * hours)}</option>`).join("")}
           </select>
         </label>
-        <label>Your full name
-          <input id="hbName" value="${esc(user?.user_metadata?.full_name || "")}" required>
+        <label class="full">Your full name
+          <input id="hbName" autocomplete="name" value="${esc(user?.user_metadata?.full_name || "")}" required>
         </label>
-        <label>Phone number
-          <input id="hbPhone" type="tel" pattern="[0-9+ ]{10,15}" required placeholder="Your contact number">
+        <label class="full">Phone number
+          <input id="hbPhone" type="tel" inputmode="tel" autocomplete="tel" pattern="[0-9+ ]{10,15}" required placeholder="Your contact number">
         </label>
         <div class="hotel-total full" id="hbTotal"></div>
         <p class="hotel-booking-notice full">This is a booking request. The owner confirms it after review.</p>
@@ -309,29 +394,45 @@
 
     const form = mount.querySelector("form");
     const mode = form.querySelector("#hbMode");
-    const start = form.querySelector("#hbStart");
-    const end = form.querySelector("#hbEnd");
-    end.value = dateValue(new Date(new Date(start.value).getTime() + 86400000));
+    const startDate = form.querySelector("#hbStartDate");
+    const startTime = form.querySelector("#hbStartTime");
+    const endDate = form.querySelector("#hbEndDate");
+    const endTime = form.querySelector("#hbEndTime");
+    const hoursWrap = form.querySelector("#hbHoursWrap");
+    const endWrap = form.querySelector("#hbEndWrap");
+
+    function startAtDate() {
+      return fromParts(startDate.value, startTime.value);
+    }
+    function endAtDate() {
+      return fromParts(endDate.value, endTime.value);
+    }
 
     function calc() {
       const hourly = mode.value === "hourly";
-      form.querySelector("#hbEndWrap").style.display = hourly ? "none" : "grid";
-      form.querySelector("#hbHoursWrap").style.display = hourly ? "grid" : "none";
+      endWrap.hidden = hourly;
+      hoursWrap.hidden = !hourly;
+      hoursWrap.style.display = hourly ? "grid" : "none";
+      const startAt = startAtDate();
+      const endAt = endAtDate();
       const units = hourly
         ? Number(form.querySelector("#hbHours").value)
-        : Math.max(1, Math.ceil((new Date(end.value) - new Date(start.value)) / 86400000));
+        : Math.max(1, Math.ceil((endAt - startAt) / 86400000));
       const rate = Number(hourly ? hourlyOffer(selectedRoom).price : selectedRoom.daily_price);
       const quote = quoteStay({ hourly, units, rate });
       const unitLabel = hourly ? "hours" : "nights";
-      const taxLine = quote.taxMode === "inclusive" && quote.breakfast
-        ? `${quote.taxLabel} on breakfast: ${money(quote.taxAmount)}`
+      const taxLine = quote.taxMode === "inclusive" && quote.mealsTotal
+        ? `${quote.taxLabel} on meals: ${money(quote.taxAmount)}`
         : quote.taxMode === "exclusive"
           ? `${quote.taxLabel}: ${money(quote.taxAmount)}`
           : `${quote.taxLabel}: ${money(0)} (included in room rate)`;
+      const mealHtml = quote.mealLines.length
+        ? quote.mealLines.map((line) => `<div>${esc(mealLabel(line.meal))}: ${money(line.total)}${line.units > 1 ? ` (${money(line.fee)} × ${line.units} ${unitLabel})` : ""}</div>`).join("")
+        : `<div>Meals: ${money(0)}</div>`;
       form.querySelector("#hbTotal").innerHTML = `
         <div class="hotel-total-breakdown">
           <div>Room: ${money(quote.roomSubtotal)} (${money(quote.rate)} × ${quote.units} ${unitLabel})</div>
-          ${quote.breakfast ? `<div>Breakfast: ${money(quote.breakfast)}${quote.breakfastUnits > 1 ? ` (${money(BREAKFAST_FEE)} × ${quote.breakfastUnits} ${unitLabel})` : ""}</div>` : `<div>Breakfast: ${money(0)}</div>`}
+          ${mealHtml}
           <div>${taxLine}</div>
           <div class="hotel-total-pay">Payable total: ${money(quote.total)}</div>
         </div>`;
@@ -341,7 +442,7 @@
     refreshQuote = calc;
     mode.addEventListener("change", calc);
     ["input", "change"].forEach((evt) => {
-      [start, end, form.querySelector("#hbHours")].filter(Boolean).forEach((el) => el.addEventListener(evt, calc));
+      [startDate, startTime, endDate, endTime, form.querySelector("#hbHours")].filter(Boolean).forEach((el) => el.addEventListener(evt, calc));
     });
     calc();
 
@@ -358,17 +459,19 @@
         alert(`The owner has not added a ${c.hourly ? "hourly" : "nightly"} price for this room yet.`);
         return;
       }
-      if (!c.hourly && new Date(end.value) <= new Date(start.value)) {
+      const startAtLocal = startAtDate();
+      const endAtLocal = endAtDate();
+      if (!c.hourly && endAtLocal <= startAtLocal) {
         alert("Check-out must be after check-in.");
         return;
       }
       const button = form.querySelector("button[type=submit]");
       button.disabled = true;
       button.textContent = "Sending request...";
-      const startAt = new Date(start.value).toISOString();
+      const startAt = startAtLocal.toISOString();
       const endAt = c.hourly
-        ? new Date(new Date(start.value).getTime() + c.units * 3600000).toISOString()
-        : new Date(end.value).toISOString();
+        ? new Date(startAtLocal.getTime() + c.units * 3600000).toISOString()
+        : endAtLocal.toISOString();
       const { error } = await db.from("hotel_bookings").insert({
         building_id: hotel.id,
         room_type_id: selectedRoom.id,

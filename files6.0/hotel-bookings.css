@@ -472,9 +472,40 @@ html[data-theme="dark"] .hotel-package-card .favorite.saved {
 
 body.is-hotel-room-page #roomdhundoMap { display: none !important; }
 body.is-hotel-room-page .booking-card #hotelBookingFormMount { margin: 16px 0 8px; }
-body.is-hotel-room-page .booking-card .hotel-booking-form {
+body.is-hotel-room-page .booking-card,
+body.is-hotel-room-page .hotel-room-booking-card {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+body.is-hotel-room-page .booking-card .hotel-booking-form,
+.hotel-booking-form {
     grid-template-columns: 1fr;
     margin-top: 10px;
+    min-width: 0;
+}
+.hotel-booking-form label,
+.hotel-booking-datetime {
+    min-width: 0;
+}
+.hotel-booking-datetime {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.hotel-booking-form input,
+.hotel-booking-form select,
+.hotel-booking-form textarea {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.hotel-booking-form input[type="date"],
+.hotel-booking-form input[type="time"] {
+    min-height: 46px;
+    font-size: 16px;
 }
 body.is-hotel-room-page .hotel-board-pills-compact {
     display: grid;
@@ -483,6 +514,10 @@ body.is-hotel-room-page .hotel-board-pills-compact {
     margin-bottom: 4px;
 }
 body.is-hotel-room-page .main-property-image { cursor: pointer; }
+.hotel-total-breakdown {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
 
 @media (min-width: 900px) {
     .home-results-list .hotel-package-card,
@@ -506,7 +541,9 @@ body.is-hotel-room-page .main-property-image { cursor: pointer; }
     .hotel-stay-top,
     .hotel-room-pick-card,
     .hotel-board-pills,
-    .hotel-check-row {
+    .hotel-check-row,
+    .hotel-booking-datetime,
+    body.is-hotel-room-page .hotel-board-pills-compact {
         grid-template-columns: 1fr;
     }
     .hotel-check-nights {
@@ -516,4 +553,63 @@ body.is-hotel-room-page .main-property-image { cursor: pointer; }
     }
     .hotel-hero { min-height: 210px; }
     .hotel-room-select { max-width: none; }
+    body.is-hotel-room-page .property-page {
+        padding: 12px 14px 36px;
+    }
+    body.is-hotel-room-page .booking-card {
+        padding: 16px 14px 18px;
+        position: static;
+    }
+    body.is-hotel-room-page .sidebar-price {
+        font-size: 22px;
+        flex-wrap: wrap;
+    }
+    body.is-hotel-room-page .hotel-booking-form {
+        gap: 12px;
+    }
+    body.is-hotel-room-page .hotel-booking-form label,
+    body.is-hotel-room-page .hotel-booking-datetime label {
+        font-size: 13px;
+    }
+    body.is-hotel-room-page .hotel-booking-form input,
+    body.is-hotel-room-page .hotel-booking-form select,
+    body.is-hotel-room-page .hotel-booking-form textarea {
+        min-height: 46px;
+        font-size: 16px;
+        padding: 12px;
+    }
+    body.is-hotel-room-page .hotel-board-pill {
+        min-height: 52px;
+        padding: 12px 10px;
+    }
+    body.is-hotel-room-page .hotel-booking-submit,
+    body.is-hotel-room-page .contact-owner {
+        width: 100%;
+        min-height: 48px;
+    }
+    body.is-hotel-room-page .hotel-total {
+        font-size: 14px;
+        padding: 12px;
+    }
+    body.is-hotel-room-page .property-section {
+        padding: 18px 14px;
+    }
+    body.is-hotel-room-page .property-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    body.is-hotel-room-page .save-property {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .hotel-booking-datetime {
+        grid-template-columns: 1fr;
+    }
+    body.is-hotel-room-page .hotel-stay-summary h1,
+    body.is-hotel-room-page #propertyName {
+        font-size: 22px;
+    }
 }

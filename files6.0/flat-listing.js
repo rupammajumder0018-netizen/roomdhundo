@@ -424,7 +424,9 @@
             const { data } = await window.supabaseClient.auth.getUser();
             const user = data?.user;
             if (!user) return;
-            if (!$("lpOwnerName")?.value) {
+            const roleHint = String(localStorage.getItem("roomdhundo_role") || user.user_metadata?.role || "").toLowerCase();
+            const skipOwnerName = roleHint === "agent";
+            if (!skipOwnerName && !$("lpOwnerName")?.value) {
                 $("lpOwnerName").value = user.user_metadata?.full_name || user.user_metadata?.name || "";
             }
             if (!$("lpOwnerPhone")?.value) {
@@ -449,8 +451,11 @@
             } else {
                 profile = full.data;
             }
-            if (profile?.full_name && !$("lpOwnerName").value) $("lpOwnerName").value = profile.full_name;
-            else if (profile?.name && !$("lpOwnerName").value) $("lpOwnerName").value = profile.name;
+            const role = String(profile?.role || roleHint || "").toLowerCase();
+            if (role !== "agent") {
+                if (profile?.full_name && !$("lpOwnerName").value) $("lpOwnerName").value = profile.full_name;
+                else if (profile?.name && !$("lpOwnerName").value) $("lpOwnerName").value = profile.name;
+            }
             if (!$("lpOwnerPhone").value && profile?.phone) {
                 $("lpOwnerPhone").value = digitsPhone(profile.phone);
             }
@@ -462,10 +467,9 @@
                     .order("created_at", { ascending: false })
                     .limit(1);
                 const listed = listedRows?.[0];
-                if (listed?.owner_name && !$("lpOwnerName").value) $("lpOwnerName").value = listed.owner_name;
+                if (role !== "agent" && listed?.owner_name && !$("lpOwnerName").value) $("lpOwnerName").value = listed.owner_name;
                 if (listed?.owner_phone) $("lpOwnerPhone").value = digitsPhone(listed.owner_phone);
             }
-            const role = String(profile?.role || localStorage.getItem("roomdhundo_role") || "").toLowerCase();
             if (role === "agent" && !radioValue("lpListedBy")) {
                 const broker = document.querySelector('input[name="lpListedBy"][value="Broker / Agent"]');
                 if (broker) broker.checked = true;

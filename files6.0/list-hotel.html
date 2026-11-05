@@ -117,8 +117,16 @@
                         <div class="form-group"><label for="lpOwnerEmail">Email Address</label><input id="lpOwnerEmail" type="email" placeholder="hotel@email.com"><p class="hl-error" data-error-for="lpOwnerEmail"></p></div>
                         <div class="form-group"><label for="lpWebsite">Website (optional)</label><input id="lpWebsite" type="text" placeholder="https://"></div>
                         <div class="form-group full">
-                            <label for="lpOwnerName">Owner / Business Name</label>
-                            <input id="lpOwnerName" placeholder="e.g. Harbour Hospitality">
+                            <label>Who is listing this hotel?</label>
+                            <div class="lp-listed-by hl-chips">
+                                <label><input type="radio" name="lpListedBy" value="Property Owner"> I am the owner</label>
+                                <label><input type="radio" name="lpListedBy" value="Broker / Agent"> I am an agent listing for an owner</label>
+                            </div>
+                        </div>
+                        <div class="form-group full">
+                            <label for="lpOwnerName">Property owner's name</label>
+                            <input id="lpOwnerName" placeholder="Real hotel owner's name" autocomplete="off">
+                            <p class="hl-hint">Agents: enter the hotel owner's name, not your own. The listing still appears in your agent profile.</p>
                             <p class="hl-error" data-error-for="lpOwnerName"></p>
                         </div>
                         <div class="form-group full">
@@ -162,7 +170,6 @@
                         <label><input type="checkbox" class="lpFacility" value="front-desk" data-label="24-Hour Front Desk"> 24-Hour Front Desk</label>
                         <label><input type="checkbox" class="lpFacility" value="power-backup" data-label="Power Backup"> Power Backup</label>
                         <label><input type="checkbox" class="lpFacility" value="pet-friendly" data-label="Pet Friendly"> Pet Friendly</label>
-                        <label><input type="checkbox" class="lpFacility" value="breakfast" data-label="Breakfast"> Breakfast</label>
                     </div>
                     <div class="lp-custom-facility">
                         <label for="lpCustomFacilityInput">Add your own facility</label>
@@ -171,6 +178,36 @@
                             <button type="button" id="lpAddCustomFacilityBtn" class="lp-add-facility-btn">Add</button>
                         </div>
                         <div id="lpCustomFacilityList" class="lp-custom-facility-list"></div>
+                    </div>
+                    <div class="hl-meals">
+                        <h3>Meals</h3>
+                        <p class="hl-lead">Not every hotel serves food. Choose room only, or tick the meals this hotel actually provides.</p>
+                        <div class="lp-listed-by hl-chips">
+                            <label><input type="radio" name="lpMealPlan" value="room-only" checked> Room only (no meals)</label>
+                            <label><input type="radio" name="lpMealPlan" value="meals"> This hotel serves meals</label>
+                        </div>
+                        <div class="hl-meal-rows" id="lpMealOptions" hidden>
+                            <div class="hl-meal-row">
+                                <label><input type="checkbox" class="lpMeal" value="breakfast" data-label="Breakfast"> Breakfast</label>
+                                <label class="hl-meal-price">Price / night (₹)
+                                    <input type="number" min="0" step="1" class="lpMealPrice" data-meal="breakfast" placeholder="0 = included" disabled>
+                                </label>
+                            </div>
+                            <div class="hl-meal-row">
+                                <label><input type="checkbox" class="lpMeal" value="lunch" data-label="Lunch"> Lunch</label>
+                                <label class="hl-meal-price">Price / night (₹)
+                                    <input type="number" min="0" step="1" class="lpMealPrice" data-meal="lunch" placeholder="0 = included" disabled>
+                                </label>
+                            </div>
+                            <div class="hl-meal-row">
+                                <label><input type="checkbox" class="lpMeal" value="dinner" data-label="Dinner"> Dinner</label>
+                                <label class="hl-meal-price">Price / night (₹)
+                                    <input type="number" min="0" step="1" class="lpMealPrice" data-meal="dinner" placeholder="0 = included" disabled>
+                                </label>
+                            </div>
+                            <p class="hl-hint">Set a price for each meal you offer. Use 0 if that meal is included in the room rate.</p>
+                        </div>
+                        <p class="hl-error" data-error-for="lpMealPlan"></p>
                     </div>
                     <div class="hl-grid" style="margin-top:18px">
                         <div class="form-group"><label for="lpCheckIn">Check-in Time</label><input type="time" id="lpCheckIn" value="14:00"></div>

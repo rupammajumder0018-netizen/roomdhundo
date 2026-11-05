@@ -189,10 +189,17 @@
             </div>
 
             <h2 class="lp-section-title">Owner Contact</h2>
-
+            <p class="lp-hint">If you are an agent, this listing stays in your profile, but the name below must be the real owner's.</p>
             <div class="form-group">
-                <label for="lpOwnerName">Owner / Business Name</label>
-                <input type="text" id="lpOwnerName" placeholder="e.g. Raj Properties" required>
+                <label>Who is listing this property?</label>
+                <div class="lp-listed-by">
+                    <label><input type="radio" name="lpListedBy" value="Property Owner"> I am the owner</label>
+                    <label><input type="radio" name="lpListedBy" value="Broker / Agent"> I am an agent listing for an owner</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="lpOwnerName">Property owner's name</label>
+                <input type="text" id="lpOwnerName" placeholder="Real owner's name" required autocomplete="off">
             </div>
 
             <div class="form-group">

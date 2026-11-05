@@ -6103,6 +6103,24 @@ html[data-theme="dark"] .site-footer-social-title {
     border: 1px solid #b8eadc;
     color: var(--rd-text);
 }
+.lp-listed-by {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+}
+.lp-listed-by label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+}
+.listed-by-note {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--rd-muted, #3a6f86);
+    font-weight: 600;
+}
 .home-agents {
     padding: 12px 8% 36px;
 }

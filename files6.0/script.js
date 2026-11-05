@@ -46,7 +46,12 @@ const FACILITY_TAG_LABELS = {
     "couple-friendly": COUPLE_FRIENDLY_LABEL,
     furnished: "🛋️ Furnished",
     "semi-furnished": "🪑 Semi Furnished",
-    unfurnished: "🏠 Unfurnished"
+    unfurnished: "🏠 Unfurnished",
+    "room-only": "Room only",
+    breakfast: "Breakfast",
+    "meal-breakfast": "Breakfast",
+    "meal-lunch": "Lunch",
+    "meal-dinner": "Dinner"
 };
 
 function getBuildingFacilityLabels(building) {
@@ -369,10 +374,70 @@ function hotelStarsHtml(count) {
     return `<span class="hotel-star-row" aria-label="${stars} star hotel">${"★".repeat(stars)}</span>`;
 }
 
-function hotelHasBreakfast(building) {
-    const tags = (building?.facility_tags || []).map((tag) => String(tag || "").toLowerCase());
+function listingMetaFromBuilding(building) {
+    const hotelMeta = building?.hotel_meta && typeof building.hotel_meta === "object" ? building.hotel_meta : null;
+    const encoded = (Array.isArray(building?.rules) ? building.rules : []).find((rule) => String(rule).startsWith("RD_META:"));
+    let fromRules = null;
+    if (encoded) {
+        try { fromRules = JSON.parse(String(encoded).slice(8)); } catch (error) { fromRules = null; }
+    }
+    return { ...(fromRules || {}), ...(hotelMeta || {}) };
+}
+
+function listingIsAgentListed(building) {
+    const listed = String(listingMetaFromBuilding(building)?.listed_by || "").toLowerCase();
+    return listed.includes("agent") || listed.includes("broker");
+}
+
+function mergeListingMetaIntoRules(rules, extra) {
+    const list = Array.isArray(rules) ? rules.slice() : [];
+    const idx = list.findIndex((rule) => String(rule).startsWith("RD_META:"));
+    let meta = {};
+    if (idx >= 0) {
+        try { meta = JSON.parse(String(list[idx]).slice(8)) || {}; } catch (error) { meta = {}; }
+    }
+    Object.assign(meta, extra);
+    const encoded = `RD_META:${JSON.stringify(meta)}`;
+    if (idx >= 0) list[idx] = encoded;
+    else list.push(encoded);
+    return list;
+}
+
+function hotelMealTags(building) {
+    return (building?.facility_tags || []).map((tag) => String(tag || "").toLowerCase());
+}
+
+function hotelHasMeal(building, meal) {
+    const tags = hotelMealTags(building);
     const labels = getBuildingFacilityLabels(building).map((label) => label.toLowerCase());
-    return tags.includes("food") || labels.some((label) => /\bfood\b|breakfast|meal/.test(label));
+    if (tags.includes("room-only") && !tags.includes(`meal-${meal}`) && !tags.includes(meal)) return false;
+    return tags.includes(`meal-${meal}`) || tags.includes(meal) || labels.includes(meal);
+}
+
+function hotelHasBreakfast(building) {
+    return hotelHasMeal(building, "breakfast");
+}
+
+function hotelMealPrices(building) {
+    const prices = listingMetaFromBuilding(building)?.meal_prices;
+    return prices && typeof prices === "object" ? prices : {};
+}
+
+function hotelMealPrice(building, meal) {
+    const amount = Number(hotelMealPrices(building)[meal]);
+    if (Number.isFinite(amount) && amount >= 0) return amount;
+    if (meal === "breakfast" && hotelHasBreakfast(building)) return 300;
+    return 0;
+}
+
+function hotelMealSummary(building) {
+    const meals = ["breakfast", "lunch", "dinner"].filter((meal) => hotelHasMeal(building, meal));
+    if (!meals.length) return "Room only — this hotel does not provide meals.";
+    return meals.map((meal) => {
+        const label = meal.charAt(0).toUpperCase() + meal.slice(1);
+        const amount = hotelMealPrice(building, meal);
+        return amount > 0 ? `${label} +₹${amount.toLocaleString("en-IN")}/night` : `${label} included`;
+    }).join(", ");
 }
 
 function visibleListingRules(rules) {
@@ -3605,6 +3670,8 @@ function setupHotelPropertyPage(building) {
                         <p>${escapePropertyHtml(times.checkOut)}</p>
                         <h3>About this property</h3>
                         <p id="hotelSheetDescription"></p>
+                        <h3>Meals</h3>
+                        <p>${escapePropertyHtml(hotelMealSummary(building))}</p>
                     </div>
                     <div class="hotel-tab-panel" data-hotel-panel="facilities">
                         <h3>Facilities</h3>
@@ -3932,12 +3999,17 @@ if (!hotelRoom) (building.room_types || []).forEach(rt => {
     });
 
     const ownerCard = document.getElementById("ownerCard");
+    const ownerDisplayName = building.owner_name || "Owner";
+    const agentListedNote = listingIsAgentListed(building)
+        ? `<p class="listed-by-note">Listed by an agent. This is the property owner, not the agent who submitted the listing.</p>`
+        : "";
     ownerCard.innerHTML = `
         <div class="owner-card-header">
             <span class="owner-icon">👤</span>
             <div>
                 <span class="owner-label">PROPERTY OWNER</span>
-                <h3>${building.owner_name}</h3>
+                <h3>${ownerDisplayName}</h3>
+                ${agentListedNote}
             </div>
         </div>
         <div class="owner-details">
@@ -3962,7 +4034,7 @@ if (!hotelRoom) (building.room_types || []).forEach(rt => {
         const modalOwnerRating = document.getElementById("modalOwnerRating");
         const modalMemberSince = document.getElementById("modalMemberSince");
 
-        if (modalOwnerName) modalOwnerName.textContent = building.owner_name;
+        if (modalOwnerName) modalOwnerName.textContent = building.owner_name || "Owner";
         if (modalOwnerRating) modalOwnerRating.textContent = building.owner_verified ? "✓ Verified Owner" : "New";
         if (modalMemberSince) modalMemberSince.textContent = `Member since ${building.owner_member_since || "—"}`;
 
@@ -5310,6 +5382,7 @@ function wireListPropertyForm() {
             }
             window.dispatchEvent(new Event("hotel-listing:loaded"));
         }
+        await setupAgentListingOwnerFields(user);
     };
 
     initializeForm();
@@ -5401,6 +5474,30 @@ function wireListPropertyForm() {
             ...facilityCheckboxes.map(checkbox => checkbox.dataset.label),
             ...customFacilities.map(item => item.label)
         ];
+        if (document.querySelector('input[name="lpMealPlan"]')) {
+            const mealKeys = new Set(["food", "breakfast", "lunch", "dinner", "meal-breakfast", "meal-lunch", "meal-dinner", "room-only"]);
+            for (let i = facilityTags.length - 1; i >= 0; i--) {
+                if (mealKeys.has(String(facilityTags[i]).toLowerCase())) facilityTags.splice(i, 1);
+            }
+            for (let i = facilities.length - 1; i >= 0; i--) {
+                if (/^(food|breakfast|lunch|dinner|room only)$/i.test(String(facilities[i]).trim())) facilities.splice(i, 1);
+            }
+            const plan = document.querySelector('input[name="lpMealPlan"]:checked')?.value || "room-only";
+            if (plan === "meals") {
+                const meals = Array.from(document.querySelectorAll(".lpMeal:checked"));
+                if (!meals.length) {
+                    alert("Select breakfast, lunch, and/or dinner, or choose Room only.");
+                    return;
+                }
+                meals.forEach((el) => {
+                    facilityTags.push(`meal-${el.value}`);
+                    facilities.push(el.dataset.label);
+                });
+            } else {
+                facilityTags.push("room-only");
+                facilities.push("Room only");
+            }
+        }
         const starValue = document.querySelector(".lpStar:checked")?.value;
         if (starValue) {
             facilityTags.push(`star-${starValue}`);
@@ -5674,6 +5771,13 @@ if (isHotel) {
             const hotelMeta = isHotelWizard && typeof window.syncHotelListingHiddenFields === "function"
                 ? { ...window.syncHotelListingHiddenFields(), gallery: hotelGalleryMap || {} }
                 : null;
+            const listedByRole = String(await fetchProfileRole(user.id) || "").toLowerCase();
+            const listedBy = listedByRole === "agent"
+                ? "Broker / Agent"
+                : (document.querySelector('input[name="lpListedBy"]:checked')?.value || "Property Owner");
+            if (hotelMeta) hotelMeta.listed_by = listedBy;
+            const withListedBy = mergeListingMetaIntoRules(rules, { listed_by: listedBy });
+            rules.splice(0, rules.length, ...withListedBy);
             const latitude = Number(document.getElementById("propertyLatitude")?.value);
             const longitude = Number(document.getElementById("propertyLongitude")?.value);
             const buildingCore = {
@@ -6010,18 +6114,50 @@ async function enforceAgentPendingGate(user) {
     }
 }
 
+async function setupAgentListingOwnerFields(user) {
+    if (!user?.id) return;
+    const role = String(await fetchProfileRole(user.id) || "").toLowerCase();
+    const agentRadio = document.querySelector('input[name="lpListedBy"][value="Broker / Agent"]');
+    const ownerRadio = document.querySelector('input[name="lpListedBy"][value="Property Owner"]');
+    if (role === "agent" && agentRadio) agentRadio.checked = true;
+    else if (ownerRadio && !document.querySelector('input[name="lpListedBy"]:checked')) ownerRadio.checked = true;
+
+    const nameInput = document.getElementById("lpOwnerName");
+    const nameLabel = document.querySelector('label[for="lpOwnerName"]');
+    if (nameLabel) nameLabel.textContent = "Property owner's name";
+    if (nameInput) {
+        nameInput.placeholder = "Real owner's name — not the agent's";
+        nameInput.setAttribute("autocomplete", "off");
+    }
+    if (role !== "agent" || !nameInput || listPropertyEditMode) return;
+
+    const agentNames = [
+        user.user_metadata?.full_name,
+        user.user_metadata?.name
+    ].map((value) => String(value || "").trim().toLowerCase()).filter(Boolean);
+    const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle();
+    if (profile?.full_name) agentNames.push(String(profile.full_name).trim().toLowerCase());
+    if (agentNames.includes(nameInput.value.trim().toLowerCase())) nameInput.value = "";
+}
+
 async function showAgentListingBanner(user) {
     if (!user?.id) return;
     if (!["list-pg.html", "list-hotel.html", "list-flat.html", "list-property.html"].includes(getCurrentPageName())) return;
     const role = await fetchProfileRole(user.id);
     if (role !== "agent") return;
     const form = document.getElementById("listPropertyForm");
-    if (!form || form.querySelector(".agent-list-banner")) return;
+    if (!form) return;
+    await setupAgentListingOwnerFields(user);
+    if (form.querySelector(".agent-list-banner")) return;
     const banner = document.createElement("div");
     banner.className = "agent-list-banner";
-    banner.innerHTML = "<strong>Listing as an agent.</strong> Fill the owner name and phone with the actual property owner. You are registering this listing in your agent account.";
+    banner.innerHTML = "<strong>Listing as an agent.</strong> Enter the real property owner's name. This listing will appear in your agent profile, but you will not be shown as the owner.";
     form.prepend(banner);
-    const ownerHeading = Array.from(form.querySelectorAll("h2, .lp-section-title")).find((el) => /owner contact/i.test(el.textContent || ""));
+    const ownerHeading = Array.from(form.querySelectorAll("h2, .lp-section-title, .hl-card h2")).find((el) => /owner contact|owner \/ contact/i.test(el.textContent || ""));
     if (ownerHeading) ownerHeading.textContent = "Property owner contact";
 }
 

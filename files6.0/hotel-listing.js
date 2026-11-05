@@ -200,12 +200,30 @@
             if (!val("lpState")) fail("lpState", "Enter the state.");
             if (!val("lpCity")) fail("lpCity", "Enter the city.");
             if (!val("lpAddress")) fail("lpAddress", "Enter the complete address.");
-            if (!val("lpOwnerName")) fail("lpOwnerName", "Enter the owner or business name.");
+            if (!val("lpOwnerName")) fail("lpOwnerName", "Enter the property owner's name.");
             if (!val("lpOwnerPhone")) fail("lpOwnerPhone", "Enter a contact number.");
             else if (!phoneOk(val("lpOwnerPhone"))) fail("lpOwnerPhone", "Use a 10-digit Indian mobile number.");
             if (val("lpOwnerAltPhone") && !phoneOk(val("lpOwnerAltPhone"))) fail("lpOwnerPhone", "Alternate number must be a 10-digit mobile.");
             if (!val("lpOwnerEmail")) fail("lpOwnerEmail", "Enter an email address.");
             else if (!emailOk(val("lpOwnerEmail"))) fail("lpOwnerEmail", "Enter a valid email address.");
+            setError("lpMealPlan", "");
+            const mealPlan = document.querySelector('input[name="lpMealPlan"]:checked')?.value || "room-only";
+            if (mealPlan === "meals") {
+                const meals = Array.from(document.querySelectorAll(".lpMeal:checked"));
+                if (!meals.length) {
+                    fail("lpMealPlan", "Tick breakfast, lunch, and/or dinner, or choose Room only.");
+                }
+                meals.forEach((box) => {
+                    const priceInput = document.querySelector(`.lpMealPrice[data-meal="${box.value}"]`);
+                    const price = priceInput?.value;
+                    if (price === "" || !Number.isFinite(Number(price)) || Number(price) < 0) {
+                        fail("lpMealPlan", `Enter a ${box.dataset.label || box.value} price. Use 0 if it is included.`);
+                        priceInput?.classList.add("is-invalid");
+                    } else {
+                        priceInput?.classList.remove("is-invalid");
+                    }
+                });
+            }
         }
 
         if (step === 2) {
@@ -259,6 +277,28 @@
         return ok;
     }
 
+    function collectMealPrices() {
+        const prices = {};
+        document.querySelectorAll(".lpMeal:checked").forEach((box) => {
+            const input = document.querySelector(`.lpMealPrice[data-meal="${box.value}"]`);
+            const amount = Number(input?.value);
+            prices[box.value] = Number.isFinite(amount) && amount >= 0 ? amount : 0;
+        });
+        return prices;
+    }
+
+    function mealReviewText(meta) {
+        const prices = meta.meal_prices || {};
+        const meals = Array.isArray(meta.meals) ? meta.meals : Object.keys(prices);
+        if (!meals.length) return "Selected";
+        return meals.map((meal) => {
+            const amount = Number(prices[meal]);
+            const label = meal.charAt(0).toUpperCase() + meal.slice(1);
+            if (!Number.isFinite(amount) || amount <= 0) return `${label} (included)`;
+            return `${label} ₹${amount}/night`;
+        }).join(", ");
+    }
+
     function collectMeta() {
         const galleryUrls = {};
         GALLERY_CATEGORIES.forEach((cat) => {
@@ -280,6 +320,10 @@
             child_policy: val("lpChildPolicy"),
             pet_policy: val("lpPetPolicy"),
             smoking_policy: val("lpSmokePolicy"),
+            listed_by: document.querySelector('input[name="lpListedBy"]:checked')?.value || "",
+            meal_plan: document.querySelector('input[name="lpMealPlan"]:checked')?.value || "room-only",
+            meals: Array.from(document.querySelectorAll(".lpMeal:checked")).map((el) => el.value),
+            meal_prices: collectMealPrices(),
             gallery: galleryUrls
         };
     }
@@ -349,6 +393,7 @@
             <p>${photoCount} photo${photoCount === 1 ? "" : "s"} ready to upload.</p>
             <h3>Facilities &amp; Policies</h3>
             <p>${escape(facilities.join(", ") || "None selected")}</p>
+            <p>Meals: ${escape(meta.meal_plan === "meals" ? mealReviewText(meta) : "Room only")}</p>
             <p>Check-in ${escape($("lpCheckIn")?.value || "")} · Check-out ${escape($("lpCheckOut")?.value || "")}</p>
             <p>${escape(meta.cancellation)} · ${escape(meta.child_policy)} · ${escape(meta.pet_policy)} · ${escape(meta.smoking_policy)}</p>
             <h3>Room Categories</h3>
@@ -387,7 +432,10 @@
         if (!meta && encoded) {
             try { meta = JSON.parse(String(encoded).slice(8)); } catch (error) { meta = null; }
         }
-        if (!meta) return;
+        if (!meta) {
+            applyMealPlan(property, {});
+            return;
+        }
         const assign = (id, value) => {
             if ($(id) && value != null && value !== "") $(id).value = value;
         };
@@ -405,6 +453,9 @@
         assign("lpChildPolicy", meta.child_policy);
         assign("lpPetPolicy", meta.pet_policy);
         assign("lpSmokePolicy", meta.smoking_policy);
+        const listedBy = document.querySelector(`input[name="lpListedBy"][value="${meta.listed_by || ""}"]`);
+        if (listedBy) listedBy.checked = true;
+        applyMealPlan(property, meta);
         if (meta.star) {
             const star = document.querySelector(`.lpStar[value="${meta.star}"]`);
             if (star) star.checked = true;
@@ -433,6 +484,43 @@
         });
         return { existing, files, categorized };
     };
+
+    function syncMealPriceInputs() {
+        document.querySelectorAll(".lpMeal").forEach((box) => {
+            const input = document.querySelector(`.lpMealPrice[data-meal="${box.value}"]`);
+            if (!input) return;
+            input.disabled = !box.checked;
+            if (!box.checked) input.value = "";
+        });
+    }
+
+    function syncMealOptions() {
+        const meals = document.querySelector('input[name="lpMealPlan"][value="meals"]')?.checked;
+        const box = $("lpMealOptions");
+        if (box) box.hidden = !meals;
+        syncMealPriceInputs();
+    }
+
+    function applyMealPlan(property, meta) {
+        const tags = (property?.facility_tags || []).map((tag) => String(tag || "").toLowerCase());
+        const savedMeals = Array.isArray(meta?.meals) ? meta.meals.map((item) => String(item).toLowerCase()) : [];
+        const prices = meta?.meal_prices && typeof meta.meal_prices === "object" ? meta.meal_prices : {};
+        const fromTags = ["breakfast", "lunch", "dinner"].filter((meal) => tags.includes(`meal-${meal}`) || tags.includes(meal) || savedMeals.includes(meal) || prices[meal] != null);
+        const roomOnly = meta?.meal_plan === "room-only" || tags.includes("room-only") || fromTags.length === 0;
+        const roomRadio = document.querySelector('input[name="lpMealPlan"][value="room-only"]');
+        const mealsRadio = document.querySelector('input[name="lpMealPlan"][value="meals"]');
+        if (roomOnly && roomRadio) roomRadio.checked = true;
+        if (!roomOnly && mealsRadio) mealsRadio.checked = true;
+        document.querySelectorAll(".lpMeal").forEach((box) => {
+            box.checked = fromTags.includes(box.value);
+            const input = document.querySelector(`.lpMealPrice[data-meal="${box.value}"]`);
+            if (input && fromTags.includes(box.value)) {
+                const amount = Number(prices[box.value]);
+                input.value = Number.isFinite(amount) ? String(amount) : "";
+            }
+        });
+        syncMealOptions();
+    }
 
     window.hydrateHotelListing = hydrateMeta;
     window.syncHotelListingHiddenFields = syncHiddenFields;
@@ -471,6 +559,13 @@
             }, 0);
         });
         goToStep(1);
+        syncMealOptions();
+        document.querySelectorAll('input[name="lpMealPlan"]').forEach((input) => {
+            input.addEventListener("change", syncMealOptions);
+        });
+        document.querySelectorAll(".lpMeal").forEach((input) => {
+            input.addEventListener("change", syncMealPriceInputs);
+        });
         if (!new URLSearchParams(window.location.search).get("edit")) {
             setTimeout(seedRooms, 0);
         }
