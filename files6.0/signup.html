@@ -1,268 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Sign Up | Roomdhundo</title>
-
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0TKM9DNE73"></script>
-
-<script>
-    window.dataLayer = window.dataLayer || [];
-
-    function gtag() {
-        dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-0TKM9DNE73');
-</script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | RoomDhundo</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0TKM9DNE73"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag("js", new Date());
+        gtag("config", "G-0TKM9DNE73");
+    </script>
+    <script>
+        document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "light";
+    </script>
     <link rel="stylesheet" href="style.css">
-
 </head>
-
-
-<body>
-
-    <!-- NAVBAR -->
-
-    <nav class="navbar">
-
-        <a href="index.html" class="logo">
-    Roomdhundo
-</a>
-
-        <div class="nav-links">
-
-            <a href="index.html">
-                Home
-            </a>
-
-            <a href="list-property.html">
-                List Property
-            </a>
-
-            <a href="login.html">
-                Login
-            </a>
-
-        </div>
-
-    </nav>
-
-
-    <!-- SIGN UP PAGE -->
-
+<body class="auth-screen">
     <main class="auth-page">
-
         <div class="auth-card">
+            <div class="auth-topbar">
+                <a href="index.html" class="auth-close-round" aria-label="Close">×</a>
+                <button type="button" class="theme-toggle" aria-label="Switch to dark mode" title="Switch to dark mode">🌙</button>
+            </div>
 
-            <h1>
-                Create your account
-            </h1>
+            <div class="auth-brand">
+                <span class="auth-brand-mark" aria-hidden="true">⌂</span>
+                <span>RoomDhundo</span>
+            </div>
 
-            <p class="auth-subtitle">
-                Join Roomdhundo and find a place that feels like home.
-            </p>
-
+            <h1>Sign Up</h1>
+            <p class="auth-subtitle">Create your RoomDhundo account to find or list a stay.</p>
 
             <form id="signupForm">
-
-                <!-- NAME -->
-
-                <div class="auth-field">
-
-                    <label for="signupName">
-                        Full Name
-                    </label>
-
-                    <input
-                        type="text"
-                        id="signupName"
-                        placeholder="Enter your full name"
-                        required
-                    >
-
-                </div>
-
-
-                <!-- EMAIL -->
+                <div data-auth-role-slot></div>
+                <div data-auth-social-slot></div>
 
                 <div class="auth-field">
-
-                    <label for="signupEmail">
-                        Email
-                    </label>
-
-                    <input
-                        type="email"
-                        id="signupEmail"
-                        placeholder="Enter your email"
-                        required
-                    >
-
+                    <label for="signupName">Full name *</label>
+                    <input type="text" id="signupName" placeholder="Your full name" autocomplete="name" required>
                 </div>
-
-
-                <!-- PASSWORD -->
 
                 <div class="auth-field">
-
-                    <label for="signupPassword">
-                        Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="signupPassword"
-                        placeholder="Create a password"
-                        required
-                    >
-
+                    <label for="signupEmail">Email *</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" autocomplete="email" required>
                 </div>
-
-
-                <!-- CONFIRM PASSWORD -->
 
                 <div class="auth-field">
-
-                    <label for="signupConfirmPassword">
-                        Confirm Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="signupConfirmPassword"
-                        placeholder="Confirm your password"
-                        required
-                    >
-
+                    <label for="signupPassword">Password *</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password" autocomplete="new-password" required>
                 </div>
 
+                <div class="auth-field">
+                    <label for="signupConfirmPassword">Confirm password *</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" autocomplete="new-password" required>
+                </div>
 
-                <!-- MESSAGE -->
-
-                <p id="signupMessage"></p>
-
-
-                <!-- BUTTON -->
-
-                <button
-                    type="submit"
-                    class="auth-submit-btn"
-                >
-                    Create Account
-                </button>
-
+                <p class="auth-message" id="signupMessage"></p>
+                <button type="submit" class="auth-submit-btn">Create account</button>
             </form>
 
-
             <p class="auth-switch">
-
                 Already have an account?
-
-                <a href="login.html">
-                    Login
-                </a>
-
+                <a href="login.html">Sign In</a>
             </p>
-
         </div>
-
     </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="script.js"></script>
 
-<!-- =====================================================
-     ROLE / PURPOSE SELECTION MODAL
-===================================================== -->
-
-<div id="roleChoiceModal" class="role-choice-overlay">
-
-    <div class="role-choice-box">
-
-        <button id="closeRoleChoice" class="role-close-btn">
-            ×
-        </button>
-
-        <h2>How do you want to use RoomDhundo?</h2>
-
-        <p>
-            Choose an option to continue
-        </p>
-
-        <div class="role-choice-options">
-
-            <!-- RENTER -->
-            <button id="renterOption" class="role-option">
-
-                <div class="role-icon">
-                    🏠
-                </div>
-
-                <div class="role-option-text">
-                    <h3>I'm a Renter</h3>
-
-                    <span>
-                        Find PGs, rooms and places to stay
-                    </span>
-                </div>
-
-                <div class="role-arrow">
-                    →
-                </div>
-
-            </button>
-
-
-            <!-- OWNER -->
-            <button id="ownerOption" class="role-option">
-
-                <div class="role-icon">
-                    🏢
-                </div>
-
-                <div class="role-option-text">
-
-                    <h3>List My Property</h3>
-
-                    <span>
-                        List and manage your property
-                    </span>
-
-                </div>
-
-                <div class="role-arrow">
-                    →
-                </div>
-
-            </button>
-
-            <button id="agentOption" class="role-option">
-                <div class="role-icon">🤝</div>
-                <div class="role-option-text">
-                    <h3>I'm an Agent</h3>
-                    <span>List properties for owners after approval</span>
-                </div>
-                <div class="role-arrow">→</div>
-            </button>
-
+    <div id="roleChoiceModal" class="role-choice-overlay">
+        <div class="role-choice-box">
+            <button id="closeRoleChoice" class="role-close-btn">×</button>
+            <h2>How do you want to use RoomDhundo?</h2>
+            <p>Choose an option to continue</p>
+            <div class="role-choice-options">
+                <button id="renterOption" class="role-option">
+                    <div class="role-icon">🏠</div>
+                    <div class="role-option-text">
+                        <h3>I'm a Renter</h3>
+                        <span>Find PGs, rooms and places to stay</span>
+                    </div>
+                    <div class="role-arrow">→</div>
+                </button>
+                <button id="ownerOption" class="role-option">
+                    <div class="role-icon">🏢</div>
+                    <div class="role-option-text">
+                        <h3>List My Property</h3>
+                        <span>List and manage your property</span>
+                    </div>
+                    <div class="role-arrow">→</div>
+                </button>
+                <button id="agentOption" class="role-option">
+                    <div class="role-icon">🤝</div>
+                    <div class="role-option-text">
+                        <h3>I'm an Agent</h3>
+                        <span>List properties for owners after approval</span>
+                    </div>
+                    <div class="role-arrow">→</div>
+                </button>
+            </div>
         </div>
-
     </div>
-
-</div>
 </body>
-
 </html>

@@ -1529,29 +1529,27 @@ function injectAuthRolePickers() {
         picker.className = "auth-role-picker";
         picker.dataset.authRolePicker = "true";
         picker.innerHTML = `
-            <p class="auth-role-heading">I am a</p>
             <div class="auth-role-options" role="radiogroup" aria-label="Choose account type">
                 <label class="auth-role-card">
                     <input type="radio" name="${groupName}" value="user"${required ? " required" : ""}>
-                    <span class="auth-role-title">Renter</span>
-                    <span class="auth-role-desc">Find a place to stay</span>
+                    <span class="auth-role-title">As a Renter</span>
                 </label>
                 <label class="auth-role-card">
                     <input type="radio" name="${groupName}" value="owner"${required ? " required" : ""}>
-                    <span class="auth-role-title">Owner</span>
-                    <span class="auth-role-desc">List my property</span>
+                    <span class="auth-role-title">As an Owner</span>
                 </label>
                 <label class="auth-role-card">
                     <input type="radio" name="${groupName}" value="agent"${required ? " required" : ""}>
-                    <span class="auth-role-title">Agent</span>
-                    <span class="auth-role-desc">List for property owners</span>
+                    <span class="auth-role-title">As an Agent</span>
                 </label>
             </div>
         `;
 
-        const submit = form.querySelector("button[type='submit']");
-        const message = form.querySelector(".auth-message, #loginMessage, #signupMessage");
-        form.insertBefore(picker, message || submit || null);
+        const slot = form.querySelector("[data-auth-role-slot]");
+        const subtitle = form.querySelector(".auth-subtitle");
+        if (slot) slot.replaceWith(picker);
+        else if (subtitle) subtitle.after(picker);
+        else form.insertBefore(picker, form.firstElementChild);
     }
 
     addPicker(document.getElementById("loginForm"), "loginRole", true);
@@ -1605,7 +1603,12 @@ function setGoogleAuthButtonsBusy(busy) {
         button.classList.toggle("is-loading", !!busy);
         button.setAttribute("aria-busy", busy ? "true" : "false");
         const label = button.querySelector("[data-google-label]");
-        if (label) label.textContent = busy ? "Redirecting to Google..." : "Continue with Google";
+        if (label) {
+            const signup = button.closest("#signupForm");
+            label.textContent = busy
+                ? "Redirecting to Google..."
+                : (signup ? "Sign up with Google" : "Sign in with Google");
+        }
     });
 }
 
@@ -1617,19 +1620,78 @@ function injectGoogleAuthButtons() {
         const wrap = document.createElement("div");
         wrap.className = "google-auth-wrap";
         wrap.dataset.googleAuth = "true";
+        const isSignup = formId === "signupForm";
         wrap.innerHTML = `
-            <div class="auth-divider" role="separator"><span>or</span></div>
-            <button type="button" class="google-auth-btn" data-google-auth-btn data-google-message="${formId === "signupForm" ? "signupMessage" : "loginMessage"}" aria-label="Continue with Google">
+            <button type="button" class="google-auth-btn" data-google-auth-btn data-google-message="${isSignup ? "signupMessage" : "loginMessage"}" aria-label="${isSignup ? "Sign up with Google" : "Sign in with Google"}">
                 <svg class="google-auth-icon" viewBox="0 0 48 48" width="20" height="20" aria-hidden="true" focusable="false">
                     <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.5-.4-3.5z"/>
                     <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3.1 0 5.8 1.2 8 3.1l5.7-5.7C34.2 6.1 29.4 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/>
                     <path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.2l-6.3-5.3C29.3 35.1 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
                     <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.2-3.5 5.8-6.6 7.5l6.3 5.3C37.9 38.3 44 32.5 44 24c0-1.3-.1-2.5-.4-3.5z"/>
                 </svg>
-                <span data-google-label>Continue with Google</span>
+                <span data-google-label>${isSignup ? "Sign up with Google" : "Sign in with Google"}</span>
             </button>
+            <div class="auth-divider" role="separator"><span>or</span></div>
         `;
-        form.appendChild(wrap);
+        const slot = form.querySelector("[data-auth-social-slot]");
+        const picker = form.querySelector(".auth-role-picker");
+        if (slot) slot.replaceWith(wrap);
+        else if (picker) picker.after(wrap);
+        else form.insertBefore(wrap, form.firstElementChild);
+    });
+}
+
+function authFieldIcon(kind) {
+    if (kind === "email") {
+        return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2zm0 2v.2l8 5 8-5V8H4zm16 8V10.5l-7.4 4.6a1 1 0 0 1-1.2 0L4 10.5V16h16z"/></svg>';
+    }
+    if (kind === "user") {
+        return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2zm-7-2a2 2 0 0 1 4 0v2h-4zm4 8a2 2 0 1 1-2-2 2 2 0 0 1 2 2z"/></svg>';
+}
+
+function wrapAuthInput(id, kind) {
+    const input = document.getElementById(id);
+    if (!input || input.closest(".auth-input-wrap")) return;
+    const wrap = document.createElement("div");
+    wrap.className = "auth-input-wrap";
+    const icon = document.createElement("span");
+    icon.className = "auth-input-icon";
+    icon.innerHTML = authFieldIcon(kind);
+    input.parentNode.insertBefore(wrap, input);
+    wrap.append(icon, input);
+    if (kind === "password") {
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "auth-eye-btn";
+        toggle.dataset.passwordToggle = "true";
+        toggle.setAttribute("aria-label", "Show password");
+        toggle.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 5c5 0 9.3 3.1 11 7-1.7 3.9-6 7-11 7S2.7 15.9 1 12c1.7-3.9 6-7 11-7zm0 2C8.2 7 4.9 9.2 3.4 12 4.9 14.8 8.2 17 12 17s7.1-2.2 8.6-5C19.1 9.2 15.8 7 12 7zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5z"/></svg>';
+        wrap.appendChild(toggle);
+    }
+}
+
+function enhanceAuthFields() {
+    wrapAuthInput("loginEmail", "email");
+    wrapAuthInput("signupEmail", "email");
+    wrapAuthInput("signupName", "user");
+    wrapAuthInput("loginPassword", "password");
+    wrapAuthInput("signupPassword", "password");
+    wrapAuthInput("signupConfirmPassword", "password");
+}
+
+function wirePasswordToggles() {
+    document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+        if (button.dataset.wired) return;
+        button.dataset.wired = "true";
+        button.addEventListener("click", () => {
+            const input = button.parentElement?.querySelector("input");
+            if (!input) return;
+            const hidden = input.type === "password";
+            input.type = hidden ? "text" : "password";
+            button.setAttribute("aria-label", hidden ? "Hide password" : "Show password");
+        });
     });
 }
 
@@ -2085,7 +2147,9 @@ function wireAuthUI() {
     }
 
     injectAuthRolePickers();
+    enhanceAuthFields();
     wireGoogleAuthButtons();
+    wirePasswordToggles();
 
     closeAuthBtn?.addEventListener("click", closeAuthModal);
 
