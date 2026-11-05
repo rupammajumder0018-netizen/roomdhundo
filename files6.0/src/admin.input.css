@@ -6,3 +6,4 @@
 @source "../admin.js";
 
 @import "./legacy-admin.css" layer(components);
+@import "./mobile.css";

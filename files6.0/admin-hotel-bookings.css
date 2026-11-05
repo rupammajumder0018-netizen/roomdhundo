@@ -561,3 +561,14 @@ html[data-theme="dark"] .hb-drawer {
         text-align: left;
     }
 }
+
+@media (max-width: 480px) {
+    #hotelBookingsSection .hb-stats {
+        grid-template-columns: 1fr;
+    }
+
+    #hotelBookingsSection .hb-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

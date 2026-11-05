@@ -609,6 +609,8 @@ table {
     width: 100%;
 
     overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
 }
 
 
@@ -2821,4 +2823,164 @@ table {
         padding: 12px 16px 0;
     }
 
+}
+
+/* ============================================================
+   ADMIN AGENTS
+   ============================================================ */
+
+.admin-agents-section .admin-agents-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-agents-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 4px 8px;
+}
+
+.admin-agents-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+.admin-agents-table th,
+.admin-agents-table td {
+    padding: 14px 12px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 13px;
+    border-bottom: 1px solid #e5eee9;
+    color: #22577A;
+}
+
+.admin-agents-table th {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #38A3A5;
+    background: #f4fbf7;
+}
+
+.admin-agents-table tbody tr:hover {
+    background: #f7fdf9;
+}
+
+.agent-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: capitalize;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.agent-status.approved {
+    background: #d9f8e8;
+    color: #166534;
+}
+
+.agent-status.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.agent-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.agent-actions button {
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.agent-actions .approve {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.agent-actions .reject {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.agent-actions .delete {
+    background: #22577A;
+    color: #fff;
+}
+
+@media (max-width: 900px) {
+    .admin-agents-section .admin-agents-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-agents-table {
+        min-width: 0;
+    }
+
+    .admin-agents-table thead {
+        display: none;
+    }
+
+    .admin-agents-table,
+    .admin-agents-table tbody,
+    .admin-agents-table tr,
+    .admin-agents-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-agents-table tbody {
+        display: grid;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .admin-agents-table tr {
+        background: #ffffff;
+        border: 1px solid #c6ead9;
+        border-radius: 14px;
+        padding: 8px 14px 12px;
+        box-shadow: 0 4px 14px rgba(34, 87, 122, 0.06);
+    }
+
+    .admin-agents-table td {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eefaf4;
+        word-break: break-word;
+    }
+
+    .admin-agents-table td:last-child {
+        border-bottom: 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-agents-table td::before {
+        content: attr(data-label);
+        font-weight: 800;
+        color: #22577A;
+        flex-shrink: 0;
+    }
+
+    .admin-agents-table td[data-label="Action"]::before {
+        margin-bottom: 4px;
+    }
+
+    .agent-actions button {
+        width: 100%;
+        min-height: 44px;
+    }
 }

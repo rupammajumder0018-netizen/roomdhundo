@@ -8,3 +8,4 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @import "./legacy-user.css" layer(components);
+@import "./mobile.css";

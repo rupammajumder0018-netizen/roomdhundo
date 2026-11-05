@@ -499,7 +499,7 @@ function updatePageHeader(
                 "Agents",
 
             subtitle:
-                "Approve or reject agent applications."
+                "Approve, reject, or delete agent applications."
 
         },
 

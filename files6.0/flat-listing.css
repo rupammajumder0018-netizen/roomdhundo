@@ -150,10 +150,16 @@ html[data-theme="dark"] .fl-upload-status {
 
 @media (max-width: 800px) {
     .flat-listing-page .hl-progress {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .flat-listing-page .hl-progress button span:not(.hl-num) {
         font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .flat-listing-page .hl-progress {
+        grid-template-columns: 1fr;
     }
 }

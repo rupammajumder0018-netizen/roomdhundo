@@ -1020,6 +1020,14 @@
                             Admins
                         </option>
 
+                        <option value="agent">
+                            Agents
+                        </option>
+
+                        <option value="agent_pending">
+                            Pending agents
+                        </option>
+
                     </select>
 
 
@@ -1136,8 +1144,8 @@
         </section>
 
 
-<section class="admin-section" data-section-content="agents" id="agentsSection">
-    <div class="stats-grid">
+<section class="admin-section admin-agents-section" data-section-content="agents" id="agentsSection">
+    <div class="stats-grid admin-agents-stats">
         <div class="stat-card">
             <div class="stat-icon">⏳</div>
             <div>
@@ -1152,10 +1160,23 @@
                 <h2 id="adminAgentsApprovedCount">0</h2>
             </div>
         </div>
+        <div class="stat-card">
+            <div class="stat-icon">⛔</div>
+            <div>
+                <p>Rejected</p>
+                <h2 id="adminAgentsRejectedCount">0</h2>
+            </div>
+        </div>
     </div>
-    <div class="dashboard-card">
-        <div class="table-wrap">
-            <table>
+    <div class="dashboard-card admin-agents-card">
+        <div class="card-header">
+            <div>
+                <h2>Agent applications</h2>
+                <p>Approve, reject, or delete agents. Deleting an agent turns their account into a renter.</p>
+            </div>
+        </div>
+        <div class="table-wrap admin-agents-table-wrap">
+            <table class="admin-agents-table">
                 <thead>
                     <tr>
                         <th>Name</th>

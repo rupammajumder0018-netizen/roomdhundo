@@ -88,3 +88,4 @@
 }
 
 @import "./legacy-style.css" layer(components);
+@import "./mobile.css";
