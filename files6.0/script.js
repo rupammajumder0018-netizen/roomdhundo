@@ -775,7 +775,7 @@ async function getCurrentUserProfile() {
 }
 
 let navProfileOutsideClickBound = false;
-let lastRenderedNavUserId = "__unset__";
+let lastRenderedNavKey = "__unset__";
 
 async function updateNavForUser(user) {
 
@@ -786,16 +786,6 @@ async function updateNavForUser(user) {
 
     const currentUserId =
         user ? user.id : null;
-
-    if (
-        currentUserId === lastRenderedNavUserId &&
-        navAuthBtn.dataset.navReady === "true"
-    ) {
-        return;
-    }
-
-    lastRenderedNavUserId =
-        currentUserId;
 
     let navProfileWrap =
         navAuthBtn.closest(".nav-profile-wrap");
@@ -838,6 +828,7 @@ async function updateNavForUser(user) {
     // =================================================
 
     if (!user) {
+        lastRenderedNavKey = "anon";
 
         navAuthBtn.textContent =
             "Log In / Sign Up";
@@ -892,11 +883,13 @@ async function updateNavForUser(user) {
 
 
     const profileRole =
-        String(
-            profile?.role || "user"
-        )
-            .trim()
-            .toLowerCase();
+        resolveDisplayRole(user, profile?.role);
+
+    const navKey = `${currentUserId}:${profileRole}`;
+    if (navKey === lastRenderedNavKey && navAuthBtn.dataset.navReady === "true") {
+        return;
+    }
+    lastRenderedNavKey = navKey;
 
 
     // =================================================
@@ -918,7 +911,7 @@ async function updateNavForUser(user) {
         profileRole === "owner";
 
 
-    const isPendingAgent = !isAdmin && isPendingAgentUser(user, profileRole);
+    const isPendingAgent = !isAdmin && (profileRole === "agent_pending" || isPendingAgentUser(user, profileRole));
     const isAgent = !isAdmin && (profileRole === "agent" || isPendingAgent);
 
     const roleLabel =
@@ -1543,6 +1536,7 @@ function injectAuthRolePickers() {
                     <span class="auth-role-title">As an Agent</span>
                 </label>
             </div>
+            <p class="auth-role-hint">Renter, Owner, and Agent each need a different email address.</p>
         `;
 
         const slot = form.querySelector("[data-auth-role-slot]");
@@ -1562,6 +1556,42 @@ function getSelectedAuthRole(formId) {
     const checked = form.querySelector(".auth-role-picker input[type='radio']:checked");
     const value = checked?.value;
     return value === "owner" || value === "user" || value === "agent" ? value : null;
+}
+
+function accountKindFromRole(role) {
+    const value = String(role || "").trim().toLowerCase();
+    if (value === "admin" || value === "administrator" || value === "super_admin") return "admin";
+    if (value === "owner" || value === "landlord" || value === "property_owner") return "owner";
+    if (value === "agent" || value === "agent_pending") return "agent";
+    return "user";
+}
+
+function accountKindLabel(kind) {
+    if (kind === "owner") return "Owner";
+    if (kind === "admin") return "Admin";
+    if (kind === "agent") return "Agent";
+    return "Renter";
+}
+
+function signupRoleValue(kind) {
+    if (kind === "owner") return "owner";
+    if (kind === "agent") return "agent_pending";
+    if (kind === "admin") return "admin";
+    return "user";
+}
+
+function isFreshProfile(profile) {
+    const created = new Date(profile?.created_at || 0).getTime();
+    return Number.isFinite(created) && Date.now() - created < 10 * 60 * 1000;
+}
+
+function isEmailTakenError(error) {
+    const text = `${error?.code || ""} ${error?.message || ""}`.toLowerCase();
+    return /already registered|already been registered|user already|email.*exist|already exists/.test(text);
+}
+
+function differentEmailRoleMessage(actualKind, wantedKind) {
+    return `This email is already registered as a ${accountKindLabel(actualKind)}. Sign in as ${accountKindLabel(actualKind)}, or use a different email to sign up as a ${accountKindLabel(wantedKind)}.`;
 }
 
 function getAppDirectoryPath() {
@@ -1737,12 +1767,12 @@ async function ensureUserProfile(user, preferredRole) {
 
     const requestedRole = preferredRole === "owner"
         ? "owner"
-        : (preferredRole === "agent" || preferredRole === "agent_pending" ? "agent_pending" : "user");
+        : (preferredRole === "agent" || preferredRole === "agent_pending" ? "agent_pending" : (preferredRole === "admin" ? "admin" : "user"));
     const googleName = String(user.user_metadata?.full_name || user.user_metadata?.name || "").trim();
 
     const { data: profile, error: fetchError } = await supabaseClient
         .from("profiles")
-        .select("id, full_name, role")
+        .select("id, full_name, role, created_at")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -1751,6 +1781,7 @@ async function ensureUserProfile(user, preferredRole) {
     if (!profile) {
         const saved = await upsertProfileSafe(user.id, {
             full_name: googleName || null,
+            email: user.email || null,
             role: requestedRole
         });
         if (saved.error) return { profile: null, error: saved.error };
@@ -1759,12 +1790,40 @@ async function ensureUserProfile(user, preferredRole) {
 
     const patch = {};
     if (!profile.full_name && googleName) patch.full_name = googleName;
+
+    const currentKind = accountKindFromRole(profile.role);
+    const wantedKind = accountKindFromRole(requestedRole);
+    const metaKind = accountKindFromRole(
+        user.user_metadata?.role === "agent" || user.user_metadata?.agent_status === "pending"
+            ? "agent_pending"
+            : user.user_metadata?.role
+    );
+    const metaSaysWanted = metaKind === wantedKind;
+    const brandNewOAuth = !user.user_metadata?.role && isFreshProfile(profile) && (wantedKind === "owner" || wantedKind === "agent");
+    const canTakeSignupRole = currentKind === "user" && (metaSaysWanted || brandNewOAuth);
+
+    if (canTakeSignupRole && wantedKind !== currentKind) {
+        const saved = await upsertProfileSafe(user.id, {
+            full_name: profile.full_name || googleName,
+            email: user.email || null,
+            role: requestedRole
+        });
+        if (!saved.error) {
+            return { profile: { ...profile, role: saved.role } };
+        }
+    }
+
     if (Object.keys(patch).length > 0) {
         const { error: updateError } = await supabaseClient
             .from("profiles")
             .update(patch)
             .eq("id", user.id);
         if (updateError) return { profile, error: updateError };
+    }
+
+    const actualKind = accountKindFromRole(profile.role);
+    if (wantedKind && wantedKind !== "user" && actualKind !== "admin" && actualKind !== wantedKind && !canTakeSignupRole) {
+        return { profile, error: null, roleMismatch: true, actualKind, wantedKind };
     }
 
     return { profile };
@@ -1890,25 +1949,34 @@ async function consumeOAuthRedirect() {
 
     const pendingRole = sessionStorage.getItem("roomdhundo_oauth_role");
     sessionStorage.removeItem("roomdhundo_oauth_role");
-    const { profile, error: profileError } = await ensureUserProfile(session.user, pendingRole);
+    const { profile, error: profileError, roleMismatch, actualKind, wantedKind } = await ensureUserProfile(session.user, pendingRole);
+    if (roleMismatch) {
+        await supabaseClient.auth.signOut();
+        const message = differentEmailRoleMessage(actualKind, wantedKind);
+        if (isOAuthCallbackPage() || code) {
+            sessionStorage.setItem("roomdhundo_auth_error", message);
+            window.location.replace("login.html");
+            return { handled: true, ok: false, redirecting: true };
+        }
+        showGoogleAuthError(message);
+        return { handled: true, ok: false };
+    }
     if (profileError) {
         console.error("Google profile error:", profileError);
         showGoogleAuthError("Signed in with Google, but we could not save your profile. Please try again.");
     }
-    if (pendingRole === "agent") {
+    if (accountKindFromRole(profile?.role) === "agent" && String(profile?.role).toLowerCase() !== "agent") {
         markAgentPendingLock();
         try {
             await supabaseClient.auth.updateUser({
-                data: { role: "agent", agent_status: "pending" }
+                data: { role: "agent", agent_status: "pending", full_name: profile?.full_name || "" }
             });
         } catch (metaError) {
             console.error("Agent metadata error:", metaError);
         }
     }
 
-    const role = pendingRole === "agent"
-        ? "agent_pending"
-        : String(profile?.role || pendingRole || "user").toLowerCase();
+    const role = String(profile?.role || (pendingRole === "agent" ? "agent_pending" : pendingRole) || "user").toLowerCase();
     await updateNavForUser(session.user);
     unlockExploreAfterAuth();
     window.dispatchEvent(new CustomEvent("roomdhundo:auth-changed"));
@@ -1941,19 +2009,35 @@ async function fetchProfileRole(userId) {
 }
 
 async function upsertProfileSafe(userId, fields) {
+    if (!userId) return { role: null, error: new Error("Missing user") };
     const requested = String(fields.role || "user").trim().toLowerCase();
     const roles = requested === "agent" || requested === "agent_pending"
-        ? ["agent_pending", "user"]
+        ? ["agent_pending"]
         : [requested];
+    const fullName = String(fields.full_name || fields.name || "").trim() || null;
+    const email = String(fields.email || "").trim() || null;
+    const payloads = [
+        { id: userId, full_name: fullName, email, name: fullName },
+        { id: userId, full_name: fullName, email },
+        { id: userId, full_name: fullName },
+        { id: userId }
+    ].map((row) => {
+        const clean = { ...row };
+        Object.keys(clean).forEach((key) => {
+            if (clean[key] == null) delete clean[key];
+        });
+        return clean;
+    });
     let lastError = null;
     for (const role of roles) {
-        const { error } = await supabaseClient.from("profiles").upsert({
-            ...fields,
-            id: userId,
-            role
-        });
-        if (!error) return { role, error: null };
-        lastError = error;
+        for (const payload of payloads) {
+            const { error } = await supabaseClient.from("profiles").upsert({
+                ...payload,
+                role
+            });
+            if (!error) return { role, error: null };
+            lastError = error;
+        }
     }
     return { role: null, error: lastError };
 }
@@ -2004,10 +2088,26 @@ function goToAgentApplication() {
 
 function isPendingAgentUser(user, profileRole) {
     const role = String(profileRole || "").trim().toLowerCase();
-    if (role === "admin" || role === "owner" || role === "user" || role === "agent") return false;
+    if (role === "admin" || role === "owner" || role === "agent") return false;
     if (role === "agent_pending") return true;
+    const metaRole = String(user?.user_metadata?.role || "").trim().toLowerCase();
     const metaStatus = String(user?.user_metadata?.agent_status || "").trim().toLowerCase();
-    return metaStatus === "pending";
+    if (metaRole === "agent" || metaStatus === "pending") return true;
+    return false;
+}
+
+function resolveDisplayRole(user, profileRole) {
+    const role = String(profileRole || "").trim().toLowerCase();
+    const metaRole = String(user?.user_metadata?.role || "").trim().toLowerCase();
+    const metaStatus = String(user?.user_metadata?.agent_status || "").trim().toLowerCase();
+    if (isAdminEmail(user) && (role === "admin" || metaRole === "admin")) return "admin";
+    if (role === "admin") return "admin";
+    if (role === "owner" || metaRole === "owner") return "owner";
+    if (role === "agent") return "agent";
+    if (role === "agent_pending" || metaRole === "agent" || metaStatus === "pending") return "agent_pending";
+    if (window.__pendingSignupRole === "agent") return "agent_pending";
+    if (window.__pendingSignupRole === "owner") return "owner";
+    return role || "user";
 }
 
 function canUseAgentApplyPage(user, profileRole) {
@@ -2237,9 +2337,6 @@ loginForm?.addEventListener("submit", async (e) => {
     }
 
     setAuthMessage("loginMessage", "Logging in...");
-    if (selectedLoginRole === "agent") {
-        markAgentPendingLock();
-    }
 
 
     // =================================================
@@ -2280,8 +2377,17 @@ loginForm?.addEventListener("submit", async (e) => {
     // GET PROFILE
     // =================================================
 
-    const result =
+    let result =
         await getCurrentUserProfile();
+
+    const metaRole = data.user.user_metadata?.role === "agent" || data.user.user_metadata?.agent_status === "pending"
+        ? "agent_pending"
+        : data.user.user_metadata?.role;
+    if (data.user && !result?.profile) {
+        const createAs = signupRoleValue(accountKindFromRole(metaRole || selectedLoginRole || "user"));
+        await ensureUserProfile(data.user, createAs);
+        result = await getCurrentUserProfile();
+    }
 
 
     const loggedInUser =
@@ -2290,16 +2396,17 @@ loginForm?.addEventListener("submit", async (e) => {
 
     const loggedInRole =
         String(
-            result?.profile?.role || selectedLoginRole || "user"
+            result?.profile?.role || metaRole || "user"
         )
             .trim()
             .toLowerCase();
 
-    if (result?.profile && !result.profile.role && selectedLoginRole && loggedInUser?.id) {
-        await supabaseClient
-            .from("profiles")
-            .update({ role: selectedLoginRole })
-            .eq("id", loggedInUser.id);
+    const actualKind = accountKindFromRole(loggedInRole);
+    const wantedKind = accountKindFromRole(selectedLoginRole);
+    if (selectedLoginRole && actualKind !== "admin" && wantedKind !== actualKind) {
+        await supabaseClient.auth.signOut();
+        setAuthMessage("loginMessage", differentEmailRoleMessage(actualKind, wantedKind));
+        return;
     }
 
 
@@ -2431,6 +2538,7 @@ loginForm?.addEventListener("submit", async (e) => {
         }
 
         setAuthMessage("signupMessage", "Creating your account...");
+        window.__pendingSignupRole = selectedRole;
         if (selectedRole === "agent") {
             markAgentPendingLock();
         }
@@ -2449,7 +2557,13 @@ loginForm?.addEventListener("submit", async (e) => {
 
         if (error) {
             console.error("Signup error:", error);
-            setAuthMessage("signupMessage", error.message);
+            window.__pendingSignupRole = "";
+            setAuthMessage(
+                "signupMessage",
+                isEmailTakenError(error)
+                    ? "This email is already registered. Renter, Owner, and Agent accounts each need a different email."
+                    : error.message
+            );
             return;
         }
 
@@ -2473,13 +2587,24 @@ loginForm?.addEventListener("submit", async (e) => {
         }
 
         const profileRole = selectedRole === "agent" ? "agent_pending" : selectedRole;
-        const savedProfile = await upsertProfileSafe(data.user.id, {
+        let savedProfile = await upsertProfileSafe(data.user.id, {
             full_name: name,
-            name,
+            email,
             role: profileRole
         });
-        if (savedProfile.error) {
+        if (savedProfile.error && session?.user) {
+            savedProfile = await ensureUserProfile(session.user, profileRole);
+            if (savedProfile?.profile?.role) {
+                savedProfile = { role: savedProfile.profile.role, error: savedProfile.error };
+            }
+        }
+        if (savedProfile.error || (selectedRole === "agent" && accountKindFromRole(savedProfile.role) !== "agent")) {
             console.error("Profile creation error:", savedProfile.error);
+            setAuthMessage(
+                "signupMessage",
+                "Account was created, but we could not save you as an Agent. Try again, or use a different email."
+            );
+            if (selectedRole === "agent") return;
         }
         if (selectedRole === "agent") {
             try {
@@ -2489,6 +2614,7 @@ loginForm?.addEventListener("submit", async (e) => {
             } catch (metaError) {
                 console.error("Agent metadata error:", metaError);
             }
+            localStorage.setItem("roomdhundo_role", "agent_pending");
         }
 
         if (!session) {

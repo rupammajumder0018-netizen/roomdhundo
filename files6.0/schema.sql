@@ -169,8 +169,19 @@ begin
 
         new.email,
 
-        'user',
-        'renter',
+        case
+            when coalesce(new.raw_user_meta_data ->> 'role', '') in ('owner', 'admin', 'agent', 'agent_pending')
+                then case
+                    when new.raw_user_meta_data ->> 'role' = 'agent' then 'agent_pending'
+                    else new.raw_user_meta_data ->> 'role'
+                end
+            else 'user'
+        end,
+        case
+            when coalesce(new.raw_user_meta_data ->> 'role', '') = 'owner' then 'owner'
+            when coalesce(new.raw_user_meta_data ->> 'role', '') in ('agent', 'agent_pending') then 'agent'
+            else 'renter'
+        end,
         'active'
     )
 

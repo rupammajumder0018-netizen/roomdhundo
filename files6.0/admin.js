@@ -314,6 +314,10 @@ function getProfileRoleLabel(role) {
 
     }
 
+    if (normalize(role) === "agent_pending") {
+        return "Pending Agent";
+    }
+
     if (group === "agent") {
         return "Agent";
     }
@@ -786,8 +790,20 @@ async function loadProfiles() {
                 error
             );
 
-            profiles = [];
+            const retry =
+                await supabaseClient
+                    .from("profiles")
+                    .select("id, full_name, email, role, status, created_at");
 
+            if (retry.error) {
+                profiles = [];
+                return;
+            }
+
+            profiles =
+                Array.isArray(retry.data)
+                    ? retry.data
+                    : [];
             return;
 
         }
@@ -944,7 +960,7 @@ function renderDashboard() {
             profile =>
                 getProfileRole(
                     profile.role
-                ) === "user"
+                ) !== "admin"
         ).length;
 
     const owners =
