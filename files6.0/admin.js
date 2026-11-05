@@ -7892,10 +7892,10 @@ function bindEconomyEvents() {
 // ============================================================
 
 const GROWTH_SERIES = [
-    { key: "users",      label: "Users",      color: "#2563eb" },
+    { key: "users",      label: "Users",      color: "#38A3A5" },
     { key: "owners",     label: "Owners",     color: "#f59e0b" },
     { key: "properties", label: "Properties", color: "#16a34a" },
-    { key: "sold",       label: "Deals Sold", color: "#8b5cf6" }
+    { key: "sold",       label: "Deals Sold", color: "#38A3A5" }
 ];
 
 

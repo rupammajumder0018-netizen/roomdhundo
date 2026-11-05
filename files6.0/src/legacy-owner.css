@@ -18,23 +18,23 @@ html {
 }
 
 :root {
-    --primary: #4f46e5;
-    --primary-dark: #3730a3;
-    --primary-light: #eef2ff;
+    --primary: #22577A;
+    --primary-dark: #1a4663;
+    --primary-light: #e6f7ef;
 
-    --text: #172033;
-    --text-soft: #334155;
-    --muted: #64748b;
+    --text: #22577A;
+    --text-soft: #3a6f86;
+    --muted: #3a6f86;
 
-    --background: #f5f7fb;
+    --background: #eefaf4;
     --surface: #ffffff;
-    --surface-soft: #f8fafc;
+    --surface-soft: #e6f7ef;
 
-    --border: #e5e7eb;
-    --border-soft: #eef0f4;
+    --border: #c6ead9;
+    --border-soft: #d9f3e6;
 
-    --green: #16a34a;
-    --green-bg: #dcfce7;
+    --green: #57CC99;
+    --green-bg: #d9f8e8;
 
     --red: #dc2626;
     --red-bg: #fee2e2;
@@ -42,8 +42,8 @@ html {
     --orange: #d97706;
     --orange-bg: #fef3c7;
 
-    --blue: #2563eb;
-    --blue-bg: #dbeafe;
+    --blue: #38A3A5;
+    --blue-bg: #d7f3f3;
 
     --shadow-sm: 0 4px 15px rgba(15, 23, 42, 0.05);
     --shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
@@ -64,23 +64,23 @@ html {
    ========================================================= */
 
 html[data-theme="dark"] {
-    --primary: #818cf8;
-    --primary-dark: #6366f1;
-    --primary-light: #1e1b4b;
+    --primary: #57CC99;
+    --primary-dark: #38A3A5;
+    --primary-light: #16384e;
 
-    --text: #f1f5f9;
-    --text-soft: #cbd5e1;
-    --muted: #94a3b8;
+    --text: #e9fff3;
+    --text-soft: #c6efe0;
+    --muted: #9ed8c8;
 
-    --background: #0b1120;
-    --surface: #111827;
-    --surface-soft: #182234;
+    --background: #102a3a;
+    --surface: #16384e;
+    --surface-soft: #1b4560;
 
-    --border: #263244;
-    --border-soft: #202b3d;
+    --border: #2b5d72;
+    --border-soft: #245066;
 
-    --green: #4ade80;
-    --green-bg: #12351f;
+    --green: #80ED99;
+    --green-bg: #1b4a3a;
 
     --red: #f87171;
     --red-bg: #3a171b;
@@ -88,8 +88,8 @@ html[data-theme="dark"] {
     --orange: #fbbf24;
     --orange-bg: #3a2a0d;
 
-    --blue: #60a5fa;
-    --blue-bg: #122b4a;
+    --blue: #57CC99;
+    --blue-bg: #16384e;
 
     --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.18);
     --shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
@@ -244,8 +244,8 @@ input:focus-visible {
 
     background: linear-gradient(
         135deg,
-        #4f46e5,
-        #7c3aed
+        #22577A,
+        #38A3A5
     );
 
     color: #ffffff;
@@ -257,7 +257,7 @@ input:focus-visible {
     font-size: 19px;
 
     box-shadow:
-        0 6px 14px rgba(79, 70, 229, 0.3);
+        0 6px 14px rgba(56, 163, 165, 0.3);
 
     transition:
         transform var(--transition),
@@ -268,7 +268,7 @@ input:focus-visible {
     transform: rotate(-5deg) scale(1.05);
 
     box-shadow:
-        0 10px 22px rgba(79, 70, 229, 0.4);
+        0 10px 22px rgba(56, 163, 165, 0.4);
 }
 
 .logo h2 {
@@ -791,13 +791,13 @@ html[data-theme="dark"] .topbar {
     background:
         linear-gradient(
             135deg,
-            #4f46e5 0%,
-            #6366f1 55%,
-            #818cf8 100%
+            #22577A 0%,
+            #38A3A5 55%,
+            #57CC99 100%
         );
 
     box-shadow:
-        0 14px 30px rgba(79, 70, 229, 0.25);
+        0 14px 30px rgba(56, 163, 165, 0.25);
 
     position: relative;
 
@@ -951,9 +951,9 @@ html[data-theme="dark"] .topbar {
 }
 
 .properties-icon {
-    background: #e0e7ff;
+    background: #d7f3f3;
 
-    color: #4338ca;
+    color: #22577A;
 }
 
 .rooms-icon {
@@ -1313,7 +1313,7 @@ html[data-theme="dark"] .topbar {
     background: var(--primary-dark);
 
     box-shadow:
-        0 6px 15px rgba(79, 70, 229, 0.25);
+        0 6px 15px rgba(56, 163, 165, 0.25);
 }
 
 
@@ -1703,7 +1703,7 @@ html[data-theme="dark"] .topbar {
     background: var(--primary-dark);
 
     box-shadow:
-        0 6px 16px rgba(79, 70, 229, 0.25);
+        0 6px 16px rgba(56, 163, 165, 0.25);
 }
 
 .remove-btn {
@@ -2074,8 +2074,8 @@ html[data-theme="dark"] .topbar {
     background:
         linear-gradient(
             135deg,
-            #4f46e5,
-            #7c3aed
+            #22577A,
+            #38A3A5
         );
 
     color: white;
@@ -2090,7 +2090,7 @@ html[data-theme="dark"] .topbar {
     font-weight: 700;
 
     box-shadow:
-        0 8px 18px rgba(79, 70, 229, 0.28);
+        0 8px 18px rgba(56, 163, 165, 0.28);
 
     transition:
         transform var(--transition),
@@ -2101,7 +2101,7 @@ html[data-theme="dark"] .topbar {
     transform: scale(1.06);
 
     box-shadow:
-        0 12px 25px rgba(79, 70, 229, 0.35);
+        0 12px 25px rgba(56, 163, 165, 0.35);
 }
 
 .profile-info-block {
@@ -2173,7 +2173,7 @@ html[data-theme="dark"] .topbar {
     transform: translateY(-2px);
 
     box-shadow:
-        0 7px 17px rgba(79, 70, 229, 0.25);
+        0 7px 17px rgba(56, 163, 165, 0.25);
 }
 
 .edit-profile-btn:active {
@@ -2597,7 +2597,7 @@ html[data-theme="dark"] .topbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #eef2ff;
+    background: #e6f7ef;
     font-weight: 700;
     color: #374151;
     flex-shrink: 0;
@@ -2641,8 +2641,8 @@ html[data-theme="dark"] .topbar {
 }
 
 .enquiry-status.contacted {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: #e6f7ef;
+    color: #22577A;
 }
 
 /* ============================================================
@@ -2662,7 +2662,7 @@ html[data-theme="dark"] .topbar {
     padding: 13px 14px;
     border: 1px solid var(--border, #e5e7eb);
     border-radius: 12px;
-    background: var(--surface-soft, #f8fafc);
+    background: var(--surface-soft, #e6f7ef);
 }
 
 .enquiry-detail > i {
@@ -2708,7 +2708,7 @@ html[data-theme="dark"] .topbar {
 .enquiry-message {
     padding: 15px;
     border-radius: 12px;
-    background: var(--surface-soft, #f8fafc);
+    background: var(--surface-soft, #e6f7ef);
     border: 1px solid var(--border, #e5e7eb);
 }
 
@@ -2733,7 +2733,7 @@ html[data-theme="dark"] .topbar {
 .enquiry-message {
     padding: 14px;
     border-radius: 12px;
-    background: var(--surface-bg, #f8fafc);
+    background: var(--surface-bg, #e6f7ef);
     margin-bottom: 16px;
 }
 
@@ -2776,13 +2776,13 @@ html[data-theme="dark"] .topbar {
    ============================================================ */
 
 .call-btn {
-    background: #eef2ff;
-    color: #3730a3;
+    background: #e6f7ef;
+    color: #1a4663;
     text-decoration: none;
 }
 
 .call-btn:hover {
-    background: #e0e7ff;
+    background: #d7f3f3;
 }
 
 .whatsapp-btn {
@@ -2814,12 +2814,12 @@ html[data-theme="dark"] .topbar {
 }
 
 .contacted-btn {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: #e6f7ef;
+    color: #22577A;
 }
 
 .contacted-btn:hover {
-    background: #dbeafe;
+    background: #d7f3f3;
 }
 
 .enquiry-empty {
@@ -3005,7 +3005,7 @@ html[data-theme="dark"] .topbar {
 }
 
 .enquiry-user-avatar {
-    background: var(--surface-soft, #f8fafc);
+    background: var(--surface-soft, #e6f7ef);
     border: 1px solid var(--border, #e5e7eb);
 }
 
@@ -3433,7 +3433,7 @@ html[data-theme="dark"] .topbar {
 #enquiries .enquiry-card:hover {
     transform: translateY(-3px);
 
-    border-color: rgba(79, 70, 229, 0.28);
+    border-color: rgba(56, 163, 165, 0.28);
 
     box-shadow: var(--shadow-lg);
 }
@@ -3810,7 +3810,7 @@ html[data-theme="dark"] .topbar {
 #enquiries .call-btn:hover {
     border-color: var(--primary);
 
-    box-shadow: 0 5px 14px rgba(79, 70, 229, 0.12);
+    box-shadow: 0 5px 14px rgba(56, 163, 165, 0.12);
 }
 
 
@@ -3850,7 +3850,7 @@ html[data-theme="dark"] .topbar {
 
     border-color: var(--primary-dark);
 
-    box-shadow: 0 5px 14px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 5px 14px rgba(56, 163, 165, 0.2);
 }
 
 

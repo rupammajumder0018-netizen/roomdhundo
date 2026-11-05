@@ -42,8 +42,14 @@
         const role = typeof fetchProfileRole === "function"
             ? await fetchProfileRole(user.id)
             : "user";
-        if (role === "agent") {
-            window.location.href = "index.html";
+        const allowed = typeof canUseAgentApplyPage === "function"
+            ? canUseAgentApplyPage(user, role)
+            : role === "agent_pending";
+        if (!allowed) {
+            const dest = typeof dashboardPathForRole === "function"
+                ? dashboardPathForRole(role)
+                : (role === "admin" ? "admin.html" : "index.html");
+            window.location.replace(dest);
             return;
         }
 

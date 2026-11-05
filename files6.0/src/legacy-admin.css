@@ -30,8 +30,8 @@ body {
         Arial,
         sans-serif;
 
-    background: #f5f7fb;
-    color: #111827;
+    background: #eefaf4;
+    color: #22577A;
 
     min-height: 100vh;
 }
@@ -78,7 +78,7 @@ table {
 
     width: 250px;
 
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 
@@ -174,7 +174,7 @@ table {
 .nav-item.active {
     background: #ffffff;
 
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -325,7 +325,7 @@ table {
 
     font-weight: 800;
 
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -361,7 +361,7 @@ table {
 
     border-radius: 50%;
 
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 
@@ -386,7 +386,7 @@ table {
 
     font-weight: 800;
 
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -526,7 +526,7 @@ table {
 
     line-height: 1;
 
-    color: #111827;
+    color: #22577A;
 
     font-weight: 800;
 }
@@ -586,7 +586,7 @@ table {
 
     font-weight: 800;
 
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -618,7 +618,7 @@ table {
 
 
 .table-container th {
-    background: #f8fafc;
+    background: #eefaf4;
 
     color: #6b7280;
 
@@ -717,7 +717,7 @@ table {
 .modal-owner-avatar {
     border-radius: 50%;
 
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 
@@ -729,7 +729,7 @@ table {
 .user-info strong {
     display: block;
 
-    color: #111827;
+    color: #22577A;
 
     font-size: 13px;
 
@@ -822,7 +822,7 @@ table {
 
     background: #ffffff;
 
-    color: #111827;
+    color: #22577A;
 
     outline: none;
 
@@ -854,7 +854,7 @@ table {
 
     border-radius: 9px;
 
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 
@@ -867,7 +867,7 @@ table {
 
 
 .search-wrapper button:hover {
-    background: #1f2937;
+    background: #1a4663;
 }
 
 
@@ -940,7 +940,7 @@ table {
 .action-btn {
     background: #f3f4f6;
 
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -950,26 +950,26 @@ table {
 
 
 .view-all-btn {
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 }
 
 
 .view-all-btn:hover {
-    background: #1f2937;
+    background: #1a4663;
 }
 
 
 .review-btn {
-    background: #eef2ff;
+    background: #e6f7ef;
 
-    color: #3730a3;
+    color: #1a4663;
 }
 
 
 .review-btn:hover {
-    background: #e0e7ff;
+    background: #d7f3f3;
 }
 
 
@@ -1010,7 +1010,7 @@ table {
 .detail-item strong {
     display: block;
 
-    color: #111827;
+    color: #22577A;
 
     font-size: 13px;
 
@@ -1068,14 +1068,14 @@ table {
 
 
 .status.user {
-    background: #eff6ff;
+    background: #e6f7ef;
 
-    color: #1d4ed8;
+    color: #22577A;
 }
 
 
 .status.owner {
-    background: #f5f3ff;
+    background: #e6f7ef;
 
     color: #6d28d9;
 }
@@ -1153,7 +1153,7 @@ table {
 
 .status-contacted {
 
-    background: #dbeafe;
+    background: #d7f3f3;
 
     color: #1e40af;
 
@@ -1178,7 +1178,7 @@ table {
 
     justify-content: center;
 
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 
@@ -1225,7 +1225,7 @@ table {
 .verification-item strong {
     display: block;
 
-    color: #111827;
+    color: #22577A;
 
     font-size: 13px;
 
@@ -1327,7 +1327,7 @@ table {
 .modal-header h2 {
     font-size: 19px;
 
-    color: #111827;
+    color: #22577A;
 
     font-weight: 800;
 }
@@ -1373,7 +1373,7 @@ table {
 .modal-close:hover {
     background: #e5e7eb;
 
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -1426,7 +1426,7 @@ table {
 
     font-weight: 800;
 
-    color: #111827;
+    color: #22577A;
 
     margin-bottom: 8px;
 }
@@ -1514,14 +1514,14 @@ table {
 
 
 .approve-btn {
-    background: #111827;
+    background: #22577A;
 
     color: #ffffff;
 }
 
 
 .approve-btn:hover {
-    background: #1f2937;
+    background: #1a4663;
 }
 
 
@@ -1553,7 +1553,7 @@ table {
 
     background: #ffffff;
 
-    color: #111827;
+    color: #22577A;
 
     outline: none;
 
@@ -1751,7 +1751,7 @@ table {
 #modalEnquiryPropertyDetail,
 #modalEnquiryPhone {
 
-    color: #2563eb !important;
+    color: #38A3A5 !important;
 
     text-decoration: none !important;
 
@@ -1794,7 +1794,7 @@ table {
 #modalEnquiryPropertyDetail:hover,
 #modalEnquiryPhone:hover {
 
-    color: #1d4ed8 !important;
+    color: #22577A !important;
 
     text-decoration: underline !important;
 
@@ -1840,7 +1840,7 @@ table {
 
     background-repeat: no-repeat;
 
-    color: #111827;
+    color: #22577A;
 
     font-size: 13px;
 
@@ -1863,7 +1863,7 @@ table {
 
 
 .enquiry-status-select:focus {
-    border-color: #4f46e5;
+    border-color: #22577A;
 
     box-shadow:
         0 0 0 3px rgba(
@@ -1907,7 +1907,7 @@ table {
 .enquiry-status-select.status-contacted {
     color: #1e40af;
 
-    background-color: #eff6ff;
+    background-color: #e6f7ef;
 }
 
 
@@ -1945,7 +1945,7 @@ table {
 
 
 .modal-room-card {
-    background: #f8fafc;
+    background: #eefaf4;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
     padding: 12px;
@@ -1963,7 +1963,7 @@ table {
 .modal-room-name {
     font-size: 13px;
     font-weight: 800;
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -2037,7 +2037,7 @@ table {
 .edit-section-title {
     font-size: 14px;
     font-weight: 800;
-    color: #111827;
+    color: #22577A;
     margin-bottom: 6px;
 }
 
@@ -2085,7 +2085,7 @@ table {
     border: 1px solid #dbe1e8;
     border-radius: 9px;
     background: #ffffff;
-    color: #111827;
+    color: #22577A;
     outline: none;
     font-size: 13px;
 }
@@ -2171,7 +2171,7 @@ table {
 
 .property-room-edit-header strong {
     font-size: 13px;
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -2198,7 +2198,7 @@ table {
     border: 1px solid #dbe1e8;
     border-radius: 8px;
     background: #ffffff;
-    color: #111827;
+    color: #22577A;
     padding: 0 10px;
     outline: none;
     font-size: 12px;
@@ -2228,7 +2228,7 @@ table {
     padding: 14px;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
-    background: #f8fafc;
+    background: #eefaf4;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2239,7 +2239,7 @@ table {
 .owner-account-box strong {
     display: block;
     font-size: 12px;
-    color: #111827;
+    color: #22577A;
 }
 
 
@@ -2329,7 +2329,7 @@ table {
     border: 1px solid #dbe1e8;
     border-radius: 8px;
     background: #ffffff;
-    color: #111827;
+    color: #22577A;
     outline: none;
     font-size: 13px;
 }
@@ -2353,7 +2353,7 @@ table {
     background: #f3f4f6;
     font-size: 15px;
     font-weight: 800;
-    color: #111827;
+    color: #22577A;
 }
 
 .eco-profit-preview.positive,
@@ -2414,7 +2414,7 @@ table {
     border: 1px solid #dbe1e8;
     border-radius: 8px;
     background: #ffffff;
-    color: #111827;
+    color: #22577A;
     font-size: 13px;
     outline: none;
 }
@@ -2531,7 +2531,7 @@ table {
         z-index: 900;
         margin: -20px -20px 18px;
         padding: 10px 16px;
-        background: #111827;
+        background: #22577A;
         color: #ffffff;
     }
 
@@ -2811,7 +2811,7 @@ table {
 }
 
 .growth-chip strong {
-    color: #111827;
+    color: #22577A;
     font-weight: 800;
 }
 

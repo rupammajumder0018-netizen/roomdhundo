@@ -1705,8 +1705,17 @@ function storeAuthReturnUrl() {
     sessionStorage.setItem("roomdhundo_auth_return", url.pathname + url.search);
 }
 
+function dashboardPathForRole(role) {
+    const value = String(role || "").trim().toLowerCase();
+    if (value === "admin") return "admin.html";
+    if (value === "owner") return "owner-dashboard.html";
+    return "index.html";
+}
+
 function safePostAuthPath(role) {
-    if (role === "agent" || role === "agent_pending") return "be-an-agent.html";
+    if (role === "agent_pending") return "be-an-agent.html";
+    if (role === "agent") return "index.html";
+    if (role === "admin") return "admin.html";
     if (role === "owner") return "owner-dashboard.html";
     const raw = sessionStorage.getItem("roomdhundo_auth_return") || "";
     sessionStorage.removeItem("roomdhundo_auth_return");
@@ -1995,15 +2004,22 @@ function goToAgentApplication() {
 
 function isPendingAgentUser(user, profileRole) {
     const role = String(profileRole || "").trim().toLowerCase();
-    if (role === "agent") return false;
+    if (role === "admin" || role === "owner" || role === "user" || role === "agent") return false;
     if (role === "agent_pending") return true;
-    const metaRole = String(user?.user_metadata?.role || "").trim().toLowerCase();
     const metaStatus = String(user?.user_metadata?.agent_status || "").trim().toLowerCase();
-    return metaRole === "agent" || metaStatus === "pending" || hasAgentPendingLock();
+    return metaStatus === "pending";
+}
+
+function canUseAgentApplyPage(user, profileRole) {
+    return isPendingAgentUser(user, profileRole);
 }
 
 async function resolveAgentState(user, profileRole) {
     const role = String(profileRole || "").trim().toLowerCase();
+    if (role === "admin" || role === "owner" || role === "user") {
+        clearAgentPendingLock();
+        return "none";
+    }
     if (role === "agent") {
         clearAgentPendingLock();
         return "approved";
@@ -2016,9 +2032,9 @@ async function resolveAgentState(user, profileRole) {
     }
     if (appStatus === "pending") return "pending";
     if (appStatus === "rejected") return "rejected";
-    const metaRole = String(user?.user_metadata?.role || "").trim().toLowerCase();
     const metaStatus = String(user?.user_metadata?.agent_status || "").trim().toLowerCase();
-    if (metaRole === "agent" || metaStatus === "pending" || hasAgentPendingLock()) return "pending";
+    if (metaStatus === "pending") return "pending";
+    clearAgentPendingLock();
     return "none";
 }
 
@@ -2259,12 +2275,6 @@ loginForm?.addEventListener("submit", async (e) => {
 
         return;
     }
-
-    if (selectedLoginRole === "agent") {
-        goToAgentApplication();
-        return;
-    }
-
 
     // =================================================
     // GET PROFILE
@@ -5811,10 +5821,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (window.__oauthHandling) return;
 
         if (event === "SIGNED_IN") {
-            const choseAgent = getSelectedAuthRole("loginForm") === "agent" || getSelectedAuthRole("signupForm") === "agent";
-            if (choseAgent || hasAgentPendingLock()) {
-                goToAgentApplication();
-                return;
+            const signedInUser = session?.user || null;
+            if (signedInUser?.id) {
+                fetchProfileRole(signedInUser.id).then((role) => {
+                    if (isPendingAgentUser(signedInUser, role) || (getSelectedAuthRole("signupForm") === "agent" && role !== "admin" && role !== "owner" && role !== "user" && role !== "agent")) {
+                        goToAgentApplication();
+                    }
+                }).catch(() => {});
             }
             if (requireLoginToExplore(session?.user || null)) {
                 closeAuthModal();
@@ -5840,20 +5853,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function enforceAgentPendingGate(user) {
     const page = getCurrentPageName();
-    const allowed = ["be-an-agent.html", "login.html", "signup.html", "reset-password.html", "auth-callback.html", "policies.html"];
+    const role = user?.id ? await fetchProfileRole(user.id) : "";
+
+    if (page === "be-an-agent.html") {
+        if (!user?.id) {
+            window.location.replace("login.html");
+            return;
+        }
+        if (!canUseAgentApplyPage(user, role)) {
+            clearAgentPendingLock();
+            window.location.replace(dashboardPathForRole(role));
+        }
+        return;
+    }
+
+    const allowed = ["login.html", "signup.html", "reset-password.html", "auth-callback.html", "policies.html"];
     if (allowed.includes(page)) return;
     if (!user?.id) {
         if (hasAgentPendingLock()) goToAgentApplication();
         return;
     }
-    const role = await fetchProfileRole(user.id);
-    if (role === "agent") {
+    if (role === "admin" || role === "owner" || role === "user" || role === "agent") {
         clearAgentPendingLock();
         return;
     }
     const agentState = await resolveAgentState(user, role);
-    if (agentState === "approved") return;
-    if (agentState === "pending" || agentState === "rejected" || hasAgentPendingLock()) {
+    if (agentState === "approved" || agentState === "none") return;
+    if (agentState === "pending" || agentState === "rejected") {
         goToAgentApplication();
     }
 }
@@ -5887,6 +5913,12 @@ async function selectUserRole(role) {
     const user = await getCurrentUser();
     if (!user) {
         alert("Please log in first.");
+        return;
+    }
+
+    const currentRole = await fetchProfileRole(user.id);
+    if (currentRole === "admin" || currentRole === "owner" || currentRole === "agent") {
+        window.location.replace(dashboardPathForRole(currentRole));
         return;
     }
 

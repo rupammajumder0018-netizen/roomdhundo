@@ -31,7 +31,7 @@
     padding: 12px 14px;
     border: 1px solid #e2e8f0;
     border-radius: 14px;
-    background: #f8fafc;
+    background: #eefaf4;
     cursor: pointer;
     font-size: 13px !important;
     font-weight: 700 !important;
@@ -42,7 +42,7 @@
 .fl-choices label small {
     display: block;
     margin-top: 2px;
-    color: #64748b;
+    color: var(--rd-muted, #3a6f86);
     font-weight: 500;
 }
 
@@ -50,13 +50,13 @@
     width: auto;
     margin-top: 2px;
     padding: 0;
-    accent-color: #2563eb;
+    accent-color: #38A3A5;
 }
 
 .fl-choices label:has(input:checked) {
-    border-color: #2563eb;
-    background: #eff6ff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    border-color: #38A3A5;
+    background: #e6f7ef;
+    box-shadow: 0 0 0 3px rgba(56, 163, 165, 0.12);
 }
 
 .fl-rupee {
@@ -71,7 +71,7 @@
     border: 1px solid #e2e8f0;
     border-right: 0;
     border-radius: 12px 0 0 12px;
-    background: #f8fafc;
+    background: #eefaf4;
     color: #334155;
     font-weight: 800;
 }
@@ -84,7 +84,7 @@
     margin: 0 0 16px;
     padding: 12px 14px;
     border-radius: 12px;
-    background: #f8fafc;
+    background: #eefaf4;
     border: 1px solid #e2e8f0;
     color: #475569;
     font-size: 13px;
@@ -128,7 +128,7 @@
 .fl-upload-status {
     margin-top: 8px;
     font-size: 12px;
-    color: #64748b;
+    color: var(--rd-muted, #3a6f86);
 }
 
 html[data-theme="dark"] .fl-choices label,
@@ -140,7 +140,7 @@ html[data-theme="dark"] .fl-fee-note {
 }
 
 html[data-theme="dark"] .fl-choices label:has(input:checked) {
-    background: rgba(37, 99, 235, 0.16);
+    background: rgba(56, 163, 165, 0.16);
 }
 
 html[data-theme="dark"] .fl-choices label small,

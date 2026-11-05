@@ -6,9 +6,17 @@
     <title>Be an Agent | RoomDhundo</title>
     <script>
         document.documentElement.dataset.theme = localStorage.getItem("roomdhundo-theme") || "light";
+        (function () {
+            var role = "";
+            try { role = localStorage.getItem("roomdhundo_role") || ""; } catch (error) {}
+            if (role === "admin" || role === "owner" || role === "user" || role === "agent") {
+                location.replace(role === "admin" ? "admin.html" : role === "owner" ? "owner-dashboard.html" : "index.html");
+            }
+        })();
     </script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="hotel-bookings.css">
+    <link rel="stylesheet" href="rd-contrast.css">
 </head>
 <body class="agent-apply-page">
     <nav class="navbar">

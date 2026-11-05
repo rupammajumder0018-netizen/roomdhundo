@@ -1,0 +1,145 @@
+/* Unlayered contrast overrides — loaded last so they beat Tailwind layers. */
+
+html[data-theme="dark"] {
+    --rd-text: #f4fff9;
+    --rd-muted: #d7f6ea;
+    --rd-border: #3d6d82;
+    --text: #f4fff9;
+    --text-soft: #d7f6ea;
+    --muted: #d7f6ea;
+}
+
+html[data-theme="dark"] body {
+    color: #f4fff9;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] p,
+html[data-theme="dark"] li,
+html[data-theme="dark"] td,
+html[data-theme="dark"] th,
+html[data-theme="dark"] label,
+html[data-theme="dark"] dt,
+html[data-theme="dark"] dd,
+html[data-theme="dark"] legend,
+html[data-theme="dark"] small,
+html[data-theme="dark"] .logo,
+html[data-theme="dark"] .nav-links a,
+html[data-theme="dark"] .auth-role-title,
+html[data-theme="dark"] .auth-subtitle,
+html[data-theme="dark"] .auth-switch,
+html[data-theme="dark"] .auth-divider,
+html[data-theme="dark"] .auth-field label,
+html[data-theme="dark"] .property-location,
+html[data-theme="dark"] .lp-hint,
+html[data-theme="dark"] .lp-note,
+html[data-theme="dark"] .hl-header h1,
+html[data-theme="dark"] .hl-header p,
+html[data-theme="dark"] .fl-header h1,
+html[data-theme="dark"] .fl-header p {
+    color: #f4fff9;
+}
+
+html[data-theme="dark"] p,
+html[data-theme="dark"] small,
+html[data-theme="dark"] .auth-subtitle,
+html[data-theme="dark"] .auth-switch,
+html[data-theme="dark"] .auth-divider,
+html[data-theme="dark"] .lp-hint,
+html[data-theme="dark"] .lp-note,
+html[data-theme="dark"] .property-location,
+html[data-theme="dark"] .hl-header p {
+    color: #d7f6ea;
+}
+
+html[data-theme="dark"] a {
+    color: #80ED99;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+    color: #22577A;
+}
+
+html[data-theme="dark"] ::placeholder {
+    color: #5f8494;
+    opacity: 1;
+}
+
+html[data-theme="dark"] body.auth-screen,
+html[data-theme="dark"] body.auth-screen .auth-page {
+    background: #102a3a !important;
+}
+
+html[data-theme="dark"] body.auth-screen .auth-card {
+    background: #1b4b63 !important;
+    color: #f4fff9 !important;
+}
+
+html[data-theme="dark"] body.auth-screen .auth-card h1,
+html[data-theme="dark"] body.auth-screen .auth-brand,
+html[data-theme="dark"] body.auth-screen .auth-brand span,
+html[data-theme="dark"] body.auth-screen .auth-role-title,
+html[data-theme="dark"] body.auth-screen .auth-field label,
+html[data-theme="dark"] body.auth-screen .auth-role-card {
+    color: #f4fff9 !important;
+    background: transparent;
+}
+
+html[data-theme="dark"] body.auth-screen .auth-subtitle,
+html[data-theme="dark"] body.auth-screen .auth-switch,
+html[data-theme="dark"] body.auth-screen .auth-divider {
+    color: #d7f6ea !important;
+}
+
+html[data-theme="dark"] body.auth-screen .auth-switch a,
+html[data-theme="dark"] body.auth-screen .forgot-link {
+    color: #80ED99 !important;
+}
+
+html[data-theme="dark"] body.auth-screen .auth-role-card {
+    background: transparent !important;
+}
+
+html[data-theme="dark"] body.auth-screen .google-auth-btn {
+    background: #ffffff !important;
+    color: #22577A !important;
+    border-color: #80ED99 !important;
+}
+
+html[data-theme="dark"] body.auth-screen .auth-submit-btn {
+    background: #80ED99 !important;
+    color: #102a3a !important;
+}
+
+html[data-theme="dark"] .nav-links button,
+html[data-theme="dark"] .search-btn,
+html[data-theme="dark"] .home-agent-cta {
+    color: #ffffff !important;
+}
+
+html[data-theme="light"] body.auth-screen .auth-card h1,
+html[data-theme="light"] body.auth-screen .auth-brand,
+html[data-theme="light"] body.auth-screen .auth-role-title,
+html[data-theme="light"] body.auth-screen .auth-field label {
+    color: #22577A !important;
+}
+
+html[data-theme="light"] body.auth-screen .auth-subtitle,
+html[data-theme="light"] body.auth-screen .auth-switch {
+    color: #3a6f86 !important;
+}
+
+html[data-theme="light"] body.auth-screen .auth-switch a {
+    color: #1f7f82 !important;
+}
+
+html[data-theme="light"] body.auth-screen .auth-submit-btn {
+    background: #22577A !important;
+    color: #ffffff !important;
+}

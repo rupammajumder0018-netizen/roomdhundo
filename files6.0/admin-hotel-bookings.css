@@ -31,8 +31,8 @@
     --hb-confirmed-bg: #ecfdf5;
     --hb-rejected: #dc2626;
     --hb-rejected-bg: #fef2f2;
-    --hb-completed: #2563eb;
-    --hb-completed-bg: #eff6ff;
+    --hb-completed: #38A3A5;
+    --hb-completed-bg: #e6f7ef;
     --hb-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     --hb-radius: 14px;
     color: var(--hb-text);
@@ -82,11 +82,11 @@ html[data-theme="dark"] #hotelBookingsSection {
 #hotelBookingsSection .hb-stat:hover,
 #hotelBookingsSection .hb-stat:focus-visible {
     transform: translateY(-1px);
-    border-color: #c7d2fe;
+    border-color: #b8eadc;
 }
 
 #hotelBookingsSection .hb-stat.is-active {
-    box-shadow: 0 0 0 2px #4f46e5;
+    box-shadow: 0 0 0 2px #22577A;
 }
 
 #hotelBookingsSection .hb-stat span:not(.hb-stat-icon) {
@@ -114,7 +114,7 @@ html[data-theme="dark"] #hotelBookingsSection {
 #hotelBookingsSection .hb-stat-confirmed { border-top: 3px solid var(--hb-confirmed); }
 #hotelBookingsSection .hb-stat-closed { border-top: 3px solid var(--hb-rejected); }
 #hotelBookingsSection .hb-stat-checkin { border-top: 3px solid #0ea5e9; }
-#hotelBookingsSection .hb-stat-revenue { border-top: 3px solid #7c3aed; }
+#hotelBookingsSection .hb-stat-revenue { border-top: 3px solid #38A3A5; }
 
 #hotelBookingsSection .hb-card {
     margin-top: 0;
@@ -182,13 +182,13 @@ html[data-theme="dark"] #hotelBookingsSection {
 #hotelBookingsSection input:focus-visible,
 #hotelBookingsSection select:focus-visible,
 #hotelBookingsSection textarea:focus-visible {
-    outline: 3px solid rgba(79, 70, 229, 0.35);
+    outline: 3px solid rgba(56, 163, 165, 0.35);
     outline-offset: 2px;
 }
 
 #hotelBookingsSection .hb-btn-primary {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: #22577A;
+    border-color: #22577A;
     color: #fff;
 }
 
@@ -250,7 +250,7 @@ html[data-theme="dark"] #hotelBookingsSection {
 }
 
 #hotelBookingsSection .hb-table tbody tr:hover {
-    background: rgba(79, 70, 229, 0.04);
+    background: rgba(56, 163, 165, 0.04);
 }
 
 #hotelBookingsSection .hb-num {
@@ -260,7 +260,7 @@ html[data-theme="dark"] #hotelBookingsSection {
 
 #hotelBookingsSection .hb-id {
     font-weight: 800;
-    color: #4f46e5;
+    color: #22577A;
     background: none;
     border: 0;
     padding: 0;
@@ -306,7 +306,7 @@ html[data-theme="dark"] #hotelBookingsSection {
     margin-left: 6px;
     padding: 1px 6px;
     border-radius: 999px;
-    background: #4f46e5;
+    background: #22577A;
     color: #fff;
     font-size: 10px;
     font-weight: 800;
