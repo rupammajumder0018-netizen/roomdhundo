@@ -8,4 +8,4 @@ export * as propertiesService from "./properties/index.js";
 export * as bookingsService from "./bookings/index.js";
 export * as enquiriesService from "./enquiries/index.js";
 export * as storageService from "./storage/index.js";
-
+export * as authService from "./auth/index.js";

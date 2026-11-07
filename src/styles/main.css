@@ -3,6 +3,8 @@
    Preserves CSS custom properties and theme definitions from legacy application
    ========================================================================== */
 
+@import "./auth.css";
+
 :root {
   --font-sans: 'Outfit', 'Plus Jakarta Sans', Arial, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

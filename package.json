@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/supabase-client-init.test.js tests/supabase-services.test.js",
+    "test": "node --test tests/supabase-client-init.test.js tests/supabase-services.test.js tests/auth-system.test.js",
     "build:css": "npm run build:css:public && npm run build:css:owner && npm run build:css:user && npm run build:css:admin && npm run build:css:enquiries",
     "build:css:public": "npx @tailwindcss/cli -i files6.0/src/style.input.css -o files6.0/style.css --minify",
     "build:css:owner": "npx @tailwindcss/cli -i files6.0/src/owner.input.css -o files6.0/owner-dashboard.css --minify",

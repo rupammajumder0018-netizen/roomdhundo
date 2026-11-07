@@ -28,23 +28,21 @@
 
 ---
 
-## 2. Authentication
+## 2. Authentication (Phase 4: Migrated ✅)
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables / APIs | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|------------------------|----------------------------|----------|
-| Auth modal (Login + Signup) | All pages (modal overlay) | `script.js` (`wireAuthUI`, `openAuthModal`, `closeAuthModal`) | `style.css` | `auth.signInWithPassword`, `auth.signUp`, `profiles` | `<AuthModal />` with `<LoginForm />` + `<SignupForm />` | H |
-| Email / password login | Modal in all pages | `script.js` | `style.css` | `auth.signInWithPassword` | `<LoginForm />` | H |
-| Email / password signup | Modal in all pages | `script.js` (`wireAuthUI`) | `style.css` | `auth.signUp`, `profiles` (via trigger) | `<SignupForm />` | H |
-| Role picker on signup | Modal in all pages | `script.js` (`getSelectedAuthRole`) | `style.css` | `profiles.role` | Inside `<SignupForm />` | H |
-| Google OAuth (sign in with Google) | Modal in all pages | `script.js` (`auth.signInWithOAuth`) | `style.css` | `auth` provider OAuth | `<GoogleOAuthButton />` | H |
-| Auth callback (OAuth exchange) | `auth-callback.html` | `script.js` (`consumeOAuthRedirect`) | — | `auth.getSession`, `profiles` | `/auth/callback` route → `<AuthCallbackPage />` | H |
-| Password reset request | All pages (modal) | `script.js` (`auth.resetPasswordForEmail`) | `style.css` | `auth` | Inside `<AuthModal />` | H |
-| Password reset confirmation | `reset-password.html` | `script.js` (`wireResetPasswordForm`) | `style.css` | `auth.updateUser` | `<ResetPasswordPage />` | H |
-| Logout | Nav button in all pages | `script.js` (`auth.signOut`) | `style.css` | `auth` | `<LogoutButton />` or inside `<Navbar />` | H |
-| Session restoration | All pages (DOMContentLoaded) | `script.js` (`getCurrentUserFast`, `auth.getSession`) | — | `auth` | `AuthProvider` context (single `onAuthStateChange`) | H |
-| Role-based redirect after login | All pages | `script.js` (`dashboardPathForRole`) | — | `profiles` | Inside `AuthProvider` / `useAuthRedirect` hook | H |
-| Agent pending gate (localStorage) | All pages | `agent-gate.js` | — | `localStorage.roomdhundo_role` (antipattern) | Remove — replace with server-verified role in `AuthProvider` | H |
-| Role choice modal (post-signup) | All pages (overlay) | `script.js` (`wireRoleChoice`, `selectUserRole`) | `style.css` | `profiles` | `<RoleChoiceModal />` | H |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables / APIs | React Implementation (Phase 4) | Status |
+|---------|-------------|-----------|------------|------------------------|--------------------------------|--------|
+| Email / password login | `login.html` | `script.js` | `style.css`, `rd-contrast.css` | `auth.signInWithPassword`, `profiles` | `<LoginPage />` (`/login`), `useAuth().login` | ✅ Migrated |
+| Email / password signup | `signup.html` | `script.js` | `style.css`, `rd-contrast.css` | `auth.signUp`, `profiles` (via trigger) | `<SignupPage />` (`/signup`), `useAuth().signup` | ✅ Migrated |
+| Role picker (Renter/Owner/Agent) | `login.html`, `signup.html` | `script.js` (`getSelectedAuthRole`) | `style.css` | `profiles.role` | Radio selector inside `<LoginPage />` & `<SignupPage />` | ✅ Migrated |
+| Google OAuth | `login.html`, `signup.html` | `script.js` (`auth.signInWithOAuth`) | `style.css` | Supabase OAuth provider | `useAuth().loginWithGoogle` + button | ✅ Migrated |
+| Auth callback handler | `auth-callback.html` | `script.js` (`consumeOAuthRedirect`) | — | `auth.exchangeCodeForSession`, `profiles` | `<AuthCallback />` at `/auth/callback` | ✅ Migrated |
+| Password reset request | `reset-password.html` (entry) | `script.js` | `style.css` | `auth.resetPasswordForEmail` | `<ForgotPasswordPage />` (`/forgot-password`) | ✅ Migrated |
+| Password reset confirmation | `reset-password.html` | `script.js` (`wireResetPasswordForm`) | `style.css` | `auth.updateUser` | `<ResetPasswordPage />` (`/reset-password`) | ✅ Migrated |
+| Logout | Nav button in all pages | `script.js` (`auth.signOut`) | `style.css` | `auth.signOut` | `useAuth().logout` inside `<RootLayout />` | ✅ Migrated |
+| Session restoration | All pages | `script.js` (`auth.getSession`) | — | `auth.getSession`, `onAuthStateChange` | `AuthProvider` context in `AuthContext.jsx` | ✅ Migrated |
+| Role retrieval & verification | All pages | `script.js` (`fetchProfileRole`) | — | `profiles` | `AuthProvider` reads `profile.role` directly from DB | ✅ Migrated |
+| Route protection & redirect | All pages | `agent-gate.js` (antipattern) | — | — | `<ProtectedRoute />` & `<PublicOnlyRoute />` | ✅ Migrated |
 
 ---
 

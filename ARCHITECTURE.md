@@ -1,7 +1,7 @@
 # Roomdhundo — Target System Architecture
 
-**Document Version:** 1.1.0 (Phase 3: Supabase Integration & Service Layer)  
-**Author:** Senior React & Supabase Integration Engineer  
+**Document Version:** 1.2.0 (Phase 4: Authentication System Architecture)  
+**Author:** Senior React & Supabase Authentication Engineer  
 **Branch:** `migration/react-vite`  
 **Active Stack:** React 19, Vite 5, React Router DOM 7, Supabase JS v2, Tailwind CSS v4
 
@@ -23,7 +23,7 @@ d:\Projects\roomdhundo\
 ├── .env.example                 # Template for required environment variables
 ├── .gitignore                   # Ignores node_modules, dist, .env, and local artifacts
 ├── index.html                   # Vite SPA HTML entry point with synchronous theme init
-├── vite.config.js               # Vite 5 + React plugin configuration
+├── vite.config.js               # Vite 5 + React plugin configuration (with code-split manualChunks)
 ├── package.json                 # Project manifest with npm scripts & dependencies
 ├── package-lock.json            # Deterministic dependency lockfile
 ├── vercel.json                  # Deployment routing and legacy fallback configuration
@@ -33,20 +33,34 @@ d:\Projects\roomdhundo\
 ├── public\
 │   └── assets\                  # Static assets served as-is by Vite
 ├── tests\                       # Non-destructive automated test suite (node --test)
+│   ├── auth-system.test.js      # Auth service & role normalization tests
 │   ├── supabase-client-init.test.js
 │   └── supabase-services.test.js
 └── src\
     ├── assets\                  # Bundled images, SVGs, and media
-    ├── components\              # Reusable presentational & layout components
-    ├── contexts\                # React contexts (AuthContext, ThemeContext, LocationContext)
-    ├── hooks\                   # Custom React hooks (useAuth, useTheme, useProperties)
+    ├── components\
+    │   └── auth\
+    │       ├── ProtectedRoute.jsx   # Route guard enforcing authentication & roles
+    │       └── PublicOnlyRoute.jsx  # Route guard redirecting authenticated users
+    ├── contexts\
+    │   └── AuthContext.jsx      # Centralized reactive authentication state provider
+    ├── hooks\
+    │   └── useAuth.js           # Ergonomic custom hook consuming AuthContext
     ├── layouts\                 # Master layouts (RootLayout, DashboardLayout, AdminLayout)
-    │   └── RootLayout.jsx       # Global header, theme toggle, <Outlet />, and footer
+    │   └── RootLayout.jsx       # Global header (reactive auth status), theme toggle, <Outlet />, footer
     ├── pages\                   # Route page components
     │   ├── HomePage.jsx         # Foundation home view
-    │   └── NotFoundPage.jsx     # 404 catch-all view
+    │   ├── NotFoundPage.jsx     # 404 catch-all view
+    │   └── auth\
+    │       ├── LoginPage.jsx        # Login screen (roles, Google OAuth, email/pwd)
+    │       ├── SignupPage.jsx       # Signup screen (roles, Google OAuth, full form)
+    │       ├── ForgotPasswordPage.jsx # Password recovery request screen
+    │       ├── ResetPasswordPage.jsx  # New password entry screen
+    │       └── AuthCallback.jsx     # OAuth exchange & role resolution screen
     ├── services\                # Centralized backend & API service layer
     │   ├── index.js             # Unified barrel export
+    │   ├── auth\
+    │   │   └── index.js         # Supabase GoTrue auth & profile synchronization
     │   ├── supabase\
     │   │   ├── client.js        # Hardened Supabase singleton client with safe fallbacks
     │   │   └── mutationHelpers.js # Data integrity helpers & schema compatibility handler
@@ -59,9 +73,10 @@ d:\Projects\roomdhundo\
     │   └── storage\
     │       └── index.js         # Property media uploads (property-images bucket)
     ├── styles\
-    │   └── main.css             # Theme variables (--rd-*), reset, and layout shell styles
+    │   ├── main.css             # Theme variables (--rd-*), reset, and layout shell styles
+    │   └── auth.css             # High-contrast auth screens, role pickers, Google OAuth styles
     ├── utils\                   # Pure utility functions (formatting, date, rules)
-    ├── App.jsx                  # Master React Router route definitions
+    ├── App.jsx                  # Master React Router route definitions & AuthProvider mount
     └── main.jsx                 # React root mount (StrictMode + BrowserRouter)
 ```
 
@@ -166,7 +181,33 @@ To prevent Flash of Unstyled Content (FOUC) when loading in dark mode:
 
 ---
 
-## 6. Routing & Navigation Strategy
+## 6. Authentication & Authorization Architecture
+
+Phase 4 establishes a centralized, reactive authentication architecture:
+
+### 6.1 State Management (`AuthContext.jsx`)
+- **Reactive Subscription:** Subscribes to `supabase.auth.onAuthStateChange` with automatic subscription cleanup.
+- **Session Restoration:** Restores active sessions synchronously via `supabase.auth.getSession()` on app boot.
+- **Flicker-Free Initialization:** `isLoading` remains `true` until session check and database profile load complete.
+- **Race Condition Prevention:** Guards asynchronous profile loading using user ID references.
+
+### 6.2 Trusted Role Management
+- **Zero LocalStorage Trust:** Completely eliminates the legacy vulnerability where `localStorage.roomdhundo_role` could be tampered with or become desynchronized.
+- **Authoritative Database Source:** The user's role is strictly queried from `public.profiles.role` using the authenticated session.
+- **Zero Hardcoded Admin Emails:** Removes hardcoded checks like `ADMIN_EMAIL = "roomdhundo18@gmail.com"`. Admin access is verified through database RLS policies (`public.is_admin()`) and `profile.role === 'admin'`.
+- **Supported Roles:** `'user'`, `'owner'`, `'admin'`, `'agent'`, `'agent_pending'`.
+
+### 6.3 Route Guards
+- **`ProtectedRoute.jsx`:** Blocks unauthenticated requests, preserves the intended redirect URL in `location.state.from`, and enforces optional `allowedRoles` (e.g. `['admin']` or `['owner']`).
+- **`PublicOnlyRoute.jsx`:** Prevents authenticated users from seeing login/signup screens, redirecting them back to their dashboard or previous location.
+
+### 6.4 Google OAuth & Password Recovery
+- **OAuth Flow:** Uses Supabase `signInWithOAuth({ provider: 'google', options: { redirectTo: '/auth/callback' } })`. Preserves selected role intent in `sessionStorage` and validates role compatibility on callback.
+- **Password Reset:** Standard two-step flow: `sendPasswordResetEmail(email)` sends a recovery link pointing to `/reset-password`, where `updateUserPassword(newPassword)` commits the new credentials.
+
+---
+
+## 7. Routing & Navigation Strategy
 
 ### Current Foundation Routes
 - `/` → `HomePage.jsx` (Status overview & test links)

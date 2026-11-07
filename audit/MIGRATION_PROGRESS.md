@@ -1,17 +1,17 @@
 # Roomdhundo — Migration Progress
 
-| Phase | Description | Status | Started | Completed |
-|-------|-------------|--------|---------|-----------|
-| **Phase 1** | Full Codebase Audit | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
-| **Phase 2** | React + Vite Foundation Setup | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
-| **Phase 3** | Supabase Integration Migration | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
-| Phase 4 | Auth System Migration | ⏳ Not started | — | — |
-| Phase 5 | Routing & Page Scaffolding | ⏳ Not started | — | — |
-| Phase 6 | Home Page & Property Listing | ⏳ Not started | — | — |
-| Phase 7 | Property Detail & Booking | ⏳ Not started | — | — |
-| Phase 8 | Dashboards (User, Owner, Admin) | ⏳ Not started | — | — |
-| Phase 9 | CSS Migration & Theme | ⏳ Not started | — | — |
-| Phase 10 | Testing & Production Cutover | ⏳ Not started | — | — |
+| Phase       | Description                     | Status          | Started    | Completed  |
+| ----------- | ------------------------------- | --------------- | ---------- | ---------- |
+| **Phase 1** | Full Codebase Audit             | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
+| **Phase 2** | React + Vite Foundation Setup   | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
+| **Phase 3** | Supabase Integration Migration  | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
+| **Phase 4** | Auth System Migration           | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
+| Phase 5     | Routing & Page Scaffolding      | ⏳ Not started  | —          | —          |
+| Phase 6     | Home Page & Property Listing    | ⏳ Not started  | —          | —          |
+| Phase 7     | Property Detail & Booking       | ⏳ Not started  | —          | —          |
+| Phase 8     | Dashboards (User, Owner, Admin) | ⏳ Not started  | —          | —          |
+| Phase 9     | CSS Migration & Theme           | ⏳ Not started  | —          | —          |
+| Phase 10    | Testing & Production Cutover    | ⏳ Not started  | —          | —          |
 
 ---
 
@@ -69,5 +69,29 @@
 
 ---
 
-> **Next step:** Review Phase 3 report and grant approval to begin Phase 4 (Auth System Migration: GoTrue, AuthContext, role management, session sync).
+## Phase 4 Auth System Migration Checklist
 
+- [x] Original authentication analyzed across `files6.0/login.html`, `signup.html`, `reset-password.html`, `auth-callback.html`, `script.js`
+- [x] Database trigger `public.handle_new_user()` verified from `files6.0/schema.sql` (automatic profile creation on signup)
+- [x] Centralized `AuthService` implemented in `src/services/auth/index.js` (email/pwd login, signup, Google OAuth, password reset, profile fetch/upsert)
+- [x] Centralized `AuthContext` and `AuthProvider` implemented in `src/contexts/AuthContext.jsx` with session restoration, profile synchronization, and `onAuthStateChange` listener
+- [x] Custom hook `useAuth` implemented in `src/hooks/useAuth.js`
+- [x] Trusted role retrieval from `public.profiles` database table enforced (eliminating client-side `localStorage.roomdhundo_role` poisoning)
+- [x] Route protection components implemented: `ProtectedRoute` and `PublicOnlyRoute` in `src/components/auth/`
+- [x] Authentication pages built:
+  - `src/pages/auth/LoginPage.jsx` (role picker, Google OAuth button, email/pwd form, error messaging)
+  - `src/pages/auth/SignupPage.jsx` (role picker, Google OAuth button, name/email/pwd/confirm form)
+  - `src/pages/auth/ForgotPasswordPage.jsx` (email recovery trigger)
+  - `src/pages/auth/ResetPasswordPage.jsx` (password update form)
+  - `src/pages/auth/AuthCallback.jsx` (OAuth exchange, role intent verification, profile sync, post-auth redirect)
+- [x] Navbar in `src/layouts/RootLayout.jsx` updated to reflect real-time auth status (user display, role badge, sign-in/sign-up links, sign-out button)
+- [x] CSS design tokens, WCAG contrast overrides (`rd-contrast.css`), and theme styling preserved in `src/styles/auth.css`
+- [x] Vite manualChunks optimized (`vendor`, `supabase`, `index`) for zero bundle size warnings
+- [x] Automated test suite expanded to 15 unit tests (`tests/auth-system.test.js`) — 15/15 passing
+- [x] Production build verified (`npm run build`)
+- [x] `ARCHITECTURE.md` updated to v1.2.0
+- [x] `AUTHENTICATION_MIGRATION_REPORT.md` written
+
+---
+
+> **Next step:** Review Phase 4 report and grant approval to begin Phase 5 (Routing & Page Scaffolding).
