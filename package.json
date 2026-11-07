@@ -1,9 +1,12 @@
 {
   "name": "roomdhundo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Roomdhundo - Property & PG Accommodation Platform",
+  "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "build:css": "npm run build:css:public && npm run build:css:owner && npm run build:css:user && npm run build:css:admin && npm run build:css:enquiries",
     "build:css:public": "npx @tailwindcss/cli -i files6.0/src/style.input.css -o files6.0/style.css --minify",
     "build:css:owner": "npx @tailwindcss/cli -i files6.0/src/owner.input.css -o files6.0/owner-dashboard.css --minify",
@@ -18,13 +21,16 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/rupammajumder0018-netizen/roomdhundo/issues"
-  },
-  "homepage": "https://github.com/rupammajumder0018-netizen/roomdhundo#readme",
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
-    "tailwindcss": "^4.3.3"
+    "@vitejs/plugin-react": "4.7.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "5.4.21"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
   }
 }
