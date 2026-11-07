@@ -1,7 +1,7 @@
 # Roomdhundo — Target System Architecture
 
-**Document Version:** 1.0.0 (Phase 2: React + Vite Foundation)  
-**Author:** Senior React Architect  
+**Document Version:** 1.1.0 (Phase 3: Supabase Integration & Service Layer)  
+**Author:** Senior React & Supabase Integration Engineer  
 **Branch:** `migration/react-vite`  
 **Active Stack:** React 19, Vite 5, React Router DOM 7, Supabase JS v2, Tailwind CSS v4
 
@@ -32,6 +32,9 @@ d:\Projects\roomdhundo\
 ├── files6.0\                    # ORIGINAL APPLICATION (Preserved intact — Read-Only)
 ├── public\
 │   └── assets\                  # Static assets served as-is by Vite
+├── tests\                       # Non-destructive automated test suite (node --test)
+│   ├── supabase-client-init.test.js
+│   └── supabase-services.test.js
 └── src\
     ├── assets\                  # Bundled images, SVGs, and media
     ├── components\              # Reusable presentational & layout components
@@ -42,9 +45,19 @@ d:\Projects\roomdhundo\
     ├── pages\                   # Route page components
     │   ├── HomePage.jsx         # Foundation home view
     │   └── NotFoundPage.jsx     # 404 catch-all view
-    ├── services\
-    │   └── supabase\
-    │       └── client.js        # Centralized, validated Supabase singleton client
+    ├── services\                # Centralized backend & API service layer
+    │   ├── index.js             # Unified barrel export
+    │   ├── supabase\
+    │   │   ├── client.js        # Hardened Supabase singleton client with safe fallbacks
+    │   │   └── mutationHelpers.js # Data integrity helpers & schema compatibility handler
+    │   ├── properties\
+    │   │   └── index.js         # Buildings, room types, saved properties, reviews
+    │   ├── bookings\
+    │   │   └── index.js         # Hotel bookings (with unmigrated schema dependency flag)
+    │   ├── enquiries\
+    │   │   └── index.js         # Renter enquiries (reconciling building_id/property_id)
+    │   └── storage\
+    │       └── index.js         # Property media uploads (property-images bucket)
     ├── styles\
     │   └── main.css             # Theme variables (--rd-*), reset, and layout shell styles
     ├── utils\                   # Pure utility functions (formatting, date, rules)
@@ -64,6 +77,7 @@ d:\Projects\roomdhundo\
 | **Client-Side Routing** | React Router DOM v7 (`react-router-dom`) | Declarative nested routing, route parameters, layout outlets, history management. |
 | **Backend Integration** | `@supabase/supabase-js` v2 | Official client for PostgreSQL queries, GoTrue Auth, and Storage bucket interactions. |
 | **CSS & Theming** | CSS Custom Properties + Tailwind v4 | Preserves existing `--rd-*` design tokens and prevents style conflicts. |
+| **Automated Testing** | Node.js Test Runner (`node:test`, `node:assert`) | Built-in, zero-dependency, sub-second ESM testing for services and client behavior. |
 
 ---
 
@@ -71,27 +85,60 @@ d:\Projects\roomdhundo\
 
 The Supabase client is centralized in [`src/services/supabase/client.js`](file:///d:/Projects/roomdhundo/src/services/supabase/client.js):
 
-- **Environment-Driven:** Reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from `import.meta.env`.
-- **Validation:** Logs a clear, non-crashing warning if credentials are not configured in `.env.local`.
-- **Singleton Guarantee:** A single client instance is created and exported. No duplicate clients are initialized.
+- **Environment-Driven:** Reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from `import.meta.env` with `process.env` fallback for automated tests.
+- **Validation:** Emits a non-crashing warning if credentials are omitted. Exports `isSupabaseConfigured` boolean and `getSupabase()` getter.
+- **Singleton Guarantee:** A single client instance is created at module evaluation and reused everywhere.
 - **Security:** Zero hardcoded keys or URLs. Never exposes service-role keys.
+- **Browser Compatibility:** Configured with `persistSession: true`, `autoRefreshToken: true`, and `detectSessionInUrl: true`.
 
 ```javascript
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_URL) ||
+  (typeof process !== "undefined" && process.env?.VITE_SUPABASE_URL) ||
+  "";
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("[Roomdhundo] Supabase environment variables are missing.");
-}
+const supabaseAnonKey =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_SUPABASE_ANON_KEY) ||
+  (typeof process !== "undefined" && process.env?.VITE_SUPABASE_ANON_KEY) ||
+  "";
 
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    })
   : null;
-
-export default supabase;
 ```
+
+---
+
+## 5. Service Layer & Data Integrity Architecture
+
+The React service layer isolates all Supabase database queries and storage operations into domain modules:
+
+1. **`src/services/properties/index.js`**:
+   - Encapsulates reads and writes for `buildings`, `room_types`, `saved_buildings`, and `reviews`.
+   - Never crashes when Supabase is unconfigured; returns `{ data: null, error }`.
+2. **`src/services/bookings/index.js`**:
+   - Manages `hotel_bookings` workflow (create, fetch by user/owner, status transition).
+   - Flagged with architectural notice: `hotel_bookings` is an unmigrated table missing from repository SQL files.
+3. **`src/services/enquiries/index.js`**:
+   - Handles tenant enquiry submissions and status updates.
+   - Reconciles historical divergence between `schema.sql` (`building_id`) and active JS queries (`property_id`, `owner_id`).
+4. **`src/services/storage/index.js`**:
+   - Validates and uploads media to the verified `property-images` bucket.
+   - Enforces 5 MB image and 50 MB video limits and generates standardized paths: `${userId}/${timestamp}-${index}-${safeFileName}`.
+   - Confirms that legacy code contained no storage file deletion logic.
+5. **`src/services/supabase/mutationHelpers.js` (Legacy Helper Migration)**:
+   - Investigated legacy helper `supabaseMutateWithoutUnknownColumns` which silently stripped columns on schema mismatches up to 16 times.
+   - Modernized behavior: Aborts and logs prominent errors to preserve data integrity by default. Requires explicit `{ allowStripping: true }` opt-in if legacy fallback is needed.
 
 ---
 

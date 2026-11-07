@@ -1,8 +1,8 @@
 # Database Mapping — Roomdhundo
 
-> **Source:** `files6.0/schema.sql`, `files6.0/SQL/agent-applications.sql`, `files6.0/SQL/hotel-listing-fields.sql`, `files6.0/SQL/add room images.sql`  
+> **Source:** `files6.0/schema.sql`, `files6.0/SQL/agent-applications.sql`, `files6.0/SQL/hotel-listing-fields.sql`, `files6.0/SQL/add room images.sql`, plus JavaScript verification (`files6.0/script.js`, `admin.js`, `hotel-booking.js`, `hotel-bookings-*.js`, `agent.js`, `owner-dashboard.js`, `user-enquiries.js`)  
 > **Supabase Project:** `vyusxdilgwrcgmqqvzsp` (from public URL — not a secret)  
-> **Status:** Verified from SQL files
+> **Status:** Verified and reconciled across SQL files and JavaScript client operations (Phase 3 Audit)
 
 ---
 
@@ -93,11 +93,12 @@ Renter reviews for buildings.
 | Column | Type | Notes |
 |--------|------|-------|
 | id | uuid PK | Auto |
-| building_id | uuid FK | → `buildings(id)` |
-| user_id | uuid FK | → `auth.users(id)` |
+| building_id | uuid FK | → `buildings(id)` ON DELETE CASCADE |
+| user_id | uuid FK | → `auth.users(id)` ON DELETE SET NULL |
+| reviewer_name | text | Display name of the reviewer |
 | rating | integer | 1–5 |
 | comment | text | Review text |
-| status | text | `approved`, `pending` |
+| status | text | `published` (default), `pending`, `hidden` |
 | created_at | timestamptz | Auto |
 
 ---
@@ -116,14 +117,19 @@ Renter saved/favourited properties.
 ### `public.enquiries`
 Contact-owner requests from renters.
 
+> **Schema Divergence Note:** `files6.0/schema.sql` defined this table with `building_id`, but all active JavaScript clients (`script.js`, `admin.js`, `user-enquiries.js`, `owner-dashboard.js`) query and insert `property_id` and `owner_id`. Both columns must be supported during migration.
+
 | Column | Type | Notes |
 |--------|------|-------|
 | id | uuid PK | Auto |
 | user_id | uuid FK | Renter → `auth.users(id)` |
-| building_id | uuid FK | → `buildings(id)` |
+| building_id | uuid FK | → `buildings(id)` (as defined in `schema.sql`) |
+| property_id | uuid FK | → `buildings(id)` (as actively used by JS code) |
+| owner_id | uuid FK | → `auth.users(id)` (property owner, used by JS code) |
+| room_type | text | Selected room category label (used by JS code) |
 | renter_phone | text | Renter's contact number |
 | message | text | Enquiry message |
-| status | text | `pending`, `accepted`, `rejected`, `contacted` |
+| status | text | `pending`, `contacted`, `scheduled`, `visited`, `closed`, `cancelled` |
 | owner_response | text | Owner's reply text |
 | created_at | timestamptz | Auto |
 | updated_at | timestamptz | Auto (trigger) |
@@ -177,16 +183,19 @@ PG/flat booking records (Razorpay payment stub — not fully implemented).
 ---
 
 ### `public.verification_requests`
-Admin property verification workflow.
+Admin property verification workflow (defined in schema.sql; unreferenced in frontend JavaScript).
 
 | Column | Type | Notes |
 |--------|------|-------|
 | id | uuid PK | Auto |
-| building_id | uuid FK | → `buildings(id)` |
-| requested_by | uuid FK | → `auth.users(id)` |
-| status | text | `pending`, `approved`, `rejected` |
+| building_id | uuid FK | → `buildings(id)` ON DELETE CASCADE |
+| submitted_by | uuid FK | → `auth.users(id)` ON DELETE SET NULL |
+| status | text | `pending`, `approved`, `rejected`, `changes_requested` |
 | admin_note | text | Admin comment |
+| reviewed_by | uuid FK | → `auth.users(id)` ON DELETE SET NULL |
+| reviewed_at | timestamptz | Timestamp of review |
 | created_at | timestamptz | Auto |
+| updated_at | timestamptz | Auto (trigger) |
 
 ---
 
@@ -218,19 +227,42 @@ User notification records.
 ---
 
 ### `public.agent_applications`
-Agent application records.
+Agent application records (verified from `files6.0/SQL/agent-applications.sql` and `agent.js`).
 
 | Column | Type | Notes |
 |--------|------|-------|
-| id | uuid PK | Auto |
-| user_id | uuid FK | Applicant → `auth.users(id)` |
-| full_name | text | Applicant name |
-| phone | text | Contact |
-| experience | text | Experience details |
-| area | text | Service area |
+| id | uuid PK | Auto-generated (`gen_random_uuid()`) |
+| user_id | uuid FK (unique) | Applicant → `auth.users(id)` ON DELETE CASCADE |
+| first_name | text | Applicant first name |
+| last_name | text | Applicant last name |
+| phone | text | Contact mobile |
+| email | text | Contact email |
+| location | text | Operating area / city |
+| pincode | text | Postal pincode |
 | status | text | `pending`, `approved`, `rejected` |
-| created_at | timestamptz | Auto |
-| updated_at | timestamptz | Auto (trigger) |
+| created_at | timestamptz | Auto timestamp (`now()`) |
+| reviewed_at | timestamptz | Timestamp of admin review |
+| reviewed_by | uuid | Admin user ID who reviewed |
+
+---
+
+### `public.economy_deals`
+Admin closed deals & commission accounting (verified from `files6.0/admin.js:7004–7844`).
+
+> **Unresolved Database Dependency:** The `economy_deals` table is referenced extensively by `admin.js` for commission calculations (`profit = amount * commission_percent / 100`) and deal tracking. Like `hotel_bookings`, no migration file for `economy_deals` exists in repository SQL files. `admin.js` explicitly catches error code `42P01` (table does not exist).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | Auto-generated |
+| deal_date | date/text | Date deal closed |
+| property_name | text | Associated property |
+| deal_with | text | Client/counterparty name |
+| amount | numeric | Total transaction volume |
+| commission_percent | numeric | Commission percentage rate |
+| commission_type | text | `flat` or `percent` |
+| notes | text | Admin deal notes |
+| created_by | uuid FK | → `auth.users(id)` |
+| created_at | timestamptz | Auto timestamp |
 
 ---
 
