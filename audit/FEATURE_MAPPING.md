@@ -46,57 +46,51 @@
 
 ---
 
-## 3. Home Page
+## 3. Home Page (Phase 5: Migrated ✅)
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Hero search bar | `index.html` | `script.js` (`wireHeroSearch`) | `style.css` | — | `<HeroSearch />` | H |
-| Property listing grid | `index.html` | `script.js` (`renderBuildingCard`, `loadAllBuildings`) | `style.css` | `buildings`, `room_types`, `reviews` | `<PropertyGrid />`, `<PropertyCard />` | H |
-| Category filter tabs (All / PG-Room / Hotel / Flat) | `index.html` | `script.js` | `style.css` | `buildings.type` filter | `<CategoryTabs />` | H |
-| Stay-type toggle (Daily / Monthly) | `index.html` | `script.js` (`wireHomeStayButtons`) | `style.css` | `room_types.daily_price` / `price_value` | `<StayToggle />` | H |
-| Flat offer toggle (Rent / For Sale) | `index.html`, `list-flat.html` | `script.js` | `style.css` | `buildings.facility_tags` (`flat-sale` / `flat-rent`) | `<FlatOfferToggle />` | M |
-| Facility filters (checkboxes) | `index.html` | `script.js` | `style.css` | `buildings.facility_tags` | `<FacilityFilter />` | H |
-| Budget filter (min/max rent) | `index.html` | `script.js` | `style.css` | `room_types.price_value` | `<BudgetFilter />` | H |
-| Agent section on home page | `index.html` | `agent.js` (`renderHomeAgents`) | `style.css` | `profiles` (role=agent) | `<AgentSection />` | M |
-| "Login required to explore" gate | `index.html`, `search.html`, `saved.html`, `property.html` | `script.js` (`requireLoginToExplore`, `showGuestLoginPrompt`) | `style.css` | `auth` | `<RequireAuth />` HOC or gate component | H |
-| Nearby properties (GPS) | `index.html`, `search.html` | `nearby.js` | `style.css` | `buildings.latitude`, `buildings.longitude` | `useNearby()` hook + inside `<PropertyGrid />` | M |
-| Hub selector (MAKAUT / Jaguli / Haringhata) | `index.html`, `search.html` | `location.js` | `style.css` | — (GPS + localStorage) | `<HubSelector />` | M |
-| Save/unsave button on card | `index.html`, `search.html` | `script.js` (`toggleSavedBuilding`) | `style.css` | `saved_buildings` | `<SaveButton />` | H |
-| Compare button | `index.html`, `search.html` | `script.js` (placeholder, no logic) | `style.css` | — | `<CompareButton />` (placeholder) | L |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | React Implementation (Phase 5) | Status |
+|---------|-------------|-----------|------------|-----------------|--------------------------------|--------|
+| Hero search bar | `index.html` | `script.js` (`wireHeroSearch`) | `style.css` | — | `<HomePage />` search input with query & filters | ✅ Migrated |
+| Property listing grid | `index.html` | `script.js` (`renderBuildingCard`, `loadAllBuildings`) | `style.css` | `buildings`, `room_types`, `reviews` | `<PropertyGrid />`, `<PropertyCard />` | ✅ Migrated |
+| Category filter tabs (All / PG-Room / Hotel / Flat) | `index.html` | `script.js` | `style.css` | `buildings.type` filter | Category tabs with SVG icons & active states | ✅ Migrated |
+| Stay-type toggle (Daily / Monthly) | `index.html` | `script.js` (`wireHomeStayButtons`) | `style.css` | `room_types.daily_price` / `price_value` | `<SearchBar />` stay toggle | ✅ Migrated |
+| Flat offer toggle (Rent / For Sale) | `index.html`, `list-flat.html` | `script.js` | `style.css` | `buildings.flat_offer` (`sale` / `rent`) | Flat offer toggle buttons | ✅ Migrated |
+| Facility filters (checkboxes) | `index.html` | `script.js` | `style.css` | `buildings.facility_tags` | Collapsible filter panel with checkboxes | ✅ Migrated |
+| Budget filter (min/max rent) | `index.html` | `script.js` | `style.css` | `room_types.price_value` | Min/Max inputs in filter drawer | ✅ Migrated |
+| Agent section on home page | `index.html` | `agent.js` (`renderHomeAgents`) | `style.css` | `agent_applications`, `buildings` | Approved agents grid with property link | ✅ Migrated |
+| Hub selector (MAKAUT / Jaguli / Haringhata) | `index.html`, `search.html` | `location.js` | `style.css` | LocalStorage + `ROOMDHUNDO_HUBS` | `<Header />` interactive location dropdown | ✅ Migrated |
+| Save/unsave button on card | `index.html`, `search.html` | `script.js` (`toggleSavedBuilding`) | `style.css` | `saved_buildings` | `<PropertyCard />` save button | ✅ Migrated |
 
 ---
 
-## 4. Search Page
+## 4. Search Page (Phase 5: Migrated ✅)
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Text search (name / location) | `search.html` | `script.js` | `style.css` | `buildings` (ilike filter) | `<SearchPage />`, `<SearchBar />` | H |
-| Filters (room type, property type, facilities, budget, sort) | `search.html` | `script.js` | `style.css` | `buildings`, `room_types` | `<SearchFilters />` | H |
-| Sort (price, rating, distance) | `search.html` | `script.js` | `style.css` | computed client-side | Inside `<SearchFilters />` | M |
-| Stay mode (daily/monthly) | `search.html` | `script.js` | `style.css` | `room_types.daily_price` | `<StayToggle />` | M |
-| URL query params (`?q=&stay=&type=&min=&max=`) | `search.html` | `script.js` | — | — | URL state → `useSearchParams` | H |
-| Property results grid | `search.html` | `script.js` (`renderBuildingCard`) | `style.css` | `buildings`, `room_types`, `reviews` | Shared `<PropertyGrid />`, `<PropertyCard />` | H |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | React Implementation (Phase 5) | Status |
+|---------|-------------|-----------|------------|-----------------|--------------------------------|--------|
+| Text search (name / location) | `search.html` | `script.js` | `style.css` | `buildings` | `<SearchPage />`, `<SearchBar />` | ✅ Migrated |
+| Filters (room type, property type, facilities, budget, sort) | `search.html` | `script.js` | `style.css` | `buildings`, `room_types` | `<SearchFilters />` drawer | ✅ Migrated |
+| Sort (price, rating, distance) | `search.html` | `script.js` | `style.css` | computed client-side | Sort select dropdown in `<SearchPage />` | ✅ Migrated |
+| Stay mode (daily/monthly) | `search.html` | `script.js` | `style.css` | `room_types.daily_price` | `<SearchBar />` stay toggle | ✅ Migrated |
+| URL query params (`?q=&stay=&type=&min=&max=&sort=&hub=`) | `search.html` | `script.js` | — | — | Full URL state synchronization via `useSearchParams` | ✅ Migrated |
+| Property results grid | `search.html` | `script.js` (`renderBuildingCard`) | `style.css` | `buildings`, `room_types`, `reviews` | `<PropertyGrid />`, `<PropertyCard />` | ✅ Migrated |
 
 ---
 
-## 5. Property Detail Page
+## 5. Property Detail Page (Phase 5: Migrated ✅)
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Property detail (PG / Room / Mess / Guest House) | `property.html` | `script.js` (`initPropertyPage`) | `style.css` | `buildings`, `room_types`, `reviews` | `<PropertyDetailPage />` | H |
-| Hotel property page | `property.html` | `script.js` (`setupHotelPropertyPage`), `hotel-booking.js` | `style.css` | `buildings`, `room_types`, `hotel_bookings` | `<HotelPropertyPage />` | H |
-| Hotel room detail page (`?room=UUID`) | `property.html` | `script.js` (`setupHotelRoomDetailPage`), `hotel-booking.js` | `style.css` | `room_types`, `hotel_bookings` | `<HotelRoomDetailPage />` | H |
-| Property image gallery + lightbox | `property.html` | `script.js` (gallery logic) | `style.css` | `buildings.images`, `room_types.images` | `<ImageGallery />` | H |
-| Room types list (occupancy / pricing) | `property.html` | `script.js` (room type cards) | `style.css` | `room_types` | `<RoomTypeList />`, `<RoomTypeCard />` | H |
-| Facilities grid | `property.html` | `script.js` (`getBuildingFacilityLabels`) | `style.css` | `buildings.facility_tags` | `<FacilitiesGrid />` | M |
-| Rules list | `property.html` | `script.js` (`visibleListingRules`) | `style.css` | `buildings.rules` | `<RulesList />` | M |
-| Owner card + View Owner Profile modal | `property.html` | `script.js` | `style.css` | `buildings.owner_name`, `buildings.owner_verified` | `<OwnerCard />`, `<OwnerModal />` | M |
-| Contact owner panel + enquiry form | `property.html` | `script.js` (`submitEnquiryBtn`) | `style.css` | `enquiries` (insert) | `<ContactPanel />`, `<EnquiryForm />` | H |
-| Call Pg Dhundo / WhatsApp buttons | `property.html` | `script.js` | `style.css` | — | `<ContactButtons />` | M |
-| Review form + star rating | `property.html` | `script.js` (`wireReviewForm`) | `style.css` | `reviews` (insert) | `<ReviewForm />` | H |
-| Reviews list | `property.html` | `script.js` | `style.css` | `reviews` (select) | `<ReviewsList />` | H |
-| Leaflet map (property location) | `property.html` | `property-map.js` | `style.css`, Leaflet CSS | `buildings.latitude`, `buildings.longitude` | `<PropertyMap />` (react-leaflet) | M |
-| Save / unsave property button | `property.html` | `script.js` (`toggleSavedBuilding`) | `style.css` | `saved_buildings` | `<SaveButton />` | H |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | React Implementation (Phase 5) | Status |
+|---------|-------------|-----------|------------|-----------------|--------------------------------|--------|
+| Property detail (PG / Room / Mess / Guest House) | `property.html` | `script.js` (`initPropertyPage`) | `style.css` | `buildings`, `room_types`, `reviews` | `<PropertyDetailsPage />` (`/property/:id`) | ✅ Migrated |
+| Property image gallery + lightbox | `property.html` | `script.js` (gallery logic) | `style.css` | `buildings.images` | `<PropertyGallery />` with carousel & thumbnails | ✅ Migrated |
+| Room types list (occupancy / pricing) | `property.html` | `script.js` (room type cards) | `style.css` | `room_types` | Room type cards with price & availability | ✅ Migrated |
+| Facilities grid | `property.html` | `script.js` (`getBuildingFacilityLabels`) | `style.css` | `buildings.facilities`, `facility_tags` | `<facility-grid>` with checkmark badges | ✅ Migrated |
+| Rules list | `property.html` | `script.js` (`visibleListingRules`) | `style.css` | `buildings.rules` | Bulleted property rules list | ✅ Migrated |
+| Contact owner panel + enquiry form | `property.html` | `script.js` (`submitEnquiryBtn`) | `style.css` | `enquiries` (insert) | `<ContactOwnerModal />` ("Pg Dhundo Connect") | ✅ Migrated |
+| Call Pg Dhundo / WhatsApp buttons | `property.html` | `script.js` | `style.css` | — | Direct support buttons in contact modal | ✅ Migrated |
+| Review form + star rating | `property.html` | `script.js` (`wireReviewForm`) | `style.css` | `reviews` (insert) | Interactive star rating & comment form | ✅ Migrated |
+| Reviews list | `property.html` | `script.js` | `style.css` | `reviews` (select) | Verified reviews list with author & star display | ✅ Migrated |
+| Leaflet map (property location) | `property.html` | `property-map.js` | `style.css`, Leaflet CSS | `buildings.latitude`, `buildings.longitude` | `<PropertyMap />` with React lifecycle management | ✅ Migrated |
+| Save / unsave property button | `property.html` | `script.js` (`toggleSavedBuilding`) | `style.css` | `saved_buildings` | Header save button with auth check | ✅ Migrated |
 
 ---
 
@@ -115,32 +109,35 @@
 
 ## 7. Saved Properties
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Saved properties grid | `saved.html` | `script.js` (`initSavedPage`) | `style.css` | `saved_buildings` JOIN `buildings`, `room_types`, `reviews` | `<SavedPage />`, shared `<PropertyCard />` | H |
-| Remove saved property | `saved.html` | `script.js` | `style.css` | `saved_buildings` (delete) | Inside `<PropertyCard />` via `<SaveButton />` | H |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | React Implementation (Phase 6) | Status |
+|---------|-------------|-----------|------------|-----------------|--------------------------------|--------|
+| Saved properties grid | `saved.html` | `script.js` (`initSavedPage`) | `style.css` | `saved_buildings` JOIN `buildings`, `room_types`, `reviews` | `<SavedPropertiesPage />` (`/saved`) | ✅ Migrated |
+| Remove saved property | `saved.html` | `script.js` | `style.css` | `saved_buildings` (delete) | `<SavedPropertyCard />` with one-click unsave | ✅ Migrated |
+| Empty saved state | `saved.html` | `script.js` | `style.css` | — | Empty state with link to Explore Properties | ✅ Migrated |
 
 ---
 
 ## 8. User Dashboard
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| User profile view / edit | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css`, `rd-contrast.css` | `profiles` | `<UserProfile />` | H |
-| Stat cards (saved, enquiries, etc.) | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | `saved_buildings`, `enquiries` | `<UserStats />` | M |
-| User hotel bookings list | `user-dashboard.html` | `hotel-bookings-user.js` | `hotel-bookings.css` | `hotel_bookings` | `<UserHotelBookings />` | H |
-| Logout button | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | `auth.signOut` | `<LogoutButton />` | H |
-| Navigation sidebar | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | — | `<DashboardSidebar />` | M |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | React Implementation (Phase 6) | Status |
+|---------|-------------|-----------|------------|-----------------|--------------------------------|--------|
+| User profile view / edit | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css`, `rd-contrast.css` | `profiles` | `<UserProfileSection />` & modal (`updateUserProfile`) | ✅ Migrated |
+| Stat cards (saved, enquiries, account type) | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | `saved_buildings`, `enquiries` | `<UserStatCards />` with real Supabase counts | ✅ Migrated |
+| Account routing cards (Explore, Saved, Enquiries) | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | — | `.account-option-list` routing to modern views | ✅ Migrated |
+| Need Help / WhatsApp action | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | — | Direct link to WhatsApp Pg Dhundo | ✅ Migrated |
+| Logout button | `user-dashboard.html` | `user-dashboard.js` | `user-dashboard.css` | `auth.signOut` | Logout with confirmation dialog | ✅ Migrated |
+| User hotel bookings list | `user-dashboard.html` | `hotel-bookings-user.js` | `hotel-bookings.css` | `hotel_bookings` | Deferred per prompt instructions | ⏸️ Deferred |
 
 ---
 
 ## 9. User Enquiries Page
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Enquiry list (all statuses) | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css`, `rd-contrast.css` | `enquiries` JOIN `buildings` | `<EnquiriesPage />`, `<EnquiryCard />` | H |
-| Filter by status (pending / accepted / rejected) | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css` | `enquiries.status` | Inside `<EnquiriesPage />` | M |
-| Enquiry status badges | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css` | `enquiries.status` | `<StatusBadge />` | M |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | React Implementation (Phase 6) | Status |
+|---------|-------------|-----------|------------|-----------------|--------------------------------|--------|
+| Enquiry list (all statuses) | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css`, `rd-contrast.css` | `enquiries` JOIN `buildings`, `profiles` | `<UserEnquiriesPage />` (`/enquiries`) | ✅ Migrated |
+| Filter by status (all / pending / accepted / contacted / rejected) | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css` | `enquiries.status` | Interactive `.enquiries-filter-bar` | ✅ Migrated |
+| Enquiry status badges | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css` | `enquiries.status` | `<EnquiryStatusBadge />` with color coding | ✅ Migrated |
+| Owner contact quick actions | `enquiries.html` | `user-enquiries.js` | `user-enquiries.css` | `buildings.owner_phone`, `owner_whatsapp` | Direct Call (`tel:`) & WhatsApp (`wa.me`) | ✅ Migrated |
 
 ---
 

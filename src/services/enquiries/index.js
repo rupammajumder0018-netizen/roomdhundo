@@ -80,17 +80,17 @@ export async function createEnquiry({
  * @returns {Promise<{ data: Array<Object>|null, error: Error|null }>}
  */
 export async function fetchUserEnquiries(userId) {
-  if (!supabase) {
-    return {
-      data: null,
-      error: new Error("[Roomdhundo] Supabase client is not configured."),
-    };
-  }
-
   if (!userId) {
     return {
       data: null,
       error: new Error("[Roomdhundo] User ID is required."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
     };
   }
 
@@ -101,6 +101,127 @@ export async function fetchUserEnquiries(userId) {
     .order("created_at", { ascending: false });
 
   return { data, error };
+}
+
+/**
+ * Fetches the total count of enquiries submitted by a user.
+ *
+ * @param {string} userId
+ * @returns {Promise<{ count: number, error: Error|null }>}
+ */
+export async function fetchUserEnquiriesCount(userId) {
+  if (!userId) {
+    return {
+      count: 0,
+      error: new Error("[Roomdhundo] User ID is required."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      count: 0,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const { count, error } = await supabase
+    .from("enquiries")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  return { count: Number.isFinite(count) ? count : 0, error };
+}
+
+/**
+ * Fetches user enquiries enriched with property and owner details.
+ * Matches legacy `files6.0/user-enquiries.js` behavior.
+ *
+ * @param {string} userId
+ * @returns {Promise<{ data: Array<Object>|null, error: Error|null }>}
+ */
+export async function fetchUserEnquiriesWithDetails(userId) {
+  if (!userId) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] User ID is required."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const { data: rawEnquiries, error: enquiryError } = await fetchUserEnquiries(userId);
+  if (enquiryError) {
+    return { data: null, error: enquiryError };
+  }
+
+  const enquiries = rawEnquiries || [];
+  if (enquiries.length === 0) {
+    return { data: [], error: null };
+  }
+
+  // Extract unique property/building and owner IDs
+  const propertyIds = [
+    ...new Set(
+      enquiries
+        .map((e) => e.property_id || e.building_id)
+        .filter(Boolean)
+    ),
+  ];
+
+  const ownerIds = [
+    ...new Set(
+      enquiries
+        .map((e) => e.owner_id)
+        .filter(Boolean)
+    ),
+  ];
+
+  let propertiesMap = {};
+  if (propertyIds.length > 0) {
+    const { data: propRows, error: propErr } = await supabase
+      .from("buildings")
+      .select("id, name, location, owner_name, owner_phone, owner_whatsapp, images")
+      .in("id", propertyIds);
+
+    if (!propErr && propRows) {
+      propRows.forEach((p) => {
+        propertiesMap[p.id] = p;
+      });
+    }
+  }
+
+  let ownersMap = {};
+  if (ownerIds.length > 0) {
+    const { data: ownerRows, error: ownerErr } = await supabase
+      .from("profiles")
+      .select("id, full_name, role, phone")
+      .in("id", ownerIds);
+
+    if (!ownerErr && ownerRows) {
+      ownerRows.forEach((o) => {
+        ownersMap[o.id] = o;
+      });
+    }
+  }
+
+  const enriched = enquiries.map((enquiry) => {
+    const targetPropId = enquiry.property_id || enquiry.building_id;
+    const property = propertiesMap[targetPropId] || null;
+    const owner = ownersMap[enquiry.owner_id] || null;
+
+    return {
+      ...enquiry,
+      property,
+      owner,
+    };
+  });
+
+  return { data: enriched, error: null };
 }
 
 /**

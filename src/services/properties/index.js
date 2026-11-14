@@ -13,6 +13,151 @@
 import { supabase } from "../supabase/client.js";
 
 /**
+ * Standard served location hubs around MAKAUT, Jaguli, and Haringhata.
+ */
+export const ROOMDHUNDO_HUBS = [
+  {
+    name: "MAKAUT",
+    latitude: 22.95704,
+    longitude: 88.54346,
+    aliases: ["makaut", "wbut", "wbutech", "simhat", "makaut campus"],
+  },
+  {
+    name: "Jaguli",
+    latitude: 22.9328,
+    longitude: 88.5383,
+    aliases: ["jaguli", "jagulia", "jaguli more"],
+  },
+  {
+    name: "Haringhata",
+    latitude: 22.96,
+    longitude: 88.567,
+    aliases: ["haringhata", "haringhata bazar", "haringhata town"],
+  },
+];
+
+/**
+ * Calculates straight-line distance in kilometers using the Haversine formula.
+ */
+export function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
+    return null;
+  }
+
+  const p1 = Number(lat1);
+  const l1 = Number(lon1);
+  const p2 = Number(lat2);
+  const l2 = Number(lon2);
+
+  if (!Number.isFinite(p1) || !Number.isFinite(l1) || !Number.isFinite(p2) || !Number.isFinite(l2)) {
+    return null;
+  }
+
+  const R = 6371; // Earth's radius in km
+  const dLat = ((p2 - p1) * Math.PI) / 180;
+  const dLon = ((l2 - l1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((p1 * Math.PI) / 180) *
+      Math.cos((p2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Number((R * c).toFixed(2));
+}
+
+/**
+ * Checks whether a room type is available for booking.
+ */
+export function isRoomAvailable(rt) {
+  if (!rt) return false;
+  const status = String(rt.availability || "").trim().toLowerCase();
+  if (status === "occupied" || status === "unavailable") return false;
+  return Number(rt.available_rooms) > 0;
+}
+
+/**
+ * Extracts monthly price list from room details.
+ */
+export function roomMonthlyPriceList(rt) {
+  if (!rt) return [];
+  const details = rt.room_details && typeof rt.room_details === "object" ? rt.room_details : {};
+  const raw = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
+  const fromOptions = raw
+    .map((opt) => Number(opt.rent))
+    .filter((rent) => Number.isFinite(rent) && rent > 0);
+
+  if (fromOptions.length > 0) return fromOptions;
+  const directPrice = Number(rt.price_value);
+  return Number.isFinite(directPrice) ? [directPrice] : [];
+}
+
+/**
+ * Decorates a raw building record with computed fields matching legacy script.js.
+ *
+ * @param {Object} b Raw building row
+ * @returns {Object} Building with computed fields
+ */
+export function attachComputedFields(b) {
+  if (!b) return null;
+  const reviews = Array.isArray(b.reviews) ? b.reviews : [];
+  const roomTypes = Array.isArray(b.room_types) ? b.room_types : [];
+
+  const avgRating = reviews.length
+    ? (reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length).toFixed(1)
+    : null;
+
+  const monthlyPrices = roomTypes.flatMap((rt) => roomMonthlyPriceList(rt));
+  const dailyPrices = roomTypes
+    .map((rt) => (rt.daily_price != null ? Number(rt.daily_price) : null))
+    .filter((p) => p != null && !Number.isNaN(p));
+
+  const totalAvailable = roomTypes.reduce(
+    (sum, rt) => sum + (isRoomAvailable(rt) ? Number(rt.available_rooms || 0) : 0),
+    0
+  );
+
+  const roomTypeNames = [...new Set(roomTypes.map((rt) => rt.room_type).filter(Boolean))];
+
+  const tags = Array.isArray(b.facility_tags) ? b.facility_tags : [];
+  const facilities = Array.isArray(b.facilities) ? b.facilities : [];
+  const isCoupleFriendly =
+    tags.some((t) => /couple[- ]?friendly/i.test(String(t))) ||
+    facilities.some((f) => /couple[- ]?friendly/i.test(String(f)));
+
+  return {
+    ...b,
+    avgRating,
+    reviewCount: reviews.length,
+    minPrice: monthlyPrices.length ? Math.min(...monthlyPrices) : null,
+    maxPrice: monthlyPrices.length ? Math.max(...monthlyPrices) : null,
+    minDailyPrice: dailyPrices.length ? Math.min(...dailyPrices) : null,
+    totalAvailable,
+    roomTypeNames,
+    isCoupleFriendly,
+  };
+}
+
+/**
+ * Fetches approved agents to display on the homepage agent section.
+ *
+ * @returns {Promise<{ data: Array<Object>|null, error: Error|null }>}
+ */
+export async function fetchApprovedAgents() {
+  if (!supabase) {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from("agent_applications")
+    .select("user_id, first_name, last_name, location, phone")
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
+
+  return { data: data || [], error };
+}
+
+/**
  * Fetches published properties with associated room types and reviews.
  *
  * @param {Object} [options]
@@ -43,7 +188,8 @@ export async function fetchPublishedProperties(options = {}) {
   }
 
   const { data, error } = await query;
-  return { data, error };
+  const decorated = Array.isArray(data) ? data.map(attachComputedFields) : data;
+  return { data: decorated, error };
 }
 
 /**
@@ -53,17 +199,17 @@ export async function fetchPublishedProperties(options = {}) {
  * @returns {Promise<{ data: Object|null, error: Error|null }>}
  */
 export async function fetchPropertyById(buildingId) {
-  if (!supabase) {
-    return {
-      data: null,
-      error: new Error("[Roomdhundo] Supabase client is not configured."),
-    };
-  }
-
   if (!buildingId) {
     return {
       data: null,
       error: new Error("[Roomdhundo] Property ID is required."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
     };
   }
 
@@ -73,7 +219,7 @@ export async function fetchPropertyById(buildingId) {
     .eq("id", buildingId)
     .maybeSingle();
 
-  return { data, error };
+  return { data: data ? attachComputedFields(data) : null, error };
 }
 
 /**
@@ -113,17 +259,17 @@ export async function fetchOwnerProperties(ownerId) {
  * @returns {Promise<{ data: Array<Object>|null, error: Error|null }>}
  */
 export async function fetchSavedProperties(userId) {
-  if (!supabase) {
-    return {
-      data: null,
-      error: new Error("[Roomdhundo] Supabase client is not configured."),
-    };
-  }
-
   if (!userId) {
     return {
       data: null,
       error: new Error("[Roomdhundo] User ID is required."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
     };
   }
 
@@ -133,6 +279,35 @@ export async function fetchSavedProperties(userId) {
     .eq("user_id", userId);
 
   return { data, error };
+}
+
+/**
+ * Fetches the count of saved properties for a renter.
+ *
+ * @param {string} userId
+ * @returns {Promise<{ count: number, error: Error|null }>}
+ */
+export async function fetchSavedPropertiesCount(userId) {
+  if (!userId) {
+    return {
+      count: 0,
+      error: new Error("[Roomdhundo] User ID is required."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      count: 0,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const { count, error } = await supabase
+    .from("saved_buildings")
+    .select("building_id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  return { count: Number.isFinite(count) ? count : 0, error };
 }
 
 /**

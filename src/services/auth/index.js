@@ -329,3 +329,76 @@ export async function updateUserPassword(newPassword) {
 
   return { data, error };
 }
+
+/**
+ * Updates a user's editable profile information (name and optional email).
+ * Strictly forbids modifying `role` or any administrative fields.
+ *
+ * @param {string} userId
+ * @param {Object} fields
+ * @param {string} fields.full_name
+ * @param {string} [fields.email]
+ * @returns {Promise<{ data: Object|null, error: Error|null, emailUpdated?: boolean }>}
+ */
+export async function updateUserProfile(userId, { full_name, email }) {
+  if (!userId) {
+    return { data: null, error: new Error("User ID is required.") };
+  }
+
+  const cleanName = String(full_name || "").trim();
+  if (!cleanName || cleanName.length < 2) {
+    return {
+      data: null,
+      error: new Error("Please enter your full name (at least 2 characters)."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  // 1. Update public.profiles (never update role)
+  const { data, error: profileError } = await supabase
+    .from("profiles")
+    .update({ full_name: cleanName })
+    .eq("id", userId)
+    .select()
+    .maybeSingle();
+
+  if (profileError) {
+    return { data: null, error: profileError };
+  }
+
+  // 2. Update auth metadata
+  try {
+    await supabase.auth.updateUser({
+      data: { full_name: cleanName },
+    });
+  } catch (err) {
+    console.warn("[Roomdhundo] Auth user metadata update warning:", err);
+  }
+
+  // 3. Update email if changed
+  let emailUpdated = false;
+  if (email) {
+    const cleanEmail = String(email).trim().toLowerCase();
+    const { data: authData } = await supabase.auth.getUser();
+    const currentEmail = authData?.user?.email?.toLowerCase();
+
+    if (currentEmail && cleanEmail !== currentEmail) {
+      const { error: emailError } = await supabase.auth.updateUser({
+        email: cleanEmail,
+      });
+
+      if (emailError) {
+        return { data, error: emailError, emailUpdated: false };
+      }
+      emailUpdated = true;
+    }
+  }
+
+  return { data, error: null, emailUpdated };
+}

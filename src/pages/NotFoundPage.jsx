@@ -1,32 +1,59 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export default function NotFoundPage() {
+export function NotFoundPage() {
   return (
-    <div className="rd-card" style={{ textAlign: "center", padding: "48px 24px" }}>
-      <h1 style={{ fontSize: "64px", fontWeight: "800", color: "var(--rd-accent)", marginBottom: "8px" }}>
+    <main
+      className="not-found-page"
+      style={{
+        maxWidth: "600px",
+        margin: "80px auto",
+        padding: "48px 24px",
+        textAlign: "center",
+        background: "var(--rd-surface, #fff)",
+        borderRadius: "20px",
+        border: "1px solid var(--rd-border, #c6ead9)",
+        boxShadow: "var(--rd-shadow)",
+      }}
+    >
+      <div style={{ fontSize: "64px", fontWeight: "800", color: "var(--rd-accent, #38A3A5)", marginBottom: "8px" }}>
         404
-      </h1>
-      <h2 style={{ fontSize: "22px", fontWeight: "600", marginBottom: "12px" }}>
+      </div>
+      <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--rd-text, #22577A)", marginBottom: "12px" }}>
         Page Not Found
-      </h2>
-      <p style={{ color: "var(--rd-muted)", marginBottom: "24px", maxWidth: "480px", margin: "0 auto 24px" }}>
-        The page you are looking for does not exist in the React application.
+      </h1>
+      <p style={{ color: "var(--rd-muted, #3a6f86)", marginBottom: "28px", lineHeight: "1.6" }}>
+        We couldn't find the page you were looking for. The link may have changed, or the accommodation might no longer be available.
       </p>
-      <Link
-        to="/"
-        style={{
-          display: "inline-block",
-          padding: "10px 20px",
-          backgroundColor: "var(--rd-accent)",
-          color: "#ffffff",
-          borderRadius: "8px",
-          fontWeight: "600",
-        }}
-      >
-        &larr; Back to Home
-      </Link>
-    </div>
+      <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+        <Link
+          to="/"
+          style={{
+            padding: "10px 22px",
+            background: "var(--rd-accent-2, #22577A)",
+            color: "#ffffff",
+            borderRadius: "10px",
+            fontWeight: 600,
+          }}
+        >
+          Return Home
+        </Link>
+        <Link
+          to="/search"
+          style={{
+            padding: "10px 22px",
+            background: "var(--rd-surface, #fff)",
+            border: "1px solid var(--rd-accent, #38A3A5)",
+            color: "var(--rd-accent, #38A3A5)",
+            borderRadius: "10px",
+            fontWeight: 600,
+          }}
+        >
+          Explore Properties
+        </Link>
+      </div>
+    </main>
   );
 }
 
+export default NotFoundPage;

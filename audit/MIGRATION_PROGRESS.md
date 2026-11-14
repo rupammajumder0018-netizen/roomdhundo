@@ -6,11 +6,11 @@
 | **Phase 2** | React + Vite Foundation Setup   | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
 | **Phase 3** | Supabase Integration Migration  | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
 | **Phase 4** | Auth System Migration           | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
-| Phase 5     | Routing & Page Scaffolding      | ⏳ Not started  | —          | —          |
-| Phase 6     | Home Page & Property Listing    | ⏳ Not started  | —          | —          |
-| Phase 7     | Property Detail & Booking       | ⏳ Not started  | —          | —          |
-| Phase 8     | Dashboards (User, Owner, Admin) | ⏳ Not started  | —          | —          |
-| Phase 9     | CSS Migration & Theme           | ⏳ Not started  | —          | —          |
+| **Phase 5** | Routing & Public Pages          | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
+| **Phase 6** | User Dashboard & Renter Exp.    | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
+| Phase 7     | Owner Dashboard & Listing       | ⏳ Not started  | —          | —          |
+| Phase 8     | Admin Console & Agent Flow      | ⏳ Not started  | —          | —          |
+| Phase 9     | Hotel Booking & Payment         | ⏳ Not started  | —          | —          |
 | Phase 10    | Testing & Production Cutover    | ⏳ Not started  | —          | —          |
 
 ---
@@ -94,4 +94,77 @@
 
 ---
 
-> **Next step:** Review Phase 4 report and grant approval to begin Phase 5 (Routing & Page Scaffolding).
+## Phase 5 Routing & Public Pages Migration Checklist
+
+- [x] Centralized routing architecture implemented in `src/routes/AppRoutes.jsx` & `src/routes/paths.js`
+- [x] Legacy URL compatibility shims implemented in `src/routes/legacyRedirects.jsx`:
+  - `/index.html` → `/`
+  - `/search.html` → `/search` (preserving `?q=&stay=&type=&min=&max=&sort=&hub=`)
+  - `/property.html` → `/property/:id` (preserving `?id=` and `?room=`)
+  - `/policies.html` → `/policies` (preserving section anchor hashes)
+  - `/login.html`, `/signup.html`, `/reset-password.html`, `/auth-callback.html` → React auth routes
+  - Safe `<UnmigratedFeatureNotice />` rendered for unmigrated dashboard and admin URLs
+- [x] Vercel SPA rewrites configured in `vercel.json` (`/.*` → `/index.html`)
+- [x] Global layout created in `src/layouts/RootLayout.jsx` with `<Header />`, `<Footer />`, `<Outlet />`
+- [x] Reusable component library created:
+  - `Header.jsx`: Branding, interactive location hub selector (MAKAUT, Jaguli, Haringhata), theme toggle, auth badge
+  - `Footer.jsx`: Brand copy, 10% fee disclosure, Instagram connect, policy navigation
+  - `PropertyCard.jsx`: Verified images, fallback placeholders, rating, pricing, room type badges, save toggle
+  - `PropertyGrid.jsx`: Responsive multi-column layout
+  - `PropertyGallery.jsx`: Hero photo carousel with prev/next controls & thumbnail strip
+  - `PropertyMap.jsx`: Leaflet map integration with OpenStreetMap tiles and marker popup
+  - `ContactOwnerModal.jsx`: "Pg Dhundo Connect" enquiry form with phone validation and direct support
+  - `SearchBar.jsx`: Search input, Monthly/Daily stay toggle, and filter drawer toggle
+  - `SearchFilters.jsx`: Collapsible drawer with budget inputs, property type, room sharing, and facility checkboxes
+  - `LoadingState.jsx`, `EmptyState.jsx`, `RatingStars.jsx`: Reusable UI state helpers
+- [x] Public pages migrated:
+  - `HomePage.jsx`: Hero, category tabs (All, PG/Room, Hotel, Flat), flat offer toggle (Rent/Sale), in-place filtering, real Supabase data, approved agents grid, back-to-top button
+  - `SearchPage.jsx`: Filter drawer, search bar, sort select (Price, Rating, Recommended), full `useSearchParams` synchronization
+  - `PropertyDetailsPage.jsx`: Full accommodation view, pricing, room types list, facilities grid, rules, location, Leaflet map, reviews list, write review form, sticky sidebar booking card
+  - `PoliciesPage.jsx`: Terms of service, privacy policy, 10% one-time fee disclosure, hash anchor scrolling
+  - `NotFoundPage.jsx`: Branded 404 with Return Home and Explore actions
+- [x] Properties service enhanced in `src/services/properties/index.js` with `attachComputedFields`, `calculateDistanceKm`, `isRoomAvailable`, `roomMonthlyPriceList`, `ROOMDHUNDO_HUBS`, `fetchApprovedAgents`
+- [x] Authentic Roomdhundo styling migrated in `src/styles/public.css` and imported into `src/styles/main.css`
+- [x] Automated test suite expanded to 21 tests (`tests/routing-and-pages.test.js`) — 21/21 passing
+- [x] Production build verified (`npm run build`) with zero chunk warnings
+- [x] `ARCHITECTURE.md` updated to v1.3.0
+- [x] `audit/FEATURE_MAPPING.md` & `audit/ROUTE_MAPPING.md` updated
+- [x] `PHASE_5_IMPLEMENTATION_REPORT.md` created
+
+---
+
+## Phase 6 User Dashboard & Renter Experience Migration Checklist
+
+- [x] Inspected legacy user dashboard implementations:
+  - `files6.0/user-dashboard.html`, `files6.0/user-dashboard.js`, `files6.0/user-dashboard.css`
+  - `files6.0/saved.html`, `files6.0/script.js` (`initSavedPage`)
+  - `files6.0/enquiries.html`, `files6.0/user-enquiries.js`, `files6.0/user-enquiries.css`
+- [x] Service layer methods implemented:
+  - `src/services/auth/index.js`: `updateUserProfile(userId, { full_name, email })` (strictly enforcing that `role` cannot be modified by user)
+  - `src/services/properties/index.js`: `fetchSavedPropertiesCount(userId)`, verified `fetchSavedProperties`, `toggleSavedProperty`
+  - `src/services/enquiries/index.js`: `fetchUserEnquiriesCount(userId)`, `fetchUserEnquiriesWithDetails(userId)`
+- [x] Reusable user components created:
+  - `src/components/user/UserDashboardHeader.jsx`: Greeting, display name, account status badge
+  - `src/components/user/UserStatCards.jsx`: Real-time stat cards (saved count, enquiries count, role badge)
+  - `src/components/user/UserProfileSection.jsx`: Profile overview, edit profile modal with validation and feedback
+  - `src/components/user/SavedPropertyCard.jsx`: Card with image, location, rating, price, view details and remove actions
+  - `src/components/user/EnquiryStatusBadge.jsx`: Color-coded badge for pending, accepted, contacted, rejected
+  - `src/components/user/EnquiryCard.jsx`: Enquiry card with property link, room type, message, timestamp, owner details, and actionable Call/WhatsApp quick-links
+- [x] User experience pages implemented:
+  - `src/pages/user/UserDashboardPage.jsx` (`/dashboard`): Stats, profile, account options, WhatsApp help, explore banner, logout
+  - `src/pages/user/SavedPropertiesPage.jsx` (`/saved`): Saved properties grid, removal logic, accessible empty state
+  - `src/pages/user/UserEnquiriesPage.jsx` (`/enquiries`): Enquiries tracker, status counters, status filter chips, empty state
+- [x] Route integration in `src/routes/AppRoutes.jsx`:
+  - Mounted `/dashboard`, `/saved`, and `/enquiries` protected with `<ProtectedRoute>`
+  - Added legacy redirects: `/user-dashboard.html` → `/dashboard`, `/saved.html` → `/saved`, `/enquiries.html` → `/enquiries`
+  - Added direct `Dashboard` navigation in global `<Header />` for authenticated users
+- [x] Stylesheet created in `src/styles/user-dashboard.css` and imported into `src/styles/main.css` with dark theme support
+- [x] Automated test suite expanded to 27 unit tests (`tests/user-dashboard.test.js`) — 27/27 passing
+- [x] Production build verified (`npm run build`) with zero chunk or bundling errors
+- [x] `ARCHITECTURE.md` updated to v1.4.0
+- [x] `audit/FEATURE_MAPPING.md` & `audit/ROUTE_MAPPING.md` updated
+- [x] `PHASE_6_IMPLEMENTATION_REPORT.md` written
+
+---
+
+> **Next step:** Review Phase 6 implementation report and grant approval to begin Phase 7 (Owner Experience: Owner Dashboard, Property Listing Wizard).

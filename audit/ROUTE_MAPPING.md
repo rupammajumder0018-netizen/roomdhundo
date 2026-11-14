@@ -14,13 +14,13 @@
 | `files6.0/search.html` | `/search.html` | Search results: text search, filters (room type, property type, facilities, budget), sort, daily/monthly toggle | `script.js`, `location.js`, `nearby.js` | `style.css` | No* (gate prompts login) | Any | `buildings`, `room_types`, `reviews`, `saved_buildings` | `/search` | `?q=`, `?stay=`, `?type=`, `?min=`, `?max=`, `?sort=`, `?hub=` |
 | `files6.0/property.html` | `/property.html` | Property detail (PG/Room/Mess/Flat): image gallery, room types, facilities, rules, reviews, submit review, contact owner panel (enquiry), save property, map | `script.js`, `property-map.js`, `hotel-booking.js` | `style.css` | No (read-only); Yes for contact/review/save | Any | `buildings`, `room_types`, `reviews`, `enquiries`, `saved_buildings` | `/property/:id` | `?id=` (property UUID — required), `?room=` (switches to hotel room detail mode) |
 | `files6.0/property.html` (room mode) | `/property.html?room=UUID` | Hotel room detail page: single room view, nightly rate, amenities, hotel booking form | `script.js`, `hotel-booking.js` | `style.css` | No (read-only); Yes for booking | Any | `room_types`, `buildings`, `hotel_bookings` | `/hotel-room/:roomId` (or `/property/:id?room=:roomId`) | `?room=` (room UUID — required) |
-| `files6.0/saved.html` | `/saved.html` | User's saved properties list: saved property cards, remove saved | `script.js`, `location.js` | `style.css` | **Yes** | Any logged-in user | `saved_buildings` JOIN `buildings`, `room_types`, `reviews` | `/saved` | None |
+| `files6.0/saved.html` | `/saved.html` | User's saved properties list: saved property cards, remove saved | `script.js`, `location.js` | `style.css` | **Yes** | Any logged-in user | `saved_buildings` JOIN `buildings`, `room_types`, `reviews` | `/saved` (Migrated in Phase 6: `<SavedPropertiesPage />`) | None |
 | `files6.0/login.html` | `/login.html` | Dedicated login page: email/password login, forgot password, link to signup | `script.js` | `style.css` | No | Public (redirects if already logged in) | `auth.signInWithPassword` | `/login` | `?redirect=` (post-login return path) |
 | `files6.0/signup.html` | `/signup.html` | Dedicated signup page: email, password, role picker (Renter/Owner/Agent), terms agreement | `script.js` | `style.css` | No | Public (redirects if already logged in) | `auth.signUp`, `profiles` | `/signup` | `?role=` (pre-selected role) |
 | `files6.0/reset-password.html` | `/reset-password.html` | Set new password after clicking Supabase magic link | `script.js` (`wireResetPasswordForm`) | `style.css` | No (Supabase token in hash) | Public | `auth.updateUser` | `/reset-password` | Hash fragment `#access_token=...&type=recovery` (Supabase standard) |
 | `files6.0/auth-callback.html` | `/auth/callback` (via Vercel rewrite) | OAuth callback handler: exchanges code/hash for session, creates/updates profile, redirects by role | `script.js` (`consumeOAuthRedirect`) | None | No | Public | `auth.getSession`, `profiles` | `/auth/callback` | Hash fragment `#access_token=...` or query `?code=...` |
-| `files6.0/user-dashboard.html` | `/user-dashboard.html` | User dashboard: profile view/edit, saved count, enquiry count, hotel bookings list, logout | `script.js`, `user-dashboard.js`, `hotel-bookings-user.js` | `user-dashboard.css`, `hotel-bookings.css`, `rd-contrast.css` | **Yes** | Any logged-in user | `profiles`, `saved_buildings`, `enquiries`, `hotel_bookings` | `/dashboard` | None |
-| `files6.0/enquiries.html` | `/enquiries.html` | User enquiries page: list of all submitted enquiries, status breakdown (pending/accepted/rejected) | `script.js`, `user-enquiries.js` | `user-enquiries.css`, `rd-contrast.css` | **Yes** | Any logged-in user | `enquiries` JOIN `buildings` | `/enquiries` | None |
+| `files6.0/user-dashboard.html` | `/user-dashboard.html` | User dashboard: profile view/edit, saved count, enquiry count, hotel bookings list, logout | `script.js`, `user-dashboard.js`, `hotel-bookings-user.js` | `user-dashboard.css`, `hotel-bookings.css`, `rd-contrast.css` | **Yes** | Any logged-in user | `profiles`, `saved_buildings`, `enquiries`, `hotel_bookings` | `/dashboard` (Migrated in Phase 6: `<UserDashboardPage />`) | None |
+| `files6.0/enquiries.html` | `/enquiries.html` | User enquiries page: list of all submitted enquiries, status breakdown (pending/accepted/rejected) | `script.js`, `user-enquiries.js` | `user-enquiries.css`, `rd-contrast.css` | **Yes** | Any logged-in user | `enquiries` JOIN `buildings` | `/enquiries` (Migrated in Phase 6: `<UserEnquiriesPage />`) | None |
 | `files6.0/owner-dashboard.html` | `/owner-dashboard.html` | Owner dashboard: property stats, My Properties list, room availability table, hotel booking requests, enquiry manager, reviews, profile | `owner-dashboard.js`, `hotel-bookings-owner.js` | `owner-dashboard.css`, `hotel-bookings.css`, `rd-contrast.css` | **Yes** | `owner`, `admin`, `agent` | `buildings`, `room_types`, `enquiries`, `hotel_bookings`, `reviews`, `profiles` | `/owner/dashboard` | Tab state via DOM (can become sub-routes: `/owner/properties`, `/owner/enquiries`, etc.) |
 | `files6.0/admin.html` | `/admin.html` | Admin dashboard (9 sections): Dashboard, Properties, Registered Profiles, Enquiries, Hotel Bookings, Agents, Economy, Reviews, Settings | `admin.js`, `hotel-bookings-admin.js`, `agents-admin.js` | `admin.css`, `hotel-bookings.css`, `admin-hotel-bookings.css`, `rd-contrast.css` | **Yes** | `admin` (or hardcoded `roomdhundo18@gmail.com`) | `buildings`, `profiles`, `enquiries`, `hotel_bookings`, `agent_applications`, `reviews`, `verification_requests` | `/admin/*` (with nested routes: `/admin/properties`, `/admin/profiles`, `/admin/bookings`, `/admin/agents`, etc.) | Section state via sidebar tab switching |
 | `files6.0/list-property.html` | `/list-property.html` | Listing hub: redirects to specific listing form or lets owner choose property type | `script.js`, `location.js`, `property-map.js` | `style.css` | **Yes** | `owner`, `admin`, `agent` | `profiles` | `/list-property` | None |
@@ -190,5 +190,21 @@
 
 ---
 
-*Document created during Phase 1 Audit. Do not modify application source files during this phase.*
+## 5. Phase 5 Implementation Status ✅
+
+The routing architecture has been implemented in [`src/routes/AppRoutes.jsx`](file:///d:/Projects/roomdhundo/src/routes/AppRoutes.jsx), [`src/routes/paths.js`](file:///d:/Projects/roomdhundo/src/routes/paths.js), and [`src/routes/legacyRedirects.jsx`](file:///d:/Projects/roomdhundo/src/routes/legacyRedirects.jsx):
+
+- **Migrated Public Routes:** `/` (`<HomePage />`), `/search` (`<SearchPage />`), `/property/:id` and `/hotel-room/:roomId` (`<PropertyDetailsPage />`), `/policies` (`<PoliciesPage />`), `*` (`<NotFoundPage />`).
+- **Migrated Auth Routes:** `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/auth/callback`.
+- **Active Legacy Redirect Shims:**
+  - `/index.html` → `/`
+  - `/search.html` → `/search` (preserving `?q=&stay=&type=&min=&max=&sort=&hub=`)
+  - `/property.html` → `/property/:id` (preserving `?id=` and `?room=`)
+  - `/policies.html` → `/policies` (preserving `#payment`, `#privacy`, `#listings`)
+  - `/login.html`, `/signup.html`, `/reset-password.html`, `/auth-callback.html` → React auth routes
+  - Unmigrated legacy dashboard/admin URLs (`/user-dashboard.html`, `/owner-dashboard.html`, `/admin.html`, `/list-property.html`, `/be-an-agent.html`, `/saved.html`) render `<UnmigratedFeatureNotice />` detailing future phases.
+
+---
+
+*Document updated during Phase 5 Migration.*
 
