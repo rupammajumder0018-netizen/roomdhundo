@@ -1,6 +1,6 @@
 # Roomdhundo — Target System Architecture
 
-**Document Version:** 1.4.0 (Phase 6: User Dashboard & Renter Experience Architecture)  
+**Document Version:** 1.5.0 (Phase 7: Owner Dashboard & Property Listing Architecture)  
 **Author:** Senior React Architect & Full-Stack Migration Engineer  
 **Branch:** `migration/react-vite`  
 **Active Stack:** React 19, Vite 5, React Router DOM 7, Supabase JS v2, Leaflet 1.9, Tailwind CSS v4
@@ -31,8 +31,9 @@ d:\Projects\roomdhundo\
 ├── ARCHITECTURE.md              # System architecture reference (this document)
 ├── audit\                       # Phase 1 Codebase Audit Suite (6 documents)
 ├── files6.0\                    # ORIGINAL APPLICATION (Preserved intact — Read-Only)
-├── tests\                       # Automated test suite (node --test, 27 tests)
+├── tests\                       # Automated test suite (node --test, 37 tests)
 │   ├── auth-system.test.js      # Auth service & role normalization tests
+│   ├── owner-system.test.js     # Owner dashboard, availability, listing wizards & role tests
 │   ├── routing-and-pages.test.js# URL builders, computed fields, distance, room logic
 │   ├── supabase-client-init.test.js
 │   ├── supabase-services.test.js
@@ -40,7 +41,7 @@ d:\Projects\roomdhundo\
 └── src\
     ├── components\
     │   ├── auth\
-    │   │   ├── ProtectedRoute.jsx   # Route guard enforcing authentication & roles
+    │   │   ├── ProtectedRoute.jsx   # Route guard enforcing authentication & allowedRoles
     │   │   └── PublicOnlyRoute.jsx  # Route guard redirecting authenticated users
     │   ├── common\
     │   │   ├── EmptyState.jsx       # Reusable accessible empty results state
@@ -48,6 +49,16 @@ d:\Projects\roomdhundo\
     │   │   ├── Header.jsx           # Global navbar (brand, hub picker, links, theme, auth state)
     │   │   ├── LoadingState.jsx     # Reusable accessible loading spinner
     │   │   └── RatingStars.jsx      # Dynamic star rating display with review count
+    │   ├── listings\
+    │   │   ├── ImageUploader.jsx    # Drag-and-drop / file selector with previews & validation
+    │   │   └── RoomTypeManager.jsx  # Dynamic room types builder with flexible sharing & rates
+    │   ├── owner\
+    │   │   ├── OwnerEnquiryCard.jsx # Enquiry card with renter details, call/WhatsApp, status actions
+    │   │   ├── OwnerProfileSection.jsx # Profile details view and inline contact edit form
+    │   │   ├── OwnerPropertyCard.jsx   # Property card with quick status toggle, view/edit/delete
+    │   │   ├── OwnerSidebar.jsx     # Navigation sidebar, pending badge, help box & logout
+    │   │   ├── OwnerStatCards.jsx   # 4 metric cards (properties, total rooms, avail, occupied)
+    │   │   └── RoomAvailabilityTable.jsx # Property selector & room status toggle table
     │   ├── property\
     │   │   ├── ContactOwnerModal.jsx# "Pg Dhundo Connect" enquiry submission modal
     │   │   ├── PropertyCard.jsx     # Listing card (image, rating, price, badges, save toggle)
@@ -82,6 +93,13 @@ d:\Projects\roomdhundo\
     │   │   ├── ForgotPasswordPage.jsx # Password recovery request screen
     │   │   ├── ResetPasswordPage.jsx  # New password entry screen
     │   │   └── AuthCallback.jsx     # OAuth exchange & role resolution screen
+    │   ├── listings\
+    │   │   ├── FlatListingPage.jsx  # 9-step flat listing wizard with review & submit
+    │   │   ├── HotelListingPage.jsx # 3-step hotel wizard with room rates & photos
+    │   │   ├── ListingHubPage.jsx   # Property category selection hub (PG, Flat, Hotel)
+    │   │   └── PgListingPage.jsx    # PG listing form supporting new & edit modes
+    │   ├── owner\
+    │   │   └── OwnerDashboardPage.jsx # Owner panel (stats, properties, room table, enquiries, profile)
     │   └── user\
     │       ├── SavedPropertiesPage.jsx # Saved properties grid with unsave capability
     │       ├── UserDashboardPage.jsx # User dashboard (stats, profile, account options, help)
@@ -103,18 +121,21 @@ d:\Projects\roomdhundo\
     │   │   └── index.js         # Hotel bookings (with unmigrated schema dependency flag)
     │   ├── enquiries\
     │   │   └── index.js         # Tenant enquiries, status tracking, enriched queries
+    │   ├── owner\
+    │   │   └── index.js         # Owner dashboard data, room toggles, listing save, profile sync
     │   └── storage\
     │       └── index.js         # Property media storage, uploads, and sanitization
     └── styles\
         ├── auth.css             # Authentication card & form styles with WCAG contrast
         ├── main.css             # Global tokens, theme definitions, and base resets
+        ├── owner.css            # Owner dashboard, cards, tables, wizard steps & uploaders
         ├── public.css           # Public page, component, card, and responsive grid styles
         └── user-dashboard.css   # Dashboard, profile, saved properties, and enquiries styles
 ```
 
 ---
 
-## 3. Public Routing & Compatibility Architecture
+## 3. Public & Role-Gated Routing Architecture
 
 ```mermaid
 flowchart TD
@@ -127,9 +148,21 @@ flowchart TD
     Router -->|"/policies"| PoliciesPage["PoliciesPage (/policies)"]
     Router -->|"/login, /signup, etc."| AuthRoutes["Auth Flow"]
     
-    Router -->|"/dashboard"| UserDash["UserDashboardPage (Protected)"]
-    Router -->|"/saved"| UserSaved["SavedPropertiesPage (Protected)"]
-    Router -->|"/enquiries"| UserEnq["UserEnquiriesPage (Protected)"]
+    Router -->|"/dashboard"| UserDash["UserDashboardPage (Protected: All Roles)"]
+    Router -->|"/saved"| UserSaved["SavedPropertiesPage (Protected: All Roles)"]
+    Router -->|"/enquiries"| UserEnq["UserEnquiriesPage (Protected: All Roles)"]
+    
+    Router -->|"/owner/dashboard"| OwnerDash["OwnerDashboardPage (Protected: Owner, Admin, Agent)"]
+    Router -->|"/list-property"| ListHub["ListingHubPage (Protected: Owner, Admin, Agent)"]
+    Router -->|"/list-property/pg"| PgWizard["PgListingPage (Protected: Owner, Admin, Agent)"]
+    Router -->|"/list-property/flat"| FlatWizard["FlatListingPage (Protected: Owner, Admin, Agent)"]
+    Router -->|"/list-property/hotel"| HotelWizard["HotelListingPage (Protected: Owner, Admin, Agent)"]
+    
+    Router -->|"/owner-dashboard.html"| LegacyOwner["Redirect -> /owner/dashboard"]
+    Router -->|"/list-property.html"| LegacyHub["Redirect -> /list-property"]
+    Router -->|"/list-pg.html"| LegacyPg["Redirect -> /list-property/pg"]
+    Router -->|"/list-flat.html"| LegacyFlat["Redirect -> /list-property/flat"]
+    Router -->|"/list-hotel.html"| LegacyHotel["Redirect -> /list-property/hotel"]
     
     Router -->|"/search.html"| LegacySearch["LegacySearchRedirect -> /search?params"]
     Router -->|"/property.html?id=..."| LegacyProp["LegacyPropertyRedirect -> /property/:id"]
@@ -137,7 +170,7 @@ flowchart TD
     Router -->|"/saved.html"| LegacySaved["Redirect -> /saved"]
     Router -->|"/enquiries.html"| LegacyEnq["Redirect -> /enquiries"]
     Router -->|"/index.html, /login.html"| LegacyStatic["Direct Navigate Redirects"]
-    Router -->|"/admin.html, /owner-dashboard.html"| Notice["UnmigratedFeatureNotice (Phases 7-8)"]
+    Router -->|"/admin.html, /be-an-agent.html"| Notice["UnmigratedFeatureNotice (Phase 8)"]
     Router -->|"Non-matching path"| NotFound["NotFoundPage (404)"]
 ```
 
@@ -145,7 +178,7 @@ flowchart TD
 
 ## 4. User Dashboard & Renter Experience Architecture
 
-The Phase 6 user experience encompasses three tightly integrated authenticated routes protected by `<ProtectedRoute>`:
+The Phase 6 user experience encompasses three authenticated routes protected by `<ProtectedRoute>`:
 
 1. **User Dashboard (`/dashboard`)**:
    - Greets user by display name and renders account health/active indicator.
@@ -168,33 +201,40 @@ The Phase 6 user experience encompasses three tightly integrated authenticated r
 
 ---
 
-## 5. Security Architecture & Privilege Boundaries
+## 5. Owner Dashboard & Property Listing Architecture (Phase 7)
 
-- **Client Sanitization:** Client-side registration strictly strips `'admin'` or unauthorized privileged roles from signup metadata. Profile update services (`updateUserProfile`) disallow client modification of `role`.
-- **Authoritative Roles:** `public.profiles.role` remains the authoritative role source. React route guards only provide UI-level gating.
-- **Backend Vulnerability Notice:** Production deployment remains blocked until database administrators apply the SQL corrections to `public.handle_new_user()` and the `public.profiles` RLS update policy in Postgres.
+Phase 7 introduces the authenticated property owner and manager experience protected by `<ProtectedRoute allowedRoles={['owner', 'admin', 'agent']}>`:
 
-### 3.1 Legacy Query Parameter Preservation
-- `/search.html?q=MAKAUT&stay=daily&type=PG&min=2000&max=5000`: Transparently redirected to `/search?q=MAKAUT&stay=daily&type=PG&min=2000&max=5000`.
-- `/property.html?id=building-uuid&room=room-uuid`: Transparently redirected to `/property/building-uuid?room=room-uuid`.
-- `/policies.html#payment`: Transparently redirected to `/policies#payment`, with smooth anchor scrolling executed in `PoliciesPage`.
+1. **Owner Dashboard (`/owner/dashboard`)**:
+   - **Real-Time Portfolio Metrics:** Total properties, total rooms, available rooms, occupied rooms, and enquiry counts.
+   - **Property Cards:** Status badges (`Available`, `Occupied`, `Pending Review`, `Rejected`), room/bed statistics, minimum rent calculation, view/edit links, and individual delete capability with confirmation.
+   - **Quick Property Toggle:** Toggles availability across all rooms of a property in one tap.
+   - **Room Availability Management:** Property filter dropdown and detailed room type table with immediate `Mark Available` / `Mark Occupied` status actions.
+   - **Enquiry Management:** Full enquiry lifecycle (`pending` → `accepted` / `rejected` → `contacted`) with live search by renter name/phone/property, status filter chips, and direct `tel:` and `wa.me` contact buttons.
+   - **Owner Profile Synchronization:** Profile name update in `public.profiles` and synchronized phone updates across all properties owned by the user.
+
+2. **Property Listing Hub (`/list-property`)**:
+   - Clean category routing hub for PG/Hostel/Room, Flat/Apartment, and Hotel/Guest House.
+
+3. **PG / Room Listing Wizard (`/list-property/pg`)**:
+   - Supports both Create and Edit modes (`?edit=<id>`).
+   - Basic info, location, facilities chips, custom amenity additions, description, and rules.
+   - Dynamic room types manager with bed counts and monthly rent.
+   - Image upload pipeline using `ImageUploader` and Supabase Storage bucket `property-images`.
+
+4. **Flat / Apartment Wizard (`/list-property/flat`)**:
+   - 9-step structured wizard (Basics, Location, Layout & Size, Pricing, Amenities, Tenant Rules, Photos, Contact, Review & Submit).
+   - Submits in `pending` review status for administrative verification.
+
+5. **Hotel / Guest House Wizard (`/list-property/hotel`)**:
+   - 3-step structured wizard (Hotel Info & Star Rating, Rooms & Rates with Nightly Pricing, Review & Publish).
+   - Supports check-in/out policies and multi-room categories.
 
 ---
 
-## 4. Property Computation & Data Architecture
+## 6. Security Architecture & Privilege Boundaries
 
-To maintain 1:1 functional fidelity with `files6.0/script.js` without duplicating business logic inside components, the service layer [`src/services/properties/index.js`](file:///d:/Projects/roomdhundo/src/services/properties/index.js) decorates database rows using `attachComputedFields`:
-
-1. **Rating Aggregation:** Computes `avgRating` from all published reviews or marks as `New listing`.
-2. **Dynamic Pricing Bounds:** Scans room types and occupancy options to determine `minPrice`, `maxPrice`, and `minDailyPrice`.
-3. **Availability Analysis:** Evaluates `isRoomAvailable` across room sharing tiers to report total available rooms.
-4. **Hub Distance:** Calculates straight-line distance via Haversine formula from the active campus hub (`MAKAUT`, `Jaguli`, `Haringhata`).
-5. **Couple-Friendly & Amenities:** Evaluates tags and facilities to provide quick badges.
-
----
-
-## 5. Security Architecture & Outstanding Database Issues
-
-Per the Phase 4 Security Audit:
-- **Client Sanitization:** Client-side registration strictly strips `'admin'` or unauthorized privileged roles from signup metadata. Profile update services disallow client modification of `role`.
+- **Client Sanitization:** Client-side registration strictly strips `'admin'` or unauthorized privileged roles from signup metadata. Profile update services (`updateUserProfile` and `updateOwnerProfile`) disallow client modification of `role`.
+- **Role Verification:** Listing wizards and owner dashboard routes are strictly protected by `<ProtectedRoute allowedRoles={['owner', 'admin', 'agent']}>`. Standard renters (`role = 'renter'`) are blocked and redirected.
+- **Data Scoping:** All owner queries and mutations (`buildings`, `room_types`, `enquiries`) are strictly scoped to `created_by = auth.uid()` or `owner_id = auth.uid()`.
 - **Backend Vulnerability Notice:** Production deployment remains blocked until database administrators apply the SQL corrections to `public.handle_new_user()` and the `public.profiles` RLS update policy in Postgres.

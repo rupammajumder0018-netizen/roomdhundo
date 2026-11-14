@@ -142,36 +142,35 @@
 ---
 
 ## 10. Owner Dashboard
-
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Stats overview (properties, rooms, occupancy) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings`, `room_types` | `<OwnerStats />` | H |
-| My Properties list | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings` (created_by = user.id) | `<OwnerProperties />` | H |
-| Edit property (redirect to list-*.html?edit=ID) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings` | `<EditPropertyButton />` | H |
-| Delete property | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings` (delete), `room_types` | Inside `<OwnerProperties />` | H |
-| Room availability table | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `room_types` | `<RoomAvailability />` | M |
-| Hotel booking requests (approve/reject) | `owner-dashboard.html` | `hotel-bookings-owner.js` | `hotel-bookings.css` | `hotel_bookings` | `<OwnerHotelBookings />` | H |
-| Enquiries management (view, respond, change status) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `enquiries` | `<OwnerEnquiries />` | H |
-| Reviews list (read-only for owner) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `reviews` JOIN `buildings` | `<OwnerReviews />` | M |
-| Owner profile view / edit | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `profiles` | `<OwnerProfile />` | H |
-| Navigation sidebar | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | — | `<DashboardSidebar />` | M |
+ 
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Migrated React Component(s) | Status |
+|---------|-------------|-----------|------------|-----------------|-----------------------------|--------|
+| Stats overview (properties, rooms, occupancy) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings`, `room_types` | `<OwnerStatCards />` in `<OwnerDashboardPage />` | ✅ Migrated |
+| My Properties list | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings` (created_by = user.id) | `<OwnerPropertyCard />` in `<OwnerDashboardPage />` | ✅ Migrated |
+| Edit property (redirect to list-*.html?edit=ID) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings` | Link to `/list-property/:type?edit=ID` | ✅ Migrated |
+| Delete property | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `buildings` (delete), `room_types` | `deleteOwnerProperty` in `<OwnerPropertyCard />` | ✅ Migrated |
+| Room availability table | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `room_types` | `<RoomAvailabilityTable />` in `<OwnerDashboardPage />` | ✅ Migrated |
+| Hotel booking requests (approve/reject) | `owner-dashboard.html` | `hotel-bookings-owner.js` | `hotel-bookings.css` | `hotel_bookings` | Deferred per prompt instructions | ⏸️ Deferred |
+| Enquiries management (view, respond, change status) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `enquiries` | `<OwnerEnquiryCard />` in `<OwnerDashboardPage />` | ✅ Migrated |
+| Reviews list (read-only for owner) | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `reviews` JOIN `buildings` | Aggregated inside property metrics | ✅ Migrated |
+| Owner profile view / edit | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | `profiles` | `<OwnerProfileSection />` in `<OwnerDashboardPage />` | ✅ Migrated |
+| Navigation sidebar | `owner-dashboard.html` | `owner-dashboard.js` | `owner-dashboard.css` | — | `<OwnerSidebar />` in `<OwnerDashboardPage />` | ✅ Migrated |
 
 ---
 
 ## 11. Property Listing Forms
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| List property hub (choose type) | `list-property.html` | `script.js` (`wireListPropertyAccess`, `bindListPropertyOpeners`) | `style.css` | `profiles` (role check) | `<ListPropertyHubPage />` | H |
-| PG / Room listing form | `list-pg.html` | `script.js` (`wireListPropertyForm`, `addRoomTypeBlock`) | `style.css`, `rd-contrast.css` | `buildings` (insert/update), `room_types`, `property-images` storage | `<ListPgPage />` | H |
-| Flat listing wizard (9 steps) | `list-flat.html` | `script.js` (form submit), `flat-listing.js` (wizard steps) | `style.css`, `hotel-listing.css`, `flat-listing.css`, `rd-contrast.css` | `buildings` (insert/update, `listing_status=pending`), `room_types`, `property-images` storage | `<ListFlatPage />` | H |
-| Hotel listing wizard (3 steps) | `list-hotel.html` | `script.js` (form submit), `hotel-listing.js` (wizard steps) | `style.css`, `hotel-listing.css`, `rd-contrast.css` | `buildings` (insert/update), `room_types` (with `images` JSONB), `property-images` storage | `<ListHotelPage />` | H |
-| Edit existing property (all types) | `list-pg.html?edit=ID`, `list-flat.html?edit=ID`, `list-hotel.html?edit=ID` | `script.js` (`loadPropertyForEdit`) | (same as above) | `buildings` (select + update), `room_types` | Same forms with edit mode | H |
-| Property image / video upload | All listing forms | `script.js` (`uploadPropertyMedia`) | — | `property-images` Supabase Storage bucket | `<MediaUploader />` | H |
-| Per-room image upload (hotel) | `list-hotel.html`, `list-pg.html` | `script.js` (`wireRoomImages`) | — | `property-images` storage | `<RoomImageUploader />` | H |
-| Leaflet map (pick location) | All listing forms | `property-map.js` | Leaflet CSS, `style.css` | `buildings.latitude`, `buildings.longitude` | `<LocationPicker />` (react-leaflet) | H |
-| Agent listing owner fields | All listing forms | `script.js` (`setupAgentListingOwnerFields`) | `style.css` | `profiles` (role=agent) | Inside listing forms | M |
-| Owner-only modal (access denied) | All listing forms | `script.js` (`showOwnerOnlyModal`) | `style.css` | — | `<AccessDeniedModal />` | M |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Migrated React Component(s) | Status |
+|---------|-------------|-----------|------------|-----------------|-----------------------------|--------|
+| List property hub (choose type) | `list-property.html` | `script.js` (`wireListPropertyAccess`, `bindListPropertyOpeners`) | `style.css` | `profiles` (role check) | `<ListingHubPage />` (`/list-property`) | ✅ Migrated |
+| PG / Room listing form | `list-pg.html` | `script.js` (`wireListPropertyForm`, `addRoomTypeBlock`) | `style.css`, `rd-contrast.css` | `buildings` (insert/update), `room_types`, `property-images` storage | `<PgListingPage />` (`/list-property/pg`) | ✅ Migrated |
+| Flat listing wizard (9 steps) | `list-flat.html` | `script.js` (form submit), `flat-listing.js` (wizard steps) | `style.css`, `hotel-listing.css`, `flat-listing.css`, `rd-contrast.css` | `buildings` (insert/update, `listing_status=pending`), `room_types`, `property-images` storage | `<FlatListingPage />` (`/list-property/flat`) | ✅ Migrated |
+| Hotel listing wizard (3 steps) | `list-hotel.html` | `script.js` (form submit), `hotel-listing.js` (wizard steps) | `style.css`, `hotel-listing.css`, `rd-contrast.css` | `buildings` (insert/update), `room_types` (with `images` JSONB), `property-images` storage | `<HotelListingPage />` (`/list-property/hotel`) | ✅ Migrated |
+| Edit existing property (all types) | `list-pg.html?edit=ID`, `list-flat.html?edit=ID`, `list-hotel.html?edit=ID` | `script.js` (`loadPropertyForEdit`) | (same as above) | `buildings` (select + update), `room_types` | `PgListingPage`, `FlatListingPage`, `HotelListingPage` with `?edit=` | ✅ Migrated |
+| Property image / video upload | All listing forms | `script.js` (`uploadPropertyMedia`) | — | `property-images` Supabase Storage bucket | `<ImageUploader />` | ✅ Migrated |
+| Per-room dynamic manager | `list-hotel.html`, `list-pg.html` | `script.js` (`wireRoomImages`) | — | `room_types` | `<RoomTypeManager />` | ✅ Migrated |
+| Agent listing owner fields | All listing forms | `script.js` (`setupAgentListingOwnerFields`) | `style.css` | `profiles` (role=agent) | Inside listing forms (`listedBy`) | ✅ Migrated |
+| Owner-only route guard | All listing forms | `script.js` (`showOwnerOnlyModal`) | `style.css` | `profiles.role` | `<ProtectedRoute allowedRoles={['owner', 'admin', 'agent']}>` | ✅ Migrated |
 
 ---
 

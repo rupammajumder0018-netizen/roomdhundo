@@ -21,6 +21,13 @@ import UserDashboardPage from "../pages/user/UserDashboardPage.jsx";
 import SavedPropertiesPage from "../pages/user/SavedPropertiesPage.jsx";
 import UserEnquiriesPage from "../pages/user/UserEnquiriesPage.jsx";
 
+// Owner & Listing Pages (Phase 7)
+import OwnerDashboardPage from "../pages/owner/OwnerDashboardPage.jsx";
+import ListingHubPage from "../pages/listings/ListingHubPage.jsx";
+import PgListingPage from "../pages/listings/PgListingPage.jsx";
+import FlatListingPage from "../pages/listings/FlatListingPage.jsx";
+import HotelListingPage from "../pages/listings/HotelListingPage.jsx";
+
 // Legacy Redirects and Compatibility
 import {
   LegacySearchRedirect,
@@ -94,25 +101,49 @@ export function AppRoutes() {
           }
         />
 
-        {/* Unmigrated Feature Placeholders (Scheduled for Phase 7-8) */}
+        {/* Authenticated Owner & Listing Routes (Phase 7) */}
         <Route
-          path="/owner/dashboard"
+          path={PATHS.OWNER_DASHBOARD}
           element={
-            <UnmigratedFeatureNotice
-              featureName="Owner Dashboard"
-              phaseName="Phase 7 (Owner Experience)"
-            />
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <OwnerDashboardPage />
+            </ProtectedRoute>
           }
         />
         <Route
-          path="/list-property"
+          path={PATHS.LIST_PROPERTY}
           element={
-            <UnmigratedFeatureNotice
-              featureName="Listing Hub"
-              phaseName="Phase 7 (Owner Experience)"
-            />
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <ListingHubPage />
+            </ProtectedRoute>
           }
         />
+        <Route
+          path={PATHS.LIST_PG}
+          element={
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <PgListingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={PATHS.LIST_FLAT}
+          element={
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <FlatListingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={PATHS.LIST_HOTEL}
+          element={
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <HotelListingPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Unmigrated Feature Placeholders (Scheduled for Phase 8) */}
         <Route
           path="/admin"
           element={
@@ -144,53 +175,13 @@ export function AppRoutes() {
         <Route path="/user-dashboard.html" element={<Navigate to="/dashboard" replace />} />
         <Route path="/saved.html" element={<Navigate to="/saved" replace />} />
         <Route path="/enquiries.html" element={<Navigate to="/enquiries" replace />} />
+        <Route path="/owner-dashboard.html" element={<Navigate to="/owner/dashboard" replace />} />
+        <Route path="/list-property.html" element={<Navigate to="/list-property" replace />} />
+        <Route path="/list-pg.html" element={<Navigate to="/list-property/pg" replace />} />
+        <Route path="/list-flat.html" element={<Navigate to="/list-property/flat" replace />} />
+        <Route path="/list-hotel.html" element={<Navigate to="/list-property/hotel" replace />} />
 
-        {/* Unmigrated Legacy URLs (Scheduled for Phase 7-8) */}
-        <Route
-          path="/owner-dashboard.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Owner Dashboard"
-              phaseName="Phase 7 (Owner Experience)"
-            />
-          }
-        />
-        <Route
-          path="/list-property.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Property Listing Wizard"
-              phaseName="Phase 7 (Owner Experience)"
-            />
-          }
-        />
-        <Route
-          path="/list-pg.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="PG Listing Form"
-              phaseName="Phase 7 (Owner Experience)"
-            />
-          }
-        />
-        <Route
-          path="/list-flat.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Flat Listing Form"
-              phaseName="Phase 7 (Owner Experience)"
-            />
-          }
-        />
-        <Route
-          path="/list-hotel.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Hotel Listing Form"
-              phaseName="Phase 7 (Owner Experience)"
-            />
-          }
-        />
+        {/* Unmigrated Legacy URLs (Scheduled for Phase 8) */}
         <Route
           path="/admin.html"
           element={

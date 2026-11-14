@@ -8,7 +8,7 @@
 | **Phase 4** | Auth System Migration           | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
 | **Phase 5** | Routing & Public Pages          | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
 | **Phase 6** | User Dashboard & Renter Exp.    | ✅ **Complete** | 2026-11-07 | 2026-11-07 |
-| Phase 7     | Owner Dashboard & Listing       | ⏳ Not started  | —          | —          |
+| **Phase 7** | Owner Dashboard & Listing       | ✅ **Complete** | 2026-11-14 | 2026-11-14 |
 | Phase 8     | Admin Console & Agent Flow      | ⏳ Not started  | —          | —          |
 | Phase 9     | Hotel Booking & Payment         | ⏳ Not started  | —          | —          |
 | Phase 10    | Testing & Production Cutover    | ⏳ Not started  | —          | —          |
@@ -167,4 +167,53 @@
 
 ---
 
-> **Next step:** Review Phase 6 implementation report and grant approval to begin Phase 7 (Owner Experience: Owner Dashboard, Property Listing Wizard).
+## Phase 7 Owner Dashboard & Property Listing Migration Checklist
+
+- [x] Inspected legacy owner & listing implementations:
+  - `files6.0/owner-dashboard.html`, `files6.0/owner-dashboard.js`, `files6.0/owner-dashboard.css`
+  - `files6.0/list-property.html`, `files6.0/list-pg.html`, `files6.0/script.js` (lines 5345–5920: listing wizards, room payloads, photo uploads)
+  - `files6.0/list-flat.html`, `files6.0/flat-listing.js`, `files6.0/flat-listing.css`
+  - `files6.0/list-hotel.html`, `files6.0/hotel-listing.js`, `files6.0/hotel-listing.css`
+- [x] Dedicated service layer created in `src/services/owner/index.js` and re-exported in `src/services/index.js`:
+  - `fetchOwnerDashboardData(ownerId)`: Properties with rooms & reviews, enriched enquiries with renter profiles, portfolio stats
+  - `updatePropertyAvailability(buildingId, ownerId, newStatus)`: Bulk toggle for all rooms of a building
+  - `toggleRoomStatus(roomId, buildingId, currentAvailable)`: Individual room availability toggle
+  - `deleteOwnerProperty(buildingId, ownerId)`: Cascade room type deletion + building record deletion scoped to `created_by`
+  - `fetchPropertyForEdit(buildingId, ownerId)`: Loads property and room types for edit mode
+  - `savePropertyListing({ buildingCore, roomTypeInputs, isEdit, editId, ownerId })`: Safe mutation insert/update
+  - `updateOwnerEnquiryStatus(enquiryId, ownerId, newStatus)`: Enquiry status management (`pending`, `accepted`, `contacted`, `rejected`)
+  - `updateOwnerProfile({ userId, full_name, phone })`: Synchronizes owner name in profile and phone across owner's listings
+- [x] Reusable Owner & Listing components created:
+  - `src/components/owner/OwnerSidebar.jsx`: Responsive navigation drawer, active indicators, pending enquiry counter, help, logout
+  - `src/components/owner/OwnerStatCards.jsx`: 4 metric cards (Total Properties, Total Rooms, Available Rooms, Occupied Rooms)
+  - `src/components/owner/OwnerPropertyCard.jsx`: Card with image, status badge, room/pricing metrics, quick toggle, view/edit/delete
+  - `src/components/owner/RoomAvailabilityTable.jsx`: Property selector dropdown and tabular room status toggle
+  - `src/components/owner/OwnerEnquiryCard.jsx`: Enquiry card with avatar, renter details, message, direct Call/WhatsApp links, and status action buttons
+  - `src/components/owner/OwnerProfileSection.jsx`: View & Edit mode for owner profile and phone synchronization
+  - `src/components/listings/ImageUploader.jsx`: Media file uploader integrated with `property-images` storage bucket
+  - `src/components/listings/RoomTypeManager.jsx`: Dynamic room types builder with flexible pricing and bed occupancy
+- [x] Owner & Listing Pages implemented:
+  - `src/pages/owner/OwnerDashboardPage.jsx` (`/owner/dashboard`): Complete owner control panel
+  - `src/pages/listings/ListingHubPage.jsx` (`/list-property`): Category selection hub (PG, Flat, Hotel)
+  - `src/pages/listings/PgListingPage.jsx` (`/list-property/pg`): Comprehensive PG listing form with new and edit modes
+  - `src/pages/listings/FlatListingPage.jsx` (`/list-property/flat`): 9-step flat listing wizard with review and pending review status
+  - `src/pages/listings/HotelListingPage.jsx` (`/list-property/hotel`): 3-step hotel wizard with room photos, nightly rates, check-in/out policies
+- [x] Route integration in `src/routes/AppRoutes.jsx`:
+  - Mounted routes protected by `<ProtectedRoute allowedRoles={['owner', 'admin', 'agent']}>`
+  - Replaced legacy notices with automatic redirects:
+    - `/owner-dashboard.html` → `/owner/dashboard`
+    - `/list-property.html` → `/list-property`
+    - `/list-pg.html` → `/list-property/pg`
+    - `/list-flat.html` → `/list-property/flat`
+    - `/list-hotel.html` → `/list-property/hotel`
+  - Updated global `<Header />` to provide direct "Owner Portal" link for owner/admin/agent accounts
+- [x] Stylesheet created in `src/styles/owner.css` and imported into `src/styles/main.css` with dark theme support
+- [x] Automated test suite expanded to 37 unit tests (`tests/owner-system.test.js`) — 37/37 passing
+- [x] Production build verified (`npm run build`) with zero chunk or bundling errors
+- [x] `ARCHITECTURE.md` updated to v1.5.0
+- [x] `audit/FEATURE_MAPPING.md` & `audit/ROUTE_MAPPING.md` updated
+- [x] `PHASE_7_IMPLEMENTATION_REPORT.md` written
+
+---
+
+> **Next step:** Review Phase 7 implementation report and grant approval to begin Phase 8 (Admin Management Console & Agent Operations).

@@ -6,6 +6,7 @@
 @import "./auth.css";
 @import "./public.css";
 @import "./user-dashboard.css";
+@import "./owner.css";
 
 :root {
   --font-sans: 'Outfit', 'Plus Jakarta Sans', Arial, -apple-system, BlinkMacSystemFont, sans-serif;

@@ -123,8 +123,8 @@ export function Header({ activeHub, onHubChange }) {
           </Link>
 
           <Link
-            to="/list-property.html"
-            className="nav-link"
+            to="/list-property"
+            className={routerLocation.pathname.startsWith("/list-property") ? "nav-link is-active" : "nav-link"}
           >
             List Property
           </Link>
@@ -138,10 +138,14 @@ export function Header({ activeHub, onHubChange }) {
 
           {isAuthenticated && (
             <Link
-              to="/dashboard"
-              className={routerLocation.pathname === "/dashboard" ? "nav-link is-active" : "nav-link"}
+              to={roleKind === "owner" || roleKind === "admin" || roleKind === "agent" ? "/owner/dashboard" : "/dashboard"}
+              className={
+                routerLocation.pathname === "/dashboard" || routerLocation.pathname === "/owner/dashboard"
+                  ? "nav-link is-active"
+                  : "nav-link"
+              }
             >
-              Dashboard
+              {roleKind === "owner" || roleKind === "agent" ? "Owner Portal" : "Dashboard"}
             </Link>
           )}
 

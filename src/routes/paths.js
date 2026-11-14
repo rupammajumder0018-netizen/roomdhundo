@@ -41,6 +41,8 @@ export const PATHS = {
   ADMIN_REVIEWS: "/admin/reviews",
 };
 
+export const ROUTE_PATHS = PATHS;
+
 /**
  * Builds a property detail link.
  *
