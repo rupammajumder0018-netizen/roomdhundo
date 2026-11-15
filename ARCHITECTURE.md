@@ -1,6 +1,6 @@
 # Roomdhundo — Target System Architecture
 
-**Document Version:** 1.5.0 (Phase 7: Owner Dashboard & Property Listing Architecture)  
+**Document Version:** 1.6.0 (Phase 8: Admin Management Console & Agent Operations)  
 **Author:** Senior React Architect & Full-Stack Migration Engineer  
 **Branch:** `migration/react-vite`  
 **Active Stack:** React 19, Vite 5, React Router DOM 7, Supabase JS v2, Leaflet 1.9, Tailwind CSS v4
@@ -238,3 +238,35 @@ Phase 7 introduces the authenticated property owner and manager experience prote
 - **Role Verification:** Listing wizards and owner dashboard routes are strictly protected by `<ProtectedRoute allowedRoles={['owner', 'admin', 'agent']}>`. Standard renters (`role = 'renter'`) are blocked and redirected.
 - **Data Scoping:** All owner queries and mutations (`buildings`, `room_types`, `enquiries`) are strictly scoped to `created_by = auth.uid()` or `owner_id = auth.uid()`.
 - **Backend Vulnerability Notice:** Production deployment remains blocked until database administrators apply the SQL corrections to `public.handle_new_user()` and the `public.profiles` RLS update policy in Postgres.
+
+---
+
+## 6. Admin Management Console & Agent Operations Architecture (Phase 8)
+
+Phase 8 implements the complete platform management console and agent operations workflow:
+
+1. **Strict Database-Backed Role Authorization (`/admin/*`)**:
+   - Gated behind `<ProtectedRoute allowedRoles={['admin']}>`.
+   - Authorization relies exclusively on `public.profiles.role === 'admin'`. Client-side `localStorage` tokens and unverified metadata are strictly rejected.
+   - Non-admin users attempting to access `/admin` or sub-routes are redirected to the homepage or login.
+
+2. **Admin Console Navigation & Layout (`src/layouts/AdminLayout.jsx`)**:
+   - **Sidebar Navigation (`<AdminSidebar />`)**: Direct links to Dashboard, Properties, Users, Agents, Enquiries, Reviews, Economy, and Settings. Includes "View Website" link and secure signout.
+   - **Admin Header (`<AdminHeader />`)**: Mobile sidebar toggle, page heading, and admin profile pill with avatar and "Administrator" badge.
+
+3. **Sub-Modules & Domain Services (`src/services/admin/adminService.js`)**:
+   - **Dashboard Overview (`/admin`)**: Aggregated metric cards (`<AdminStatCards />`) covering total properties, verified properties, pending moderation, users, owners, agents, enquiries, and reviews. Highlights pending listings awaiting administrative review.
+   - **Property Moderation (`/admin/properties`)**: Full inventory table with filters for verification status (`all`, `pending`, `approved`, `rejected`), property type (`all`, `pg`, `hotel`, `flat`), and search by name/location. Direct actions: Approve (sets `listing_status = 'published'`, `verification_status = 'approved'`), Reject (sets `listing_status = 'rejected'`, `verification_status = 'rejected'`), View, and Delete.
+   - **User Directory (`/admin/profiles`)**: Searchable user list with role filters (`all`, `user`, `owner`, `agent`, `admin`). Displays full name, email, phone, role badges, user ID, and registration date.
+   - **Agent Applications Moderation (`/admin/agents`)**: Lists prospective agent applications from `agent_applications`. Displays applicant name, contact info, operating location, and PIN code. Direct Approve action updates `agent_applications.status = 'approved'` and promotes `profiles.role = 'agent'`. Reject action marks application rejected and resets `profiles.role = 'user'`.
+   - **Enquiry Tracking (`/admin/enquiries`)**: Platform-wide enquiry monitoring with status filtering (`all`, `pending`, `accepted`, `rejected`, `contacted`). Interactive dropdown allows immediate status updates.
+   - **Review Moderation (`/admin/reviews`)**: Moderation table displaying property, reviewer, star rating, feedback text, and date with one-click deletion of inappropriate content.
+   - **Economy Deals Monitoring (`/admin/economy`)**: Live view of economy deals and promotional listings.
+   - **Settings & Security Audit (`/admin/settings`)**: Displays admin profile information, platform version, active Supabase URL, and security posture notes regarding backend RLS rules.
+
+4. **Agent Application Workflow (`/be-an-agent`)**:
+   - Publicly accessible page with role-aware submission form.
+   - Client-side validation: 10-digit mobile number regex, 6-digit PIN code regex, valid email format, and required location.
+   - Logged-in applicants have their status checked on load: if pending, an informative waiting card is displayed (`"Your application is currently being reviewed by the Pg Dhundo administration team"`).
+   - Upon submission, upserts record to `agent_applications` and updates applicant's `profiles.role = 'agent_pending'`.
+

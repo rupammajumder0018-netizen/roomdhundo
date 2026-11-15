@@ -28,6 +28,18 @@ import PgListingPage from "../pages/listings/PgListingPage.jsx";
 import FlatListingPage from "../pages/listings/FlatListingPage.jsx";
 import HotelListingPage from "../pages/listings/HotelListingPage.jsx";
 
+// Admin & Agent Pages (Phase 8)
+import AdminLayout from "../layouts/AdminLayout.jsx";
+import AdminDashboardPage from "../pages/admin/AdminDashboardPage.jsx";
+import AdminPropertiesPage from "../pages/admin/AdminPropertiesPage.jsx";
+import AdminUsersPage from "../pages/admin/AdminUsersPage.jsx";
+import AdminAgentsPage from "../pages/admin/AdminAgentsPage.jsx";
+import AdminEnquiriesPage from "../pages/admin/AdminEnquiriesPage.jsx";
+import AdminReviewsPage from "../pages/admin/AdminReviewsPage.jsx";
+import AdminEconomyPage from "../pages/admin/AdminEconomyPage.jsx";
+import AdminSettingsPage from "../pages/admin/AdminSettingsPage.jsx";
+import BeAnAgentPage from "../pages/agent/BeAnAgentPage.jsx";
+
 // Legacy Redirects and Compatibility
 import {
   LegacySearchRedirect,
@@ -143,25 +155,27 @@ export function AppRoutes() {
           }
         />
 
-        {/* Unmigrated Feature Placeholders (Scheduled for Phase 8) */}
+        {/* Agent Application Page (Phase 8) */}
+        <Route path={PATHS.BE_AN_AGENT} element={<BeAnAgentPage />} />
+
+        {/* Authenticated Admin Management Console (Phase 8) */}
         <Route
-          path="/admin"
+          path={PATHS.ADMIN}
           element={
-            <UnmigratedFeatureNotice
-              featureName="Admin Management Console"
-              phaseName="Phase 8 (Admin Experience)"
-            />
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout />
+            </ProtectedRoute>
           }
-        />
-        <Route
-          path="/be-an-agent"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Agent Application"
-              phaseName="Phase 8 (Agent Operations)"
-            />
-          }
-        />
+        >
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="properties" element={<AdminPropertiesPage />} />
+          <Route path="profiles" element={<AdminUsersPage />} />
+          <Route path="agents" element={<AdminAgentsPage />} />
+          <Route path="enquiries" element={<AdminEnquiriesPage />} />
+          <Route path="reviews" element={<AdminReviewsPage />} />
+          <Route path="economy" element={<AdminEconomyPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
+        </Route>
 
         {/* Legacy URL Redirections & Compatibility Shims */}
         <Route path="/index.html" element={<Navigate to="/" replace />} />
@@ -181,25 +195,9 @@ export function AppRoutes() {
         <Route path="/list-flat.html" element={<Navigate to="/list-property/flat" replace />} />
         <Route path="/list-hotel.html" element={<Navigate to="/list-property/hotel" replace />} />
 
-        {/* Unmigrated Legacy URLs (Scheduled for Phase 8) */}
-        <Route
-          path="/admin.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Admin Management Console"
-              phaseName="Phase 8 (Admin Experience)"
-            />
-          }
-        />
-        <Route
-          path="/be-an-agent.html"
-          element={
-            <UnmigratedFeatureNotice
-              featureName="Agent Application"
-              phaseName="Phase 8 (Agent Operations)"
-            />
-          }
-        />
+        {/* Legacy Admin & Agent URLs */}
+        <Route path="/admin.html" element={<Navigate to={PATHS.ADMIN} replace />} />
+        <Route path="/be-an-agent.html" element={<Navigate to={PATHS.BE_AN_AGENT} replace />} />
 
         {/* 404 Catch-All */}
         <Route path="*" element={<NotFoundPage />} />

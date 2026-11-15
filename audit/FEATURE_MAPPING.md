@@ -176,30 +176,30 @@
 
 ## 12. Admin Dashboard
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Dashboard stats (users, properties, revenue) | `admin.html` | `admin.js` | `admin.css`, `rd-contrast.css` | `buildings`, `profiles`, `enquiries`, `hotel_bookings` | `<AdminStats />` | H |
-| Properties management (view / approve / reject / delete) | `admin.html` | `admin.js` | `admin.css` | `buildings`, `verification_requests` | `<AdminProperties />` | H |
-| User profiles management (view / change role) | `admin.html` | `admin.js` | `admin.css` | `profiles` | `<AdminProfiles />` | H |
-| Enquiries overview (platform-wide) | `admin.html` | `admin.js` | `admin.css` | `enquiries` | `<AdminEnquiries />` | H |
-| Hotel bookings admin (approve / reject) | `admin.html` | `hotel-bookings-admin.js` | `admin.css`, `admin-hotel-bookings.css`, `hotel-bookings.css` | `hotel_bookings` | `<AdminHotelBookings />` | H |
-| Agent applications (approve / reject) | `admin.html` | `agents-admin.js` | `admin.css` | `agent_applications`, `profiles` | `<AdminAgents />` | H |
-| Reviews moderation (delete / flag) | `admin.html` | `admin.js` | `admin.css` | `reviews` | `<AdminReviews />` | M |
-| Economy section | `admin.html` | `admin.js` | `admin.css` | — (placeholder) | `<AdminEconomy />` | L |
-| Settings section | `admin.html` | `admin.js` | `admin.css` | `profiles` (admin's own) | `<AdminSettings />` | L |
-| Admin auth (login + signup embedded in sidebar) | `admin.html` | `admin.js` (own Supabase client) | `admin.css` | `auth`, `profiles` | Use shared `<AuthModal />` | M |
-| Admin navigation sidebar | `admin.html` | `admin.js` | `admin.css` | — | `<AdminSidebar />` | H |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Status |
+|---------|-------------|-----------|------------|-----------------|----------------------------|--------|
+| Dashboard stats (users, properties, revenue) | `admin.html` | `admin.js` | `admin.css`, `rd-contrast.css` | `buildings`, `profiles`, `enquiries`, `hotel_bookings` | `<AdminStatCards />` | ✅ Migrated |
+| Properties management (view / approve / reject / delete) | `admin.html` | `admin.js` | `admin.css` | `buildings`, `verification_requests` | `<AdminPropertyTable />` | ✅ Migrated |
+| User profiles management (view / change role) | `admin.html` | `admin.js` | `admin.css` | `profiles` | `<AdminUserTable />` | ✅ Migrated |
+| Enquiries overview (platform-wide) | `admin.html` | `admin.js` | `admin.css` | `enquiries` | `<AdminEnquiryTable />` | ✅ Migrated |
+| Hotel bookings admin (approve / reject) | `admin.html` | `hotel-bookings-admin.js` | `admin.css`, `admin-hotel-bookings.css`, `hotel-bookings.css` | `hotel_bookings` | Scheduled for Hotel Phase | ⏳ Deferred |
+| Agent applications (approve / reject) | `admin.html` | `agents-admin.js` | `admin.css` | `agent_applications`, `profiles` | `<AdminAgentTable />` | ✅ Migrated |
+| Reviews moderation (delete / flag) | `admin.html` | `admin.js` | `admin.css` | `reviews` | `<AdminReviewTable />` | ✅ Migrated |
+| Economy section | `admin.html` | `admin.js` | `admin.css` | — (placeholder) | `<AdminEconomyPage />` | ✅ Migrated |
+| Settings section | `admin.html` | `admin.js` | `admin.css` | `profiles` (admin's own) | `<AdminSettingsPage />` | ✅ Migrated |
+| Admin auth (login + signup embedded in sidebar) | `admin.html` | `admin.js` (own Supabase client) | `admin.css` | `auth`, `profiles` | Unified `<ProtectedRoute>` + `<Header />` | ✅ Migrated |
+| Admin navigation sidebar | `admin.html` | `admin.js` | `admin.css` | — | `<AdminSidebar />` | ✅ Migrated |
 
 ---
 
 ## 13. Agent Features
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Agent application form | `be-an-agent.html` | `agent.js` (`submitAgentApplication`) | `style.css` | `agent_applications` (insert), `profiles` (update role) | `<BeAnAgentPage />` | H |
-| Agent application status display | `be-an-agent.html` | `agent.js` | `style.css` | `agent_applications` | `<AgentApplicationStatus />` | H |
-| Agent gate (pending → redirect) | All pages | `agent-gate.js` | — | `localStorage.roomdhundo_role` (antipattern) | Remove — gate via `AuthProvider` | H |
-| Home page agent section | `index.html` | `agent.js` (`renderHomeAgents`) | `style.css` | `profiles` (role=agent) | `<AgentSection />` | M |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Status |
+|---------|-------------|-----------|------------|-----------------|----------------------------|--------|
+| Agent application form | `be-an-agent.html` | `agent.js` (`submitAgentApplication`) | `style.css` | `agent_applications` (insert), `profiles` (update role) | `<BeAnAgentPage />` | ✅ Migrated |
+| Agent application status display | `be-an-agent.html` | `agent.js` | `style.css` | `agent_applications` | `<BeAnAgentPage />` (waiting card) | ✅ Migrated |
+| Agent gate (pending → redirect) | All pages | `agent-gate.js` | — | `localStorage.roomdhundo_role` (antipattern) | Centralized role gate via `useAuth()` | ✅ Migrated |
+| Home page agent section | `index.html` | `agent.js` (`renderHomeAgents`) | `style.css` | `profiles` (role=agent) | `<HomePage />` agents section | ✅ Migrated |
 
 ---
 

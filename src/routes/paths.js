@@ -31,7 +31,7 @@ export const PATHS = {
   LIST_FLAT: "/list-property/flat",
   LIST_HOTEL: "/list-property/hotel",
 
-  // Admin Routes (Scheduled for later phases)
+  // Admin Routes (Phase 8)
   ADMIN: "/admin",
   ADMIN_PROPERTIES: "/admin/properties",
   ADMIN_PROFILES: "/admin/profiles",
@@ -39,6 +39,8 @@ export const PATHS = {
   ADMIN_HOTEL_BOOKINGS: "/admin/hotel-bookings",
   ADMIN_AGENTS: "/admin/agents",
   ADMIN_REVIEWS: "/admin/reviews",
+  ADMIN_ECONOMY: "/admin/economy",
+  ADMIN_SETTINGS: "/admin/settings",
 };
 
 export const ROUTE_PATHS = PATHS;

@@ -216,4 +216,50 @@
 
 ---
 
-> **Next step:** Review Phase 7 implementation report and grant approval to begin Phase 8 (Admin Management Console & Agent Operations).
+## Phase 8 Admin Management Console & Agent Operations Checklist
+
+- [x] Original admin and agent implementation audited across `files6.0/admin.html`, `admin.js`, `admin.css`, `be-an-agent.html`, `agent.js`, `agents-admin.js`, and `sql/agent-applications.sql`
+- [x] Centralized Admin & Agent Service implemented in `src/services/admin/adminService.js`:
+  - `fetchAdminDashboardStats`: Live aggregation of properties, verified/pending moderation, users, owners, agents, enquiries, and reviews
+  - `fetchAdminProperties`: Property listings with status, type, and search filters
+  - `updatePropertyVerificationStatus`: Moderation action approving (`listing_status = 'published'`, `verification_status = 'approved'`) or rejecting (`listing_status = 'rejected'`, `verification_status = 'rejected'`)
+  - `deleteAdminProperty`: Direct building deletion by ID
+  - `fetchAdminProfiles`: Platform user directory with role and query filters
+  - `fetchAdminEnquiries` & `updateAdminEnquiryStatus`: Enquiry tracking and status updates
+  - `fetchAdminReviews` & `deleteAdminReview`: Review moderation and deletion
+  - `fetchAdminAgentApplications`, `updateAgentApplicationStatus`, `deleteAgentApplication`: Application review, approval, rejection, and profile role synchronization (`'agent'` vs `'user'`)
+  - `validateAgentApplicationInput`, `submitAgentApplication`, `fetchUserAgentApplication`: Prospective agent form validation and submission
+  - `fetchAdminEconomyDeals`: Safe economy deals query
+- [x] Reusable Admin & Agent components created:
+  - `src/components/admin/AdminSidebar.jsx`: Admin navigation bar with active state, view site, and logout
+  - `src/components/admin/AdminHeader.jsx`: Responsive admin topbar with mobile toggle, title, and admin profile pill
+  - `src/components/admin/AdminStatCards.jsx`: 8 metric cards across properties, users, and platform activity
+  - `src/components/admin/AdminPropertyTable.jsx`: Tabular property moderation with thumbnail, pricing, and approve/reject/delete actions
+  - `src/components/admin/AdminUserTable.jsx`: User directory with role badges and contact information
+  - `src/components/admin/AdminAgentTable.jsx`: Agent application review with location, PIN, and approve/reject actions
+  - `src/components/admin/AdminEnquiryTable.jsx`: Tenant enquiry tracking with status selector
+  - `src/components/admin/AdminReviewTable.jsx`: Review moderation with star rating and delete action
+- [x] Admin & Agent Pages implemented:
+  - `src/layouts/AdminLayout.jsx`: Responsive layout with sidebar and header
+  - `src/pages/admin/AdminDashboardPage.jsx` (`/admin`): Metrics overview and pending listings requiring review
+  - `src/pages/admin/AdminPropertiesPage.jsx` (`/admin/properties`): Comprehensive property moderation table
+  - `src/pages/admin/AdminUsersPage.jsx` (`/admin/profiles`): Platform user and owner directory
+  - `src/pages/admin/AdminAgentsPage.jsx` (`/admin/agents`): Agent applications moderation
+  - `src/pages/admin/AdminEnquiriesPage.jsx` (`/admin/enquiries`): Platform enquiries management
+  - `src/pages/admin/AdminReviewsPage.jsx` (`/admin/reviews`): Review moderation
+  - `src/pages/admin/AdminEconomyPage.jsx` (`/admin/economy`): Economy deals monitoring
+  - `src/pages/admin/AdminSettingsPage.jsx` (`/admin/settings`): Admin profile and platform security posture
+  - `src/pages/agent/BeAnAgentPage.jsx` (`/be-an-agent`): Prospective agent application form and pending status card
+- [x] Protected Admin routing integrated in `src/routes/AppRoutes.jsx`:
+  - Mounted under `<ProtectedRoute allowedRoles={['admin']}>` (enforcing database `profiles.role === 'admin'`)
+  - Legacy redirects: `/admin.html` → `/admin`, `/be-an-agent.html` → `/be-an-agent`
+- [x] Stylesheet created in `src/styles/admin.css` and imported into `src/styles/main.css`
+- [x] Automated unit test suite created (`tests/admin-and-agent.test.js`) — 44/44 tests passing across full test suite
+- [x] Production build verified (`npm run build`) with zero chunk or bundling errors
+- [x] `ARCHITECTURE.md` updated to v1.6.0
+- [x] `audit/FEATURE_MAPPING.md` & `audit/ROUTE_MAPPING.md` updated
+- [x] `PHASE_8_IMPLEMENTATION_REPORT.md` written
+
+---
+
+> **Status:** Phase 8 Complete. Ready for Phase 9 planning and execution.
