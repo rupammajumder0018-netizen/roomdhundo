@@ -291,113 +291,21 @@ export function HomePage() {
           </div>
         )}
 
-        {/* Search Input and Filter Toggle */}
+        {/* Search Input */}
         <div className="home-search-panel">
           <form className="home-search-bar" onSubmit={handleHeroSearchSubmit}>
             <input
               type="text"
-              placeholder={`Search verified stays near ${activeHub.name}...`}
+              id="heroSearchInput"
+              placeholder="Start your search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search properties"
             />
-            <button type="submit" className="home-search-submit">
+            <button type="submit" className="home-search-submit" id="heroSearchBtn">
               Search
             </button>
-            <button
-              type="button"
-              className={`home-filter-toggle-btn ${isFilterPanelOpen ? "is-open" : ""}`}
-              onClick={() => setIsFilterPanelOpen((prev) => !prev)}
-              aria-expanded={isFilterPanelOpen}
-              aria-label="Toggle search filters"
-            >
-              Filters {isFilterPanelOpen ? "▴" : "▾"}
-            </button>
           </form>
-
-          {/* Collapsible Filter Panel */}
-          {isFilterPanelOpen && (
-            <div className="home-filter-panel" id="homeFilterPanel">
-              <div className="home-filter-grid">
-                <div className="home-filter-group">
-                  <h3>Property Type</h3>
-                  {["PG", "Room", "Hotel", "Flat", "Guest House"].map((type) => (
-                    <label key={type}>
-                      <input
-                        type="checkbox"
-                        checked={selectedPropertyTypes.includes(type)}
-                        onChange={() => {
-                          setSelectedPropertyTypes((prev) =>
-                            prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-                          );
-                        }}
-                      />{" "}
-                      {type}
-                    </label>
-                  ))}
-                </div>
-
-                <div className="home-filter-group">
-                  <h3>Facilities</h3>
-                  {[
-                    { id: "wifi", label: "Wi-Fi" },
-                    { id: "food", label: "Food" },
-                    { id: "ac", label: "AC" },
-                    { id: "kitchen", label: "Kitchen" },
-                    { id: "couple-friendly", label: "Couple Friendly" },
-                    { id: "furnished", label: "Furnished" },
-                  ].map((fac) => (
-                    <label key={fac.id}>
-                      <input
-                        type="checkbox"
-                        checked={selectedFacilities.includes(fac.id)}
-                        onChange={() => {
-                          setSelectedFacilities((prev) =>
-                            prev.includes(fac.id) ? prev.filter((f) => f !== fac.id) : [...prev, fac.id]
-                          );
-                        }}
-                      />{" "}
-                      {fac.label}
-                    </label>
-                  ))}
-                </div>
-
-                <div className="home-filter-group">
-                  <h3>Monthly Budget</h3>
-                  <div className="home-budget-inputs">
-                    <input
-                      type="number"
-                      placeholder="Min ₹"
-                      value={minBudget}
-                      onChange={(e) => setMinBudget(e.target.value)}
-                    />
-                    <span>–</span>
-                    <input
-                      type="number"
-                      placeholder="Max ₹"
-                      value={maxBudget}
-                      onChange={(e) => setMaxBudget(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="home-filter-actions">
-                <button
-                  type="button"
-                  className="home-clear-filters"
-                  onClick={() => {
-                    setSelectedPropertyTypes([]);
-                    setSelectedFacilities([]);
-                    setMinBudget("");
-                    setMaxBudget("");
-                  }}
-                >
-                  Clear Filters
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -407,9 +315,25 @@ export function HomePage() {
           <p id="homeResultsCount">
             {isLoading
               ? "Loading properties..."
-              : `Showing ${filteredProperties.length} ${
-                  filteredProperties.length === 1 ? "stay" : "stays"
-                } near ${activeHub.name}`}
+              : (() => {
+                  const one =
+                    activeCategory === "flat"
+                      ? flatOffer === "sale"
+                        ? "flat for sale"
+                        : "flat on rent"
+                      : "property";
+                  const many =
+                    activeCategory === "flat"
+                      ? flatOffer === "sale"
+                        ? "flats for sale"
+                        : "flats on rent"
+                      : "properties";
+                  return filteredProperties.length === 0
+                    ? `0 ${many} found`
+                    : `${filteredProperties.length} ${
+                        filteredProperties.length === 1 ? one : many
+                      } found`;
+                })()}
           </p>
         </div>
 

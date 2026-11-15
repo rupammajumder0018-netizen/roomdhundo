@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { calculateDistanceKm } from "../../services/properties/index.js";
-import { RatingStars } from "../common/RatingStars.jsx";
+import {
+  calculateDistanceKm,
+  facilityPreviewBadges,
+} from "../../services/properties/index.js";
 
 export function PropertyCard({
   building,
@@ -23,9 +25,10 @@ export function PropertyCard({
     minPrice,
     minDailyPrice,
     avgRating,
-    reviewCount,
+    reviewCount = 0,
     roomTypeNames = [],
     flat_offer,
+    totalAvailable,
   } = building;
 
   // Calculate distance from active hub if coordinates exist
@@ -54,12 +57,14 @@ export function PropertyCard({
   const priceFormatted =
     price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
   const priceLabel = forSale
-    ? "Sale"
+    ? "Sale "
     : (building.room_types || []).length > 1
     ? "From "
     : "";
 
   const mainImage = images && images.length > 0 ? images[0] : null;
+  const facilityBadges = facilityPreviewBadges(building, 3);
+  const roomTypeSummary = (roomTypeNames || []).join(", ");
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
@@ -70,11 +75,11 @@ export function PropertyCard({
   };
 
   return (
-    <article className="property-card" data-id={id}>
+    <article className="property-card home-property-card" data-id={id}>
       <Link
         to={`/property/${id}`}
         className="property-image-link"
-        aria-label={`View details for ${name}`}
+        aria-label={`View ${name}`}
       >
         <div className="property-image">
           {mainImage && !imgError ? (
@@ -85,27 +90,8 @@ export function PropertyCard({
               onError={() => setImgError(true)}
             />
           ) : (
-            <div className="image-placeholder">
-              <span>⌂</span>
-              <span>{name}</span>
-            </div>
+            <div className="image-placeholder">Property Image</div>
           )}
-
-          {offerBadge && (
-            <span className="flat-offer-badge" aria-label={`Listing offer: ${offerBadge}`}>
-              {offerBadge}
-            </span>
-          )}
-
-          <button
-            type="button"
-            className={`favorite ${isSaved ? "saved" : ""}`}
-            onClick={handleFavoriteClick}
-            aria-label={isSaved ? "Remove from saved" : "Save property"}
-            title={isSaved ? "Saved" : "Save"}
-          >
-            {isSaved ? "♥" : "♡"}
-          </button>
         </div>
       </Link>
 
@@ -119,29 +105,66 @@ export function PropertyCard({
               📍 {location || "Location not listed"}
               {distanceDisplay && ` • ${distanceDisplay}`}
             </p>
-          </div>
-        </div>
-
-        <div className="property-card-rating">
-          <RatingStars rating={avgRating} reviewCount={reviewCount} />
-        </div>
-
-        <div className="property-card-bottom">
-          <div className="price">
-            <strong>
-              {priceLabel}
-              {priceFormatted}
-            </strong>
-            {unit && <span> {unit}</span>}
+            {offerBadge && (
+              <span className="flat-offer-badge" aria-label={`Listing offer: ${offerBadge}`}>
+                {offerBadge}
+              </span>
+            )}
           </div>
 
-          {roomTypeNames.length > 0 && (
-            <div className="property-card-types" title={roomTypeNames.join(", ")}>
-              {roomTypeNames.slice(0, 2).join(" • ")}
-              {roomTypeNames.length > 2 && ` +${roomTypeNames.length - 2}`}
-            </div>
-          )}
+          <button
+            type="button"
+            className={`favorite ${isSaved ? "saved" : ""}`}
+            onClick={handleFavoriteClick}
+            aria-label={isSaved ? "Remove from saved" : "Save property"}
+            title={isSaved ? "Saved" : "Save"}
+          >
+            {isSaved ? "♥" : "♡"}
+          </button>
         </div>
+
+        <div className="rating">
+          {avgRating ? `⭐ ${avgRating}` : "🆕 New"}{" "}
+          <span>({reviewCount} reviews)</span>
+        </div>
+
+        <div className="price">
+          <strong>
+            {priceLabel}
+            {priceFormatted}
+          </strong>
+          {unit && <span> {unit}</span>}
+        </div>
+
+        {roomTypeSummary && (
+          <p className="property-card-types" title={roomTypeSummary}>
+            {roomTypeSummary}
+          </p>
+        )}
+
+        {facilityBadges.length > 0 && (
+          <div className="amenities">
+            {facilityBadges.map((badge, idx) => (
+              <span key={idx}>{badge}</span>
+            ))}
+          </div>
+        )}
+
+        {totalAvailable != null && (
+          <div className="availability">
+            {totalAvailable > 0
+              ? `🟢 ${totalAvailable} ${
+                  totalAvailable === 1
+                    ? isFlat
+                      ? "flat"
+                      : "room"
+                    : isFlat
+                    ? "flats"
+                    : "rooms"
+                } available`
+              : "🔴 Currently occupied"}
+          </div>
+        )}
       </div>
     </article>
   );

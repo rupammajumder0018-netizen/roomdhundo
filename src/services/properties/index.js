@@ -138,6 +138,73 @@ export function attachComputedFields(b) {
   };
 }
 
+export const FACILITY_TAG_LABELS = {
+  wifi: "Wi-Fi",
+  food: "Food",
+  ac: "AC",
+  laundry: "Laundry",
+  parking: "🚗 Parking",
+  bathroom: "🚿 Attached Bathroom",
+  kitchen: "🍳 Attached Kitchen",
+  "couple-friendly": "💑 Couple Friendly",
+  furnished: "🛋️ Furnished",
+  "semi-furnished": "🪑 Semi Furnished",
+  unfurnished: "🏠 Unfurnished",
+  "room-only": "Room only",
+  breakfast: "Breakfast",
+  "meal-breakfast": "Breakfast",
+  "meal-lunch": "Lunch",
+  "meal-dinner": "Dinner",
+};
+
+export function isCoupleFriendlyFacility(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .includes("couple");
+}
+
+export function isPubliclyListedBuilding(building) {
+  if (!building) return false;
+  const status = String(building.listing_status || "published").trim().toLowerCase();
+  return !building.listing_status || status === "published";
+}
+
+export function getBuildingFacilityLabels(building) {
+  const labels = [];
+  const seen = new Set();
+
+  function add(raw) {
+    const text = String(raw || "").trim();
+    if (!text) return;
+    const key = text
+      .toLowerCase()
+      .replace(/[\u{1F300}-\u{1FAFF}]/gu, "")
+      .replace(/[^\p{L}\p{N}]+/gu, "-")
+      .replace(/^-|-$/g, "");
+    if (seen.has(key)) return;
+    seen.add(key);
+    labels.push(text);
+  }
+
+  (Array.isArray(building?.facilities) ? building.facilities : []).forEach(add);
+  (Array.isArray(building?.facility_tags) ? building.facility_tags : []).forEach((tag) => {
+    const normalized = String(tag || "").trim().toLowerCase();
+    add(FACILITY_TAG_LABELS[normalized] || tag);
+  });
+  return labels;
+}
+
+export function facilityPreviewBadges(building, limit = 3) {
+  const all = getBuildingFacilityLabels(building);
+  const couple = all.find(isCoupleFriendlyFacility);
+  const others = all.filter((item) => item !== couple);
+  const shown = couple
+    ? [couple, ...others.slice(0, Math.max(0, limit - 1))]
+    : others.slice(0, limit);
+  return shown;
+}
+
 /**
  * Fetches approved agents to display on the homepage agent section.
  *
@@ -176,7 +243,6 @@ export async function fetchPublishedProperties(options = {}) {
   let query = supabase
     .from("buildings")
     .select("*, room_types(*), reviews(*)")
-    .eq("listing_status", "published")
     .order("created_at", { ascending: false });
 
   if (options.type) {
@@ -188,7 +254,8 @@ export async function fetchPublishedProperties(options = {}) {
   }
 
   const { data, error } = await query;
-  const decorated = Array.isArray(data) ? data.map(attachComputedFields) : data;
+  const filtered = Array.isArray(data) ? data.filter(isPubliclyListedBuilding) : data;
+  const decorated = Array.isArray(filtered) ? filtered.map(attachComputedFields) : filtered;
   return { data: decorated, error };
 }
 
