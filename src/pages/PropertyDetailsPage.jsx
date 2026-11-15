@@ -10,6 +10,7 @@ import { useAuth } from "../hooks/useAuth.js";
 import { PropertyGallery } from "../components/property/PropertyGallery.jsx";
 import { PropertyMap } from "../components/property/PropertyMap.jsx";
 import { ContactOwnerModal } from "../components/property/ContactOwnerModal.jsx";
+import { HotelStayBooking } from "../components/property/HotelStayBooking.jsx";
 import { RatingStars } from "../components/common/RatingStars.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
@@ -164,6 +165,9 @@ export function PropertyDetailsPage() {
   const rules = Array.isArray(building.rules) ? building.rules : [];
   const images = Array.isArray(building.images) ? building.images : [];
 
+  const isHotel = String(building.type || "").toLowerCase() === "hotel";
+  const priceUnit = isHotel ? " / night" : " / month";
+
   // Price formatting
   const priceValue =
     building.minPrice != null
@@ -243,53 +247,57 @@ export function PropertyDetailsPage() {
                   {priceLabel}
                   {priceValue}
                 </strong>
-                <span id="propertyPriceUnit"> / month</span>
+                <span id="propertyPriceUnit">{priceUnit}</span>
               </div>
             </section>
 
-            {/* ROOM TYPES */}
-            {roomTypes.length > 0 && (
-              <section className="property-section">
-                <h2>Available Room Types</h2>
-                <div className="room-types-list" id="roomTypesList">
-                  {roomTypes.map((rt) => {
-                    const isAvail = Number(rt.available_rooms) > 0;
-                    return (
-                      <div
-                        key={rt.id || rt.room_type}
-                        className="room-type-card"
-                        style={{
-                          background: "var(--rd-surface, #fff)",
-                          border: "1px solid var(--rd-border, #c6ead9)",
-                          borderRadius: "14px",
-                          padding: "18px",
-                          marginBottom: "12px",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          flexWrap: "wrap",
-                          gap: "12px",
-                        }}
-                      >
-                        <div>
-                          <strong style={{ fontSize: "16px", color: "var(--rd-text, #22577A)" }}>
-                            {rt.room_type}
-                          </strong>
-                          <p style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)", marginTop: "4px" }}>
-                            {rt.available_rooms != null ? `${rt.available_rooms} rooms available` : "Available"}
-                          </p>
+            {/* HOTEL STAYS & BOOKINGS OR GENERAL ROOM TYPES */}
+            {isHotel ? (
+              <HotelStayBooking building={building} />
+            ) : (
+              roomTypes.length > 0 && (
+                <section className="property-section">
+                  <h2>Available Room Types</h2>
+                  <div className="room-types-list" id="roomTypesList">
+                    {roomTypes.map((rt) => {
+                      const isAvail = Number(rt.available_rooms) > 0;
+                      return (
+                        <div
+                          key={rt.id || rt.room_type}
+                          className="room-type-card"
+                          style={{
+                            background: "var(--rd-surface, #fff)",
+                            border: "1px solid var(--rd-border, #c6ead9)",
+                            borderRadius: "14px",
+                            padding: "18px",
+                            marginBottom: "12px",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "12px",
+                          }}
+                        >
+                          <div>
+                            <strong style={{ fontSize: "16px", color: "var(--rd-text, #22577A)" }}>
+                              {rt.room_type}
+                            </strong>
+                            <p style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)", marginTop: "4px" }}>
+                              {rt.available_rooms != null ? `${rt.available_rooms} rooms available` : "Available"}
+                            </p>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--rd-accent, #38A3A5)" }}>
+                              ₹{Number(rt.price_value || rt.price || 0).toLocaleString("en-IN")}
+                            </span>
+                            <span style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)" }}> / mo</span>
+                          </div>
                         </div>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--rd-accent, #38A3A5)" }}>
-                            ₹{Number(rt.price_value || rt.price || 0).toLocaleString("en-IN")}
-                          </span>
-                          <span style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)" }}> / mo</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
+                      );
+                    })}
+                  </div>
+                </section>
+              )
             )}
 
             {/* FACILITIES */}
@@ -474,12 +482,29 @@ export function PropertyDetailsPage() {
                   {priceLabel}
                   {priceValue}
                 </span>
-                <span> / month</span>
+                <span>{priceUnit}</span>
               </div>
 
               <div className="availability-status">
                 🟢 <span id="propertyAvailability">{availabilityText}</span>
               </div>
+
+              {isHotel && (
+                <button
+                  type="button"
+                  className="hotel-room-select"
+                  id="hotelStickyBook"
+                  style={{ marginBottom: "12px", width: "100%" }}
+                  onClick={() => {
+                    document.getElementById("hotelStayRooms")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
+                >
+                  🏨 Reserve a Room
+                </button>
+              )}
 
               <button
                 type="button"

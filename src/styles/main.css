@@ -8,6 +8,8 @@
 @import "./user-dashboard.css";
 @import "./owner.css";
 @import "./admin.css";
+@import "./hotel-bookings.css";
+@import "./admin-hotel-bookings.css";
 
 :root {
   --font-sans: 'Outfit', 'Plus Jakarta Sans', Arial, -apple-system, BlinkMacSystemFont, sans-serif;

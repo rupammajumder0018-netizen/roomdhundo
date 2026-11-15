@@ -33,6 +33,14 @@ export function LegacyPropertyRedirect() {
 }
 
 /**
+ * Redirects legacy `/payment.html` to modern `/payment`, preserving all query parameters.
+ */
+export function LegacyPaymentRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/payment${location.search}`} replace />;
+}
+
+/**
  * Notice displayed when a user visits a legacy URL for a dashboard or admin feature
  * that is scheduled for migration in upcoming phases.
  */

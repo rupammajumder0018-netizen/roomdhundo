@@ -8,6 +8,7 @@ import { PATHS } from "../../routes/paths.js";
 import { UserDashboardHeader } from "../../components/user/UserDashboardHeader.jsx";
 import { UserStatCards } from "../../components/user/UserStatCards.jsx";
 import { UserProfileSection } from "../../components/user/UserProfileSection.jsx";
+import { UserHotelBookingsSection } from "../../components/user/UserHotelBookingsSection.jsx";
 
 export function UserDashboardPage() {
   const { user, profile, roleKind, logout, refreshProfile } = useAuth();
@@ -188,6 +189,9 @@ export function UserDashboardPage() {
             Explore Properties →
           </Link>
         </div>
+
+        {/* MY HOTEL BOOKINGS */}
+        {user?.id && <UserHotelBookingsSection userId={user.id} />}
 
         {/* LOGOUT */}
         <div className="renter-logout-area">

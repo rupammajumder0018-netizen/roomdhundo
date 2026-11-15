@@ -16,6 +16,7 @@ export function AdminSidebar({ isOpen, onClose }) {
   const navItems = [
     { to: PATHS.ADMIN, end: true, label: "📊 Dashboard" },
     { to: PATHS.ADMIN_PROPERTIES, label: "🏠 Properties" },
+    { to: PATHS.ADMIN_HOTEL_BOOKINGS, label: "🏨 Hotel Bookings" },
     { to: PATHS.ADMIN_PROFILES, label: "👤 Registered Profiles" },
     { to: PATHS.ADMIN_ENQUIRIES, label: "📩 Enquiries" },
     { to: PATHS.ADMIN_AGENTS, label: "🤝 Agents" },

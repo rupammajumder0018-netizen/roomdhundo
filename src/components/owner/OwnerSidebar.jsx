@@ -64,6 +64,14 @@ export default function OwnerSidebar({
 
           <button
             type="button"
+            className={`owner-nav-link ${activeSection === "hotel-bookings" ? "active" : ""}`}
+            onClick={() => handleNavClick("hotel-bookings")}
+          >
+            <span>🏨</span> Hotel Bookings
+          </button>
+
+          <button
+            type="button"
             className={`owner-nav-link ${activeSection === "enquiries" ? "active" : ""}`}
             onClick={() => handleNavClick("enquiries")}
           >

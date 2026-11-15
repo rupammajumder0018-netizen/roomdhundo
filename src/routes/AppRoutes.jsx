@@ -28,10 +28,14 @@ import PgListingPage from "../pages/listings/PgListingPage.jsx";
 import FlatListingPage from "../pages/listings/FlatListingPage.jsx";
 import HotelListingPage from "../pages/listings/HotelListingPage.jsx";
 
-// Admin & Agent Pages (Phase 8)
+// Booking & Payment Pages (Phase 9)
+import PaymentPage from "../pages/payment/PaymentPage.jsx";
+
+// Admin & Agent Pages (Phase 8 & 9)
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage.jsx";
 import AdminPropertiesPage from "../pages/admin/AdminPropertiesPage.jsx";
+import AdminHotelBookingsPage from "../pages/admin/AdminHotelBookingsPage.jsx";
 import AdminUsersPage from "../pages/admin/AdminUsersPage.jsx";
 import AdminAgentsPage from "../pages/admin/AdminAgentsPage.jsx";
 import AdminEnquiriesPage from "../pages/admin/AdminEnquiriesPage.jsx";
@@ -44,6 +48,7 @@ import BeAnAgentPage from "../pages/agent/BeAnAgentPage.jsx";
 import {
   LegacySearchRedirect,
   LegacyPropertyRedirect,
+  LegacyPaymentRedirect,
   UnmigratedFeatureNotice,
 } from "./legacyRedirects.jsx";
 import { PATHS } from "./paths.js";
@@ -57,6 +62,8 @@ export function AppRoutes() {
         <Route path={PATHS.SEARCH} element={<SearchPage />} />
         <Route path={PATHS.PROPERTY_DETAILS} element={<PropertyDetailsPage />} />
         <Route path={PATHS.HOTEL_ROOM} element={<PropertyDetailsPage />} />
+        <Route path={PATHS.PAYMENT} element={<PaymentPage />} />
+        <Route path="/payment/:bookingId" element={<PaymentPage />} />
         <Route path={PATHS.POLICIES} element={<PoliciesPage />} />
 
         {/* Authentication Routes */}
@@ -169,6 +176,7 @@ export function AppRoutes() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="properties" element={<AdminPropertiesPage />} />
+          <Route path="hotel-bookings" element={<AdminHotelBookingsPage />} />
           <Route path="profiles" element={<AdminUsersPage />} />
           <Route path="agents" element={<AdminAgentsPage />} />
           <Route path="enquiries" element={<AdminEnquiriesPage />} />
@@ -181,6 +189,7 @@ export function AppRoutes() {
         <Route path="/index.html" element={<Navigate to="/" replace />} />
         <Route path="/search.html" element={<LegacySearchRedirect />} />
         <Route path="/property.html" element={<LegacyPropertyRedirect />} />
+        <Route path="/payment.html" element={<LegacyPaymentRedirect />} />
         <Route path="/policies.html" element={<Navigate to="/policies" replace />} />
         <Route path="/login.html" element={<Navigate to="/login" replace />} />
         <Route path="/signup.html" element={<Navigate to="/signup" replace />} />

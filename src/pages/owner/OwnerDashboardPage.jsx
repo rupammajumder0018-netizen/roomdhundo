@@ -10,6 +10,7 @@ import OwnerPropertyCard from "../../components/owner/OwnerPropertyCard";
 import RoomAvailabilityTable from "../../components/owner/RoomAvailabilityTable";
 import OwnerEnquiryCard from "../../components/owner/OwnerEnquiryCard";
 import OwnerProfileSection from "../../components/owner/OwnerProfileSection";
+import OwnerHotelBookingsSection from "../../components/owner/OwnerHotelBookingsSection";
 
 export default function OwnerDashboardPage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -296,6 +297,9 @@ export default function OwnerDashboardPage() {
               onToggleRoom={handleToggleRoomStatus}
             />
           </section>
+
+          {/* Section: Hotel Bookings */}
+          {user?.id && <OwnerHotelBookingsSection ownerId={user.id} />}
 
           {/* Section: Enquiries */}
           <section id="enquiries" className="owner-section-block">

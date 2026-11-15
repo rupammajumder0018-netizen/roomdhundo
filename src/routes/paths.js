@@ -9,6 +9,7 @@ export const PATHS = {
   SEARCH: "/search",
   PROPERTY_DETAILS: "/property/:id",
   HOTEL_ROOM: "/hotel-room/:roomId",
+  PAYMENT: "/payment",
   POLICIES: "/policies",
 
   // Authentication Routes
@@ -56,6 +57,17 @@ export function propertyPath(id, roomId) {
   if (!id) return PATHS.HOME;
   if (roomId) return `/property/${id}?room=${encodeURIComponent(roomId)}`;
   return `/property/${id}`;
+}
+
+/**
+ * Builds a payment checkout link.
+ *
+ * @param {string} bookingId
+ * @returns {string}
+ */
+export function paymentPath(bookingId) {
+  if (!bookingId) return PATHS.PAYMENT;
+  return `${PATHS.PAYMENT}?booking_id=${encodeURIComponent(bookingId)}`;
 }
 
 /**
