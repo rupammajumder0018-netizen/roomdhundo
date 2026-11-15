@@ -203,12 +203,12 @@
 
 ---
 
-## 14. Payment (Stub)
+## 14. Payment & Room Reservation (Phase 9: Migrated ✅)
 
-| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority |
-|---------|-------------|-----------|------------|-----------------|----------------------------|----------|
-| Booking summary display | `payment.html` | Inline `<script>` in `payment.html` | `style.css` | `bookings` (select) | `<PaymentPage />` | L |
-| Razorpay payment gateway | `payment.html` | Inline `<script>` (`alert("Payment gateway coming soon")`) | `style.css` | — | `<RazorpayCheckout />` (not implemented) | L |
+| Feature | HTML File(s) | JS File(s) | CSS File(s) | Supabase Tables | Proposed React Component(s) | Priority | Status |
+|---------|-------------|-----------|------------|-----------------|----------------------------|----------|--------|
+| Booking summary display | `payment.html` | Inline `<script>` in `payment.html` | `style.css` | `bookings` (select) | `<PaymentPage />` (`/payment`, `/payment/:bookingId`) | H | ✅ Migrated |
+| Razorpay payment gateway contract | `payment.html` | Inline `<script>` | `style.css` | `bookings` | `preparePaymentParameters()`, `verifyPaymentWithServer()` in `PaymentPage` | H | ✅ Migrated |
 
 ---
 

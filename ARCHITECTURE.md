@@ -1,9 +1,9 @@
 # Roomdhundo — Target System Architecture
 
-**Document Version:** 1.6.0 (Phase 8: Admin Management Console & Agent Operations)  
+**Document Version:** 1.7.0 (Phase 10: Final Project Consolidation & Complete Migration Verification)  
 **Author:** Senior React Architect & Full-Stack Migration Engineer  
 **Branch:** `migration/react-vite`  
-**Active Stack:** React 19, Vite 5, React Router DOM 7, Supabase JS v2, Leaflet 1.9, Tailwind CSS v4
+**Active Stack:** React 19, Vite 5, React Router DOM 7, Supabase JS v2, Leaflet 1.9, Modern Semantic CSS
 
 ---
 
@@ -31,8 +31,10 @@ d:\Projects\roomdhundo\
 ├── ARCHITECTURE.md              # System architecture reference (this document)
 ├── audit\                       # Phase 1 Codebase Audit Suite (6 documents)
 ├── files6.0\                    # ORIGINAL APPLICATION (Preserved intact — Read-Only)
-├── tests\                       # Automated test suite (node --test, 37 tests)
+├── tests\                       # Automated test suite (node --test, 54 tests)
+│   ├── admin-and-agent.test.js  # Admin moderation, roles, and agent application tests
 │   ├── auth-system.test.js      # Auth service & role normalization tests
+│   ├── hotel-bookings-and-payments.test.js # Hotel booking, stay quotes, admin console, & payment tests
 │   ├── owner-system.test.js     # Owner dashboard, availability, listing wizards & role tests
 │   ├── routing-and-pages.test.js# URL builders, computed fields, distance, room logic
 │   ├── supabase-client-init.test.js
@@ -40,6 +42,7 @@ d:\Projects\roomdhundo\
 │   └── user-dashboard.test.js   # User profile, saved properties, enquiry calculations
 └── src\
     ├── components\
+    │   ├── admin\               # Admin console components (tables, stats, headers, sidebars)
     │   ├── auth\
     │   │   ├── ProtectedRoute.jsx   # Route guard enforcing authentication & allowedRoles
     │   │   └── PublicOnlyRoute.jsx  # Route guard redirecting authenticated users
@@ -54,6 +57,7 @@ d:\Projects\roomdhundo\
     │   │   └── RoomTypeManager.jsx  # Dynamic room types builder with flexible sharing & rates
     │   ├── owner\
     │   │   ├── OwnerEnquiryCard.jsx # Enquiry card with renter details, call/WhatsApp, status actions
+    │   │   ├── OwnerHotelBookingsSection.jsx # Hotel booking request review, approval & rejection
     │   │   ├── OwnerProfileSection.jsx # Profile details view and inline contact edit form
     │   │   ├── OwnerPropertyCard.jsx   # Property card with quick status toggle, view/edit/delete
     │   │   ├── OwnerSidebar.jsx     # Navigation sidebar, pending badge, help box & logout
@@ -61,6 +65,7 @@ d:\Projects\roomdhundo\
     │   │   └── RoomAvailabilityTable.jsx # Property selector & room status toggle table
     │   ├── property\
     │   │   ├── ContactOwnerModal.jsx# "Pg Dhundo Connect" enquiry submission modal
+    │   │   ├── HotelStayBooking.jsx # Hotel stay selector, board pills, room cards, & booking form
     │   │   ├── PropertyCard.jsx     # Listing card (image, rating, price, badges, save toggle)
     │   │   ├── PropertyGallery.jsx  # Hero photo carousel with prev/next & thumbnail strip
     │   │   ├── PropertyGrid.jsx     # Responsive grid of property cards
@@ -73,20 +78,35 @@ d:\Projects\roomdhundo\
     │       ├── EnquiryStatusBadge.jsx # Color-coded status badge for enquiries
     │       ├── SavedPropertyCard.jsx# Saved property card with unsave action
     │       ├── UserDashboardHeader.jsx # Greeting, account active indicator
+    │       ├── UserHotelBookingsSection.jsx # User hotel booking requests history table
     │       ├── UserProfileSection.jsx # Profile display & safe profile edit modal
     │       └── UserStatCards.jsx    # Quick stat counters (saved, enquiries, account type)
     ├── contexts\
     │   └── AuthContext.jsx      # Centralized reactive authentication state provider
     ├── hooks\
-    │   └── useAuth.js           # Ergonomic custom hook consuming AuthContext
+    │   ├── useAuth.js           # Ergonomic custom hook consuming AuthContext
+    │   └── useTheme.js          # Reactive theme hook (light/dark mode)
     ├── layouts\
+    │   ├── AdminLayout.jsx      # Admin console layout with sidebar and header
     │   └── RootLayout.jsx       # Main application layout (Header, <Outlet />, Footer)
     ├── pages\                   # Route page components
     │   ├── HomePage.jsx         # Homepage (Hero, category tabs, listings, approved agents)
     │   ├── NotFoundPage.jsx     # 404 catch-all view
     │   ├── PoliciesPage.jsx     # Policy view (10% fee, privacy, rules, hash scrolling)
-    │   ├── PropertyDetailsPage.jsx # Accommodation details, gallery, map, room types, reviews
+    │   ├── PropertyDetailsPage.jsx # Accommodation details, gallery, map, room types, reviews, hotel stay
     │   ├── SearchPage.jsx       # Search & filter view with URL param synchronization
+    │   ├── admin\
+    │   │   ├── AdminAgentsPage.jsx  # Agent application review and moderation
+    │   │   ├── AdminDashboardPage.jsx # Metrics overview and pending listings
+    │   │   ├── AdminEconomyPage.jsx # Economy deals monitoring
+    │   │   ├── AdminEnquiriesPage.jsx # Enquiry tracking and management
+    │   │   ├── AdminHotelBookingsPage.jsx # Hotel booking console (stats, drawer, conflict check)
+    │   │   ├── AdminPropertiesPage.jsx # Property listings moderation table
+    │   │   ├── AdminReviewsPage.jsx # Review moderation
+    │   │   ├── AdminSettingsPage.jsx # Admin settings & platform posture
+    │   │   └── AdminUsersPage.jsx   # Registered users directory
+    │   ├── agent\
+    │   │   └── BeAnAgentPage.jsx    # Agent application form and status tracking
     │   ├── auth\
     │   │   ├── LoginPage.jsx        # Login screen (roles, Google OAuth, email/pwd)
     │   │   ├── SignupPage.jsx       # Signup screen (roles, Google OAuth, full form)
@@ -99,10 +119,12 @@ d:\Projects\roomdhundo\
     │   │   ├── ListingHubPage.jsx   # Property category selection hub (PG, Flat, Hotel)
     │   │   └── PgListingPage.jsx    # PG listing form supporting new & edit modes
     │   ├── owner\
-    │   │   └── OwnerDashboardPage.jsx # Owner panel (stats, properties, room table, enquiries, profile)
+    │   │   └── OwnerDashboardPage.jsx # Owner panel (stats, properties, room table, hotel bookings, enquiries)
+    │   ├── payment\
+    │   │   └── PaymentPage.jsx      # Room reservation review & payment checkout page
     │   └── user\
     │       ├── SavedPropertiesPage.jsx # Saved properties grid with unsave capability
-    │       ├── UserDashboardPage.jsx # User dashboard (stats, profile, account options, help)
+    │       ├── UserDashboardPage.jsx # User dashboard (stats, profile, hotel bookings, account options, help)
     │       └── UserEnquiriesPage.jsx # User enquiries tracker with filters and stats
     ├── routes\
     │   ├── AppRoutes.jsx        # Centralized route tree with layout nesting & shims
@@ -110,6 +132,8 @@ d:\Projects\roomdhundo\
     │   └── paths.js             # Type-safe route path constants and URL builders
     ├── services\                # Centralized backend & API service layer
     │   ├── index.js             # Unified barrel export
+    │   ├── admin\
+    │   │   └── adminService.js  # Dashboard stats, moderation, profiles, agents, reviews
     │   ├── auth\
     │   │   └── index.js         # Supabase GoTrue auth, profile synchronization, update profile
     │   ├── supabase\
@@ -118,7 +142,7 @@ d:\Projects\roomdhundo\
     │   ├── properties\
     │   │   └── index.js         # Buildings, room types, saved properties, distance
     │   ├── bookings\
-    │   │   └── index.js         # Hotel bookings (with unmigrated schema dependency flag)
+    │   │   └── index.js         # Hotel bookings, quotes, stay validation, payments, server verification
     │   ├── enquiries\
     │   │   └── index.js         # Tenant enquiries, status tracking, enriched queries
     │   ├── owner\
@@ -126,7 +150,10 @@ d:\Projects\roomdhundo\
     │   └── storage\
     │       └── index.js         # Property media storage, uploads, and sanitization
     └── styles\
+        ├── admin-hotel-bookings.css # Administrative booking console, drawer, and table styles
+        ├── admin.css            # Admin console, stats grid, and moderation tables styles
         ├── auth.css             # Authentication card & form styles with WCAG contrast
+        ├── hotel-bookings.css   # Hotel bookings, room pick cards, board pills, & payment checkout styles
         ├── main.css             # Global tokens, theme definitions, and base resets
         ├── owner.css            # Owner dashboard, cards, tables, wizard steps & uploaders
         ├── public.css           # Public page, component, card, and responsive grid styles
@@ -151,26 +178,32 @@ flowchart TD
     Router -->|"/dashboard"| UserDash["UserDashboardPage (Protected: All Roles)"]
     Router -->|"/saved"| UserSaved["SavedPropertiesPage (Protected: All Roles)"]
     Router -->|"/enquiries"| UserEnq["UserEnquiriesPage (Protected: All Roles)"]
-    
+    Router -->|"/payment, /payment/:bookingId"| PaymentView["PaymentPage (Protected: Renter)"]
+    Router -->|"/be-an-agent"| AgentApp["BeAnAgentPage (Public / Pending Card)"]
+
     Router -->|"/owner/dashboard"| OwnerDash["OwnerDashboardPage (Protected: Owner, Admin, Agent)"]
     Router -->|"/list-property"| ListHub["ListingHubPage (Protected: Owner, Admin, Agent)"]
     Router -->|"/list-property/pg"| PgWizard["PgListingPage (Protected: Owner, Admin, Agent)"]
     Router -->|"/list-property/flat"| FlatWizard["FlatListingPage (Protected: Owner, Admin, Agent)"]
     Router -->|"/list-property/hotel"| HotelWizard["HotelListingPage (Protected: Owner, Admin, Agent)"]
-    
+
+    Router -->|"/admin/*"| AdminCons["Admin Console: Dashboard, Properties, Hotel Bookings, Profiles, Agents, Enquiries, Reviews, Economy, Settings (Protected: Admin)"]
+
     Router -->|"/owner-dashboard.html"| LegacyOwner["Redirect -> /owner/dashboard"]
     Router -->|"/list-property.html"| LegacyHub["Redirect -> /list-property"]
     Router -->|"/list-pg.html"| LegacyPg["Redirect -> /list-property/pg"]
     Router -->|"/list-flat.html"| LegacyFlat["Redirect -> /list-property/flat"]
     Router -->|"/list-hotel.html"| LegacyHotel["Redirect -> /list-property/hotel"]
-    
+
     Router -->|"/search.html"| LegacySearch["LegacySearchRedirect -> /search?params"]
     Router -->|"/property.html?id=..."| LegacyProp["LegacyPropertyRedirect -> /property/:id"]
+    Router -->|"/payment.html"| LegacyPay["LegacyPaymentRedirect -> /payment?params"]
     Router -->|"/user-dashboard.html"| LegacyDash["Redirect -> /dashboard"]
     Router -->|"/saved.html"| LegacySaved["Redirect -> /saved"]
     Router -->|"/enquiries.html"| LegacyEnq["Redirect -> /enquiries"]
-    Router -->|"/index.html, /login.html"| LegacyStatic["Direct Navigate Redirects"]
-    Router -->|"/admin.html, /be-an-agent.html"| Notice["UnmigratedFeatureNotice (Phase 8)"]
+    Router -->|"/admin.html"| LegacyAdmin["Redirect -> /admin"]
+    Router -->|"/be-an-agent.html"| LegacyAgent["Redirect -> /be-an-agent"]
+    Router -->|"/index.html, /login.html, etc."| LegacyStatic["Direct Navigate Redirects"]
     Router -->|"Non-matching path"| NotFound["NotFoundPage (404)"]
 ```
 

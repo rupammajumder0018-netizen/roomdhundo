@@ -236,6 +236,23 @@ export function PaymentPage() {
             </div>
           </div>
 
+          <div
+            className="payment-alert info"
+            role="status"
+            style={{
+              padding: "14px 16px",
+              background: "#eff6ff",
+              border: "1px solid #bfdbfe",
+              borderRadius: "8px",
+              color: "#1e40af",
+              fontSize: "14px",
+              lineHeight: "1.5",
+              margin: "16px 0",
+            }}
+          >
+            <strong>Payment Notice:</strong> Online payment gateway integration is currently postponed and unavailable for this release. Your room reservation is registered as <strong>pending</strong>. You can confirm your booking and arrange payment directly with the property owner.
+          </div>
+
           {paymentNotice && (
             <div className="payment-alert warning" role="alert">
               {paymentNotice}
@@ -247,13 +264,25 @@ export function PaymentPage() {
             className="pay-now-btn"
             id="payNowBtn"
             onClick={handlePayNow}
-            disabled={isProcessing}
+            disabled={true}
+            style={{ opacity: 0.65, cursor: "not-allowed" }}
+            title="Online payment gateway integration is currently postponed"
           >
-            {isProcessing ? "Processing..." : "Pay Now"}
+            Online Payment Postponed
           </button>
 
-          <div className="payment-note">
-            Razorpay payment gateway integration is configured here.
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "16px" }}>
+            <Link to={PATHS.DASHBOARD} className="back-link">
+              View in Dashboard
+            </Link>
+            <span style={{ color: "var(--rd-muted)" }}>•</span>
+            <Link to={PATHS.SEARCH} className="back-link">
+              Browse More Rooms
+            </Link>
+          </div>
+
+          <div className="payment-note" style={{ marginTop: "12px" }}>
+            Online payment gateway integration is postponed. No real or sandbox transactions will be processed.
           </div>
         </div>
       </div>
