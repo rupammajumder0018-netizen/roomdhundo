@@ -17,7 +17,7 @@ export function ProtectedRoute({
   redirectTo = "/login",
   unauthorizedRedirect = "/",
 }) {
-  const { isAuthenticated, isLoading, role, roleKind } = useAuth();
+  const { isAuthenticated, isLoading, role, roleKind, profile } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -49,6 +49,60 @@ export function ProtectedRoute({
           replace
         />
       );
+    }
+
+    // Owner approval guard: Owners must have owner_approval_status === 'approved' to access owner pages
+    if (
+      roleKind === "owner" &&
+      allowedRoles.includes("owner") &&
+      !allowedRoles.includes("renter")
+    ) {
+      const approval = String(profile?.owner_approval_status || "pending").toLowerCase();
+      if (approval !== "approved") {
+        return (
+          <div
+            className="owner-approval-pending-screen"
+            style={{
+              maxWidth: "600px",
+              margin: "60px auto",
+              padding: "32px 24px",
+              textAlign: "center",
+              background: "#ffffff",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>⏳</div>
+            <h2 style={{ fontSize: "22px", marginBottom: "12px", color: "#1a1a1a" }}>
+              Owner Account Awaiting Review
+            </h2>
+            <p style={{ fontSize: "15px", color: "#666", lineHeight: 1.6, marginBottom: "20px" }}>
+              Your account has registered as a property owner. To maintain listing quality and safety,
+              a platform administrator will verify your profile before property listings and the owner
+              dashboard can be accessed.
+            </p>
+            <p style={{ fontSize: "14px", color: "#888", marginBottom: "24px" }}>
+              Current Status:{" "}
+              <strong style={{ color: approval === "rejected" ? "#c5221f" : "#b06000" }}>
+                {approval === "rejected" ? "Application Rejected" : "Pending Approval"}
+              </strong>
+            </p>
+            <a
+              href="/"
+              className="btn btn-primary"
+              style={{
+                display: "inline-block",
+                padding: "10px 24px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Return to Homepage
+            </a>
+          </div>
+        );
+      }
     }
   }
 

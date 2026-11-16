@@ -21,3 +21,5 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+.gemini/mcp_config.json

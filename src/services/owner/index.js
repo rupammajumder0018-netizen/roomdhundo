@@ -383,14 +383,14 @@ export async function savePropertyListing({
     return { success: true, data: updatedBuilding, error: null };
   } else {
     // New listing insert
-    const isFlat = String(buildingCore.type || "").toLowerCase() === "flat";
     const newBuildingPayload = {
       ...buildingCore,
       created_by: ownerId,
       owner_verified: false,
       owner_member_since: String(new Date().getFullYear()),
-      listing_status: isFlat ? "pending" : "published",
-      verification_status: isFlat ? "pending" : "approved",
+      status: "pending",
+      listing_status: "published",
+      verification_status: "pending",
     };
 
     const { data: newBuilding, error: insertBuildingErr } = await executeSafeMutation({

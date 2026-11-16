@@ -81,8 +81,8 @@ export async function fetchAdminDashboardStats() {
 
   try {
     const [buildingsRes, profilesRes, reviewsRes, enquiriesRes, agentsRes] = await Promise.all([
-      supabase.from("buildings").select("id, listing_status, verification_status"),
-      supabase.from("profiles").select("id, role"),
+      supabase.from("buildings").select("id, status, listing_status, verification_status"),
+      supabase.from("profiles").select("id, role, owner_approval_status"),
       supabase.from("reviews").select("id"),
       supabase.from("enquiries").select("id, status"),
       supabase.from("agent_applications").select("id, status"),
@@ -96,7 +96,7 @@ export async function fetchAdminDashboardStats() {
 
     const totalProperties = buildings.length;
     const verifiedProperties = buildings.filter((b) => {
-      const v = String(b.verification_status || "").toLowerCase();
+      const v = String(b.status || b.verification_status || "").toLowerCase();
       return v === "approved" || v === "verified";
     }).length;
     const pendingProperties = buildings.filter((b) => {
@@ -106,6 +106,16 @@ export async function fetchAdminDashboardStats() {
 
     const totalUsers = profiles.filter((p) => normalizeAdminRole(p.role) === "renter").length;
     const totalOwners = profiles.filter((p) => normalizeAdminRole(p.role) === "owner").length;
+    const pendingOwners = profiles.filter(
+      (p) =>
+        normalizeAdminRole(p.role) === "owner" &&
+        String(p.owner_approval_status || "pending").toLowerCase() === "pending"
+    ).length;
+    const approvedOwners = profiles.filter(
+      (p) =>
+        normalizeAdminRole(p.role) === "owner" &&
+        String(p.owner_approval_status || "").toLowerCase() === "approved"
+    ).length;
     const totalAgents = profiles.filter((p) => normalizeAdminRole(p.role) === "agent").length;
 
     const pendingAgents = agents.filter((a) => String(a.status || "").toLowerCase() === "pending").length;
@@ -118,6 +128,8 @@ export async function fetchAdminDashboardStats() {
         pendingProperties,
         totalUsers,
         totalOwners,
+        pendingOwners,
+        approvedOwners,
         totalAgents,
         pendingAgents,
         approvedAgents,
@@ -220,6 +232,7 @@ export async function updatePropertyVerificationStatus(propertyId, action) {
   const { error } = await supabase
     .from("buildings")
     .update({
+      status: nextVerification,
       listing_status: nextListing,
       verification_status: nextVerification,
     })
@@ -251,49 +264,124 @@ export async function deleteAdminProperty(propertyId) {
 }
 
 /**
- * Fetches user profiles with filtering and search.
+ * Fetches user profiles with server-side pagination, role filtering, and search.
  *
  * @param {Object} [options]
  * @param {string} [options.roleFilter] 'all' | 'renter' | 'owner' | 'agent' | 'admin'
  * @param {string} [options.searchQuery]
- * @returns {Promise<{ data: Array<Object>|null, error: Error|null }>}
+ * @param {number} [options.page=1] 1-based page number
+ * @param {number} [options.pageSize=25] Records per page
+ * @returns {Promise<{ data: Array<Object>|null, count: number, page: number, pageSize: number, totalPages: number, error: Error|null }>}
  */
 export async function fetchAdminProfiles(options = {}) {
   if (!supabase) {
     return {
       data: null,
+      count: 0,
+      page: 1,
+      pageSize: 25,
+      totalPages: 0,
       error: new Error("[Roomdhundo] Supabase client is not configured."),
     };
   }
 
-  const { data, error } = await supabase
+  const page = Math.max(1, Number(options.page) || 1);
+  const pageSize = Math.max(1, Math.min(100, Number(options.pageSize) || 25));
+  const offset = (page - 1) * pageSize;
+
+  let query = supabase
     .from("profiles")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false });
 
-  if (error) return { data: null, error };
-
-  let list = data || [];
-
+  // Server-side role filter
   if (options.roleFilter && options.roleFilter !== "all") {
     const rf = options.roleFilter.toLowerCase();
-    list = list.filter((p) => {
-      const kind = normalizeAdminRole(p.role);
-      return kind === rf || String(p.role || "").toLowerCase() === rf;
-    });
+    if (rf === "renter") {
+      query = query.in("role", ["user", "renter"]);
+    } else if (rf === "owner") {
+      query = query.in("role", ["owner", "landlord"]);
+    } else if (rf === "agent") {
+      query = query.eq("role", "agent");
+    } else if (rf === "agent_pending") {
+      query = query.eq("role", "agent_pending");
+    } else if (rf === "admin") {
+      query = query.in("role", ["admin", "administrator"]);
+    } else {
+      query = query.eq("role", rf);
+    }
   }
 
+  // Server-side text search across full_name and email
   if (options.searchQuery && options.searchQuery.trim()) {
-    const q = options.searchQuery.trim().toLowerCase();
-    list = list.filter(
-      (p) =>
-        String(p.full_name || "").toLowerCase().includes(q) ||
-        String(p.email || "").toLowerCase().includes(q) ||
-        String(p.phone || "").toLowerCase().includes(q)
-    );
+    const q = options.searchQuery.trim().replace(/[%_]/g, "");
+    if (q) {
+      query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+    }
   }
 
-  return { data: list, error: null };
+  query = query.range(offset, offset + pageSize - 1);
+
+  const { data, count, error } = await query;
+
+  if (error) {
+    return {
+      data: null,
+      count: 0,
+      page,
+      pageSize,
+      totalPages: 0,
+      error,
+    };
+  }
+
+  const totalCount = count != null ? count : (data || []).length;
+  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+
+  return {
+    data: data || [],
+    count: totalCount,
+    page,
+    pageSize,
+    totalPages,
+    error: null,
+  };
+}
+
+/**
+ * Updates an owner's approval status in public.profiles.
+ * Requires administrator role in Postgres RLS.
+ *
+ * @param {string} userId UUID of the owner
+ * @param {'approved' | 'rejected' | 'pending'} status
+ * @returns {Promise<{ success: boolean, error: Error|null }>}
+ */
+export async function updateOwnerApprovalStatus(userId, status) {
+  if (!userId) {
+    return { success: false, error: new Error("User ID is required.") };
+  }
+
+  const normalized = String(status || "").trim().toLowerCase();
+  if (!["approved", "rejected", "pending"].includes(normalized)) {
+    return {
+      success: false,
+      error: new Error("Status must be 'approved', 'rejected', or 'pending'."),
+    };
+  }
+
+  if (!supabase) {
+    return {
+      success: false,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ owner_approval_status: normalized, updated_at: new Date().toISOString() })
+    .eq("id", userId);
+
+  return { success: !error, error };
 }
 
 /**

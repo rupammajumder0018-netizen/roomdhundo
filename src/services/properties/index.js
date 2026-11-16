@@ -166,8 +166,16 @@ export function isCoupleFriendlyFacility(value) {
 
 export function isPubliclyListedBuilding(building) {
   if (!building) return false;
-  const status = String(building.listing_status || "published").trim().toLowerCase();
-  return !building.listing_status || status === "published";
+  const listing = String(building.listing_status || "published").trim().toLowerCase();
+  const status = String(building.status || "approved").trim().toLowerCase();
+  const verification = String(building.verification_status || "approved").trim().toLowerCase();
+
+  const isPublished = !building.listing_status || listing === "published";
+  const isApproved =
+    (!building.status || status === "approved") &&
+    (!building.verification_status || verification === "approved" || verification === "verified");
+
+  return isPublished && isApproved;
 }
 
 export function getBuildingFacilityLabels(building) {
