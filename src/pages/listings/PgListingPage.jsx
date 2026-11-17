@@ -183,8 +183,7 @@ export default function PgListingPage() {
         longitude: longitude ? parseFloat(longitude) : null,
         images,
         facilities: combinedFacilities,
-        status: "published",
-        verification_status: "approved",
+        status: "pending",
       };
 
       const { success, error } = await ownerService.savePropertyListing({

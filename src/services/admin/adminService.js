@@ -59,7 +59,7 @@ export function getAdminRoleLabel(role) {
  */
 export function propertyDisplayStatus(property) {
   const status = String(property?.status || "").trim().toLowerCase();
-  const listing = String(property?.listing_status || "published").trim().toLowerCase();
+  const listing = String(property?.listing_status || "").trim().toLowerCase();
   const verification = String(property?.verification_status || "").trim().toLowerCase();
 
   if (status === "pending" || listing === "pending" || verification === "pending") return "Pending review";
@@ -228,15 +228,11 @@ export async function updatePropertyVerificationStatus(propertyId, action) {
     };
   }
 
-  const nextListing = normalized === "approved" ? "published" : "rejected";
-  const nextVerification = normalized === "approved" ? "approved" : "rejected";
-
+  // Update only columns that actually exist in the live schema ('status')
   const { error } = await supabase
     .from("buildings")
     .update({
-      status: nextVerification,
-      listing_status: nextListing,
-      verification_status: nextVerification,
+      status: normalized,
     })
     .eq("id", propertyId);
 
