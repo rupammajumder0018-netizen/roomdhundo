@@ -294,16 +294,57 @@ export function HomePage() {
         {/* Search Input */}
         <div className="home-search-panel">
           <form className="home-search-bar" onSubmit={handleHeroSearchSubmit}>
-            <input
-              type="text"
-              id="heroSearchInput"
-              placeholder="Start your search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search properties"
-            />
+            <div className="home-search-input-wrapper">
+              <svg
+                className="home-search-icon"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                id="heroSearchInput"
+                placeholder="Search by PG, landmark, flat or location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search properties"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="home-search-clear"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search input"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <button type="submit" className="home-search-submit" id="heroSearchBtn">
-              Search
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span>Search</span>
             </button>
           </form>
         </div>
@@ -312,29 +353,51 @@ export function HomePage() {
       {/* PROPERTIES SECTION */}
       <section className="home-listings" aria-label="Available properties">
         <div className="home-listings-header">
-          <p id="homeResultsCount">
-            {isLoading
-              ? "Loading properties..."
-              : (() => {
-                  const one =
-                    activeCategory === "flat"
-                      ? flatOffer === "sale"
-                        ? "flat for sale"
-                        : "flat on rent"
-                      : "property";
-                  const many =
-                    activeCategory === "flat"
-                      ? flatOffer === "sale"
-                        ? "flats for sale"
-                        : "flats on rent"
-                      : "properties";
-                  return filteredProperties.length === 0
-                    ? `0 ${many} found`
-                    : `${filteredProperties.length} ${
-                        filteredProperties.length === 1 ? one : many
-                      } found`;
-                })()}
-          </p>
+          <div className="home-listings-header-left">
+            <h2 className="home-results-heading">
+              {activeCategory === "all"
+                ? "Available Stays"
+                : activeCategory === "pgroom"
+                ? "PGs & Rooms"
+                : activeCategory === "hotel"
+                ? "Hotels & Guest Houses"
+                : flatOffer === "sale"
+                ? "Flats for Sale"
+                : "Flats for Rent"}
+            </h2>
+            <p id="homeResultsCount" className="home-results-count">
+              {isLoading
+                ? "Loading properties..."
+                : (() => {
+                    const one =
+                      activeCategory === "flat"
+                        ? flatOffer === "sale"
+                          ? "flat for sale"
+                          : "flat on rent"
+                        : "property";
+                    const many =
+                      activeCategory === "flat"
+                        ? flatOffer === "sale"
+                          ? "flats for sale"
+                          : "flats on rent"
+                        : "properties";
+                    return filteredProperties.length === 0
+                      ? `0 ${many} found`
+                      : `${filteredProperties.length} ${
+                          filteredProperties.length === 1 ? one : many
+                        } found`;
+                  })()}
+            </p>
+          </div>
+          {searchQuery && (
+            <button
+              type="button"
+              className="home-clear-query-pill"
+              onClick={() => setSearchQuery("")}
+            >
+              Clear filter ✕
+            </button>
+          )}
         </div>
 
         {isLoading ? (

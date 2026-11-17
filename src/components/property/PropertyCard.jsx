@@ -29,6 +29,7 @@ export function PropertyCard({
     roomTypeNames = [],
     flat_offer,
     totalAvailable,
+    isCoupleFriendly,
   } = building;
 
   // Calculate distance from active hub if coordinates exist
@@ -48,8 +49,13 @@ export function PropertyCard({
   }
 
   const isFlat = String(type || "").toLowerCase() === "flat";
+  const isHotel = String(type || "").toLowerCase() === "hotel" || String(type || "").toLowerCase() === "guest house";
   const forSale = isFlat && String(flat_offer || "").toLowerCase() === "sale";
   const offerBadge = isFlat ? (forSale ? "For sale" : "On rent") : null;
+
+  // Type badge label & icon
+  const typeLabel = isFlat ? "Flat" : isHotel ? "Hotel" : "PG / Room";
+  const typeIcon = isFlat ? "🏢" : isHotel ? "🏨" : "🛏️";
 
   // Price formatting
   const price = isDaily && !forSale ? minDailyPrice : minPrice;
@@ -64,7 +70,7 @@ export function PropertyCard({
 
   const mainImage = images && images.length > 0 ? images[0] : null;
   const facilityBadges = facilityPreviewBadges(building, 3);
-  const roomTypeSummary = (roomTypeNames || []).join(", ");
+  const roomTypeSummary = (roomTypeNames || []).join(" • ");
 
   const handleFavoriteClick = (e) => {
     e.preventDefault();
@@ -76,99 +82,220 @@ export function PropertyCard({
 
   return (
     <article className="property-card home-property-card" data-id={id}>
-      <Link
-        to={`/property/${id}`}
-        className="property-image-link"
-        aria-label={`View ${name}`}
-      >
-        <div className="property-image">
-          {mainImage && !imgError ? (
-            <img
-              src={mainImage}
-              alt={name}
-              loading="lazy"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className="image-placeholder">Property Image</div>
+      {/* Media / Image Section */}
+      <div className="property-card-media">
+        <Link
+          to={`/property/${id}`}
+          className="property-image-link"
+          aria-label={`View ${name}`}
+        >
+          <div className="property-image">
+            {mainImage && !imgError ? (
+              <img
+                src={mainImage}
+                alt={name}
+                loading="lazy"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <div className="image-placeholder">
+                <svg
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="placeholder-icon"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                <span>Pg Dhundo Verified Stay</span>
+              </div>
+            )}
+          </div>
+          <div className="property-image-gradient" aria-hidden="true" />
+        </Link>
+
+        {/* Floating Badges on Image */}
+        <div className="property-badges-overlay">
+          <span className={`property-badge-type badge-${(type || "pg").toLowerCase()}`}>
+            <span className="badge-icon">{typeIcon}</span>
+            <span>{typeLabel}</span>
+          </span>
+
+          {offerBadge && (
+            <span className={`property-badge-offer ${forSale ? "is-sale" : "is-rent"}`}>
+              {offerBadge}
+            </span>
+          )}
+
+          {isCoupleFriendly && (
+            <span className="property-badge-couple">
+              👫 Couple Friendly
+            </span>
           )}
         </div>
-      </Link>
 
+        {/* Floating Favorite Heart Button */}
+        <button
+          type="button"
+          className={`property-card-fav ${isSaved ? "is-saved" : ""}`}
+          onClick={handleFavoriteClick}
+          aria-label={isSaved ? "Remove from saved" : "Save property"}
+          title={isSaved ? "Saved" : "Save"}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill={isSaved ? "#ef4444" : "rgba(0, 0, 0, 0.25)"}
+            stroke={isSaved ? "#ef4444" : "#ffffff"}
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Content Section */}
       <div className="property-content">
-        <div className="property-title">
-          <div>
-            <h2>
-              <Link to={`/property/${id}`}>{name}</Link>
-            </h2>
-            <p className="property-card-location">
-              📍 {location || "Location not listed"}
-              {distanceDisplay && ` • ${distanceDisplay}`}
-            </p>
-            {offerBadge && (
-              <span className="flat-offer-badge" aria-label={`Listing offer: ${offerBadge}`}>
-                {offerBadge}
-              </span>
+        {/* Rating & Distance Meta Row */}
+        <div className="property-meta-row">
+          <div className="property-rating-chip">
+            {avgRating ? (
+              <>
+                <span className="star-icon">⭐</span>
+                <span className="rating-value">{Number(avgRating).toFixed(1)}</span>
+                <span className="rating-count">({reviewCount})</span>
+              </>
+            ) : (
+              <span className="rating-new">✨ New</span>
             )}
           </div>
 
-          <button
-            type="button"
-            className={`favorite ${isSaved ? "saved" : ""}`}
-            onClick={handleFavoriteClick}
-            aria-label={isSaved ? "Remove from saved" : "Save property"}
-            title={isSaved ? "Saved" : "Save"}
+          {distanceDisplay && (
+            <span className="property-distance-chip" title={distanceDisplay}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>{distanceDisplay}</span>
+            </span>
+          )}
+        </div>
+
+        {/* Property Name */}
+        <h2 className="property-title">
+          <Link to={`/property/${id}`}>{name}</Link>
+        </h2>
+
+        {/* Location Row */}
+        <p className="property-location-line">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="pin-icon"
           >
-            {isSaved ? "♥" : "♡"}
-          </button>
-        </div>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span className="location-text">{location || "Location not listed"}</span>
+        </p>
 
-        <div className="rating">
-          {avgRating ? `⭐ ${avgRating}` : "🆕 New"}{" "}
-          <span>({reviewCount} reviews)</span>
-        </div>
-
-        <div className="price">
-          <strong>
-            {priceLabel}
-            {priceFormatted}
-          </strong>
-          {unit && <span> {unit}</span>}
-        </div>
-
+        {/* Room Types Summary */}
         {roomTypeSummary && (
-          <p className="property-card-types" title={roomTypeSummary}>
-            {roomTypeSummary}
-          </p>
+          <div className="property-room-types" title={roomTypeSummary}>
+            <span className="room-icon">🛏️</span>
+            <span className="room-text">{roomTypeSummary}</span>
+          </div>
         )}
 
+        {/* Amenities / Facilities Chips */}
         {facilityBadges.length > 0 && (
-          <div className="amenities">
+          <div className="property-amenities-row">
             {facilityBadges.map((badge, idx) => (
-              <span key={idx}>{badge}</span>
+              <span key={idx} className="property-amenity-chip">
+                {badge}
+              </span>
             ))}
           </div>
         )}
 
-        {totalAvailable != null && (
-          <div className="availability">
-            {totalAvailable > 0
-              ? `🟢 ${totalAvailable} ${
-                  totalAvailable === 1
-                    ? isFlat
-                      ? "flat"
-                      : "room"
-                    : isFlat
-                    ? "flats"
-                    : "rooms"
-                } available`
-              : "🔴 Currently occupied"}
+        {/* Divider */}
+        <div className="property-card-divider" />
+
+        {/* Footer: Price, Availability & CTA */}
+        <div className="property-card-footer">
+          <div className="property-price-block">
+            <span className="price-prefix">{priceLabel ? `${priceLabel}` : "Starting"}</span>
+            <div className="price-main">
+              <strong className="price-amount">{priceFormatted}</strong>
+              {unit && <span className="price-cycle">{unit}</span>}
+            </div>
           </div>
-        )}
+
+          <div className="property-footer-actions">
+            {totalAvailable != null && (
+              <div
+                className={`property-availability-tag ${
+                  totalAvailable > 0 ? "is-available" : "is-occupied"
+                }`}
+              >
+                <span className="avail-dot" aria-hidden="true" />
+                <span>
+                  {totalAvailable > 0
+                    ? `${totalAvailable} ${
+                        totalAvailable === 1
+                          ? isFlat
+                            ? "flat"
+                            : "room"
+                          : isFlat
+                          ? "flats"
+                          : "rooms"
+                      } left`
+                    : "Occupied"}
+                </span>
+              </div>
+            )}
+
+            <Link
+              to={`/property/${id}`}
+              className="property-view-cta"
+              aria-label={`View details of ${name}`}
+            >
+              <span>View</span>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
       </div>
     </article>
   );
 }
 
 export default PropertyCard;
+
 
