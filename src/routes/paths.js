@@ -34,6 +34,7 @@ export const PATHS = {
 
   // Admin Routes (Phase 8)
   ADMIN: "/admin",
+  ADMIN_LOGIN: "/admin/login",
   ADMIN_PROPERTIES: "/admin/properties",
   ADMIN_PROFILES: "/admin/profiles",
   ADMIN_ENQUIRIES: "/admin/enquiries",

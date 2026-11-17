@@ -33,6 +33,7 @@ import PaymentPage from "../pages/payment/PaymentPage.jsx";
 
 // Admin & Agent Pages (Phase 8 & 9)
 import AdminLayout from "../layouts/AdminLayout.jsx";
+import AdminLoginPage from "../pages/admin/AdminLoginPage.jsx";
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage.jsx";
 import AdminPropertiesPage from "../pages/admin/AdminPropertiesPage.jsx";
 import AdminHotelBookingsPage from "../pages/admin/AdminHotelBookingsPage.jsx";
@@ -165,11 +166,21 @@ export function AppRoutes() {
         {/* Agent Application Page (Phase 8) */}
         <Route path={PATHS.BE_AN_AGENT} element={<BeAnAgentPage />} />
 
+        {/* Dedicated Admin Login Route */}
+        <Route
+          path={PATHS.ADMIN_LOGIN}
+          element={
+            <PublicOnlyRoute defaultRedirect={PATHS.ADMIN}>
+              <AdminLoginPage />
+            </PublicOnlyRoute>
+          }
+        />
+
         {/* Authenticated Admin Management Console (Phase 8) */}
         <Route
           path={PATHS.ADMIN}
           element={
-            <ProtectedRoute allowedRoles={["admin"]}>
+            <ProtectedRoute allowedRoles={["admin"]} redirectTo={PATHS.ADMIN_LOGIN}>
               <AdminLayout />
             </ProtectedRoute>
           }

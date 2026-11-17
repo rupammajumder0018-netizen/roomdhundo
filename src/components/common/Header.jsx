@@ -139,12 +139,12 @@ export function Header() {
                       );
                     }}
                   >
-                    <span className="nav-profile-menu-icon">👤</span>
+                    <span className="nav-profile-menu-icon">{isAdmin ? "🛡️" : "👤"}</span>
                     <span className="nav-profile-menu-text">
-                      <strong>My Profile</strong>
+                      <strong>{isAdmin ? "Admin Console" : "My Profile"}</strong>
                       <span>
                         {isAdmin
-                          ? "Admin Dashboard"
+                          ? "Moderation & System Overview"
                           : isOwner
                           ? "Owner Dashboard"
                           : isAgent

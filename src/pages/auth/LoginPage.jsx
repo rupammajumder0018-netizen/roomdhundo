@@ -54,8 +54,6 @@ export function LoginPage() {
       const wantedKind = accountKindFromRole(role);
 
       if (actualKind !== "admin" && wantedKind !== actualKind) {
-        // Sign out to preserve role separation
-        await loginWithGoogle ? null : null; // noop
         setMessage({
           text: differentEmailRoleMessage(actualKind, wantedKind),
           type: "error",
@@ -67,8 +65,13 @@ export function LoginPage() {
       setMessage({ text: "Login successful! Redirecting...", type: "success" });
 
       // Navigate to previous destination or appropriate role destination
-      const destination = location.state?.from?.pathname || "/";
-      navigate(destination, { replace: true });
+      const destination =
+        actualKind === "admin"
+          ? "/admin"
+          : location.state?.from?.pathname || "/";
+      
+      // Navigate cleanly
+      window.location.href = destination;
     } catch (err) {
       setMessage({
         text: err.message || "An unexpected error occurred. Please try again.",
@@ -296,6 +299,24 @@ export function LoginPage() {
           Don't have an account?
           <Link to="/signup">Sign Up</Link>
         </p>
+
+        <div style={{ textAlign: "center", marginTop: "18px", paddingTop: "14px", borderTop: "1px dashed var(--rd-border, #c6ead9)" }}>
+          <Link
+            to="/admin/login"
+            style={{
+              display: "inline-block",
+              padding: "6px 14px",
+              borderRadius: "8px",
+              background: "#e8f0fe",
+              color: "#1a73e8",
+              fontWeight: 600,
+              fontSize: "12px",
+              textDecoration: "none",
+            }}
+          >
+            🛡️ Platform Administrator? Sign in here →
+          </Link>
+        </div>
       </div>
     </main>
   );

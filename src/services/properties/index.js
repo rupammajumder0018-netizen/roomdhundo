@@ -166,16 +166,18 @@ export function isCoupleFriendlyFacility(value) {
 
 export function isPubliclyListedBuilding(building) {
   if (!building) return false;
+  // If the listing has explicit status or verification_status, check them
   const listing = String(building.listing_status || "published").trim().toLowerCase();
   const status = String(building.status || "approved").trim().toLowerCase();
   const verification = String(building.verification_status || "approved").trim().toLowerCase();
 
-  const isPublished = !building.listing_status || listing === "published";
-  const isApproved =
-    (!building.status || status === "approved") &&
-    (!building.verification_status || verification === "approved" || verification === "verified");
+  // If status is rejected or archived, exclude it
+  if (status === "rejected" || verification === "rejected" || listing === "rejected" || listing === "archived") {
+    return false;
+  }
 
-  return isPublished && isApproved;
+  // All listings currently created or approved on the platform should display
+  return true;
 }
 
 export function getBuildingFacilityLabels(building) {

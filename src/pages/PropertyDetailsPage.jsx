@@ -14,6 +14,7 @@ import { HotelStayBooking } from "../components/property/HotelStayBooking.jsx";
 import { RatingStars } from "../components/common/RatingStars.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
+import { PATHS } from "../routes/paths.js";
 
 export function PropertyDetailsPage() {
   const { id } = useParams();
@@ -510,7 +511,13 @@ export function PropertyDetailsPage() {
                 type="button"
                 className="contact-owner-btn"
                 id="contactOwnerBtn"
-                onClick={() => setIsContactOpen(true)}
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate(`${PATHS.LOGIN}?returnTo=${encodeURIComponent(`/property/${id}`)}`);
+                  } else {
+                    setIsContactOpen(true);
+                  }
+                }}
               >
                 📞 Contact Pg Dhundo
               </button>

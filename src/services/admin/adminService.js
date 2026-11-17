@@ -58,11 +58,13 @@ export function getAdminRoleLabel(role) {
  * @returns {"Pending review" | "Rejected" | "Archived" | "Live"}
  */
 export function propertyDisplayStatus(property) {
+  const status = String(property?.status || "").trim().toLowerCase();
   const listing = String(property?.listing_status || "published").trim().toLowerCase();
   const verification = String(property?.verification_status || "").trim().toLowerCase();
-  if (listing === "pending" || verification === "pending") return "Pending review";
-  if (listing === "rejected" || verification === "rejected") return "Rejected";
-  if (listing === "archived") return "Archived";
+
+  if (status === "pending" || listing === "pending" || verification === "pending") return "Pending review";
+  if (status === "rejected" || listing === "rejected" || verification === "rejected") return "Rejected";
+  if (status === "archived" || listing === "archived") return "Archived";
   return "Live";
 }
 
@@ -81,8 +83,8 @@ export async function fetchAdminDashboardStats() {
 
   try {
     const [buildingsRes, profilesRes, reviewsRes, enquiriesRes, agentsRes] = await Promise.all([
-      supabase.from("buildings").select("id, status, listing_status, verification_status"),
-      supabase.from("profiles").select("id, role, owner_approval_status"),
+      supabase.from("buildings").select("id, status"),
+      supabase.from("profiles").select("id, role"),
       supabase.from("reviews").select("id"),
       supabase.from("enquiries").select("id, status"),
       supabase.from("agent_applications").select("id, status"),

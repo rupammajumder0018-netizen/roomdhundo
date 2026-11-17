@@ -1,9 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { createEnquiry } from "../../services/enquiries/index.js";
+import { PATHS } from "../../routes/paths.js";
 
 export function ContactOwnerModal({ building, isOpen, onClose }) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedRoomType, setSelectedRoomType] = useState("");
   const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -12,11 +16,26 @@ export function ContactOwnerModal({ building, isOpen, onClose }) {
 
   if (!isOpen || !building) return null;
 
+  const handleAuthRequiredAction = (actionCallback) => {
+    if (!isAuthenticated) {
+      onClose();
+      navigate(`${PATHS.LOGIN}?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+    actionCallback();
+  };
+
   const roomTypes = Array.isArray(building.room_types) ? building.room_types : [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
+    if (!isAuthenticated) {
+      onClose();
+      navigate(`${PATHS.LOGIN}?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
 
     const cleanPhone = phone.replace(/\D/g, "");
     if (cleanPhone.length !== 10) {
@@ -240,6 +259,13 @@ export function ContactOwnerModal({ building, isOpen, onClose }) {
               <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                 <a
                   href={`tel:${supportPhone}`}
+                  onClick={(e) => {
+                    if (!isAuthenticated) {
+                      e.preventDefault();
+                      onClose();
+                      navigate(`${PATHS.LOGIN}?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+                    }
+                  }}
                   style={{
                     flex: 1,
                     padding: "8px 12px",
@@ -258,6 +284,13 @@ export function ContactOwnerModal({ building, isOpen, onClose }) {
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (!isAuthenticated) {
+                      e.preventDefault();
+                      onClose();
+                      navigate(`${PATHS.LOGIN}?returnTo=${encodeURIComponent(location.pathname + location.search)}`);
+                    }
+                  }}
                   style={{
                     flex: 1,
                     padding: "8px 12px",
