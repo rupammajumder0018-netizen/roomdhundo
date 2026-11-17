@@ -171,8 +171,7 @@ export default function HotelListingPage() {
         owner_email: profile?.email || user?.email || null,
         images,
         facilities: [...selectedFacilities, `${starRating} Star`],
-        status: "published",
-        verification_status: "approved",
+        status: "pending",
       };
 
       const { success, error } = await ownerService.savePropertyListing({

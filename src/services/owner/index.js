@@ -389,8 +389,6 @@ export async function savePropertyListing({
       owner_verified: false,
       owner_member_since: String(new Date().getFullYear()),
       status: "pending",
-      listing_status: "published",
-      verification_status: "pending",
     };
 
     const { data: newBuilding, error: insertBuildingErr } = await executeSafeMutation({

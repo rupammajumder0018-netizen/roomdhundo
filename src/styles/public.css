@@ -296,6 +296,11 @@ html[data-theme="dark"] .nav-profile-menu-text span {
 /* --------------------------------------------------------------------------
    HOMEPAGE HERO & CATEGORIES
    -------------------------------------------------------------------------- */
+.home-page-container {
+  min-height: 100%;
+  background: #fffdf5;
+}
+
 .home-hero {
   padding: 60px 20px 30px;
   text-align: center;

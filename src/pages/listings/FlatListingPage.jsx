@@ -159,7 +159,6 @@ export default function FlatListingPage() {
         images,
         facilities: [...selectedAmenities, furnishing],
         status: "pending",
-        verification_status: "pending",
       };
 
       const roomTypeInputs = [
