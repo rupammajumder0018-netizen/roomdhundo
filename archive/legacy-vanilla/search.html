@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Find Accommodation | Pg Dhundo</title>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0TKM9DNE73"></script>
+
+<script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-0TKM9DNE73');
+</script>
+    <script src="agent-gate.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="hotel-bookings.css">
+    <style>
+        .search-header .stay-selection {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            display: block !important;
+            grid-template-columns: none !important;
+        }
+
+        .search-container .results {
+            width: 100%;
+            max-width: none;
+        }
+
+        .search-filter-panel {
+            width: 100%;
+            margin-top: 16px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        body.dark .search-filter-panel,
+        [data-theme="dark"] .search-filter-panel {
+            background: #1e1e24;
+            border-color: #333;
+        }
+
+        .search-filter-panel[hidden] {
+            display: none !important;
+        }
+
+        .search-filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 8px 28px;
+        }
+
+        .search-filter-panel .filter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .search-filter-panel .apply-filter {
+            margin-top: 18px;
+        }
+    </style>
+    <link rel="stylesheet" href="rd-contrast.css">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar">
+
+        <a href="index.html" class="logo">Pg Dhundo</a>
+
+        <div class="nav-links">
+
+            <a href="index.html">Home</a>
+            <a href="list-property.html">List Property</a>
+            <a href="saved.html">Saved</a>
+            <button type="button" class="theme-toggle" aria-label="Switch to light mode" title="Switch to light mode">☀️</button>
+            <button id="navAuthBtn">
+                Log In / Sign Up
+            </button>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- SEARCH HEADER -->
+
+    <section class="search-header">
+
+        <div class="search-bar">
+
+            <input
+                type="text"
+                id="searchInput"
+                value=""
+                placeholder="Where do you want to stay?"
+            >
+
+            <button id="searchBtn">
+                Search
+            </button>
+
+        </div>
+
+
+        <!-- STAY TYPE + FILTER -->
+
+        <div class="stay-selection">
+
+            <button
+                class="search-stay-btn active"
+                id="monthlyBtn"
+            >
+                Monthly
+            </button>
+
+            <button
+                class="search-stay-btn"
+                id="dailyBtn"
+            >
+                Daily / Nightly
+            </button>
+
+            <button
+                type="button"
+                class="search-stay-btn"
+                id="searchFilterBtn"
+                aria-expanded="false"
+                aria-controls="searchFilterPanel"
+            >
+                Filter
+            </button>
+
+        </div>
+
+        <div class="search-filter-panel" id="searchFilterPanel" hidden>
+
+            <div class="filter-header">
+
+                <h2>Filters</h2>
+
+                <button id="clearFiltersBtn">
+                    Clear all
+                </button>
+
+            </div>
+
+            <div class="search-filter-grid">
+
+<!-- MONTHLY FILTERS -->
+
+            <div id="monthlyFilters">
+
+                <div class="filter-section">
+
+                    <h3>Budget / Month</h3>
+
+                    <div class="price-inputs">
+
+                        <input
+                            type="number"
+                            id="monthlyMin"
+                            placeholder="Min"
+                        >
+
+                        <span>–</span>
+
+                        <input
+                            type="number"
+                            id="monthlyMax"
+                            placeholder="Max"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Room Type</h3>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="Single">
+                        Single
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="Double Sharing">
+                        Double Sharing
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="Triple Sharing">
+                        Triple Sharing
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="roomTypeFilter" value="4+ Sharing">
+                        4+ Sharing
+                    </label>
+
+                </div>
+
+            </div>
+
+
+<!-- DAILY / NIGHTLY FILTERS -->
+
+            <div id="dailyFilters" style="display: none;">
+
+                <div class="filter-section">
+
+                    <h3>Check-in</h3>
+
+                    <input
+                        type="date"
+                        class="date-input"
+                    >
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Check-out</h3>
+
+                    <input
+                        type="date"
+                        class="date-input"
+                    >
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Guests</h3>
+
+                    <div class="guest-counter">
+
+                        <button id="minusGuest">
+                            −
+                        </button>
+
+                        <span id="guestCount">
+                            1
+                        </span>
+
+                        <button id="plusGuest">
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-section">
+
+                    <h3>Budget / Night</h3>
+
+                    <div class="price-inputs">
+
+                        <input
+                            type="number"
+                            id="dailyMin"
+                            placeholder="Min"
+                        >
+
+                        <span>–</span>
+
+                        <input
+                            type="number"
+                            id="dailyMax"
+                            placeholder="Max"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROPERTY TYPE -->
+
+            <div class="filter-section">
+
+                <h3>Property Type</h3>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="PG">
+                    PG
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Room">
+                    Room
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Mess">
+                    Mess
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Flat">
+                    Flat
+                </label>
+
+                <label>
+                    <input type="checkbox" class="propertyTypeFilter" value="Guest House">
+                    Guest House
+                </label>
+
+            </div>
+
+
+            <!-- FACILITIES -->
+
+            <div class="filter-section">
+
+                <h3>Facilities</h3>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="wifi">
+                    Wi-Fi
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="food">
+                    Food
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="ac">
+                    AC
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="laundry">
+                    Laundry
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="parking">
+                    Parking
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="bathroom">
+                    Attached Bathroom
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="kitchen">
+                    Attached Kitchen
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="couple-friendly">
+                    Couple Friendly
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="furnished">
+                    Furnished
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="semi-furnished">
+                    Semi Furnished
+                </label>
+
+                <label>
+                    <input type="checkbox" class="facilityFilter" value="unfurnished">
+                    Unfurnished
+                </label>
+
+            </div>
+
+            </div>
+
+
+            <button class="apply-filter" id="applyFiltersBtn">
+                Apply Filters
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="search-container">
+
+
+        <!-- RESULTS -->
+
+        <section class="results">
+
+
+            <div class="results-top">
+
+                <div>
+
+                    <h1>
+                        Accommodation near MAKAUT
+                    </h1>
+
+                    <p id="resultsCount">
+                        Loading properties...
+                    </p>
+
+                </div>
+
+
+                <select id="sortSelect" aria-label="Sort results">
+
+                    <option value="recommended">
+                        Recommended
+                    </option>
+
+                    <option value="price-asc">
+                        Price: Low to High
+                    </option>
+
+                    <option value="price-desc">
+                        Price: High to Low
+                    </option>
+
+                    <option value="rating">
+                        Highest Rated
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="results-list" id="resultsList">
+                <!-- Property cards are rendered here by script.js -->
+            </div>
+
+            <p class="no-results" id="noResultsMessage" style="display:none;">
+                No properties match your filters. Try clearing some filters.
+            </p>
+
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <p class="site-footer-copy">© 2026 Pg Dhundo</p>
+            <p class="site-footer-fee">One-time service fee: Pg Dhundo charges 10% of the total rent on PG and flat bookings only, paid once when you confirm a stay through us. Hotels are not included. This is not a monthly or repeating charge.</p>
+            <div class="site-footer-social">
+                <h2 class="site-footer-social-title">Connect with us</h2>
+                <a class="site-footer-instagram" href="https://www.instagram.com/room_dhundo?xtok=aTZndTdlMzRoNGw3" target="_blank" rel="noopener noreferrer" aria-label="Pg Dhundo on Instagram" title="Instagram">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2A3.8 3.8 0 1 1 8.2 12 3.8 3.8 0 0 1 12 8.2zm0 2A1.8 1.8 0 1 0 13.8 12 1.8 1.8 0 0 0 12 10.2zm4.35-3.45a.95.95 0 1 1-.95.95.95.95 0 0 1 .95-.95z"/></svg>
+                </a>
+            </div>
+            <nav class="site-footer-links">
+                <a href="policies.html">Policies</a>
+                <a href="policies.html#payment">10% payment</a>
+            </nav>
+        </div>
+    </footer>
+
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="location.js"></script>
+<script src="script.js"></script>
+<script src="nearby.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var filterBtn = document.getElementById("searchFilterBtn");
+        var filterPanel = document.getElementById("searchFilterPanel");
+        if (!filterBtn || !filterPanel) return;
+
+        filterBtn.addEventListener("click", function () {
+            var open = filterPanel.hasAttribute("hidden");
+            if (open) {
+                filterPanel.removeAttribute("hidden");
+            } else {
+                filterPanel.setAttribute("hidden", "");
+            }
+            filterBtn.setAttribute("aria-expanded", open ? "true" : "false");
+            filterBtn.classList.toggle("active", open);
+        });
+    });
+</script>
+
+
+    <!-- AUTHENTICATION MODAL -->
+    <div class="auth-modal" id="authModal">
+        <div class="auth-modal-content">
+            <button class="auth-close-btn" id="closeAuthBtn">&times;</button>
+
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tabLogin">Log In</button>
+                <button type="button" class="auth-tab" id="tabSignup">Sign Up</button>
+            </div>
+
+            <form class="auth-form active" id="loginForm">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Log in to manage your saved properties and bookings.</p>
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox"> Remember me</label>
+                    <a href="reset-password.html" class="forgot-link">Forgot password?</a>
+                </div>
+                <p class="auth-message" id="loginMessage"></p>
+                <button type="submit" class="auth-submit-btn">Log In</button>
+            </form>
+
+            <form class="auth-form" id="signupForm">
+                <h2>Create an Account</h2>
+                <p class="auth-subtitle">Join us to save properties and contact hosts directly.</p>
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="name@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a strong password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                </div>
+                <p class="auth-message" id="signupMessage"></p>
+                <button type="submit" class="auth-submit-btn">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
+
+
