@@ -1,46 +1,61 @@
 import React from "react";
 import { getAdminRoleLabel, normalizeAdminRole } from "../../services/admin/adminService.js";
 
+function displayName(profile) {
+  const name = String(profile.full_name || profile.name || "").trim();
+  if (name) return name;
+  const email = String(profile.email || "").trim();
+  if (email.includes("@")) return email.split("@")[0];
+  return "Unnamed user";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function AdminUserTable({ profiles = [], isLoading = false, onOwnerApproval }) {
   if (isLoading) {
     return (
-      <div className="table-container">
-        <p className="no-data-msg">Loading profiles...</p>
+      <div className="table-container profiles-table-wrap">
+        <p className="no-data-msg">Loading every registered user...</p>
       </div>
     );
   }
 
   if (!profiles || profiles.length === 0) {
     return (
-      <div className="table-container">
-        <p className="no-data-msg">No registered profiles match the search criteria.</p>
+      <div className="table-container profiles-table-wrap">
+        <p className="no-data-msg">No registered users match this search.</p>
       </div>
     );
   }
 
   return (
-    <div className="table-container">
-      <table className="admin-table">
+    <div className="table-container profiles-table-wrap">
+      <table className="admin-table profiles-table">
         <thead>
           <tr>
             <th>User</th>
             <th>Contact</th>
             <th>Role</th>
-            <th>Status / Approval</th>
-            <th>User ID</th>
-            <th>Registered Date</th>
+            <th>Status</th>
+            <th>Registered</th>
             {onOwnerApproval && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
-          {profiles.map((p) => {
-            const roleKind = normalizeAdminRole(p.role);
-            const roleLabel = getAdminRoleLabel(p.role);
-            const initial = String(p.full_name || p.email || "U")
-              .trim()
-              .charAt(0)
-              .toUpperCase();
-
+          {profiles.map((profile) => {
+            const roleKind = normalizeAdminRole(profile.role);
+            const roleLabel = getAdminRoleLabel(profile.role);
+            const name = displayName(profile);
+            const initial = name.charAt(0).toUpperCase() || "U";
             const roleBadgeClass =
               roleKind === "admin"
                 ? "role-badge-admin"
@@ -52,90 +67,59 @@ export function AdminUserTable({ profiles = [], isLoading = false, onOwnerApprov
                 ? "role-badge-pending"
                 : "role-badge-user";
 
-            const ownerApproval = p.owner_approval_status
-              ? String(p.owner_approval_status).toLowerCase()
+            const accountStatus = String(profile.status || "active").toLowerCase();
+            const ownerApproval = profile.owner_approval_status
+              ? String(profile.owner_approval_status).toLowerCase()
               : roleKind === "owner"
               ? "pending"
               : null;
-
-            const dateStr = p.created_at
-              ? new Date(p.created_at).toLocaleDateString("en-IN", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })
-              : "—";
+            const statusLabel =
+              roleKind === "owner"
+                ? ownerApproval === "approved"
+                  ? "Owner approved"
+                  : ownerApproval === "rejected"
+                  ? "Owner rejected"
+                  : "Owner pending"
+                : accountStatus === "suspended"
+                ? "Suspended"
+                : accountStatus === "blocked"
+                ? "Blocked"
+                : "Active";
+            const statusClass =
+              statusLabel.includes("rejected") || statusLabel === "Blocked"
+                ? "is-bad"
+                : statusLabel.includes("pending") || statusLabel === "Suspended"
+                ? "is-wait"
+                : "is-good";
 
             return (
-              <tr key={p.id}>
+              <tr key={profile.id}>
                 <td data-label="User">
                   <div className="table-user-cell">
-                    <div className="table-avatar">{initial}</div>
+                    <div className={`table-avatar profiles-avatar ${roleBadgeClass}`}>{initial}</div>
                     <div>
-                      <strong>{p.full_name || "Anonymous User"}</strong>
-                      <span className="table-subtext">{p.email || "No email"}</span>
+                      <strong>{name}</strong>
+                      <span className="table-subtext">{profile.email || "No email on file"}</span>
                     </div>
                   </div>
                 </td>
-                <td data-label="Contact">{p.phone || "—"}</td>
+                <td data-label="Contact">{profile.phone || "—"}</td>
                 <td data-label="Role">
                   <span className={`role-badge ${roleBadgeClass}`}>{roleLabel}</span>
                 </td>
-                <td data-label="Status / Approval">
-                  {roleKind === "owner" ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "3px 8px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        backgroundColor:
-                          ownerApproval === "approved"
-                            ? "#e6f4ea"
-                            : ownerApproval === "rejected"
-                            ? "#fce8e6"
-                            : "#fef7e0",
-                        color:
-                          ownerApproval === "approved"
-                            ? "#137333"
-                            : ownerApproval === "rejected"
-                            ? "#c5221f"
-                            : "#b06000",
-                      }}
-                    >
-                      {ownerApproval === "approved"
-                        ? "Approved"
-                        : ownerApproval === "rejected"
-                        ? "Rejected"
-                        : "Pending Approval"}
-                    </span>
-                  ) : (
-                    <span style={{ color: "#888", fontSize: "13px" }}>Active</span>
-                  )}
+                <td data-label="Status">
+                  <span className={`profiles-status ${statusClass}`}>{statusLabel}</span>
                 </td>
-                <td data-label="User ID" className="table-mono">
-                  {p.id.slice(0, 12)}...
-                </td>
-                <td data-label="Registered Date">{dateStr}</td>
+                <td data-label="Registered">{formatDate(profile.created_at)}</td>
                 {onOwnerApproval && (
                   <td data-label="Actions">
-                    {roleKind === "owner" && (
-                      <div style={{ display: "flex", gap: "6px" }}>
+                    {roleKind === "owner" ? (
+                      <div className="table-actions">
                         {ownerApproval !== "approved" && (
                           <button
                             type="button"
-                            onClick={() => onOwnerApproval(p.id, "approved")}
-                            style={{
-                              padding: "4px 8px",
-                              fontSize: "11px",
-                              borderRadius: "4px",
-                              backgroundColor: "#137333",
-                              color: "#fff",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                            title="Approve owner privileges"
+                            className="action-btn approve-btn"
+                            onClick={() => onOwnerApproval(profile.id, "approved")}
                           >
                             Approve
                           </button>
@@ -143,22 +127,15 @@ export function AdminUserTable({ profiles = [], isLoading = false, onOwnerApprov
                         {ownerApproval !== "rejected" && (
                           <button
                             type="button"
-                            onClick={() => onOwnerApproval(p.id, "rejected")}
-                            style={{
-                              padding: "4px 8px",
-                              fontSize: "11px",
-                              borderRadius: "4px",
-                              backgroundColor: "#c5221f",
-                              color: "#fff",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                            title="Reject owner privileges"
+                            className="action-btn reject-btn"
+                            onClick={() => onOwnerApproval(profile.id, "rejected")}
                           >
                             Reject
                           </button>
                         )}
                       </div>
+                    ) : (
+                      <span className="profiles-no-action">—</span>
                     )}
                   </td>
                 )}

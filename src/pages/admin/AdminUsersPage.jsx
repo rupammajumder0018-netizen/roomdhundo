@@ -4,6 +4,8 @@ import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import AdminUserTable from "../../components/admin/AdminUserTable.jsx";
 import { fetchAdminProfiles, updateOwnerApprovalStatus } from "../../services/admin/adminService.js";
 
+const EMPTY_TOTALS = { total: 0, renters: 0, owners: 0, agents: 0, admins: 0 };
+
 export function AdminUsersPage() {
   const { onToggleMobileMenu } = useOutletContext();
   const [profiles, setProfiles] = useState([]);
@@ -12,12 +14,15 @@ export function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(25);
-  const [totalCount, setTotalCount] = useState(0);
+  const [filteredCount, setFilteredCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [totals, setTotals] = useState(EMPTY_TOTALS);
+  const [loadError, setLoadError] = useState("");
   const [actionMessage, setActionMessage] = useState(null);
 
   const loadProfiles = useCallback(async () => {
     setIsLoading(true);
+    setLoadError("");
     try {
       const res = await fetchAdminProfiles({
         roleFilter,
@@ -25,13 +30,22 @@ export function AdminUsersPage() {
         page,
         pageSize,
       });
-      if (res.data) {
+      if (res.error) {
+        setLoadError(res.error.message || "Could not load users.");
+        setProfiles([]);
+        setFilteredCount(0);
+      } else if (res.data) {
         setProfiles(res.data);
-        setTotalCount(res.count);
+        setFilteredCount(res.count);
         setTotalPages(res.totalPages);
+        if (res.totals) {
+          setTotals(res.totals);
+        } else if (roleFilter === "all" && !searchQuery.trim()) {
+          setTotals((current) => ({ ...current, total: res.count || 0 }));
+        }
       }
     } catch (err) {
-      console.warn("[Roomdhundo] Error loading user profiles:", err);
+      setLoadError(err.message || "Could not load users.");
     } finally {
       setIsLoading(false);
     }
@@ -41,13 +55,13 @@ export function AdminUsersPage() {
     loadProfiles();
   }, [loadProfiles]);
 
-  const handleRoleChange = (e) => {
-    setRoleFilter(e.target.value);
+  const handleRoleChange = (event) => {
+    setRoleFilter(event.target.value);
     setPage(1);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
     setPage(1);
   };
 
@@ -65,32 +79,55 @@ export function AdminUsersPage() {
     }
   };
 
+  const rangeStart = filteredCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, filteredCount);
+
+  const summaryCards = [
+    { key: "total", label: "Total users", value: totals.total, hint: "Email and Google accounts" },
+    { key: "renters", label: "Renters", value: totals.renters, hint: "Standard accounts" },
+    { key: "owners", label: "Owners", value: totals.owners, hint: "Property owners" },
+    { key: "agents", label: "Agents", value: totals.agents, hint: "Agents and pending agents" },
+    { key: "admins", label: "Admins", value: totals.admins, hint: "Platform administrators" },
+  ];
+
   return (
-    <div className="admin-page-container">
+    <div className="admin-page-container profiles-directory">
       <AdminHeader
         title="Registered Profiles"
-        subtitle={`Directory of all registered accounts (${totalCount} total: Renters, Owners, Agents, and Administrators).`}
+        subtitle="Every account stored in the database, whether they signed up with email or Google."
         onToggleMobileMenu={onToggleMobileMenu}
       />
 
+      <section className="profiles-summary" aria-label="User totals">
+        {summaryCards.map((card) => (
+          <article key={card.key} className={`profiles-stat ${card.key === "total" ? "is-total" : ""}`}>
+            <span>{card.label}</span>
+            <strong>{isLoading && totals.total === 0 ? "—" : card.value.toLocaleString("en-IN")}</strong>
+            <small>{card.hint}</small>
+          </article>
+        ))}
+      </section>
+
       {actionMessage && (
         <div
-          className={`admin-feedback-banner ${
-            actionMessage.type === "success" ? "admin-feedback-success" : "admin-feedback-error"
+          className={`admin-alert ${
+            actionMessage.type === "success" ? "admin-alert-success" : "admin-alert-error"
           }`}
-          style={{
-            padding: "10px 16px",
-            marginBottom: "16px",
-            borderRadius: "6px",
-            backgroundColor: actionMessage.type === "success" ? "#e6f4ea" : "#fce8e6",
-            color: actionMessage.type === "success" ? "#137333" : "#c5221f",
-          }}
+          role="alert"
         >
           {actionMessage.text}
+          <button type="button" className="admin-alert-close" onClick={() => setActionMessage(null)}>
+            ×
+          </button>
         </div>
       )}
 
-      {/* Filter Row */}
+      {loadError && (
+        <div className="admin-alert admin-alert-error" role="alert">
+          {loadError}
+        </div>
+      )}
+
       <div className="admin-filter-bar">
         <div className="admin-search-wrap">
           <input
@@ -109,12 +146,12 @@ export function AdminUsersPage() {
             onChange={handleRoleChange}
             aria-label="Filter by account role"
           >
-            <option value="all">All Roles</option>
-            <option value="renter">Renters (Users)</option>
-            <option value="owner">Property Owners</option>
-            <option value="agent">Agents</option>
-            <option value="agent_pending">Pending Agents</option>
-            <option value="admin">Administrators</option>
+            <option value="all">All roles ({totals.total})</option>
+            <option value="renter">Renters ({totals.renters})</option>
+            <option value="owner">Property owners ({totals.owners})</option>
+            <option value="agent">Agents ({totals.agents})</option>
+            <option value="agent_pending">Pending agents</option>
+            <option value="admin">Administrators ({totals.admins})</option>
           </select>
         </div>
       </div>
@@ -125,52 +162,31 @@ export function AdminUsersPage() {
         onOwnerApproval={handleOwnerApproval}
       />
 
-      {/* Server-Side Pagination Controls */}
-      {totalPages > 1 && (
-        <div
-          className="admin-pagination"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: "20px",
-            padding: "12px 16px",
-            background: "#fff",
-            borderRadius: "8px",
-            border: "1px solid #e0e0e0",
-          }}
-        >
-          <span style={{ fontSize: "14px", color: "#666" }}>
-            Page {page} of {totalPages} ({totalCount} total accounts)
+      <div className="profiles-pager">
+        <span>
+          {isLoading
+            ? "Loading users..."
+            : `Showing ${rangeStart}–${rangeEnd} of ${filteredCount.toLocaleString("en-IN")} matching accounts`}
+          {!isLoading && roleFilter === "all" && !searchQuery.trim()
+            ? ` · ${totals.total.toLocaleString("en-IN")} total in the database`
+            : ""}
+        </span>
+        <div>
+          <button type="button" disabled={page <= 1 || isLoading} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+            Previous
+          </button>
+          <span>
+            Page {page} of {totalPages}
           </span>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <button
-              className="admin-btn-secondary"
-              disabled={page <= 1 || isLoading}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              style={{
-                padding: "6px 14px",
-                cursor: page <= 1 ? "not-allowed" : "pointer",
-                opacity: page <= 1 ? 0.6 : 1,
-              }}
-            >
-              Previous
-            </button>
-            <button
-              className="admin-btn-secondary"
-              disabled={page >= totalPages || isLoading}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              style={{
-                padding: "6px 14px",
-                cursor: page >= totalPages ? "not-allowed" : "pointer",
-                opacity: page >= totalPages ? 0.6 : 1,
-              }}
-            >
-              Next
-            </button>
-          </div>
+          <button
+            type="button"
+            disabled={page >= totalPages || isLoading}
+            onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+          >
+            Next
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

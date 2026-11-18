@@ -462,6 +462,62 @@ export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInpu
  * @param {number} [options.pageSize=25] Records per page
  * @returns {Promise<{ data: Array<Object>|null, count: number, page: number, pageSize: number, totalPages: number, error: Error|null }>}
  */
+function applyProfileRoleFilter(query, roleFilter) {
+  const rf = String(roleFilter || "all").toLowerCase();
+  if (rf === "all") return query;
+  if (rf === "renter") return query.in("role", ["user", "renter"]);
+  if (rf === "owner") return query.in("role", ["owner", "landlord"]);
+  if (rf === "agents_all") return query.in("role", ["agent", "agent_pending"]);
+  if (rf === "agent") return query.eq("role", "agent");
+  if (rf === "agent_pending") return query.eq("role", "agent_pending");
+  if (rf === "admin") return query.in("role", ["admin", "administrator", "super_admin"]);
+  return query.eq("role", rf);
+}
+
+async function countProfiles(roleFilter) {
+  let query = supabase.from("profiles").select("id", { count: "exact", head: true });
+  query = applyProfileRoleFilter(query, roleFilter);
+  const { count, error } = await query;
+  return { count: count ?? 0, error };
+}
+
+/**
+ * Counts every profile row. Signup method is ignored, so email and Google
+ * accounts are both included.
+ *
+ * @returns {Promise<{ data: Object|null, error: Error|null }>}
+ */
+export async function fetchAdminProfileTotals() {
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const [total, renters, owners, agents, admins] = await Promise.all([
+    countProfiles("all"),
+    countProfiles("renter"),
+    countProfiles("owner"),
+    countProfiles("agents_all"),
+    countProfiles("admin"),
+  ]);
+
+  const error = total.error || renters.error || owners.error || agents.error || admins.error;
+  if (error) return { data: null, error };
+
+  return {
+    data: {
+      total: total.count,
+      renters: renters.count,
+      owners: owners.count,
+      agents: agents.count,
+      admins: admins.count,
+    },
+    error: null,
+  };
+}
+
 export async function fetchAdminProfiles(options = {}) {
   if (!supabase) {
     return {
@@ -470,6 +526,7 @@ export async function fetchAdminProfiles(options = {}) {
       page: 1,
       pageSize: 25,
       totalPages: 0,
+      totals: null,
       error: new Error("[Roomdhundo] Supabase client is not configured."),
     };
   }
@@ -483,35 +540,21 @@ export async function fetchAdminProfiles(options = {}) {
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false });
 
-  // Server-side role filter
-  if (options.roleFilter && options.roleFilter !== "all") {
-    const rf = options.roleFilter.toLowerCase();
-    if (rf === "renter") {
-      query = query.in("role", ["user", "renter"]);
-    } else if (rf === "owner") {
-      query = query.in("role", ["owner", "landlord"]);
-    } else if (rf === "agent") {
-      query = query.eq("role", "agent");
-    } else if (rf === "agent_pending") {
-      query = query.eq("role", "agent_pending");
-    } else if (rf === "admin") {
-      query = query.in("role", ["admin", "administrator"]);
-    } else {
-      query = query.eq("role", rf);
-    }
-  }
+  query = applyProfileRoleFilter(query, options.roleFilter);
 
-  // Server-side text search across full_name and email
   if (options.searchQuery && options.searchQuery.trim()) {
     const q = options.searchQuery.trim().replace(/[%_]/g, "");
     if (q) {
-      query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+      query = query.or(`full_name.ilike.%${q}%,name.ilike.%${q}%,email.ilike.%${q}%`);
     }
   }
 
   query = query.range(offset, offset + pageSize - 1);
 
-  const { data, count, error } = await query;
+  const [{ data, count, error }, totalsRes] = await Promise.all([
+    query,
+    fetchAdminProfileTotals(),
+  ]);
 
   if (error) {
     return {
@@ -520,12 +563,13 @@ export async function fetchAdminProfiles(options = {}) {
       page,
       pageSize,
       totalPages: 0,
+      totals: totalsRes.data,
       error,
     };
   }
 
   const totalCount = count != null ? count : (data || []).length;
-  const totalPages = Math.ceil(totalCount / pageSize) || 1;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return {
     data: data || [],
@@ -533,6 +577,7 @@ export async function fetchAdminProfiles(options = {}) {
     page,
     pageSize,
     totalPages,
+    totals: totalsRes.data,
     error: null,
   };
 }

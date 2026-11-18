@@ -843,3 +843,161 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Registered profiles directory */
+.profiles-summary {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.profiles-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--rd-surface, #123044);
+  border: 1px solid var(--rd-border, rgba(255, 255, 255, 0.08));
+}
+
+.profiles-stat span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rd-muted, #93b4c9);
+}
+
+.profiles-stat strong {
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--rd-text, #f4fbff);
+}
+
+.profiles-stat small {
+  font-size: 12px;
+  color: var(--rd-muted, #93b4c9);
+}
+
+.profiles-stat.is-total {
+  background: linear-gradient(160deg, #1b6f86, #22577a);
+  border-color: transparent;
+}
+
+.profiles-stat.is-total span,
+.profiles-stat.is-total small,
+.profiles-stat.is-total strong {
+  color: #ffffff;
+}
+
+.profiles-table-wrap {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.profiles-avatar.role-badge-admin {
+  background: #b42318;
+}
+
+.profiles-avatar.role-badge-owner {
+  background: #067647;
+}
+
+.profiles-avatar.role-badge-agent {
+  background: #3538cd;
+}
+
+.profiles-avatar.role-badge-pending {
+  background: #b54708;
+}
+
+.profiles-avatar.role-badge-user {
+  background: #22577a;
+}
+
+.profiles-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profiles-status.is-good {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.profiles-status.is-wait {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.profiles-status.is-bad {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.profiles-no-action {
+  color: var(--rd-muted, #93b4c9);
+}
+
+.profiles-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--rd-surface, #123044);
+  border: 1px solid var(--rd-border, rgba(255, 255, 255, 0.08));
+  color: var(--rd-muted, #93b4c9);
+  font-size: 13px;
+}
+
+.profiles-pager div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profiles-pager button {
+  border: 1px solid var(--rd-border, rgba(255, 255, 255, 0.14));
+  background: transparent;
+  color: var(--rd-text, #f4fbff);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profiles-pager button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .profiles-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .profiles-stat.is-total {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .profiles-summary,
+  .profiles-pager {
+    grid-template-columns: 1fr;
+  }
+
+  .profiles-pager {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

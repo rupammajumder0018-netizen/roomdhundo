@@ -38,6 +38,7 @@ export function HomePage() {
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [minBudget, setMinBudget] = useState("");
   const [maxBudget, setMaxBudget] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Active Hub from localStorage or query or default
@@ -121,11 +122,23 @@ export function HomePage() {
     navigate(`/search?${sp.toString()}`);
   };
 
+  const listingPrice = (building) => {
+    if (activeCategory === "hotel") {
+      const nightly = Number(building.minDailyPrice);
+      if (Number.isFinite(nightly) && nightly > 0) return nightly;
+    }
+    const monthly = Number(building.minPrice);
+    if (Number.isFinite(monthly) && monthly > 0) return monthly;
+    const nightly = Number(building.minDailyPrice);
+    if (Number.isFinite(nightly) && nightly > 0) return nightly;
+    return null;
+  };
+
   // Filter properties client-side matching legacy script.js
   const filteredProperties = useMemo(() => {
     const agentFilterId = searchParams.get("agent");
 
-    return properties.filter((b) => {
+    const matched = properties.filter((b) => {
       // Agent filter if ?agent= is present
       if (agentFilterId && String(b.created_by) !== String(agentFilterId)) {
         return false;
@@ -180,6 +193,32 @@ export function HomePage() {
 
       return true;
     });
+
+    if (!sortBy) return matched;
+
+    const sorted = [...matched];
+    if (sortBy === "price-asc" || sortBy === "price-desc") {
+      sorted.sort((a, b) => {
+        const priceA = listingPrice(a);
+        const priceB = listingPrice(b);
+        if (priceA == null && priceB == null) return 0;
+        if (priceA == null) return 1;
+        if (priceB == null) return -1;
+        return sortBy === "price-asc" ? priceA - priceB : priceB - priceA;
+      });
+    } else if (sortBy === "rating") {
+      sorted.sort((a, b) => {
+        const ratingA = Number(a.avgRating);
+        const ratingB = Number(b.avgRating);
+        const hasA = Number.isFinite(ratingA) && ratingA > 0;
+        const hasB = Number.isFinite(ratingB) && ratingB > 0;
+        if (!hasA && !hasB) return 0;
+        if (!hasA) return 1;
+        if (!hasB) return -1;
+        return ratingB - ratingA;
+      });
+    }
+    return sorted;
   }, [
     properties,
     activeCategory,
@@ -190,6 +229,7 @@ export function HomePage() {
     maxBudget,
     selectedFacilities,
     searchParams,
+    sortBy,
   ]);
 
   const scrollToTop = () => {
@@ -297,8 +337,8 @@ export function HomePage() {
             <div className="home-search-input-wrapper">
               <svg
                 className="home-search-icon"
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -310,10 +350,21 @@ export function HomePage() {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
+              <select
+                className="home-sort-select"
+                aria-label="Sort listings in this section"
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value)}
+              >
+                <option value="">Sort</option>
+                <option value="price-asc">Low to high</option>
+                <option value="price-desc">High to low</option>
+                <option value="rating">Rating</option>
+              </select>
               <input
                 type="text"
                 id="heroSearchInput"
-                placeholder="Search by PG, landmark, flat or location..."
+                placeholder="PG, landmark, or location"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 aria-label="Search properties"
@@ -329,7 +380,7 @@ export function HomePage() {
                 </button>
               )}
             </div>
-            <button type="submit" className="home-search-submit" id="heroSearchBtn">
+            <button type="submit" className="home-search-submit" id="heroSearchBtn" aria-label="Search">
               <svg
                 width="16"
                 height="16"
@@ -344,7 +395,6 @@ export function HomePage() {
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
-              <span>Search</span>
             </button>
           </form>
         </div>
@@ -427,6 +477,7 @@ export function HomePage() {
               setSelectedFacilities([]);
               setMinBudget("");
               setMaxBudget("");
+              setSortBy("");
             }}
           />
         )}
