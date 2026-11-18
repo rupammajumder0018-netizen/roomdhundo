@@ -36,6 +36,7 @@ export const PATHS = {
   ADMIN: "/admin",
   ADMIN_LOGIN: "/admin/login",
   ADMIN_PROPERTIES: "/admin/properties",
+  ADMIN_PROPERTY_EDIT: "/admin/properties/:propertyId/edit",
   ADMIN_PROFILES: "/admin/profiles",
   ADMIN_ENQUIRIES: "/admin/enquiries",
   ADMIN_HOTEL_BOOKINGS: "/admin/hotel-bookings",
@@ -54,6 +55,11 @@ export const ROUTE_PATHS = PATHS;
  * @param {string} [roomId] Optional room UUID
  * @returns {string}
  */
+export function adminPropertyEditPath(id) {
+  if (!id) return PATHS.ADMIN_PROPERTIES;
+  return `/admin/properties/${id}/edit`;
+}
+
 export function propertyPath(id, roomId) {
   if (!id) return PATHS.HOME;
   if (roomId) return `/property/${id}?room=${encodeURIComponent(roomId)}`;

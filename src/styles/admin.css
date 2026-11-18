@@ -417,6 +417,7 @@
 .table-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -453,10 +454,22 @@
   color: #ffffff;
 }
 
+.edit-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
 .view-btn {
   background: var(--rd-surface-soft, #f1f5f9);
   color: var(--rd-text, #22577a);
   border: 1px solid var(--rd-border, #cbd5e1);
+}
+
+.admin-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 /* Status Pills */

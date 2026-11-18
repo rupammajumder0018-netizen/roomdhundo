@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { propertyDisplayStatus } from "../../services/admin/adminService.js";
+import { adminPropertyPrice, propertyDisplayStatus } from "../../services/admin/adminService.js";
+import { adminPropertyEditPath } from "../../routes/paths.js";
 
 export function AdminPropertyTable({
   properties = [],
@@ -85,13 +86,7 @@ export function AdminPropertyTable({
                   <span className="badge-type">{property.type || "PG"}</span>
                 </td>
                 <td data-label="Location">{property.location || "—"}</td>
-                <td data-label="Pricing">
-                  {property.minPrice != null
-                    ? `₹${Number(property.minPrice).toLocaleString("en-IN")}`
-                    : property.price_value != null
-                    ? `₹${Number(property.price_value).toLocaleString("en-IN")}`
-                    : "—"}
-                </td>
+                <td data-label="Pricing">{adminPropertyPrice(property)}</td>
                 <td data-label="Status">
                   <span className={`status-pill ${statusClass}`}>{status}</span>
                 </td>
@@ -137,6 +132,12 @@ export function AdminPropertyTable({
                         Reject
                       </button>
                     )}
+                    <Link
+                      to={adminPropertyEditPath(property.id)}
+                      className="action-btn edit-btn"
+                    >
+                      Edit
+                    </Link>
                     <Link
                       to={`/property/${property.id}`}
                       className="action-btn view-btn"

@@ -36,6 +36,7 @@ import AdminLayout from "../layouts/AdminLayout.jsx";
 import AdminLoginPage from "../pages/admin/AdminLoginPage.jsx";
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage.jsx";
 import AdminPropertiesPage from "../pages/admin/AdminPropertiesPage.jsx";
+import AdminPropertyEditPage from "../pages/admin/AdminPropertyEditPage.jsx";
 import AdminHotelBookingsPage from "../pages/admin/AdminHotelBookingsPage.jsx";
 import AdminUsersPage from "../pages/admin/AdminUsersPage.jsx";
 import AdminAgentsPage from "../pages/admin/AdminAgentsPage.jsx";
@@ -187,6 +188,7 @@ export function AppRoutes() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="properties" element={<AdminPropertiesPage />} />
+          <Route path="properties/:propertyId/edit" element={<AdminPropertyEditPage />} />
           <Route path="hotel-bookings" element={<AdminHotelBookingsPage />} />
           <Route path="profiles" element={<AdminUsersPage />} />
           <Route path="agents" element={<AdminAgentsPage />} />

@@ -5,6 +5,7 @@
  */
 
 import { supabase } from "../supabase/client.js";
+import { executeSafeMutation } from "../supabase/mutationHelpers.js";
 
 /**
  * Normalizes role string to standard account kinds.
@@ -259,6 +260,196 @@ export async function deleteAdminProperty(propertyId) {
 
   const { error } = await supabase.from("buildings").delete().eq("id", propertyId);
   return { success: !error, error };
+}
+
+/**
+ * Loads one property and its rooms for the admin editor.
+ * Admins can open any listing, including ones they did not create.
+ *
+ * @param {string} propertyId
+ * @returns {Promise<{ data: Object|null, error: Error|null }>}
+ */
+export async function fetchAdminProperty(propertyId) {
+  if (!propertyId) {
+    return { data: null, error: new Error("Property ID is required.") };
+  }
+  if (!supabase) {
+    return { data: null, error: new Error("[Roomdhundo] Supabase client is not configured.") };
+  }
+
+  const { data, error } = await supabase
+    .from("buildings")
+    .select("*, room_types(*)")
+    .eq("id", propertyId)
+    .maybeSingle();
+
+  return { data, error };
+}
+
+function toInt(value, fallback = null) {
+  if (value === "" || value == null) return fallback;
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.round(number) : fallback;
+}
+
+function adminRoomPayload(room) {
+  const monthly = toInt(room.price_value ?? room.rent ?? room.room_rent, 0);
+  const nightly = toInt(room.daily_price ?? room.nightlyRent, null);
+  const people = Math.max(1, toInt(room.room_people ?? room.people, 1));
+  const available = Math.max(0, toInt(room.available_rooms ?? room.available, 1));
+  const total = toInt(
+    room.totalRooms != null ? room.totalRooms : room.total_rooms,
+    available
+  );
+  const images = Array.isArray(room.images) ? room.images : null;
+
+  return {
+    room_type: String(room.room_type || room.roomType || "Room").trim() || "Room",
+    price_value: monthly,
+    room_rent: monthly,
+    daily_price: nightly,
+    hourly_price: toInt(room.hourly_price ?? room.hourlyPrice, null),
+    weekend_price: toInt(room.weekend_price ?? room.weekendPrice, null),
+    extra_person_charge: toInt(room.extra_person_charge ?? room.extraPerson, null),
+    room_people: people,
+    max_guests: people,
+    available_rooms: available,
+    total_rooms: total,
+    room_size: toInt(room.room_size ?? room.roomSize, null),
+    adults: toInt(room.adults, null),
+    children: toInt(room.children, null),
+    availability: room.availability || (available > 0 ? "Available" : "Occupied"),
+    room_details: room.room_details || room.details || {},
+    ...(images ? { images } : {}),
+  };
+}
+
+/**
+ * Price shown in the admin properties table.
+ * Uses monthly rents when they exist, otherwise the nightly rate.
+ */
+export function adminPropertyPrice(property) {
+  const rooms = Array.isArray(property?.room_types) ? property.room_types : [];
+  const monthly = [];
+  const nightly = [];
+
+  rooms.forEach((room) => {
+    const details = room?.room_details && typeof room.room_details === "object" ? room.room_details : {};
+    const options = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
+    options.forEach((option) => {
+      const rent = Number(option?.rent);
+      if (rent > 0) monthly.push(rent);
+    });
+    const price = Number(room?.price_value);
+    if (price > 0) monthly.push(price);
+    const night = Number(room?.daily_price);
+    if (night > 0) nightly.push(night);
+  });
+
+  if (monthly.length) {
+    return `₹${Math.min(...monthly).toLocaleString("en-IN")}`;
+  }
+  if (nightly.length) {
+    return `₹${Math.min(...nightly).toLocaleString("en-IN")} / night`;
+  }
+  return "—";
+}
+
+/**
+ * Updates a property and its rooms from the admin console.
+ * Does not change who created the listing or its moderation status.
+ *
+ * @param {Object} params
+ * @param {string} params.propertyId
+ * @param {Object} params.buildingCore
+ * @param {Array<Object>} params.roomTypeInputs
+ * @returns {Promise<{ success: boolean, error: Error|null }>}
+ */
+export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInputs = [] }) {
+  if (!propertyId) {
+    return { success: false, error: new Error("Property ID is required.") };
+  }
+  if (!buildingCore?.name || !buildingCore?.location) {
+    return { success: false, error: new Error("Property name and location are required.") };
+  }
+  if (!roomTypeInputs.length) {
+    return { success: false, error: new Error("At least one room is required.") };
+  }
+  if (!supabase) {
+    return { success: false, error: new Error("[Roomdhundo] Supabase client is not configured.") };
+  }
+
+  const { data: updated, error: buildingError } = await executeSafeMutation({
+    client: supabase,
+    table: "buildings",
+    mode: "update",
+    payload: buildingCore,
+    applyFilters: (query) => query.eq("id", propertyId),
+    allowStripping: true,
+  });
+
+  if (buildingError) return { success: false, error: buildingError };
+  if (!updated || (Array.isArray(updated) && updated.length === 0)) {
+    return { success: false, error: new Error("The property could not be updated.") };
+  }
+
+  const { data: existingRooms, error: roomsError } = await supabase
+    .from("room_types")
+    .select("id")
+    .eq("building_id", propertyId);
+
+  if (roomsError) return { success: false, error: roomsError };
+
+  const existingIds = (existingRooms || []).map((room) => String(room.id));
+  const submittedIds = roomTypeInputs.filter((room) => room.id).map((room) => String(room.id));
+  const removedIds = existingIds.filter((id) => !submittedIds.includes(id));
+
+  for (const removedId of removedIds) {
+    const { error } = await supabase
+      .from("room_types")
+      .delete()
+      .eq("id", removedId)
+      .eq("building_id", propertyId);
+    if (error) return { success: false, error };
+  }
+
+  for (const room of roomTypeInputs) {
+    const payload = adminRoomPayload(room);
+    if (room.id) {
+      const { data, error } = await executeSafeMutation({
+        client: supabase,
+        table: "room_types",
+        mode: "update",
+        payload,
+        applyFilters: (query) => query.eq("id", room.id).eq("building_id", propertyId),
+        allowStripping: true,
+      });
+      if (error) return { success: false, error };
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        return {
+          success: false,
+          error: new Error(`Could not update "${payload.room_type}". The room was not saved.`),
+        };
+      }
+    } else {
+      const { data, error } = await executeSafeMutation({
+        client: supabase,
+        table: "room_types",
+        mode: "insert",
+        payload: { building_id: propertyId, ...payload },
+        allowStripping: true,
+      });
+      if (error) return { success: false, error };
+      if (!data) {
+        return {
+          success: false,
+          error: new Error(`Could not add "${payload.room_type}".`),
+        };
+      }
+    }
+  }
+
+  return { success: true, error: null };
 }
 
 /**
