@@ -1,15 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Header from "../../components/common/Header";
-import Footer from "../../components/common/Footer";
 import { ROUTE_PATHS } from "../../routes/paths";
 
 export default function ListingHubPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--rd-bg)] text-[var(--rd-text)]">
-      <Header />
-
-      <main className="flex-1">
+    <div className="bg-[var(--rd-bg)] text-[var(--rd-text)]">
+      <main>
         <div className="listing-hub-page">
           <div className="listing-hub-header">
             <h1>List Your Property</h1>
@@ -45,8 +41,6 @@ export default function ListingHubPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

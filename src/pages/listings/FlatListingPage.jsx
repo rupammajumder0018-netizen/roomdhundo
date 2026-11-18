@@ -3,8 +3,6 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { ownerService } from "../../services/owner/index.js";
 import { ROUTE_PATHS } from "../../routes/paths";
-import Header from "../../components/common/Header";
-import Footer from "../../components/common/Footer";
 import ImageUploader from "../../components/listings/ImageUploader";
 
 const FLAT_AMENITIES = [
@@ -204,10 +202,8 @@ export default function FlatListingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--rd-bg)] text-[var(--rd-text)]">
-      <Header />
-
-      <main className="flex-1">
+    <div className="bg-[var(--rd-bg)] text-[var(--rd-text)]">
+      <main>
         <div className="listing-wizard-page">
           <div className="listing-wizard-header">
             <div>
@@ -615,8 +611,6 @@ export default function FlatListingPage() {
           )}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
