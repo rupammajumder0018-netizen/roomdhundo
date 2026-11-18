@@ -77,16 +77,42 @@ export function isRoomAvailable(rt) {
 }
 
 /**
+ * Sharing prices stored on one physical room.
+ * Each option is how that same room can be rented (single, 2, 3, or 4 sharing).
+ */
+export function occupancyOptionsFromRoom(rt) {
+  if (!rt) return [];
+  const details = rt.room_details && typeof rt.room_details === "object" ? rt.room_details : {};
+  const raw = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
+  return raw
+    .map((option) => ({
+      people: Number(option.people),
+      rent: Number(option.rent),
+    }))
+    .filter((option) => option.people >= 1 && Number.isFinite(option.rent) && option.rent > 0);
+}
+
+/** Labels used by the search "Room Sharing" filter. */
+export function sharingFilterLabel(people) {
+  const count = Number(people);
+  if (count <= 1) return "Single";
+  if (count === 2) return "Double Sharing";
+  if (count === 3) return "Triple Sharing";
+  return "4+ Sharing";
+}
+
+export function roomSharingLabels(rt) {
+  const labels = new Set(occupancyOptionsFromRoom(rt).map((option) => sharingFilterLabel(option.people)));
+  if (rt?.room_type) labels.add(rt.room_type);
+  return [...labels];
+}
+
+/**
  * Extracts monthly price list from room details.
  */
 export function roomMonthlyPriceList(rt) {
   if (!rt) return [];
-  const details = rt.room_details && typeof rt.room_details === "object" ? rt.room_details : {};
-  const raw = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
-  const fromOptions = raw
-    .map((opt) => Number(opt.rent))
-    .filter((rent) => Number.isFinite(rent) && rent > 0);
-
+  const fromOptions = occupancyOptionsFromRoom(rt).map((option) => option.rent);
   if (fromOptions.length > 0) return fromOptions;
   const directPrice = Number(rt.price_value);
   return Number.isFinite(directPrice) ? [directPrice] : [];

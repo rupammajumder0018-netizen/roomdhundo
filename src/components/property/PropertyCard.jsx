@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   calculateDistanceKm,
   facilityPreviewBadges,
+  occupancyOptionsFromRoom,
 } from "../../services/properties/index.js";
 
 export function PropertyCard({
@@ -62,9 +63,12 @@ export function PropertyCard({
   const unit = forSale ? "" : isDaily ? "/ night" : "/ month";
   const priceFormatted =
     price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
+  const hasTieredRent = (building.room_types || []).some(
+    (room) => occupancyOptionsFromRoom(room).length > 1
+  );
   const priceLabel = forSale
     ? "Sale "
-    : (building.room_types || []).length > 1
+    : (building.room_types || []).length > 1 || hasTieredRent
     ? "From "
     : "";
 

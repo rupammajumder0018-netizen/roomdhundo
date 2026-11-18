@@ -1481,6 +1481,109 @@
   cursor: pointer;
 }
 
+.pg-room-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--rd-muted, #3a6f86);
+}
+
+.pg-share-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pg-share-card {
+  border: 1px solid var(--rd-border, #c6ead9);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--rd-surface, #ffffff);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pg-share-card.is-on {
+  border-color: var(--rd-accent, #38a3a5);
+  box-shadow: 0 0 0 2px rgba(56, 163, 165, 0.18);
+}
+
+.pg-share-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pg-share-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--rd-border, #9ec9b8);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 1px;
+}
+
+.pg-share-card.is-on .pg-share-check {
+  background: var(--rd-accent, #38a3a5);
+  border-color: var(--rd-accent, #38a3a5);
+}
+
+.pg-share-title,
+.pg-share-hint {
+  display: block;
+}
+
+.pg-share-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--rd-text, #22577a);
+}
+
+.pg-share-hint {
+  font-size: 12px;
+  color: var(--rd-muted, #3a6f86);
+  margin-top: 2px;
+}
+
+.pg-share-rent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--rd-text, #22577a);
+}
+
+.pg-share-rent input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--rd-border, #c6ead9);
+  background: var(--rd-bg, #f4fbf8);
+  color: var(--rd-text, #22577a);
+  font-size: 14px;
+}
+
+.pg-add-room-btn {
+  padding: 10px 16px;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .owner-stats-grid {
@@ -1518,7 +1621,8 @@
   .owner-topbar {
     padding: 0 16px;
   }
-  .wizard-form-grid {
+  .wizard-form-grid,
+  .pg-share-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -4,7 +4,12 @@ import { useAuth } from "../../hooks/useAuth";
 import { ownerService } from "../../services/owner/index.js";
 import { ROUTE_PATHS } from "../../routes/paths";
 import ImageUploader from "../../components/listings/ImageUploader";
-import RoomTypeManager from "../../components/listings/RoomTypeManager";
+import PgRoomOptions, {
+  dbRoomsToPgForm,
+  emptyPgRoom,
+  pgRoomsToPayload,
+  validatePgRooms,
+} from "../../components/listings/PgRoomOptions";
 
 const STANDARD_FACILITIES = [
   { value: "wifi", label: "📶 Wi-Fi" },
@@ -47,15 +52,7 @@ export default function PgListingPage() {
   const [customFacilities, setCustomFacilities] = useState([]);
   const [images, setImages] = useState([]);
 
-  // Room types state
-  const [roomTypes, setRoomTypes] = useState([
-    {
-      name: "Single Room",
-      price_monthly: "",
-      occupancy: 1,
-      available_rooms: 1,
-    },
-  ]);
+  const [rooms, setRooms] = useState([emptyPgRoom()]);
 
   // Load existing data in edit mode
   useEffect(() => {
@@ -86,7 +83,7 @@ export default function PgListingPage() {
         }
 
         if (Array.isArray(data.room_types) && data.room_types.length > 0) {
-          setRoomTypes(data.room_types);
+          setRooms(dbRoomsToPgForm(data.room_types));
         }
       }
       setLoading(false);
@@ -140,21 +137,10 @@ export default function PgListingPage() {
       return;
     }
 
-    // Validate rooms
-    if (!roomTypes.length) {
-      setFormError("Please configure at least one room type.");
+    const roomError = validatePgRooms(rooms);
+    if (roomError) {
+      setFormError(roomError);
       return;
-    }
-    for (let i = 0; i < roomTypes.length; i++) {
-      const r = roomTypes[i];
-      if (!r.name?.trim()) {
-        setFormError(`Please name Room Option #${i + 1}.`);
-        return;
-      }
-      if (!r.price_monthly || Number(r.price_monthly) <= 0) {
-        setFormError(`Please set a valid monthly rent for ${r.name}.`);
-        return;
-      }
     }
 
     setSubmitting(true);
@@ -186,7 +172,7 @@ export default function PgListingPage() {
 
       const { success, error } = await ownerService.savePropertyListing({
         buildingCore,
-        roomTypeInputs: roomTypes,
+        roomTypeInputs: pgRoomsToPayload(rooms),
         isEdit,
         editId,
         ownerId: user.id,
@@ -410,13 +396,12 @@ export default function PgListingPage() {
 
               {/* Card 4: Room Options & Rent */}
               <div className="wizard-card">
-                <h2>4. Room Options & Pricing</h2>
-                <p className="wizard-card-lead">Configure the room types and occupancy you offer.</p>
+                <h2>4. Rooms & Sharing</h2>
+                <p className="wizard-card-lead">
+                  One room can be offered as single, double, triple, or four sharing. Set a rent for each way you rent that room.
+                </p>
 
-                <RoomTypeManager
-                  roomTypes={roomTypes}
-                  onChange={setRoomTypes}
-                />
+                <PgRoomOptions rooms={rooms} onChange={setRooms} />
               </div>
 
               {/* Card 5: Owner / Contact Details */}

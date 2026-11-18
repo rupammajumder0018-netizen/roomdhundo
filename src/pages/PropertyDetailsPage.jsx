@@ -5,6 +5,7 @@ import {
   toggleSavedProperty,
   fetchSavedProperties,
   createPropertyReview,
+  occupancyOptionsFromRoom,
 } from "../services/properties/index.js";
 import { useAuth } from "../hooks/useAuth.js";
 import { PropertyGallery } from "../components/property/PropertyGallery.jsx";
@@ -170,11 +171,12 @@ export function PropertyDetailsPage() {
   const priceUnit = isHotel ? " / night" : " / month";
 
   // Price formatting
+  const hasTieredRent = roomTypes.some((rt) => occupancyOptionsFromRoom(rt).length > 1);
   const priceValue =
     building.minPrice != null
       ? `₹${Number(building.minPrice).toLocaleString("en-IN")}`
       : "—";
-  const priceLabel = roomTypes.length > 1 ? "From " : "";
+  const priceLabel = roomTypes.length > 1 || hasTieredRent ? "From " : "";
 
   // Availability display
   const availabilityText =
@@ -261,7 +263,13 @@ export function PropertyDetailsPage() {
                   <h2>Available Room Types</h2>
                   <div className="room-types-list" id="roomTypesList">
                     {roomTypes.map((rt) => {
-                      const isAvail = Number(rt.available_rooms) > 0;
+                      const shares = occupancyOptionsFromRoom(rt);
+                      const roomCount = Number(rt.available_rooms);
+                      const countLabel = Number.isFinite(roomCount)
+                        ? `${roomCount} room${roomCount === 1 ? "" : "s"} available`
+                        : "Available";
+                      const roomName =
+                        (rt.room_details && rt.room_details.room_name) || rt.room_type;
                       return (
                         <div
                           key={rt.id || rt.room_type}
@@ -272,27 +280,60 @@ export function PropertyDetailsPage() {
                             borderRadius: "14px",
                             padding: "18px",
                             marginBottom: "12px",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                            gap: "12px",
                           }}
                         >
-                          <div>
-                            <strong style={{ fontSize: "16px", color: "var(--rd-text, #22577A)" }}>
-                              {rt.room_type}
-                            </strong>
-                            <p style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)", marginTop: "4px" }}>
-                              {rt.available_rooms != null ? `${rt.available_rooms} rooms available` : "Available"}
-                            </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              gap: "12px",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <div>
+                              <strong style={{ fontSize: "16px", color: "var(--rd-text, #22577A)" }}>
+                                {roomName}
+                              </strong>
+                              <p style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)", marginTop: "4px" }}>
+                                {countLabel}
+                                {shares.length > 1 ? " · same room, choose a sharing type" : ""}
+                              </p>
+                            </div>
+                            {shares.length === 0 && (
+                              <div style={{ textAlign: "right" }}>
+                                <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--rd-accent, #38A3A5)" }}>
+                                  ₹{Number(rt.price_value || rt.price || 0).toLocaleString("en-IN")}
+                                </span>
+                                <span style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)" }}> / mo</span>
+                              </div>
+                            )}
                           </div>
-                          <div style={{ textAlign: "right" }}>
-                            <span style={{ fontSize: "18px", fontWeight: 700, color: "var(--rd-accent, #38A3A5)" }}>
-                              ₹{Number(rt.price_value || rt.price || 0).toLocaleString("en-IN")}
-                            </span>
-                            <span style={{ fontSize: "13px", color: "var(--rd-muted, #3a6f86)" }}> / mo</span>
-                          </div>
+                          {shares.length > 0 && (
+                            <div style={{ display: "grid", gap: "8px", marginTop: "14px" }}>
+                              {shares.map((share) => (
+                                <div
+                                  key={share.people}
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    gap: "12px",
+                                    padding: "10px 12px",
+                                    borderRadius: "10px",
+                                    background: "var(--rd-surface-soft, #e6f7ef)",
+                                  }}
+                                >
+                                  <span style={{ fontWeight: 700, color: "var(--rd-text, #22577A)" }}>
+                                    {share.people === 1 ? "Single" : `${share.people} sharing`}
+                                  </span>
+                                  <span style={{ fontWeight: 700, color: "var(--rd-accent, #38A3A5)" }}>
+                                    ₹{share.rent.toLocaleString("en-IN")}
+                                    <span style={{ fontWeight: 600, color: "var(--rd-muted, #3a6f86)" }}> / mo</span>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       );
                     })}

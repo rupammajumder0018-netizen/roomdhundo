@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.js";
 import { createEnquiry } from "../../services/enquiries/index.js";
+import { occupancyOptionsFromRoom } from "../../services/properties/index.js";
 import { PATHS } from "../../routes/paths.js";
 
 export function ContactOwnerModal({ building, isOpen, onClose }) {
@@ -26,6 +27,27 @@ export function ContactOwnerModal({ building, isOpen, onClose }) {
   };
 
   const roomTypes = Array.isArray(building.room_types) ? building.room_types : [];
+  const roomChoices = roomTypes.flatMap((rt) => {
+    const shares = occupancyOptionsFromRoom(rt);
+    const roomName = rt.room_details?.room_name;
+    if (shares.length > 0) {
+      return shares.map((share) => {
+        const sharing = share.people === 1 ? "Single" : `${share.people} sharing`;
+        const title = roomName ? `${roomName} · ${sharing}` : sharing;
+        return {
+          key: `${rt.id || rt.room_type}-${share.people}`,
+          value: `${title} (₹${share.rent.toLocaleString("en-IN")}/mo)`,
+        };
+      });
+    }
+    return [
+      {
+        key: rt.id || rt.room_type,
+        value: rt.room_type,
+        label: `${rt.room_type}${rt.price_value ? ` (₹${rt.price_value}/mo)` : ""}`,
+      },
+    ];
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -189,9 +211,9 @@ export function ContactOwnerModal({ building, isOpen, onClose }) {
                 }}
               >
                 <option value="">Any available room</option>
-                {roomTypes.map((rt) => (
-                  <option key={rt.id || rt.room_type} value={rt.room_type}>
-                    {rt.room_type} {rt.price_value ? `(₹${rt.price_value}/mo)` : ""}
+                {roomChoices.map((choice) => (
+                  <option key={choice.key} value={choice.value}>
+                    {choice.label || choice.value}
                   </option>
                 ))}
               </select>

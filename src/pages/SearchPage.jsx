@@ -4,6 +4,8 @@ import {
   fetchPublishedProperties,
   fetchSavedProperties,
   toggleSavedProperty,
+  roomMonthlyPriceList,
+  roomSharingLabels,
   ROOMDHUNDO_HUBS,
 } from "../services/properties/index.js";
 import { useAuth } from "../hooks/useAuth.js";
@@ -203,12 +205,14 @@ export function SearchPage() {
       // Budget filter
       if (min !== null || max !== null) {
         const priceFits = roomTypes.some((rt) => {
-          const price = isDaily ? rt.daily_price : rt.price_value;
-          if (price == null || price === "") return false;
-          const numPrice = Number(price);
-          if (min !== null && numPrice < min) return false;
-          if (max !== null && numPrice > max) return false;
-          return true;
+          const prices = isDaily
+            ? [Number(rt.daily_price)].filter((price) => Number.isFinite(price) && price > 0)
+            : roomMonthlyPriceList(rt);
+          return prices.some((numPrice) => {
+            if (min !== null && numPrice < min) return false;
+            if (max !== null && numPrice > max) return false;
+            return true;
+          });
         });
         if (!priceFits && roomTypes.length > 0) return false;
       }
@@ -220,7 +224,9 @@ export function SearchPage() {
 
       // Room type sharing filter
       if (selectedRoomTypes.length > 0) {
-        const hasRoomType = roomTypes.some((rt) => selectedRoomTypes.includes(rt.room_type));
+        const hasRoomType = roomTypes.some((rt) =>
+          roomSharingLabels(rt).some((label) => selectedRoomTypes.includes(label))
+        );
         if (!hasRoomType) return false;
       }
 
