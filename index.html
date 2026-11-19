@@ -2,20 +2,106 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pg Dhundo | Roomdhundo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Synchronous Theme Initialization to prevent Flash of Unstyled Content (FOUC) -->
+    <!-- Primary title -->
+    <title>Pg Dhundo | Roomdhundo</title>
+    <meta name="description" content="Find verified PGs, rooms, flats and hotel stays near MAKAUT and Kolkata. Zero brokerage. Direct owner contact." />
+
+    <!-- ═══════════════════════════════════════════════════════
+         PWA — Web App Manifest
+    ════════════════════════════════════════════════════════ -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         PWA — Theme & Browser Chrome Color
+    ════════════════════════════════════════════════════════ -->
+    <meta name="theme-color" content="#22577A" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#102a3a" media="(prefers-color-scheme: dark)" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         PWA — Icons (Android, desktop, general browsers)
+    ════════════════════════════════════════════════════════ -->
+    <link rel="icon" type="image/png" sizes="32x32"  href="/icons/icon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="icon" href="/favicon.ico" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         PWA — Apple / iOS specific meta tags
+         Required for standalone "Add to Home Screen" on Safari
+    ════════════════════════════════════════════════════════ -->
+    <!-- Enable standalone mode on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- Status bar style: default | black | black-translucent -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- App name that appears under the icon on iOS home screen -->
+    <meta name="apple-mobile-web-app-title" content="Pg Dhundo" />
+
+    <!-- Apple touch icons (shown as the iOS home screen icon) -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192x192.png" />
+
+    <!-- iOS Splash Screens (startup images) -->
+    <!-- iPhone 14 Pro Max (430x932) -->
+    <link rel="apple-touch-startup-image"
+      media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      href="/icons/splash-430x932.png" />
+    <!-- iPhone 14 / 13 / 12 (390x844) -->
+    <link rel="apple-touch-startup-image"
+      media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
+      href="/icons/splash-390x844.png" />
+    <!-- iPhone SE / 8 (375x667) -->
+    <link rel="apple-touch-startup-image"
+      media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
+      href="/icons/splash-375x667.png" />
+    <!-- iPad (768x1024) -->
+    <link rel="apple-touch-startup-image"
+      media="screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait)"
+      href="/icons/splash-768x1024.png" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         PWA — Microsoft / Windows Tile
+    ════════════════════════════════════════════════════════ -->
+    <meta name="msapplication-TileColor" content="#22577A" />
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+    <meta name="msapplication-config" content="none" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         OpenGraph / Social sharing
+    ════════════════════════════════════════════════════════ -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:title"       content="Pg Dhundo — Find PG, Rooms & Flats Near MAKAUT" />
+    <meta property="og:description" content="Discover verified PGs, rooms, flats and hotel stays. Zero brokerage. Direct owner contact." />
+    <meta property="og:image"       content="/icons/icon-512x512.png" />
+    <meta property="og:site_name"   content="Pg Dhundo" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="summary" />
+    <meta name="twitter:title"       content="Pg Dhundo — Find PG, Rooms & Flats" />
+    <meta name="twitter:description" content="Verified PGs, rooms and flats near MAKAUT. Zero brokerage." />
+    <meta name="twitter:image"       content="/icons/icon-192x192.png" />
+
+    <!-- ═══════════════════════════════════════════════════════
+         Synchronous Theme Initialization (prevents FOUC)
+    ════════════════════════════════════════════════════════ -->
     <script>
       (function () {
         try {
           var saved = localStorage.getItem("roomdhundo-theme");
           document.documentElement.dataset.theme = saved || "light";
+          // Also set theme-color meta dynamically
+          var color = (saved === "dark") ? "#102a3a" : "#22577A";
+          var metaTheme = document.querySelector('meta[name="theme-color"]');
+          if (metaTheme) metaTheme.setAttribute("content", color);
         } catch (e) {}
       })();
     </script>
 
-    <!-- Google Fonts -->
+    <!-- ═══════════════════════════════════════════════════════
+         Fonts
+    ════════════════════════════════════════════════════════ -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

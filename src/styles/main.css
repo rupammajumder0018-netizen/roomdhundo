@@ -10,6 +10,7 @@
 @import "./admin.css";
 @import "./hotel-bookings.css";
 @import "./admin-hotel-bookings.css";
+@import "./pwa.css";
 
 :root {
   --font-sans: 'Outfit', 'Plus Jakarta Sans', Arial, -apple-system, BlinkMacSystemFont, sans-serif;

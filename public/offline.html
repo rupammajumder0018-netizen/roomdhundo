@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're Offline — Pg Dhundo</title>
+  <style>
+    :root {
+      --accent: #38A3A5;
+      --accent2: #22577A;
+      --bg: #eefaf4;
+      --surface: #ffffff;
+      --text: #22577A;
+      --muted: #3a6f86;
+      --border: #c6ead9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', 'Plus Jakarta Sans', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 48px 36px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(34, 87, 122, 0.12);
+    }
+    .icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22577A, #38A3A5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 36px;
+    }
+    h1 { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
+    p { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 32px; }
+    .retry-btn {
+      display: inline-block;
+      padding: 13px 32px;
+      background: linear-gradient(135deg, #22577A, #38A3A5);
+      color: #fff;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(34, 87, 122, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .retry-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(34, 87, 122, 0.4); }
+    .brand { margin-top: 32px; font-size: 14px; color: var(--muted); }
+    .brand strong { color: var(--accent2); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-wrap">🏠</div>
+    <h1>You're offline</h1>
+    <p>
+      Looks like you've lost your internet connection. Check your Wi-Fi or mobile data
+      and try again — your favorite PGs and flats are waiting!
+    </p>
+    <button class="retry-btn" onclick="window.location.reload()">
+      🔄 Try Again
+    </button>
+    <div class="brand">
+      <strong>Pg Dhundo</strong> — Find your perfect stay
+    </div>
+  </div>
+</body>
+</html>

@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { Header } from "../components/common/Header.jsx";
 import { Footer } from "../components/common/Footer.jsx";
 import { GuestEngagementModal } from "../components/common/GuestEngagementModal.jsx";
+import { PwaInstallPrompt } from "../components/common/PwaInstallPrompt.jsx";
 
 export function RootLayout() {
   const [activeHub, setActiveHub] = useState(() => {
@@ -17,6 +18,7 @@ export function RootLayout() {
       </div>
       <Footer />
       <GuestEngagementModal />
+      <PwaInstallPrompt />
     </div>
   );
 }
