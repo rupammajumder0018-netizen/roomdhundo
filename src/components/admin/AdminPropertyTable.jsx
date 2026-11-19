@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { adminPropertyPrice, propertyDisplayStatus } from "../../services/admin/adminService.js";
+import {
+  adminPropertyPrice,
+  propertyDisplayStatus,
+  isPropertyOccupied,
+} from "../../services/admin/adminService.js";
 import { adminPropertyEditPath } from "../../routes/paths.js";
 
 export function AdminPropertyTable({
@@ -8,6 +12,7 @@ export function AdminPropertyTable({
   onApprove,
   onReject,
   onDelete,
+  onToggleOccupancy,
   isLoading = false,
 }) {
   if (isLoading) {
@@ -36,12 +41,14 @@ export function AdminPropertyTable({
             <th>Location</th>
             <th>Pricing</th>
             <th>Status</th>
+            <th>Availability</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="propertyTableBody">
           {properties.map((property) => {
             const status = propertyDisplayStatus(property);
+            const isOccupied = isPropertyOccupied(property);
             const statusClass =
               status === "Live"
                 ? "status-live"
@@ -90,8 +97,31 @@ export function AdminPropertyTable({
                 <td data-label="Status">
                   <span className={`status-pill ${statusClass}`}>{status}</span>
                 </td>
+                <td data-label="Availability">
+                  <button
+                    type="button"
+                    className={`toggle-occupancy-btn ${isOccupied ? "is-occupied" : "is-available"}`}
+                    onClick={() => onToggleOccupancy && onToggleOccupancy(property.id, isOccupied)}
+                    title={
+                      isOccupied
+                        ? "Currently Occupied / Unavailable — click to mark Available"
+                        : "Currently Available — click to mark Occupied"
+                    }
+                  >
+                    <span className="avail-dot" aria-hidden="true" />
+                    <span>{isOccupied ? "Occupied" : "Available"}</span>
+                  </button>
+                </td>
                 <td data-label="Actions">
                   <div className="table-actions">
+                    <button
+                      type="button"
+                      className={`action-btn ${isOccupied ? "approve-btn" : "reject-btn"}`}
+                      onClick={() => onToggleOccupancy && onToggleOccupancy(property.id, isOccupied)}
+                      title={isOccupied ? "Toggle to Available" : "Toggle to Occupied"}
+                    >
+                      {isOccupied ? "Set Available" : "Set Occupied"}
+                    </button>
                     {isPending && (
                       <>
                         <button

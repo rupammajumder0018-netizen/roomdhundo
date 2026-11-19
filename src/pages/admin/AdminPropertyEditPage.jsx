@@ -12,11 +12,20 @@ import { useAuth } from "../../hooks/useAuth.js";
 import { PATHS } from "../../routes/paths.js";
 import { fetchAdminProperty, saveAdminProperty } from "../../services/admin/adminService.js";
 
-const PROPERTY_TYPES = ["PG", "Room", "Flat", "Hotel", "Mess", "Guest House"];
+const PROPERTY_TYPES = ["PG", "Room", "Flat", "Hotel", "Guest House", "Event Hall", "Mess"];
 
 function usesSharingRooms(type) {
   const value = String(type || "").toLowerCase();
   return value === "pg" || value === "room" || value === "mess";
+}
+
+function isDailyStayType(type) {
+  const value = String(type || "").toLowerCase();
+  return value === "hotel" || value === "guest house" || value === "event hall";
+}
+
+function isFlatType(type) {
+  return String(type || "").toLowerCase() === "flat";
 }
 
 function rulesToText(rules) {
@@ -193,26 +202,35 @@ export default function AdminPropertyEditPage() {
   };
 
   const validateGenericRooms = () => {
-    if (!genericRooms.length) return "Add at least one room.";
+    if (!genericRooms.length) return "Add at least one room / rate option.";
+
+    const dailyStay = isDailyStayType(type);
+    const isFlat = isFlatType(type);
 
     for (let index = 0; index < genericRooms.length; index += 1) {
       const room = genericRooms[index];
-      const label = room.room_type?.trim() || `Room ${index + 1}`;
-      if (!room.room_type?.trim()) return `Enter a name for Room ${index + 1}.`;
+      const label =
+        room.room_type?.trim() ||
+        (isFlat ? "Flat" : dailyStay ? `Rate option ${index + 1}` : `Room ${index + 1}`);
+      if (!room.room_type?.trim()) return `Enter a name/type for ${label}.`;
 
-      const monthly = room.price_value === "" ? null : Number(room.price_value);
-      const nightly = room.daily_price === "" || room.daily_price == null ? null : Number(room.daily_price);
-      const hasMonthly = Number.isFinite(monthly) && monthly > 0;
-      const hasNightly = Number.isFinite(nightly) && nightly > 0;
-
-      if (!hasMonthly && !hasNightly) {
-        return `Enter a monthly rent or a nightly rate for ${label}. A room charged only per night can keep monthly rent at 0.`;
+      if (dailyStay) {
+        const nightly =
+          room.daily_price === "" || room.daily_price == null ? null : Number(room.daily_price);
+        if (!Number.isFinite(nightly) || nightly <= 0) {
+          return `Enter a valid rate for ${label}.`;
+        }
+      } else {
+        const monthly = room.price_value === "" ? null : Number(room.price_value);
+        if (!Number.isFinite(monthly) || monthly <= 0) {
+          return `Enter a valid rent / price for ${label}.`;
+        }
       }
 
       const people = Number(room.room_people);
       const count = Number(room.available_rooms);
       if (!Number.isFinite(people) || people < 1) return `People sharing must be at least 1 for ${label}.`;
-      if (!Number.isFinite(count) || count < 0) return `Available rooms cannot be negative for ${label}.`;
+      if (!Number.isFinite(count) || count < 0) return `Available count cannot be negative for ${label}.`;
     }
 
     return "";
@@ -260,17 +278,25 @@ export default function AdminPropertyEditPage() {
 
     const roomTypeInputs = sharing
       ? pgRoomsToPayload(pgRooms)
-      : genericRooms.map((room) => ({
-          ...room,
-          room_type: room.room_type.trim(),
-          rent: room.price_value === "" ? 0 : Number(room.price_value),
-          price_value: room.price_value === "" ? 0 : Number(room.price_value),
-          daily_price: room.daily_price === "" || room.daily_price == null ? null : Number(room.daily_price),
-          people: Number(room.room_people) || 1,
-          available: Number(room.available_rooms) || 0,
-          totalRooms: Number(room.available_rooms) || 0,
-          details: room.room_details || {},
-        }));
+      : genericRooms.map((room) => {
+          const isDailyStay = isDailyStayType(type);
+          const dailyVal =
+            room.daily_price === "" || room.daily_price == null ? null : Number(room.daily_price);
+          const monthlyVal =
+            room.price_value === "" || room.price_value == null ? 0 : Number(room.price_value);
+
+          return {
+            ...room,
+            room_type: room.room_type.trim(),
+            rent: isDailyStay ? 0 : monthlyVal,
+            price_value: isDailyStay ? 0 : monthlyVal,
+            daily_price: isDailyStay ? dailyVal : dailyVal || null,
+            people: Number(room.room_people) || 1,
+            available: Number(room.available_rooms) || 0,
+            totalRooms: Number(room.available_rooms) || 0,
+            details: room.room_details || {},
+          };
+        });
 
     setSubmitting(true);
     try {
@@ -530,31 +556,68 @@ export default function AdminPropertyEditPage() {
                       </div>
                       <div className="wizard-form-grid">
                         <div className="wizard-form-group">
-                          <label>Room name</label>
+                          <label>
+                            {isFlatType(type)
+                              ? "Flat Type / Name"
+                              : String(type).toLowerCase() === "event hall"
+                              ? "Hall / Package Name"
+                              : "Room name"}
+                          </label>
                           <input
+                            placeholder={
+                              isFlatType(type)
+                                ? "e.g. 2 BHK Furnished Flat"
+                                : String(type).toLowerCase() === "event hall"
+                                ? "e.g. Grand Banquet Hall"
+                                : "e.g. Deluxe Room"
+                            }
                             value={room.room_type}
                             onChange={(event) => updateGenericRoom(index, { room_type: event.target.value })}
                           />
                         </div>
-                        <div className="wizard-form-group">
-                          <label>Monthly rent (₹)</label>
-                          <small>Use 0 when this room is charged per night only.</small>
-                          <input
-                            type="number"
-                            min="0"
-                            value={room.price_value}
-                            onChange={(event) => updateGenericRoom(index, { price_value: event.target.value })}
-                          />
-                        </div>
-                        <div className="wizard-form-group">
-                          <label>Nightly rate (₹)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={room.daily_price ?? ""}
-                            onChange={(event) => updateGenericRoom(index, { daily_price: event.target.value })}
-                          />
-                        </div>
+
+                        {/* Dynamic pricing fields: For Hotel, Guest House, Event Hall, monthly rent is removed */}
+                        {isDailyStayType(type) ? (
+                          <div className="wizard-form-group">
+                            <label>
+                              {String(type).toLowerCase() === "event hall"
+                                ? "Daily / Event rate (₹) *"
+                                : "Nightly rate (₹) *"}
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder={String(type).toLowerCase() === "event hall" ? "e.g. 15000" : "e.g. 1800"}
+                              value={room.daily_price ?? ""}
+                              onChange={(event) => updateGenericRoom(index, { daily_price: event.target.value })}
+                              required
+                            />
+                          </div>
+                        ) : isFlatType(type) ? (
+                          <div className="wizard-form-group">
+                            <label>Flat Price / Rent (₹) *</label>
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="e.g. 12000"
+                              value={room.price_value}
+                              onChange={(event) => updateGenericRoom(index, { price_value: event.target.value })}
+                              required
+                            />
+                          </div>
+                        ) : (
+                          <div className="wizard-form-group">
+                            <label>Monthly rent (₹) *</label>
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="e.g. 5000"
+                              value={room.price_value}
+                              onChange={(event) => updateGenericRoom(index, { price_value: event.target.value })}
+                              required
+                            />
+                          </div>
+                        )}
                         <div className="wizard-form-group">
                           <label>People</label>
                           <input

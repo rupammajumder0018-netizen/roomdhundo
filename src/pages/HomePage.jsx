@@ -15,7 +15,7 @@ import { EmptyState } from "../components/common/EmptyState.jsx";
 const CATEGORY_MAP = {
   all: [],
   pgroom: ["PG", "Room"],
-  hotel: ["Hotel", "Guest House"],
+  hotel: ["Hotel", "Guest House", "Event Hall"],
   flat: ["Flat"],
 };
 

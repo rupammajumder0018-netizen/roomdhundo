@@ -6,6 +6,7 @@ import {
   fetchAdminProperties,
   updatePropertyVerificationStatus,
   deleteAdminProperty,
+  toggleAdminPropertyOccupancy,
 } from "../../services/admin/adminService.js";
 
 export function AdminPropertiesPage() {
@@ -65,6 +66,22 @@ export function AdminPropertiesPage() {
       loadProperties();
     } else {
       setActionMessage({ type: "error", text: res.error?.message || "Failed to delete property." });
+    }
+  };
+
+  const handleToggleOccupancy = async (id, currentOccupied) => {
+    const res = await toggleAdminPropertyOccupancy(id, currentOccupied);
+    if (res.success) {
+      setActionMessage({
+        type: "success",
+        text: `Property marked as ${res.isOccupied ? "Occupied (Unavailable on user side)" : "Available"}.`,
+      });
+      loadProperties();
+    } else {
+      setActionMessage({
+        type: "error",
+        text: res.error?.message || "Failed to update property occupancy status.",
+      });
     }
   };
 
@@ -131,6 +148,7 @@ export function AdminPropertiesPage() {
             <option value="Hotel">Hotel</option>
             <option value="Flat">Flat</option>
             <option value="Guest House">Guest House</option>
+            <option value="Event Hall">Event Hall</option>
           </select>
         </div>
       </div>
@@ -141,6 +159,7 @@ export function AdminPropertiesPage() {
         onApprove={handleApprove}
         onReject={handleReject}
         onDelete={handleDelete}
+        onToggleOccupancy={handleToggleOccupancy}
         isLoading={isLoading}
       />
     </div>

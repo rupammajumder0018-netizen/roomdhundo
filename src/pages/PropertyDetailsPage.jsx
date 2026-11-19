@@ -167,24 +167,42 @@ export function PropertyDetailsPage() {
   const rules = Array.isArray(building.rules) ? building.rules : [];
   const images = Array.isArray(building.images) ? building.images : [];
 
-  const isHotel = String(building.type || "").toLowerCase() === "hotel";
-  const priceUnit = isHotel ? " / night" : " / month";
+  const typeLower = String(building.type || "").trim().toLowerCase();
+  const isHotel = typeLower === "hotel" || typeLower === "guest house";
+  const isEventHall = typeLower === "event hall";
+  const isDaily = isHotel || isEventHall;
+  const isFlat = typeLower === "flat";
+  const forSale = isFlat && String(building.flat_offer || "").toLowerCase() === "sale";
 
-  // Price formatting
+  let priceUnit = forSale ? "" : isEventHall ? " / day" : isDaily ? " / night" : " / month";
+
+  // Price formatting — handles daily stays and rentals without ever defaulting to ₹0
+  let rawPrice = null;
+  if (forSale && building.minPrice != null && building.minPrice > 0) {
+    rawPrice = building.minPrice;
+  } else if (isDaily && building.minDailyPrice != null && building.minDailyPrice > 0) {
+    rawPrice = building.minDailyPrice;
+  } else if (building.minPrice != null && building.minPrice > 0) {
+    rawPrice = building.minPrice;
+  } else if (building.minDailyPrice != null && building.minDailyPrice > 0) {
+    rawPrice = building.minDailyPrice;
+    priceUnit = isEventHall ? " / day" : " / night";
+  }
+
   const hasTieredRent = roomTypes.some((rt) => occupancyOptionsFromRoom(rt).length > 1);
   const priceValue =
-    building.minPrice != null
-      ? `₹${Number(building.minPrice).toLocaleString("en-IN")}`
+    rawPrice != null
+      ? `₹${Number(rawPrice).toLocaleString("en-IN")}`
       : "—";
-  const priceLabel = roomTypes.length > 1 || hasTieredRent ? "From " : "";
+  const priceLabel = forSale ? "Sale " : (roomTypes.length > 1 || hasTieredRent ? "From " : "");
 
   // Availability display
-  const availabilityText =
-    building.totalAvailable === 0
-      ? "Currently occupied"
-      : roomTypes.length > 1
-      ? `${building.totalAvailable} rooms available across ${roomTypes.length} room types`
-      : roomTypes[0]?.availability || "Room available";
+  const isOccupied = building.totalAvailable === 0;
+  const availabilityText = isOccupied
+    ? "Occupied / Unavailable"
+    : roomTypes.length > 1
+    ? `${building.totalAvailable} rooms available across ${roomTypes.length} room types`
+    : roomTypes[0]?.availability || "Room available";
 
   return (
     <div className="property-page-wrapper">
@@ -384,7 +402,6 @@ export function PropertyDetailsPage() {
               <h2>Location Information</h2>
               <p id="propertyLocationDetails" style={{ color: "var(--rd-muted, #3a6f86)" }}>
                 {building.location || "Location not listed"}
-                {building.distance_km != null && ` • Approx. ${building.distance_km} km from central campus / hub`}
               </p>
             </section>
 
@@ -527,8 +544,15 @@ export function PropertyDetailsPage() {
                 <span>{priceUnit}</span>
               </div>
 
-              <div className="availability-status">
-                🟢 <span id="propertyAvailability">{availabilityText}</span>
+              <div
+                className={`availability-status ${isOccupied ? "is-occupied" : "is-available"}`}
+                style={{
+                  background: isOccupied ? "rgba(239, 68, 68, 0.12)" : undefined,
+                  color: isOccupied ? "#ef4444" : undefined,
+                  borderColor: isOccupied ? "rgba(239, 68, 68, 0.3)" : undefined,
+                }}
+              >
+                {isOccupied ? "🔴" : "🟢"} <span id="propertyAvailability">{availabilityText}</span>
               </div>
 
               {isHotel && (

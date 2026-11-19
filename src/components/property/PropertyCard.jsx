@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  calculateDistanceKm,
   facilityPreviewBadges,
   occupancyOptionsFromRoom,
 } from "../../services/properties/index.js";
@@ -33,36 +32,46 @@ export function PropertyCard({
     isCoupleFriendly,
   } = building;
 
-  // Calculate distance from active hub if coordinates exist
-  let distanceDisplay = null;
-  if (activeHub?.latitude && building.latitude) {
-    const dist = calculateDistanceKm(
-      activeHub.latitude,
-      activeHub.longitude,
-      building.latitude,
-      building.longitude
-    );
-    if (dist != null) {
-      distanceDisplay = `${dist} km from ${activeHub.name}`;
-    }
-  } else if (building.distance_km != null) {
-    distanceDisplay = `${building.distance_km} km from MAKAUT`;
-  }
-
-  const isFlat = String(type || "").toLowerCase() === "flat";
-  const isHotel = String(type || "").toLowerCase() === "hotel" || String(type || "").toLowerCase() === "guest house";
+  const typeLower = String(type || "").trim().toLowerCase();
+  const isFlat = typeLower === "flat";
+  const isHotel = typeLower === "hotel" || typeLower === "guest house";
+  const isEventHall = typeLower === "event hall";
   const forSale = isFlat && String(flat_offer || "").toLowerCase() === "sale";
   const offerBadge = isFlat ? (forSale ? "For sale" : "On rent") : null;
 
   // Type badge label & icon
-  const typeLabel = isFlat ? "Flat" : isHotel ? "Hotel" : "PG / Room";
-  const typeIcon = isFlat ? "🏢" : isHotel ? "🏨" : "🛏️";
+  const typeLabel = isFlat
+    ? "Flat"
+    : isHotel
+    ? typeLower === "guest house"
+      ? "Guest House"
+      : "Hotel"
+    : isEventHall
+    ? "Event Hall"
+    : "PG / Room";
+  const typeIcon = isFlat ? "🏢" : isHotel ? "🏨" : isEventHall ? "🎉" : "🛏️";
 
-  // Price formatting
-  const price = isDaily && !forSale ? minDailyPrice : minPrice;
-  const unit = forSale ? "" : isDaily ? "/ night" : "/ month";
+  // Price formatting — never show ₹0 for hotels, event halls or daily stays
+  const isDailyStay = isDaily || isHotel || isEventHall || (!minPrice && minDailyPrice > 0);
+  let price = minPrice;
+  let unit = "/ month";
+
+  if (forSale) {
+    price = minPrice;
+    unit = "";
+  } else if (isDailyStay && minDailyPrice != null && minDailyPrice > 0) {
+    price = minDailyPrice;
+    unit = isEventHall ? "/ day" : "/ night";
+  } else if ((minPrice == null || minPrice <= 0) && minDailyPrice != null && minDailyPrice > 0) {
+    price = minDailyPrice;
+    unit = isEventHall ? "/ day" : "/ night";
+  } else if (minPrice != null && minPrice > 0) {
+    price = minPrice;
+    unit = "/ month";
+  }
+
   const priceFormatted =
-    price != null ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
+    price != null && price > 0 ? `₹${Number(price).toLocaleString("en-IN")}` : "—";
   const hasTieredRent = (building.room_types || []).some(
     (room) => occupancyOptionsFromRoom(room).length > 1
   );
@@ -169,7 +178,7 @@ export function PropertyCard({
 
       {/* Content Section */}
       <div className="property-content">
-        {/* Rating & Distance Meta Row */}
+        {/* Rating Meta Row */}
         <div className="property-meta-row">
           <div className="property-rating-chip">
             {avgRating ? (
@@ -182,16 +191,6 @@ export function PropertyCard({
               <span className="rating-new">✨ New</span>
             )}
           </div>
-
-          {distanceDisplay && (
-            <span className="property-distance-chip" title={distanceDisplay}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
-              </svg>
-              <span>{distanceDisplay}</span>
-            </span>
-          )}
         </div>
 
         {/* Property Name */}

@@ -503,6 +503,70 @@
   color: #64748b;
 }
 
+/* Occupancy Status & Toggle */
+.toggle-occupancy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.toggle-occupancy-btn.is-available {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.toggle-occupancy-btn.is-available:hover {
+  background: #bbf7d0;
+}
+
+.toggle-occupancy-btn.is-occupied {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.toggle-occupancy-btn.is-occupied:hover {
+  background: #fecaca;
+}
+
+.occupancy-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.toggle-occupancy-btn.is-available .occupancy-dot {
+  background: #16a34a;
+  box-shadow: 0 0 4px #16a34a;
+}
+
+.toggle-occupancy-btn.is-occupied .occupancy-dot {
+  background: #dc2626;
+  box-shadow: 0 0 4px #dc2626;
+}
+
+.occupancy-action-btn {
+  background: var(--rd-surface-soft, #f1f5f9);
+  color: var(--rd-text, #1e293b);
+  border: 1px solid var(--rd-border, #cbd5e1);
+  font-size: 11.5px;
+  padding: 5px 9px;
+}
+
+.occupancy-action-btn:hover {
+  background: var(--rd-border, #e2e8f0);
+}
+
 /* Role Badges */
 .role-badge {
   display: inline-block;

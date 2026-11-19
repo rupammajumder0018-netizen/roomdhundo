@@ -134,14 +134,22 @@ export function attachComputedFields(b) {
     : null;
 
   const monthlyPrices = roomTypes.flatMap((rt) => roomMonthlyPriceList(rt));
+  const validMonthlyPrices = monthlyPrices.filter((p) => p != null && Number(p) > 0);
   const dailyPrices = roomTypes
     .map((rt) => (rt.daily_price != null ? Number(rt.daily_price) : null))
-    .filter((p) => p != null && !Number.isNaN(p));
+    .filter((p) => p != null && !Number.isNaN(p) && Number(p) > 0);
 
-  const totalAvailable = roomTypes.reduce(
-    (sum, rt) => sum + (isRoomAvailable(rt) ? Number(rt.available_rooms || 0) : 0),
-    0
-  );
+  const isOccupiedFlag =
+    b.is_available === false ||
+    b.is_occupied === true ||
+    String(b.availability || "").trim().toLowerCase() === "occupied";
+
+  const totalAvailable = isOccupiedFlag
+    ? 0
+    : roomTypes.reduce(
+        (sum, rt) => sum + (isRoomAvailable(rt) ? Number(rt.available_rooms || 0) : 0),
+        0
+      );
 
   const roomTypeNames = [...new Set(roomTypes.map((rt) => rt.room_type).filter(Boolean))];
 
@@ -155,8 +163,8 @@ export function attachComputedFields(b) {
     ...b,
     avgRating,
     reviewCount: reviews.length,
-    minPrice: monthlyPrices.length ? Math.min(...monthlyPrices) : null,
-    maxPrice: monthlyPrices.length ? Math.max(...monthlyPrices) : null,
+    minPrice: validMonthlyPrices.length ? Math.min(...validMonthlyPrices) : null,
+    maxPrice: validMonthlyPrices.length ? Math.max(...validMonthlyPrices) : null,
     minDailyPrice: dailyPrices.length ? Math.min(...dailyPrices) : null,
     totalAvailable,
     roomTypeNames,

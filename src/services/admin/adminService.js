@@ -70,6 +70,28 @@ export function propertyDisplayStatus(property) {
 }
 
 /**
+ * Checks if a property is currently occupied / unavailable.
+ *
+ * @param {Object} property
+ * @returns {boolean}
+ */
+export function isPropertyOccupied(property) {
+  if (!property) return false;
+  if (property.is_occupied === true || property.is_available === false) return true;
+  if (String(property.availability || "").toLowerCase() === "occupied") return true;
+
+  if (Array.isArray(property.room_types) && property.room_types.length > 0) {
+    const totalAvail = property.room_types.reduce((sum, rt) => {
+      const roomStatus = String(rt.availability || "").trim().toLowerCase();
+      if (roomStatus === "occupied" || roomStatus === "unavailable") return sum;
+      return sum + Number(rt.available_rooms || 0);
+    }, 0);
+    return totalAvail <= 0;
+  }
+  return false;
+}
+
+/**
  * Fetches admin dashboard high-level statistics across properties, users, and applications.
  *
  * @returns {Promise<{ data: Object|null, error: Error|null }>}
@@ -238,6 +260,59 @@ export async function updatePropertyVerificationStatus(propertyId, action) {
     .eq("id", propertyId);
 
   return { success: !error, error };
+}
+
+/**
+ * Toggles a property's occupied / unavailable status.
+ * Updates all rooms of the building and the building itself.
+ *
+ * @param {string} propertyId
+ * @param {boolean} currentOccupied
+ * @returns {Promise<{ success: boolean, isOccupied: boolean, error: Error|null }>}
+ */
+export async function toggleAdminPropertyOccupancy(propertyId, currentOccupied) {
+  if (!propertyId) {
+    return { success: false, isOccupied: currentOccupied, error: new Error("Property ID is required.") };
+  }
+
+  if (!supabase) {
+    return {
+      success: false,
+      isOccupied: currentOccupied,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const willBeOccupied = !currentOccupied;
+  const roomPayload = willBeOccupied
+    ? { available_rooms: 0, availability: "Occupied" }
+    : { available_rooms: 1, availability: "Available" };
+
+  // 1. Update room_types
+  const { error: roomError } = await supabase
+    .from("room_types")
+    .update(roomPayload)
+    .eq("building_id", propertyId);
+
+  // 2. Also try updating building-level availability flags
+  try {
+    await supabase
+      .from("buildings")
+      .update({
+        is_available: !willBeOccupied,
+        is_occupied: willBeOccupied,
+        availability: willBeOccupied ? "Occupied" : "Available",
+      })
+      .eq("id", propertyId);
+  } catch (err) {
+    // Non-fatal if building schema doesn't have is_occupied column
+  }
+
+  return {
+    success: !roomError,
+    isOccupied: willBeOccupied,
+    error: roomError,
+  };
 }
 
 /**
