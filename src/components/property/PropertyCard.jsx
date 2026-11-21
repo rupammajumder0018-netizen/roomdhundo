@@ -1,6 +1,18 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  BedDouble,
+  Hotel,
+  Building2,
+  PartyPopper,
+  Sparkles,
+  Star,
+  Users,
+  MapPin,
+  ArrowRight,
+  Heart,
+} from "lucide-react";
+import {
   facilityPreviewBadges,
   occupancyOptionsFromRoom,
 } from "../../services/properties/index.js";
@@ -52,7 +64,14 @@ export function PropertyCard({
       ? "Event Space"
       : "PG / Hostel"
   );
-  const typeIcon = building.categoryIcon || (isFlat ? "🏢" : isHotel ? "🏨" : isEventSpace ? "🎉" : "🛏️");
+  
+  const TypeIcon = isFlat
+    ? Building2
+    : isHotel
+    ? Hotel
+    : isEventSpace
+    ? PartyPopper
+    : BedDouble;
 
   // Price formatting — never show ₹0 for hotels, event halls or daily stays
   const isDailyStay = isDaily || isHotel || isEventSpace || (!minPrice && minDailyPrice > 0);
@@ -115,20 +134,7 @@ export function PropertyCard({
               />
             ) : (
               <div className="image-placeholder">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="placeholder-icon"
-                >
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
+                <Building2 size={36} className="placeholder-icon" />
                 <span>Pg Dhundo Verified Stay</span>
               </div>
             )}
@@ -139,7 +145,9 @@ export function PropertyCard({
         {/* Floating Badges on Image */}
         <div className="property-badges-overlay">
           <span className={`property-badge-type badge-${(type || "pg").toLowerCase()}`}>
-            <span className="badge-icon">{typeIcon}</span>
+            <span className="badge-icon">
+              <TypeIcon size={12} />
+            </span>
             <span>{typeLabel}</span>
           </span>
 
@@ -151,7 +159,8 @@ export function PropertyCard({
 
           {isCoupleFriendly && (
             <span className="property-badge-couple">
-              👫 Couple Friendly
+              <Users size={11} />
+              <span>Couple Friendly</span>
             </span>
           )}
         </div>
@@ -164,18 +173,12 @@ export function PropertyCard({
           aria-label={isSaved ? "Remove from saved" : "Save property"}
           title={isSaved ? "Saved" : "Save"}
         >
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
+          <Heart
+            size={16}
             fill={isSaved ? "#ef4444" : "rgba(0, 0, 0, 0.25)"}
-            stroke={isSaved ? "#ef4444" : "#ffffff"}
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
+            color={isSaved ? "#ef4444" : "#ffffff"}
+            strokeWidth={2.2}
+          />
         </button>
       </div>
 
@@ -186,44 +189,34 @@ export function PropertyCard({
           <div className="property-rating-chip">
             {avgRating ? (
               <>
-                <span className="star-icon">⭐</span>
+                <Star size={11} className="star-icon" fill="#eab308" color="#ca8a04" />
                 <span className="rating-value">{Number(avgRating).toFixed(1)}</span>
                 <span className="rating-count">({reviewCount})</span>
               </>
             ) : (
-              <span className="rating-new">✨ New</span>
+              <span className="rating-new">
+                <Sparkles size={11} className="sparkle-icon" />
+                <span>New</span>
+              </span>
             )}
           </div>
         </div>
 
         {/* Property Name */}
-        <h2 className="property-title">
+        <h3 className="property-title">
           <Link to={`/property/${id}`}>{name}</Link>
-        </h2>
+        </h3>
 
         {/* Location Row */}
         <p className="property-location-line">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="pin-icon"
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
+          <MapPin size={13} className="pin-icon" />
           <span className="location-text">{location || "Location not listed"}</span>
         </p>
 
         {/* Room Types Summary */}
         {roomTypeSummary && (
           <div className="property-room-types" title={roomTypeSummary}>
-            <span className="room-icon">🛏️</span>
+            <BedDouble size={13} className="room-icon" />
             <span className="room-text">{roomTypeSummary}</span>
           </div>
         )}
@@ -282,18 +275,7 @@ export function PropertyCard({
               aria-label={`View details of ${name}`}
             >
               <span>View</span>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
+              <ArrowRight size={13} />
             </Link>
           </div>
         </div>
@@ -303,5 +285,3 @@ export function PropertyCard({
 }
 
 export default PropertyCard;
-
-

@@ -169,3 +169,27 @@ test("User Roles & Permissions — Authorization guards for property listing", (
   assert.equal(accountKindFromRole("user"), "user");
   assert.equal(accountKindFromRole("renter"), "user");
 });
+
+test("Photo Uploads — Media file validation enforces size and format limits", async () => {
+  const { validateMediaFile } = await import("../src/services/storage/index.js");
+
+  // Missing file
+  const noFile = validateMediaFile(null);
+  assert.equal(noFile.valid, false);
+
+  // Valid image
+  const validImage = { name: "living_room.jpg", type: "image/jpeg", size: 1024 * 1024 };
+  assert.equal(validateMediaFile(validImage).valid, true);
+
+  // Over-sized image (over 5MB)
+  const hugeImage = { name: "huge.png", type: "image/png", size: 6 * 1024 * 1024 };
+  const hugeRes = validateMediaFile(hugeImage);
+  assert.equal(hugeRes.valid, false);
+  assert.match(hugeRes.error, /exceeds the 5MB size limit/);
+
+  // Unsupported file type
+  const pdfFile = { name: "document.pdf", type: "application/pdf", size: 1024 };
+  const pdfRes = validateMediaFile(pdfFile);
+  assert.equal(pdfRes.valid, false);
+  assert.match(pdfRes.error, /Unsupported file type/);
+});

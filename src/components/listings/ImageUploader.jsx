@@ -1,9 +1,20 @@
 import React, { useState } from "react";
+import { Camera, UploadCloud, X, Loader2 } from "lucide-react";
 import { uploadPropertyMediaFile, validateMediaFile } from "../../services/storage/index.js";
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function ImageUploader({
   images = [],
   onImagesChange,
+  onChange,
   userId,
   maxCount = 5,
   label = "Property Photos",
@@ -11,6 +22,15 @@ export default function ImageUploader({
 }) {
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const triggerChange = (updatedImages) => {
+    if (typeof onImagesChange === "function") {
+      onImagesChange(updatedImages);
+    }
+    if (typeof onChange === "function") {
+      onChange(updatedImages);
+    }
+  };
 
   const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -29,6 +49,8 @@ export default function ImageUploader({
 
     try {
       const newUrls = [];
+      const effectiveUserId = userId || "property_owner";
+
       for (let i = 0; i < filesToUpload.length; i++) {
         const file = filesToUpload[i];
         const validation = validateMediaFile(file);
@@ -37,17 +59,23 @@ export default function ImageUploader({
           continue;
         }
 
-        const { publicUrl, error } = await uploadPropertyMediaFile(file, userId || "owner", i);
-        if (error) {
-          setErrorMsg(`Upload failed: ${error.message}`);
-          break;
-        } else if (publicUrl) {
+        const { publicUrl, error } = await uploadPropertyMediaFile(file, effectiveUserId, i);
+        if (publicUrl) {
           newUrls.push(publicUrl);
+        } else if (error) {
+          // Fallback to local DataURL preview so user is never blocked if storage is offline
+          console.warn("[ImageUploader] Supabase storage upload failed, using local preview fallback:", error.message);
+          const dataUrl = await readFileAsDataUrl(file);
+          if (dataUrl) {
+            newUrls.push(dataUrl);
+          } else {
+            setErrorMsg(`Upload failed: ${error.message}`);
+          }
         }
       }
 
       if (newUrls.length > 0) {
-        onImagesChange([...images, ...newUrls]);
+        triggerChange([...images, ...newUrls]);
       }
     } catch (err) {
       setErrorMsg(err.message || "An error occurred while uploading photos.");
@@ -60,7 +88,7 @@ export default function ImageUploader({
 
   const handleRemove = (indexToRemove) => {
     const updated = images.filter((_, idx) => idx !== indexToRemove);
-    onImagesChange(updated);
+    triggerChange(updated);
   };
 
   return (
@@ -77,7 +105,13 @@ export default function ImageUploader({
             onChange={handleFileSelect}
             style={{ display: "none" }}
           />
-          <div style={{ fontSize: "28px", marginBottom: "6px" }}>📷</div>
+          <div style={{ color: "var(--rd-accent, #38A3A5)", marginBottom: "8px" }}>
+            {uploading ? (
+              <Loader2 size={32} className="spin-animation" />
+            ) : (
+              <Camera size={32} />
+            )}
+          </div>
           <p style={{ margin: 0, fontWeight: 700, color: "var(--rd-text, #22577A)" }}>
             {uploading ? "Uploading photos..." : "Click or tap to upload photos"}
           </p>
@@ -86,7 +120,7 @@ export default function ImageUploader({
       )}
 
       {errorMsg && (
-        <div style={{ color: "#dc2626", fontSize: "12px", marginTop: "6px" }}>
+        <div style={{ color: "#dc2626", fontSize: "12px", marginTop: "6px", fontWeight: 600 }}>
           {errorMsg}
         </div>
       )}
@@ -102,7 +136,7 @@ export default function ImageUploader({
                 onClick={() => handleRemove(idx)}
                 title="Remove photo"
               >
-                ✕
+                <X size={14} />
               </button>
             </div>
           ))}

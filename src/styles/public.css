@@ -664,10 +664,17 @@ html[data-theme="dark"] .nav-profile-menu-text span {
   flex-shrink: 0;
 }
 
-.home-cat-tab svg {
-  width: 24px;
-  height: 24px;
+.home-cat-tab svg,
+.home-cat-icon svg {
+  width: 22px;
+  height: 22px;
   transition: transform 0.2s ease;
+}
+
+.home-cat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .home-cat-tab:hover {
@@ -938,26 +945,27 @@ html[data-theme="dark"] .home-search-submit {
   background: var(--rd-surface-soft);
 }
 
-.home-results-list {
+.home-results-list,
+.results-list {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
   align-items: stretch;
 }
 
 /* ===================================================================
-   PROPERTY CARD — Beautiful Redesign
-   Desktop: horizontal (image-left, content-right)
-   Mobile:  vertical (image-top, content-below)
+   PROPERTY CARD — Compact Grid Redesign
+   Desktop & Tablet: Multi-column responsive grid
+   Mobile: Clean 2-column compact card grid
    =================================================================== */
 .property-card,
 .home-property-card,
-.home-results-list .property-card {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  align-items: stretch;
+.home-results-list .property-card,
+.results-list .property-card {
+  display: flex;
+  flex-direction: column;
   background: var(--rd-surface);
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--rd-border);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
@@ -966,6 +974,7 @@ html[data-theme="dark"] .home-search-submit {
     border-color 0.2s ease;
   position: relative;
   text-decoration: none;
+  height: 100%;
 }
 
 .property-card:hover,
@@ -985,7 +994,9 @@ html[data-theme="dark"] .home-property-card:hover {
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #1a2744, #111827);
-  min-height: 220px;
+  height: 185px;
+  min-height: 185px;
+  width: 100%;
 }
 
 .property-image-link {
@@ -1500,30 +1511,150 @@ html[data-theme="dark"] .property-view-cta:hover {
     padding: 10px 16px 60px;
   }
 
-  /* Vertical Stacking on Tablet/Mobile */
-  .property-card,
-  .home-property-card,
-  .home-results-list .property-card {
-    grid-template-columns: 1fr;
-    border-radius: 18px;
+  /* Compact Grid on Tablet */
+  .home-results-list,
+  .results-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
 
   .property-card-media {
-    height: 215px;
-    min-height: 215px;
+    height: 160px;
+    min-height: 160px;
   }
 
   .property-content {
-    padding: 16px;
-    gap: 10px;
+    padding: 12px 14px;
+    gap: 6px;
   }
 
   .property-title {
-    font-size: 18px;
+    font-size: 15px;
   }
 
   .price-amount {
-    font-size: 19px;
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Clean 2-column mobile grid to eliminate long scrolling */
+  .home-results-list,
+  .results-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .property-card,
+  .home-property-card {
+    border-radius: 14px;
+  }
+
+  .property-card-media {
+    height: 130px;
+    min-height: 130px;
+  }
+
+  .property-badges-overlay {
+    top: 8px;
+    left: 8px;
+    gap: 4px;
+  }
+
+  .property-badge-type {
+    padding: 2px 7px;
+    font-size: 9.5px;
+  }
+
+  .property-card-fav {
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .property-card-fav svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .property-content {
+    padding: 8px 10px 10px;
+    gap: 5px;
+  }
+
+  .property-meta-row {
+    margin-bottom: 2px;
+  }
+
+  .property-rating-chip {
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+
+  .property-title {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .property-location-line {
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .property-location-line svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .property-room-types {
+    font-size: 10.5px;
+  }
+
+  .property-amenities-row {
+    display: none; /* Keep mobile card clean and compact */
+  }
+
+  .property-card-divider {
+    margin: 1px 0;
+  }
+
+  .property-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-top: 4px;
+  }
+
+  .property-price-block .price-prefix {
+    font-size: 9px;
+  }
+
+  .price-amount {
+    font-size: 14px;
+  }
+
+  .price-cycle {
+    font-size: 10px;
+  }
+
+  .property-footer-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .property-availability-tag {
+    padding: 2px 5px;
+    font-size: 9.5px;
+  }
+
+  .property-view-cta {
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 6px;
   }
 }
 
@@ -1536,20 +1667,17 @@ html[data-theme="dark"] .property-view-cta:hover {
   .home-search-panel {
     max-width: none;
   }
+}
+
+@media (max-width: 340px) {
+  .home-results-list,
+  .results-list {
+    grid-template-columns: 1fr;
+  }
 
   .property-card-media {
-    height: 195px;
-    min-height: 195px;
-  }
-
-  .property-card-footer {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .property-footer-actions {
-    width: 100%;
-    justify-content: space-between;
+    height: 155px;
+    min-height: 155px;
   }
 }
 

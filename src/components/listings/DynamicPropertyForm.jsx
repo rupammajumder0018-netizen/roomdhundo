@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ImageUploader from "./ImageUploader.jsx";
+import { CategoryIcon } from "../common/CategoryIcon.jsx";
 import {
   PROPERTY_CATEGORIES,
   CATEGORY_MAP_BY_ID,
@@ -614,7 +615,9 @@ export default function DynamicPropertyForm({
                 aria-checked={isSelected}
                 role="radio"
               >
-                <div className="cat-card-icon">{cat.icon}</div>
+                <div className="cat-card-icon">
+                  <CategoryIcon categoryId={cat.id} size={28} />
+                </div>
                 <div className="cat-card-content">
                   <h4>{cat.name}</h4>
                   <p>{cat.description}</p>
@@ -1181,7 +1184,12 @@ export default function DynamicPropertyForm({
           </div>
         </div>
 
-        <ImageUploader images={images} onChange={setImages} />
+        <ImageUploader
+          images={images}
+          onChange={setImages}
+          onImagesChange={setImages}
+          userId={userId}
+        />
       </div>
 
       {/* SECTION 6: ROOMS, SPACES & PRICING */}

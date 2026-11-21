@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { PROPERTY_CATEGORIES } from "../../constants/categories.js";
+import { CategoryIcon } from "../../components/common/CategoryIcon.jsx";
 
 export default function ListingHubPage() {
   return (
@@ -41,7 +42,9 @@ export default function ListingHubPage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <span style={{ fontSize: "38px" }}>{cat.icon}</span>
+                <span style={{ display: "inline-flex", color: cat.badgeColor || "var(--rd-accent, #38a3a5)" }}>
+                  <CategoryIcon categoryId={cat.id} size={36} />
+                </span>
                 <span
                   style={{
                     fontSize: "12px",

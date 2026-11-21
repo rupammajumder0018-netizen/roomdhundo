@@ -11,6 +11,7 @@ import { useAuth } from "../hooks/useAuth.js";
 import { PropertyCard } from "../components/property/PropertyCard.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
+import { CategoryIcon } from "../components/common/CategoryIcon.jsx";
 import {
   PROPERTY_CATEGORIES,
   CATEGORY_MAP_BY_ID,
@@ -286,7 +287,9 @@ export function HomePage() {
                 role="tab"
                 aria-selected={isTabActive}
               >
-                <span style={{ fontSize: "17px", lineHeight: 1 }}>{cat.icon}</span>
+                <span className="home-cat-icon">
+                  <CategoryIcon categoryId={cat.id} size={18} />
+                </span>
                 <span>{cat.name}</span>
               </button>
             );
