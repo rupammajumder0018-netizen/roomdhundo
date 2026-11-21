@@ -1,4 +1,5 @@
 import React from "react";
+import { Menu, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 
 export function AdminHeader({ title, subtitle, onToggleMobileMenu }) {
@@ -22,22 +23,28 @@ export function AdminHeader({ title, subtitle, onToggleMobileMenu }) {
           aria-label="Open menu"
           onClick={onToggleMobileMenu}
         >
-          ☰
+          <Menu size={22} />
         </button>
-        <strong>Pg Dhundo Admin</strong>
+        <div className="mobile-bar-brand">
+          <ShieldCheck size={18} className="mobile-brand-icon" />
+          <strong>Pg Dhundo Admin</strong>
+        </div>
       </div>
 
       <header className="topbar">
-        <div>
+        <div className="topbar-title-wrap">
           <h1>{title}</h1>
           {subtitle && <p>{subtitle}</p>}
         </div>
 
         <div className="admin-profile">
           <div className="profile-avatar">{initial}</div>
-          <div>
+          <div className="profile-meta">
             <strong>{displayName}</strong>
-            <span>Administrator</span>
+            <span className="profile-role-tag">
+              <ShieldCheck size={12} />
+              <span>Administrator</span>
+            </span>
           </div>
         </div>
       </header>

@@ -247,14 +247,14 @@ export async function deleteOwnerProperty(buildingId, ownerId) {
  * @param {string} ownerId
  * @returns {Promise<{ data: Object|null, error: Error|null }>}
  */
-export async function fetchPropertyForEdit(buildingId, ownerId) {
+export async function fetchPropertyForEdit(buildingId, ownerId, isAdmin = false) {
   if (!buildingId) {
     return {
       data: null,
       error: new Error("[Roomdhundo] Building ID is required."),
     };
   }
-  if (!ownerId) {
+  if (!ownerId && !isAdmin) {
     return {
       data: null,
       error: new Error("[Roomdhundo] Owner ID is required."),
@@ -268,12 +268,16 @@ export async function fetchPropertyForEdit(buildingId, ownerId) {
     };
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("buildings")
     .select("*, room_types(*)")
-    .eq("id", buildingId)
-    .eq("created_by", ownerId)
-    .maybeSingle();
+    .eq("id", buildingId);
+
+  if (!isAdmin && ownerId) {
+    query = query.eq("created_by", ownerId);
+  }
+
+  const { data, error } = await query.maybeSingle();
 
   return { data, error };
 }
@@ -287,6 +291,7 @@ export async function fetchPropertyForEdit(buildingId, ownerId) {
  * @param {boolean} params.isEdit Whether updating an existing listing
  * @param {string} [params.editId] Building ID if editing
  * @param {string} params.ownerId Authenticated owner UUID
+ * @param {boolean} [params.isAdmin=false] Whether called by an administrator
  * @returns {Promise<{ success: boolean, data: Object|null, error: Error|null }>}
  */
 export async function savePropertyListing({
@@ -295,8 +300,9 @@ export async function savePropertyListing({
   isEdit = false,
   editId = null,
   ownerId,
+  isAdmin = false,
 }) {
-  if (!ownerId) {
+  if (!ownerId && !isAdmin) {
     return { success: false, data: null, error: new Error("[Roomdhundo] Owner ID is required.") };
   }
   if (!buildingCore?.name || !buildingCore?.location) {
@@ -317,10 +323,11 @@ export async function savePropertyListing({
       table: "buildings",
       mode: "update",
       payload: buildingCore,
-      applyFilters: (q) => q.eq("id", editId).eq("created_by", ownerId),
+      applyFilters: (q) => (isAdmin ? q.eq("id", editId) : q.eq("id", editId).eq("created_by", ownerId)),
+      allowStripping: true,
     });
 
-    if (buildingError) return { data: null, error: buildingError };
+    if (buildingError) return { success: false, data: null, error: buildingError };
 
     // 2. Synchronize room types
     const { data: existingRooms } = await supabase
@@ -369,6 +376,7 @@ export async function savePropertyListing({
           mode: "update",
           payload: roomPayload,
           applyFilters: (q) => q.eq("id", room.id).eq("building_id", editId),
+          allowStripping: true,
         });
       } else {
         await executeSafeMutation({
@@ -376,6 +384,7 @@ export async function savePropertyListing({
           table: "room_types",
           mode: "insert",
           payload: { building_id: editId, ...roomPayload },
+          allowStripping: true,
         });
       }
     }
@@ -385,10 +394,11 @@ export async function savePropertyListing({
     // New listing insert
     const newBuildingPayload = {
       ...buildingCore,
-      created_by: ownerId,
-      owner_verified: false,
+      created_by: ownerId || null,
+      owner_verified: isAdmin ? true : false,
       owner_member_since: String(new Date().getFullYear()),
-      status: "pending",
+      status: isAdmin ? (buildingCore.status || "approved") : "pending",
+      verification_status: isAdmin ? (buildingCore.verification_status || "approved") : "pending",
     };
 
     const { data: newBuilding, error: insertBuildingErr } = await executeSafeMutation({
@@ -396,16 +406,18 @@ export async function savePropertyListing({
       table: "buildings",
       mode: "insert",
       payload: newBuildingPayload,
+      allowStripping: true,
     });
 
     if (insertBuildingErr) return { success: false, data: null, error: insertBuildingErr };
-    if (!newBuilding?.id) {
+    const insertedRow = Array.isArray(newBuilding) ? newBuilding[0] : newBuilding;
+    if (!insertedRow?.id) {
       return { success: false, data: null, error: new Error("[Roomdhundo] Failed to create property record.") };
     }
 
     // Insert all room types
     const roomTypeRows = roomTypeInputs.map((room) => ({
-      building_id: newBuilding.id,
+      building_id: insertedRow.id,
       room_type: room.room_type || room.roomType,
       price_value: Number(room.price_value || room.rent || 0),
       daily_price: room.daily_price || room.nightlyRent || null,

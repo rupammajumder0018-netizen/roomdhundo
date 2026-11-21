@@ -24,6 +24,7 @@ import UserEnquiriesPage from "../pages/user/UserEnquiriesPage.jsx";
 // Owner & Listing Pages (Phase 7)
 import OwnerDashboardPage from "../pages/owner/OwnerDashboardPage.jsx";
 import ListingHubPage from "../pages/listings/ListingHubPage.jsx";
+import PropertyListingFormPage from "../pages/listings/PropertyListingFormPage.jsx";
 import PgListingPage from "../pages/listings/PgListingPage.jsx";
 import FlatListingPage from "../pages/listings/FlatListingPage.jsx";
 import HotelListingPage from "../pages/listings/HotelListingPage.jsx";
@@ -140,6 +141,22 @@ export function AppRoutes() {
           }
         />
         <Route
+          path="/list-property/create"
+          element={
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <PropertyListingFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/list-property/event"
+          element={
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <PropertyListingFormPage defaultCategory="event_spaces" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path={PATHS.LIST_PG}
           element={
             <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
@@ -188,6 +205,7 @@ export function AppRoutes() {
         >
           <Route index element={<AdminDashboardPage />} />
           <Route path="properties" element={<AdminPropertiesPage />} />
+          <Route path="properties/new" element={<AdminPropertyEditPage />} />
           <Route path="properties/:propertyId/edit" element={<AdminPropertyEditPage />} />
           <Route path="hotel-bookings" element={<AdminHotelBookingsPage />} />
           <Route path="profiles" element={<AdminUsersPage />} />

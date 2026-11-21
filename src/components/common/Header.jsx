@@ -1,5 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Building2,
+  Moon,
+  Sun,
+  ShieldCheck,
+  User,
+  Building,
+  Users,
+  LogOut,
+  Home,
+  PlusCircle,
+  Heart,
+  Handshake,
+  FileText,
+  X,
+} from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 
 export function Header() {
@@ -111,23 +127,27 @@ export function Header() {
         {/* Left: Brand Logo */}
         <div className="nav-left">
           <Link to="/" className="logo" aria-label="Pg Dhundo Home">
-            <span className="logo-icon" aria-hidden="true">🏠</span>
+            <span className="logo-icon" aria-hidden="true">
+              <Building2 size={22} className="logo-svg-icon" />
+            </span>
             <span className="logo-text">Pg Dhundo</span>
           </Link>
         </div>
 
         {/* Desktop Navigation Links */}
         <div className="nav-links nav-links-desktop">
-          <Link
-            to="/list-property"
-            className={
-              routerLocation.pathname.startsWith("/list-property")
-                ? "nav-link is-active"
-                : "nav-link"
-            }
-          >
-            List Property
-          </Link>
+          {(!isAuthenticated || isOwner || isAgent || isAdmin) && (
+            <Link
+              to="/list-property"
+              className={
+                routerLocation.pathname.startsWith("/list-property")
+                  ? "nav-link is-active"
+                  : "nav-link"
+              }
+            >
+              List Property
+            </Link>
+          )}
 
           <Link
             to="/saved"
@@ -175,7 +195,9 @@ export function Header() {
                       navigate(dashboardPath);
                     }}
                   >
-                    <span className="nav-profile-menu-icon">{isAdmin ? "🛡️" : "👤"}</span>
+                    <span className="nav-profile-menu-icon">
+                      {isAdmin ? <ShieldCheck size={18} /> : <User size={18} />}
+                    </span>
                     <span className="nav-profile-menu-text">
                       <strong>{isAdmin ? "Admin Console" : "My Profile"}</strong>
                       <span>
@@ -199,7 +221,9 @@ export function Header() {
                         navigate("/owner/dashboard");
                       }}
                     >
-                      <span className="nav-profile-menu-icon">🏠</span>
+                      <span className="nav-profile-menu-icon">
+                        <Building size={18} />
+                      </span>
                       <span className="nav-profile-menu-text">
                         <strong>Owner Dashboard</strong>
                         <span>Manage properties and rooms</span>
@@ -215,7 +239,9 @@ export function Header() {
                       navigate("/login");
                     }}
                   >
-                    <span className="nav-profile-menu-icon">👥</span>
+                    <span className="nav-profile-menu-icon">
+                      <Users size={18} />
+                    </span>
                     <span className="nav-profile-menu-text">
                       <strong>Add Another Account</strong>
                       <span>Sign in with another account</span>
@@ -227,7 +253,9 @@ export function Header() {
                     className="nav-profile-menu-item danger"
                     onClick={handleLogout}
                   >
-                    <span className="nav-profile-menu-icon">🚪</span>
+                    <span className="nav-profile-menu-icon">
+                      <LogOut size={18} />
+                    </span>
                     <span className="nav-profile-menu-text">
                       <strong>Logout</strong>
                       <span>Sign out of Pg Dhundo</span>
@@ -253,7 +281,7 @@ export function Header() {
             aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
             title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
           >
-            {theme === "light" ? "🌙" : "☀️"}
+            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
           </button>
         </div>
 
@@ -267,7 +295,7 @@ export function Header() {
             aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
             title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
           >
-            {theme === "light" ? "🌙" : "☀️"}
+            {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
           <button
@@ -303,7 +331,9 @@ export function Header() {
       >
         <div className="mobile-drawer-header">
           <div className="mobile-drawer-brand">
-            <span className="logo-icon" aria-hidden="true">🏠</span>
+            <span className="logo-icon" aria-hidden="true">
+              <Building2 size={22} className="logo-svg-icon" />
+            </span>
             <span className="logo-text">Pg Dhundo</span>
           </div>
           <button
@@ -312,7 +342,7 @@ export function Header() {
             onClick={() => setIsMobileMenuOpen(false)}
             aria-label="Close menu"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -352,20 +382,26 @@ export function Header() {
             className={`mobile-drawer-link ${routerLocation.pathname === "/" ? "active" : ""}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <span className="mobile-link-icon">🏠</span>
+            <span className="mobile-link-icon">
+              <Home size={18} />
+            </span>
             <span>Home</span>
           </Link>
 
-          <Link
-            to="/list-property"
-            className={`mobile-drawer-link ${
-              routerLocation.pathname.startsWith("/list-property") ? "active" : ""
-            }`}
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <span className="mobile-link-icon">➕</span>
-            <span>List Property</span>
-          </Link>
+          {(!isAuthenticated || isOwner || isAgent || isAdmin) && (
+            <Link
+              to="/list-property"
+              className={`mobile-drawer-link ${
+                routerLocation.pathname.startsWith("/list-property") ? "active" : ""
+              }`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <span className="mobile-link-icon">
+                <PlusCircle size={18} />
+              </span>
+              <span>List Property</span>
+            </Link>
+          )}
 
           <Link
             to="/saved"
@@ -374,7 +410,9 @@ export function Header() {
             }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <span className="mobile-link-icon">❤️</span>
+            <span className="mobile-link-icon">
+              <Heart size={18} />
+            </span>
             <span>Saved Stays</span>
           </Link>
 
@@ -385,7 +423,9 @@ export function Header() {
             }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <span className="mobile-link-icon">🤝</span>
+            <span className="mobile-link-icon">
+              <Handshake size={18} />
+            </span>
             <span>Be an Agent</span>
           </Link>
 
@@ -396,7 +436,9 @@ export function Header() {
             }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <span className="mobile-link-icon">📜</span>
+            <span className="mobile-link-icon">
+              <FileText size={18} />
+            </span>
             <span>Terms & Policies</span>
           </Link>
         </div>
@@ -411,7 +453,9 @@ export function Header() {
               className="mobile-drawer-link"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <span className="mobile-link-icon">{isAdmin ? "🛡️" : "👤"}</span>
+              <span className="mobile-link-icon">
+                {isAdmin ? <ShieldCheck size={18} /> : <User size={18} />}
+              </span>
               <span>{isAdmin ? "Admin Console" : isOwner || isAgent ? "Owner Dashboard" : "My Dashboard"}</span>
             </Link>
 
@@ -420,7 +464,9 @@ export function Header() {
               className="mobile-drawer-link"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <span className="mobile-link-icon">👥</span>
+              <span className="mobile-link-icon">
+                <Users size={18} />
+              </span>
               <span>Switch / Add Account</span>
             </Link>
 
@@ -429,7 +475,9 @@ export function Header() {
               className="mobile-drawer-link mobile-logout-btn"
               onClick={handleLogout}
             >
-              <span className="mobile-link-icon">🚪</span>
+              <span className="mobile-link-icon">
+                <LogOut size={18} />
+              </span>
               <span>Logout</span>
             </button>
           </div>
@@ -440,5 +488,3 @@ export function Header() {
 }
 
 export default Header;
-
-

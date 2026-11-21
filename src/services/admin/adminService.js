@@ -441,9 +441,8 @@ export function adminPropertyPrice(property) {
  * @returns {Promise<{ success: boolean, error: Error|null }>}
  */
 export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInputs = [] }) {
-  if (!propertyId) {
-    return { success: false, error: new Error("Property ID is required.") };
-  }
+  const isNew = !propertyId || propertyId === "new";
+
   if (!buildingCore?.name || !buildingCore?.location) {
     return { success: false, error: new Error("Property name and location are required.") };
   }
@@ -454,24 +453,52 @@ export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInpu
     return { success: false, error: new Error("[Roomdhundo] Supabase client is not configured.") };
   }
 
-  const { data: updated, error: buildingError } = await executeSafeMutation({
-    client: supabase,
-    table: "buildings",
-    mode: "update",
-    payload: buildingCore,
-    applyFilters: (query) => query.eq("id", propertyId),
-    allowStripping: true,
-  });
+  let targetId = propertyId;
 
-  if (buildingError) return { success: false, error: buildingError };
-  if (!updated || (Array.isArray(updated) && updated.length === 0)) {
-    return { success: false, error: new Error("The property could not be updated.") };
+  if (isNew) {
+    const payload = {
+      ...buildingCore,
+      owner_verified: true,
+      owner_member_since: String(new Date().getFullYear()),
+      status: buildingCore.status || "approved",
+      verification_status: buildingCore.verification_status || "approved",
+      listing_status: buildingCore.listing_status || "published",
+    };
+
+    const { data: inserted, error: insertError } = await executeSafeMutation({
+      client: supabase,
+      table: "buildings",
+      mode: "insert",
+      payload,
+      allowStripping: true,
+    });
+
+    if (insertError) return { success: false, error: insertError };
+    const insertedRow = Array.isArray(inserted) ? inserted[0] : inserted;
+    if (!insertedRow?.id) {
+      return { success: false, error: new Error("The property could not be created.") };
+    }
+    targetId = insertedRow.id;
+  } else {
+    const { data: updated, error: buildingError } = await executeSafeMutation({
+      client: supabase,
+      table: "buildings",
+      mode: "update",
+      payload: buildingCore,
+      applyFilters: (query) => query.eq("id", propertyId),
+      allowStripping: true,
+    });
+
+    if (buildingError) return { success: false, error: buildingError };
+    if (!updated || (Array.isArray(updated) && updated.length === 0)) {
+      return { success: false, error: new Error("The property could not be updated.") };
+    }
   }
 
   const { data: existingRooms, error: roomsError } = await supabase
     .from("room_types")
     .select("id")
-    .eq("building_id", propertyId);
+    .eq("building_id", targetId);
 
   if (roomsError) return { success: false, error: roomsError };
 
@@ -484,7 +511,7 @@ export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInpu
       .from("room_types")
       .delete()
       .eq("id", removedId)
-      .eq("building_id", propertyId);
+      .eq("building_id", targetId);
     if (error) return { success: false, error };
   }
 
@@ -496,7 +523,7 @@ export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInpu
         table: "room_types",
         mode: "update",
         payload,
-        applyFilters: (query) => query.eq("id", room.id).eq("building_id", propertyId),
+        applyFilters: (query) => query.eq("id", room.id).eq("building_id", targetId),
         allowStripping: true,
       });
       if (error) return { success: false, error };
@@ -511,7 +538,7 @@ export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInpu
         client: supabase,
         table: "room_types",
         mode: "insert",
-        payload: { building_id: propertyId, ...payload },
+        payload: { building_id: targetId, ...payload },
         allowStripping: true,
       });
       if (error) return { success: false, error };
@@ -524,7 +551,7 @@ export async function saveAdminProperty({ propertyId, buildingCore, roomTypeInpu
     }
   }
 
-  return { success: true, error: null };
+  return { success: true, error: null, propertyId: targetId };
 }
 
 /**

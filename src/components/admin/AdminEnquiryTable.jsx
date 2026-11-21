@@ -1,4 +1,5 @@
 import React from "react";
+import { Phone, Mail, MapPin } from "lucide-react";
 
 export function AdminEnquiryTable({
   enquiries = [],
@@ -52,14 +53,27 @@ export function AdminEnquiryTable({
               <tr key={enquiry.id}>
                 <td data-label="Property">
                   <strong>{propName}</strong>
-                  {propLocation && <span className="table-subtext">📍 {propLocation}</span>}
+                  {propLocation && (
+                    <span className="table-subtext table-icon-text">
+                      <MapPin size={12} className="cell-icon" />
+                      <span>{propLocation}</span>
+                    </span>
+                  )}
                 </td>
                 <td data-label="Applicant / Tenant">
                   <strong>{enquiry.name || "Prospective Tenant"}</strong>
                 </td>
                 <td data-label="Contact Details">
-                  <div>📞 {enquiry.phone || "—"}</div>
-                  {enquiry.email && <div className="table-subtext">✉️ {enquiry.email}</div>}
+                  <div className="table-icon-text">
+                    <Phone size={13} className="cell-icon" />
+                    <span>{enquiry.phone || "—"}</span>
+                  </div>
+                  {enquiry.email && (
+                    <div className="table-subtext table-icon-text">
+                      <Mail size={12} className="cell-icon" />
+                      <span>{enquiry.email}</span>
+                    </div>
+                  )}
                 </td>
                 <td data-label="Message" className="table-msg-cell">
                   {enquiry.message ? (

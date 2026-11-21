@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useSearchParams } from "react-router-dom";
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import AdminUserTable from "../../components/admin/AdminUserTable.jsx";
 import { fetchAdminProfiles, updateOwnerApprovalStatus } from "../../services/admin/adminService.js";
@@ -8,9 +8,12 @@ const EMPTY_TOTALS = { total: 0, renters: 0, owners: 0, agents: 0, admins: 0 };
 
 export function AdminUsersPage() {
   const { onToggleMobileMenu } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlRole = searchParams.get("role") || "all";
+
   const [profiles, setProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState(urlRole);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize] = useState(25);
@@ -19,6 +22,12 @@ export function AdminUsersPage() {
   const [totals, setTotals] = useState(EMPTY_TOTALS);
   const [loadError, setLoadError] = useState("");
   const [actionMessage, setActionMessage] = useState(null);
+
+  useEffect(() => {
+    const nextRole = searchParams.get("role") || "all";
+    setRoleFilter(nextRole);
+    setPage(1);
+  }, [searchParams]);
 
   const loadProfiles = useCallback(async () => {
     setIsLoading(true);
@@ -56,7 +65,9 @@ export function AdminUsersPage() {
   }, [loadProfiles]);
 
   const handleRoleChange = (event) => {
-    setRoleFilter(event.target.value);
+    const val = event.target.value;
+    setRoleFilter(val);
+    setSearchParams(val === "all" ? {} : { role: val });
     setPage(1);
   };
 

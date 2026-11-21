@@ -1,5 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Building2,
+  BedDouble,
+  Hotel,
+  MessageSquare,
+  User,
+  HelpCircle,
+  Globe,
+  LogOut,
+  Building,
+} from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { ROUTE_PATHS } from "../../routes/paths";
 
@@ -30,7 +42,9 @@ export default function OwnerSidebar({
       />
       <aside className={`owner-sidebar ${isOpen ? "open" : ""}`} aria-label="Owner navigation">
         <Link to={ROUTE_PATHS.HOME} className="owner-sidebar-logo">
-          <div className="owner-sidebar-logo-icon">🏢</div>
+          <div className="owner-sidebar-logo-icon">
+            <Building2 size={22} />
+          </div>
           <div className="owner-sidebar-logo-text">
             <h2>Roomdhundo</h2>
             <span>Owner Portal</span>
@@ -43,7 +57,8 @@ export default function OwnerSidebar({
             className={`owner-nav-link ${activeSection === "dashboard" ? "active" : ""}`}
             onClick={() => handleNavClick("dashboard")}
           >
-            <span>📊</span> Dashboard
+            <LayoutDashboard size={18} className="owner-nav-icon" />
+            <span>Dashboard</span>
           </button>
 
           <button
@@ -51,7 +66,8 @@ export default function OwnerSidebar({
             className={`owner-nav-link ${activeSection === "properties" ? "active" : ""}`}
             onClick={() => handleNavClick("properties")}
           >
-            <span>🏠</span> My Properties
+            <Building size={18} className="owner-nav-icon" />
+            <span>My Properties</span>
           </button>
 
           <button
@@ -59,7 +75,8 @@ export default function OwnerSidebar({
             className={`owner-nav-link ${activeSection === "rooms" ? "active" : ""}`}
             onClick={() => handleNavClick("rooms")}
           >
-            <span>🛏️</span> Room Availability
+            <BedDouble size={18} className="owner-nav-icon" />
+            <span>Room Availability</span>
           </button>
 
           <button
@@ -67,7 +84,8 @@ export default function OwnerSidebar({
             className={`owner-nav-link ${activeSection === "hotel-bookings" ? "active" : ""}`}
             onClick={() => handleNavClick("hotel-bookings")}
           >
-            <span>🏨</span> Hotel Bookings
+            <Hotel size={18} className="owner-nav-icon" />
+            <span>Hotel Bookings</span>
           </button>
 
           <button
@@ -75,7 +93,8 @@ export default function OwnerSidebar({
             className={`owner-nav-link ${activeSection === "enquiries" ? "active" : ""}`}
             onClick={() => handleNavClick("enquiries")}
           >
-            <span>💬</span> Enquiries
+            <MessageSquare size={18} className="owner-nav-icon" />
+            <span>Enquiries</span>
             {pendingEnquiriesCount > 0 && (
               <span className="notification-count" style={{
                 background: "var(--rd-accent, #38A3A5)",
@@ -96,13 +115,14 @@ export default function OwnerSidebar({
             className={`owner-nav-link ${activeSection === "profile" ? "active" : ""}`}
             onClick={() => handleNavClick("profile")}
           >
-            <span>👤</span> Profile Settings
+            <User size={18} className="owner-nav-icon" />
+            <span>Profile Settings</span>
           </button>
         </nav>
 
         <div className="owner-sidebar-bottom">
           <div className="owner-help-box">
-            <span style={{ fontSize: "18px" }}>💡</span>
+            <HelpCircle size={20} className="owner-help-icon" />
             <div>
               <strong>Need Help?</strong>
               <p>Contact support or read our owner listing guides.</p>
@@ -110,7 +130,8 @@ export default function OwnerSidebar({
           </div>
 
           <Link to={ROUTE_PATHS.HOME} className="owner-sidebar-btn">
-            <span>🌐</span> Back to Website
+            <Globe size={16} />
+            <span>Back to Website</span>
           </Link>
 
           <button
@@ -118,7 +139,8 @@ export default function OwnerSidebar({
             className="owner-sidebar-btn logout"
             onClick={logout}
           >
-            <span>🚪</span> Log Out
+            <LogOut size={16} />
+            <span>Log Out</span>
           </button>
         </div>
       </aside>

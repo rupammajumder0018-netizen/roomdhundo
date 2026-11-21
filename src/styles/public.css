@@ -46,8 +46,15 @@
 }
 
 .logo-icon {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rd-accent, #38a3a5);
   line-height: 1;
+}
+
+.logo-svg-icon {
+  color: var(--rd-accent, #38a3a5);
 }
 
 html[data-theme="dark"] .logo {
@@ -359,8 +366,11 @@ html[data-theme="dark"] .mobile-drawer-brand {
 .mobile-link-icon {
   font-size: 18px;
   width: 24px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: var(--rd-accent, #38a3a5);
 }
 
 .mobile-drawer-account-section {
@@ -552,8 +562,11 @@ html[data-theme="dark"] .nav-profile-menu {
 .nav-profile-menu-icon {
   font-size: 18px;
   width: 24px;
-  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: var(--rd-accent, #38a3a5);
 }
 
 .nav-profile-menu-text {

@@ -1,6 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import {
+  MapPin,
+  Building2,
+  CheckCircle2,
+  DoorClosed,
+  Clock,
+  XCircle,
+  Trash2,
+} from "lucide-react";
 import { ROUTE_PATHS } from "../../routes/paths";
+import { resolveMainCategoryFromProperty } from "../../constants/categories.js";
 
 export default function OwnerPropertyCard({
   property,
@@ -40,24 +50,21 @@ export default function OwnerPropertyCard({
 
   // Status badge logic
   let badgeClass = isAvailable ? "available" : "occupied";
-  let badgeText = isAvailable ? "🟢 Available" : "🔴 Occupied";
+  let badgeLabel = isAvailable ? "Available" : "Occupied";
+  let BadgeIcon = isAvailable ? CheckCircle2 : DoorClosed;
 
   if (verification_status === "pending") {
     badgeClass = "pending";
-    badgeText = "⏳ Pending Review";
+    badgeLabel = "Pending Review";
+    BadgeIcon = Clock;
   } else if (verification_status === "rejected") {
     badgeClass = "rejected";
-    badgeText = "❌ Rejected";
+    badgeLabel = "Rejected";
+    BadgeIcon = XCircle;
   }
 
-  // Determine wizard edit route based on property type
-  const normalizedType = String(type || "").toLowerCase().trim();
-  let editPath = `${ROUTE_PATHS.LIST_PG}?edit=${id}`;
-  if (normalizedType === "flat") {
-    editPath = `${ROUTE_PATHS.LIST_FLAT}?edit=${id}`;
-  } else if (normalizedType === "hotel") {
-    editPath = `${ROUTE_PATHS.LIST_HOTEL}?edit=${id}`;
-  }
+  const { category, subcategories, primaryType } = resolveMainCategoryFromProperty(property);
+  const editPath = `/list-property/create?edit=${id}`;
 
   return (
     <div className="owner-property-card">
@@ -65,19 +72,27 @@ export default function OwnerPropertyCard({
         {firstImage ? (
           <img src={firstImage} alt={name || "Property"} loading="lazy" />
         ) : (
-          <div className="owner-prop-no-img">🏠</div>
+          <div className="owner-prop-no-img">
+            <Building2 size={28} />
+          </div>
         )}
-        <span className={`owner-prop-badge ${badgeClass}`}>{badgeText}</span>
+        <span className={`owner-prop-badge ${badgeClass}`}>
+          <BadgeIcon size={12} className="owner-badge-icon" />
+          <span>{badgeLabel}</span>
+        </span>
       </div>
 
       <div className="owner-prop-body">
         <div className="owner-prop-title-row">
           <h3>{name || "Untitled Property"}</h3>
-          <span className="owner-prop-type-tag">{type || "PG"}</span>
+          <span className="owner-prop-type-tag" title={category.name}>
+            {primaryType || category.shortName}
+          </span>
         </div>
 
         <p className="owner-prop-location">
-          <span>📍</span> {location || "Location not specified"}
+          <MapPin size={13} className="owner-prop-loc-icon" />
+          <span>{location || "Location not specified"}</span>
         </p>
 
         <div className="owner-prop-metrics">
@@ -130,7 +145,7 @@ export default function OwnerPropertyCard({
             onClick={() => onDelete(id)}
             title="Delete listing"
           >
-            🗑️
+            <Trash2 size={15} />
           </button>
         </div>
       </div>

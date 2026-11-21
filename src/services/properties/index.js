@@ -11,6 +11,7 @@
  */
 
 import { supabase } from "../supabase/client.js";
+import { resolveMainCategoryFromProperty } from "../../constants/categories.js";
 
 /**
  * Standard served location hubs around MAKAUT, Jaguli, and Haringhata.
@@ -159,8 +160,29 @@ export function attachComputedFields(b) {
     tags.some((t) => /couple[- ]?friendly/i.test(String(t))) ||
     facilities.some((f) => /couple[- ]?friendly/i.test(String(f)));
 
+  const resolved = resolveMainCategoryFromProperty(b);
+  const mainCategory = resolved?.category;
+  const subcategories = Array.isArray(b.subcategories) && b.subcategories.length > 0
+    ? b.subcategories
+    : resolved?.subcategories || [b.type || "PG"];
+  const primaryType = b.type || resolved?.primaryType || subcategories[0] || "PG";
+
+  const isDailyStay =
+    mainCategory?.id === "hotels_stays" ||
+    mainCategory?.id === "event_spaces" ||
+    String(b.type || "").toLowerCase().includes("hotel") ||
+    String(b.type || "").toLowerCase().includes("guest house") ||
+    String(b.type || "").toLowerCase().includes("event");
+
   return {
     ...b,
+    category: mainCategory?.id || "pg_hostels",
+    categoryName: mainCategory?.name || "PG & Hostels",
+    categoryShortName: mainCategory?.shortName || "PG & Hostel",
+    categoryIcon: mainCategory?.icon || "🛏️",
+    subcategories,
+    primaryType,
+    isDailyStay,
     avgRating,
     reviewCount: reviews.length,
     minPrice: validMonthlyPrices.length ? Math.min(...validMonthlyPrices) : null,

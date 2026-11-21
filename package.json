@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test tests/supabase-client-init.test.js tests/supabase-services.test.js tests/auth-system.test.js tests/routing-and-pages.test.js tests/user-dashboard.test.js tests/owner-system.test.js tests/admin-and-agent.test.js tests/hotel-bookings-and-payments.test.js tests/consolidation.test.js tests/e2e-readiness.test.js"
+    "test": "node --test tests/supabase-client-init.test.js tests/supabase-services.test.js tests/auth-system.test.js tests/routing-and-pages.test.js tests/user-dashboard.test.js tests/owner-system.test.js tests/admin-and-agent.test.js tests/hotel-bookings-and-payments.test.js tests/consolidation.test.js tests/e2e-readiness.test.js tests/dynamic-property-listing.test.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
+    "lucide-react": "^1.77.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5"

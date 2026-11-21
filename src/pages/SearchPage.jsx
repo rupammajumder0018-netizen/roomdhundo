@@ -14,6 +14,10 @@ import { SearchFilters } from "../components/search/SearchFilters.jsx";
 import { PropertyCard } from "../components/property/PropertyCard.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
+import {
+  matchesCategoryFilter,
+  toggleSubcategorySelection,
+} from "../constants/categories.js";
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +32,8 @@ export function SearchPage() {
   // URL-driven Filter States
   const queryParam = searchParams.get("q") || "";
   const stayParam = searchParams.get("stay") === "daily" ? "daily" : "monthly";
+  const categoryParam = searchParams.get("category") || "all";
+  const subParam = searchParams.get("sub") ? searchParams.get("sub").split(",").map((s) => s.trim()) : ["All"];
   const typeParam = searchParams.get("type") || "";
   const minParam = searchParams.get("min") || "";
   const maxParam = searchParams.get("max") || "";
@@ -37,6 +43,8 @@ export function SearchPage() {
   // Local filter draft state
   const [searchQuery, setSearchQuery] = useState(queryParam);
   const [stayType, setStayType] = useState(stayParam);
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
+  const [selectedSubcategories, setSelectedSubcategories] = useState(subParam);
   const [minPrice, setMinPrice] = useState(minParam);
   const [maxPrice, setMaxPrice] = useState(maxParam);
   const [sortBy, setSortBy] = useState(sortParam);
@@ -56,13 +64,15 @@ export function SearchPage() {
   useEffect(() => {
     setSearchQuery(queryParam);
     setStayType(stayParam);
+    setSelectedCategory(categoryParam);
+    setSelectedSubcategories(subParam);
     setMinPrice(minParam);
     setMaxPrice(maxParam);
     setSortBy(sortParam);
     if (typeParam) {
       setSelectedPropertyTypes(typeParam.split(",").map((s) => s.trim()));
     }
-  }, [queryParam, stayParam, typeParam, minParam, maxParam, sortParam]);
+  }, [queryParam, stayParam, categoryParam, searchParams.get("sub"), typeParam, minParam, maxParam, sortParam]);
 
   // Load properties and saved state
   useEffect(() => {
@@ -102,6 +112,8 @@ export function SearchPage() {
     const merged = {
       q: searchQuery.trim(),
       stay: stayType,
+      category: selectedCategory !== "all" ? selectedCategory : "",
+      sub: !selectedSubcategories.includes("All") && selectedSubcategories.length > 0 ? selectedSubcategories.join(",") : "",
       type: selectedPropertyTypes.join(","),
       min: minPrice,
       max: maxPrice,
@@ -156,6 +168,8 @@ export function SearchPage() {
 
   const handleClearFilters = () => {
     setSearchQuery("");
+    setSelectedCategory("all");
+    setSelectedSubcategories(["All"]);
     setMinPrice("");
     setMaxPrice("");
     setSelectedPropertyTypes([]);
@@ -185,6 +199,11 @@ export function SearchPage() {
     const max = maxPrice ? Number(maxPrice) : null;
 
     const filtered = properties.filter((b) => {
+      // Category & Subcategory matching
+      if (!matchesCategoryFilter(b, selectedCategory, selectedSubcategories)) {
+        return false;
+      }
+
       // Query filter
       if (q) {
         const matchesName = String(b.name || "").toLowerCase().includes(q);
@@ -260,6 +279,8 @@ export function SearchPage() {
     properties,
     searchQuery,
     stayType,
+    selectedCategory,
+    selectedSubcategories,
     minPrice,
     maxPrice,
     selectedPropertyTypes,
@@ -285,6 +306,15 @@ export function SearchPage() {
         <SearchFilters
           isOpen={isFilterOpen}
           stay={stayType}
+          selectedCategory={selectedCategory}
+          onCategoryChange={(cat) => {
+            setSelectedCategory(cat);
+            setSelectedSubcategories(["All"]);
+          }}
+          selectedSubcategories={selectedSubcategories}
+          onSubcategoryToggle={(sub) => {
+            setSelectedSubcategories((prev) => toggleSubcategorySelection(prev, sub, true));
+          }}
           minPrice={minPrice}
           maxPrice={maxPrice}
           onMinPriceChange={setMinPrice}

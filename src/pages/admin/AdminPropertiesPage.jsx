@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useOutletContext } from "react-router-dom";
+import { Link, useOutletContext, useSearchParams } from "react-router-dom";
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import AdminPropertyTable from "../../components/admin/AdminPropertyTable.jsx";
 import {
@@ -11,12 +11,20 @@ import {
 
 export function AdminPropertiesPage() {
   const { onToggleMobileMenu } = useOutletContext();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlVerification = searchParams.get("verification") || "all";
+
   const [properties, setProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [verificationFilter, setVerificationFilter] = useState("all");
+  const [verificationFilter, setVerificationFilter] = useState(urlVerification);
   const [typeFilter, setTypeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionMessage, setActionMessage] = useState(null);
+
+  useEffect(() => {
+    const nextVerif = searchParams.get("verification") || "all";
+    setVerificationFilter(nextVerif);
+  }, [searchParams]);
 
   const loadProperties = useCallback(async () => {
     setIsLoading(true);
@@ -127,7 +135,10 @@ export function AdminPropertiesPage() {
           <select
             className="admin-select"
             value={verificationFilter}
-            onChange={(e) => setVerificationFilter(e.target.value)}
+            onChange={(e) => {
+              setVerificationFilter(e.target.value);
+              setSearchParams(e.target.value === "all" ? {} : { verification: e.target.value });
+            }}
             aria-label="Filter by verification status"
           >
             <option value="all">All Verification Statuses</option>
@@ -140,16 +151,48 @@ export function AdminPropertiesPage() {
             className="admin-select"
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            aria-label="Filter by property type"
+            aria-label="Filter by property category or type"
           >
-            <option value="all">All Property Types</option>
-            <option value="PG">PG</option>
-            <option value="Room">Room</option>
-            <option value="Hotel">Hotel</option>
-            <option value="Flat">Flat</option>
-            <option value="Guest House">Guest House</option>
-            <option value="Event Hall">Event Hall</option>
+            <option value="all">All Categories & Types</option>
+            <optgroup label="PG & Hostels">
+              <option value="PG">PG</option>
+              <option value="Only Boys PG">Only Boys PG</option>
+              <option value="Only Girls PG">Only Girls PG</option>
+              <option value="Boys Hostel">Boys Hostel</option>
+              <option value="Girls Hostel">Girls Hostel</option>
+              <option value="Co-living PG">Co-living PG</option>
+              <option value="Student Mess">Student Mess</option>
+            </optgroup>
+            <optgroup label="Hotels & Stays">
+              <option value="Hotel">Hotel</option>
+              <option value="Resort">Resort</option>
+              <option value="Guest House">Guest House</option>
+              <option value="Lodge">Lodge</option>
+              <option value="Homestay">Homestay</option>
+            </optgroup>
+            <optgroup label="Flats & Rentals">
+              <option value="Flat">Flat</option>
+              <option value="Apartment">Apartment</option>
+              <option value="Independent Room">Independent Room</option>
+              <option value="Independent House">Independent House</option>
+              <option value="Studio Apartment">Studio Apartment</option>
+            </optgroup>
+            <optgroup label="Event Spaces">
+              <option value="Banquet Hall">Banquet Hall</option>
+              <option value="Party Hall">Party Hall</option>
+              <option value="Wedding Venue">Wedding Venue</option>
+              <option value="Conference Hall">Conference Hall</option>
+              <option value="Meeting Hall">Meeting Hall</option>
+            </optgroup>
           </select>
+
+          <Link
+            to="/admin/properties/new"
+            className="action-btn approve-btn"
+            style={{ textDecoration: "none", display: "inline-flex", gap: "6px", alignItems: "center", whiteSpace: "nowrap" }}
+          >
+            <span>+</span> Add New Property
+          </Link>
         </div>
       </div>
 

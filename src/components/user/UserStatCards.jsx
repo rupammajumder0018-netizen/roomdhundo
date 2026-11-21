@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Heart, Inbox, User } from "lucide-react";
 import { PATHS } from "../../routes/paths.js";
 
 /**
@@ -30,7 +31,7 @@ export function UserStatCards({
         aria-label={`Saved properties: ${savedCount}`}
       >
         <div className="stat-icon" aria-hidden="true">
-          ❤️
+          <Heart size={22} fill="currentColor" />
         </div>
         <div>
           <span>Saved Properties</span>
@@ -48,7 +49,7 @@ export function UserStatCards({
         aria-label={`My enquiries: ${enquiryCount}`}
       >
         <div className="stat-icon" aria-hidden="true">
-          📩
+          <Inbox size={22} />
         </div>
         <div>
           <span>My Enquiries</span>
@@ -61,7 +62,7 @@ export function UserStatCards({
       {/* ACCOUNT TYPE */}
       <div className="renter-stat-card">
         <div className="stat-icon" aria-hidden="true">
-          👤
+          <User size={22} />
         </div>
         <div>
           <span>Account Type</span>

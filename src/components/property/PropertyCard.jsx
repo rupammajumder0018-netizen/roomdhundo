@@ -33,26 +33,29 @@ export function PropertyCard({
   } = building;
 
   const typeLower = String(type || "").trim().toLowerCase();
-  const isFlat = typeLower === "flat";
-  const isHotel = typeLower === "hotel" || typeLower === "guest house";
-  const isEventHall = typeLower === "event hall";
+  const categoryId = building.category || "";
+  const isEventSpace = categoryId === "event_spaces" || typeLower.includes("event") || typeLower.includes("banquet");
+  const isHotel = categoryId === "hotels_stays" || typeLower === "hotel" || typeLower === "guest house" || typeLower === "resort" || typeLower === "lodge";
+  const isFlat = categoryId === "flats_rentals" || typeLower === "flat" || typeLower === "apartment";
   const forSale = isFlat && String(flat_offer || "").toLowerCase() === "sale";
   const offerBadge = isFlat ? (forSale ? "For sale" : "On rent") : null;
 
   // Type badge label & icon
-  const typeLabel = isFlat
-    ? "Flat"
-    : isHotel
-    ? typeLower === "guest house"
-      ? "Guest House"
-      : "Hotel"
-    : isEventHall
-    ? "Event Hall"
-    : "PG / Room";
-  const typeIcon = isFlat ? "🏢" : isHotel ? "🏨" : isEventHall ? "🎉" : "🛏️";
+  const typeLabel = building.primaryType || (
+    isFlat
+      ? "Flat"
+      : isHotel
+      ? typeLower === "guest house"
+        ? "Guest House"
+        : "Hotel"
+      : isEventSpace
+      ? "Event Space"
+      : "PG / Hostel"
+  );
+  const typeIcon = building.categoryIcon || (isFlat ? "🏢" : isHotel ? "🏨" : isEventSpace ? "🎉" : "🛏️");
 
   // Price formatting — never show ₹0 for hotels, event halls or daily stays
-  const isDailyStay = isDaily || isHotel || isEventHall || (!minPrice && minDailyPrice > 0);
+  const isDailyStay = isDaily || isHotel || isEventSpace || (!minPrice && minDailyPrice > 0);
   let price = minPrice;
   let unit = "/ month";
 
@@ -61,10 +64,10 @@ export function PropertyCard({
     unit = "";
   } else if (isDailyStay && minDailyPrice != null && minDailyPrice > 0) {
     price = minDailyPrice;
-    unit = isEventHall ? "/ day" : "/ night";
+    unit = isEventSpace ? "/ day" : "/ night";
   } else if ((minPrice == null || minPrice <= 0) && minDailyPrice != null && minDailyPrice > 0) {
     price = minDailyPrice;
-    unit = isEventHall ? "/ day" : "/ night";
+    unit = isEventSpace ? "/ day" : "/ night";
   } else if (minPrice != null && minPrice > 0) {
     price = minPrice;
     unit = "/ month";

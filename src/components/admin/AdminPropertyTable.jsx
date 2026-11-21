@@ -1,6 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import {
+  Building2,
+  Check,
+  X,
+  Edit3,
+  ExternalLink,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Archive,
+} from "lucide-react";
+import {
   adminPropertyPrice,
   propertyDisplayStatus,
   isPropertyOccupied,
@@ -58,6 +70,15 @@ export function AdminPropertyTable({
                 ? "status-rejected"
                 : "status-archived";
 
+            const StatusIcon =
+              status === "Live"
+                ? CheckCircle2
+                : status === "Pending review"
+                ? Clock
+                : status === "Rejected"
+                ? XCircle
+                : Archive;
+
             const mainImage =
               Array.isArray(property.images) && property.images.length > 0
                 ? property.images[0]
@@ -77,7 +98,9 @@ export function AdminPropertyTable({
                         loading="lazy"
                       />
                     ) : (
-                      <div className="table-thumb-placeholder">⌂</div>
+                      <div className="table-thumb-placeholder">
+                        <Building2 size={20} />
+                      </div>
                     )}
                     <div>
                       <strong>
@@ -95,7 +118,10 @@ export function AdminPropertyTable({
                 <td data-label="Location">{property.location || "—"}</td>
                 <td data-label="Pricing">{adminPropertyPrice(property)}</td>
                 <td data-label="Status">
-                  <span className={`status-pill ${statusClass}`}>{status}</span>
+                  <span className={`status-pill ${statusClass}`}>
+                    <StatusIcon size={13} className="status-pill-icon" />
+                    <span>{status}</span>
+                  </span>
                 </td>
                 <td data-label="Availability">
                   <button
@@ -130,7 +156,8 @@ export function AdminPropertyTable({
                           onClick={() => onApprove(property.id)}
                           title="Approve Listing"
                         >
-                          Approve
+                          <Check size={14} />
+                          <span>Approve</span>
                         </button>
                         <button
                           type="button"
@@ -138,7 +165,8 @@ export function AdminPropertyTable({
                           onClick={() => onReject(property.id)}
                           title="Reject Listing"
                         >
-                          Reject
+                          <X size={14} />
+                          <span>Reject</span>
                         </button>
                       </>
                     )}
@@ -149,7 +177,8 @@ export function AdminPropertyTable({
                         onClick={() => onApprove(property.id)}
                         title="Re-approve Listing"
                       >
-                        Approve
+                        <Check size={14} />
+                        <span>Approve</span>
                       </button>
                     )}
                     {status === "Live" && (
@@ -159,14 +188,16 @@ export function AdminPropertyTable({
                         onClick={() => onReject(property.id)}
                         title="Reject Listing"
                       >
-                        Reject
+                        <X size={14} />
+                        <span>Reject</span>
                       </button>
                     )}
                     <Link
                       to={adminPropertyEditPath(property.id)}
                       className="action-btn edit-btn"
                     >
-                      Edit
+                      <Edit3 size={14} />
+                      <span>Edit</span>
                     </Link>
                     <Link
                       to={`/property/${property.id}`}
@@ -174,7 +205,8 @@ export function AdminPropertyTable({
                       target="_blank"
                       rel="noreferrer"
                     >
-                      View
+                      <ExternalLink size={14} />
+                      <span>View</span>
                     </Link>
                     <button
                       type="button"
@@ -182,7 +214,8 @@ export function AdminPropertyTable({
                       onClick={() => onDelete(property.id, property.name)}
                       title="Delete Property"
                     >
-                      Delete
+                      <Trash2 size={14} />
+                      <span>Delete</span>
                     </button>
                   </div>
                 </td>

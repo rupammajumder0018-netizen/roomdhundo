@@ -11,13 +11,13 @@ import { useAuth } from "../hooks/useAuth.js";
 import { PropertyCard } from "../components/property/PropertyCard.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
-
-const CATEGORY_MAP = {
-  all: [],
-  pgroom: ["PG", "Room"],
-  hotel: ["Hotel", "Guest House", "Event Hall"],
-  flat: ["Flat"],
-};
+import {
+  PROPERTY_CATEGORIES,
+  CATEGORY_MAP_BY_ID,
+  getCategoryById,
+  toggleSubcategorySelection,
+  matchesCategoryFilter,
+} from "../constants/categories.js";
 
 export function HomePage() {
   const [searchParams] = useSearchParams();
@@ -31,6 +31,7 @@ export function HomePage() {
 
   // Filters State
   const [activeCategory, setActiveCategory] = useState("all");
+  const [selectedSubcategories, setSelectedSubcategories] = useState(["All"]);
   const [flatOffer, setFlatOffer] = useState("rent");
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -110,20 +111,35 @@ export function HomePage() {
     await toggleSavedProperty(user.id, buildingId, currentStatus);
   };
 
+  const handleCategoryTabClick = (catId) => {
+    setActiveCategory(catId);
+    setSelectedSubcategories(["All"]);
+  };
+
+  const handleSubcategoryChipClick = (sub) => {
+    setSelectedSubcategories((prev) => toggleSubcategorySelection(prev, sub, true));
+  };
+
   const handleHeroSearchSubmit = (e) => {
     if (e) e.preventDefault();
     const query = searchQuery.trim();
     const sp = new URLSearchParams();
     if (query) sp.set("q", query);
     if (activeCategory !== "all") {
-      const types = CATEGORY_MAP[activeCategory];
-      if (types?.length === 1) sp.set("type", types[0]);
+      sp.set("category", activeCategory);
+      if (!selectedSubcategories.includes("All") && selectedSubcategories.length > 0) {
+        sp.set("sub", selectedSubcategories.join(","));
+      }
     }
     navigate(`/search?${sp.toString()}`);
   };
 
   const listingPrice = (building) => {
-    if (activeCategory === "hotel") {
+    if (
+      building.isDailyStay ||
+      activeCategory === "hotels_stays" ||
+      activeCategory === "event_spaces"
+    ) {
       const nightly = Number(building.minDailyPrice);
       if (Number.isFinite(nightly) && nightly > 0) return nightly;
     }
@@ -134,7 +150,7 @@ export function HomePage() {
     return null;
   };
 
-  // Filter properties client-side matching legacy script.js
+  // Filter properties client-side matching dynamic categories
   const filteredProperties = useMemo(() => {
     const agentFilterId = searchParams.get("agent");
 
@@ -144,14 +160,13 @@ export function HomePage() {
         return false;
       }
 
-      // Category filter
-      const allowedCategoryTypes = CATEGORY_MAP[activeCategory] || [];
-      if (allowedCategoryTypes.length > 0 && !allowedCategoryTypes.includes(b.type)) {
+      // Dynamic Category & Subcategory filter using central matching logic
+      if (!matchesCategoryFilter(b, activeCategory, selectedSubcategories)) {
         return false;
       }
 
       // Flat rent/sale offer filter
-      if (activeCategory === "flat") {
+      if (activeCategory === "flats_rentals" || activeCategory === "flat") {
         const isSale = String(b.flat_offer || "").toLowerCase() === "sale";
         if (flatOffer === "sale" && !isSale) return false;
         if (flatOffer === "rent" && isSale) return false;
@@ -174,7 +189,7 @@ export function HomePage() {
       if (minBudget || maxBudget) {
         const min = minBudget ? Number(minBudget) : 0;
         const max = maxBudget ? Number(maxBudget) : Infinity;
-        const price = b.minPrice;
+        const price = b.minPrice || b.minDailyPrice;
         if (price == null || price < min || price > max) return false;
       }
 
@@ -247,7 +262,7 @@ export function HomePage() {
           <button
             type="button"
             className={`home-cat-tab ${activeCategory === "all" ? "active" : ""}`}
-            onClick={() => setActiveCategory("all")}
+            onClick={() => handleCategoryTabClick("all")}
             role="tab"
             aria-selected={activeCategory === "all"}
           >
@@ -260,55 +275,47 @@ export function HomePage() {
             <span>All</span>
           </button>
 
-          <button
-            type="button"
-            className={`home-cat-tab ${activeCategory === "pgroom" ? "active" : ""}`}
-            onClick={() => setActiveCategory("pgroom")}
-            role="tab"
-            aria-selected={activeCategory === "pgroom"}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-              <path d="M3 20V8" />
-              <path d="M3 14h18v6" />
-              <path d="M21 14v-2a3 3 0 0 0-3-3h-7v5" />
-              <circle cx="7" cy="11" r="1.6" />
-            </svg>
-            <span>PG / Room</span>
-          </button>
-
-          <button
-            type="button"
-            className={`home-cat-tab ${activeCategory === "hotel" ? "active" : ""}`}
-            onClick={() => setActiveCategory("hotel")}
-            role="tab"
-            aria-selected={activeCategory === "hotel"}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-              <rect x="5" y="3" width="14" height="18" rx="1" />
-              <path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2" />
-              <path d="M10 21v-3h4v3" />
-            </svg>
-            <span>Hotel</span>
-          </button>
-
-          <button
-            type="button"
-            className={`home-cat-tab ${activeCategory === "flat" ? "active" : ""}`}
-            onClick={() => setActiveCategory("flat")}
-            role="tab"
-            aria-selected={activeCategory === "flat"}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-              <path d="M3 11l9-7 9 7" />
-              <path d="M5 10v10h14V10" />
-              <path d="M10 20v-6h4v6" />
-            </svg>
-            <span>Flat</span>
-          </button>
+          {PROPERTY_CATEGORIES.map((cat) => {
+            const isTabActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                className={`home-cat-tab ${isTabActive ? "active" : ""}`}
+                onClick={() => handleCategoryTabClick(cat.id)}
+                role="tab"
+                aria-selected={isTabActive}
+              >
+                <span style={{ fontSize: "17px", lineHeight: 1 }}>{cat.icon}</span>
+                <span>{cat.name}</span>
+              </button>
+            );
+          })}
         </div>
 
+        {/* Dynamic Subcategory Chips Row */}
+        {activeCategory !== "all" && getCategoryById(activeCategory) && (
+          <div className="home-subcategory-chips-bar" role="toolbar" aria-label="Filter by subcategory">
+            {getCategoryById(activeCategory).subcategories.map((sub) => {
+              const isChipSelected = selectedSubcategories.includes(sub);
+              return (
+                <button
+                  key={sub}
+                  type="button"
+                  className={`home-subcat-chip ${isChipSelected ? "is-active" : ""}`}
+                  onClick={() => handleSubcategoryChipClick(sub)}
+                  aria-pressed={isChipSelected}
+                >
+                  {isChipSelected && <span className="chip-check">✓ </span>}
+                  {sub}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Flat Rent / Sale Toggle */}
-        {activeCategory === "flat" && (
+        {(activeCategory === "flats_rentals" || activeCategory === "flat") && (
           <div className="home-flat-offer" role="tablist" aria-label="Flat listing offer">
             <button
               type="button"

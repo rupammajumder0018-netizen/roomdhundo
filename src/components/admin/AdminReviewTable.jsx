@@ -1,4 +1,5 @@
 import React from "react";
+import { Star, Trash2 } from "lucide-react";
 
 export function AdminReviewTable({
   reviews = [],
@@ -54,7 +55,10 @@ export function AdminReviewTable({
                   <strong>{rev.user_name || "Verified Tenant"}</strong>
                 </td>
                 <td data-label="Rating">
-                  <span className="star-rating-pill">⭐ {rev.rating || 5}/5</span>
+                  <span className="star-rating-pill">
+                    <Star size={13} className="star-icon-inline" />
+                    <span>{rev.rating || 5}/5</span>
+                  </span>
                 </td>
                 <td data-label="Feedback" className="table-msg-cell">
                   {rev.comment ? (
@@ -71,7 +75,8 @@ export function AdminReviewTable({
                     onClick={() => onDelete(rev.id)}
                     title="Delete Review"
                   >
-                    Delete
+                    <Trash2 size={14} />
+                    <span>Delete</span>
                   </button>
                 </td>
               </tr>

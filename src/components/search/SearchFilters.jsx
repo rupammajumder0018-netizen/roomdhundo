@@ -1,4 +1,9 @@
 import React from "react";
+import {
+  PROPERTY_CATEGORIES,
+  getCategoryById,
+  toggleSubcategorySelection,
+} from "../../constants/categories.js";
 
 export const PROPERTY_TYPES = ["PG", "Room", "Flat", "Hotel", "Mess", "Guest House"];
 export const ROOM_TYPES = ["Single", "Double Sharing", "Triple Sharing", "4+ Sharing"];
@@ -19,6 +24,10 @@ export const FACILITY_OPTIONS = [
 export function SearchFilters({
   isOpen,
   stay = "monthly",
+  selectedCategory = "all",
+  onCategoryChange,
+  selectedSubcategories = ["All"],
+  onSubcategoryToggle,
   minPrice = "",
   maxPrice = "",
   onMinPriceChange,
@@ -33,6 +42,8 @@ export function SearchFilters({
   onClear,
 }) {
   if (!isOpen) return null;
+
+  const currentCatDef = getCategoryById(selectedCategory);
 
   return (
     <div
@@ -54,6 +65,51 @@ export function SearchFilters({
       </div>
 
       <div className="search-filter-grid">
+        {/* Main Category Section */}
+        <div className="filter-section">
+          <h3>Main Category</h3>
+          <div className="filter-category-select">
+            <select
+              className="dynamic-select"
+              value={selectedCategory}
+              onChange={(e) => onCategoryChange && onCategoryChange(e.target.value)}
+              aria-label="Filter by main category"
+            >
+              <option value="all">All Categories</option>
+              {PROPERTY_CATEGORIES.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.icon} {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Subcategories Section */}
+        {currentCatDef && (
+          <div className="filter-section" style={{ gridColumn: "span 2" }}>
+            <h3>Subcategories for {currentCatDef.name}</h3>
+            <div className="filter-chips-wrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {currentCatDef.subcategories.map((sub) => {
+                const isSelected = selectedSubcategories.includes(sub);
+                return (
+                  <button
+                    key={sub}
+                    type="button"
+                    className={`home-subcat-chip ${isSelected ? "is-active" : ""}`}
+                    onClick={() => onSubcategoryToggle && onSubcategoryToggle(sub)}
+                    aria-pressed={isSelected}
+                    style={{ fontSize: "12px", padding: "4px 10px" }}
+                  >
+                    {isSelected && <span className="chip-check">✓ </span>}
+                    {sub}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Budget Section */}
         <div className="filter-section">
           <h3>{stay === "daily" ? "Budget / Night" : "Budget / Month"}</h3>
@@ -73,23 +129,6 @@ export function SearchFilters({
               onChange={(e) => onMaxPriceChange(e.target.value)}
               aria-label="Maximum price"
             />
-          </div>
-        </div>
-
-        {/* Property Type Section */}
-        <div className="filter-section">
-          <h3>Property Type</h3>
-          <div className="filter-checkbox-group">
-            {PROPERTY_TYPES.map((pt) => (
-              <label key={pt} className="filter-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={propertyTypes.includes(pt)}
-                  onChange={() => onPropertyTypeToggle(pt)}
-                />
-                <span>{pt}</span>
-              </label>
-            ))}
           </div>
         </div>
 
@@ -145,4 +184,3 @@ export function SearchFilters({
 }
 
 export default SearchFilters;
-

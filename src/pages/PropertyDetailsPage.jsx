@@ -167,14 +167,15 @@ export function PropertyDetailsPage() {
   const rules = Array.isArray(building.rules) ? building.rules : [];
   const images = Array.isArray(building.images) ? building.images : [];
 
+  const categoryId = building.category || "";
   const typeLower = String(building.type || "").trim().toLowerCase();
-  const isHotel = typeLower === "hotel" || typeLower === "guest house";
-  const isEventHall = typeLower === "event hall";
-  const isDaily = isHotel || isEventHall;
-  const isFlat = typeLower === "flat";
+  const isEventSpace = categoryId === "event_spaces" || typeLower.includes("event") || typeLower.includes("banquet");
+  const isHotel = categoryId === "hotels_stays" || typeLower === "hotel" || typeLower === "guest house" || typeLower === "resort" || typeLower === "lodge";
+  const isDaily = isHotel || isEventSpace;
+  const isFlat = categoryId === "flats_rentals" || typeLower === "flat" || typeLower === "apartment";
   const forSale = isFlat && String(building.flat_offer || "").toLowerCase() === "sale";
 
-  let priceUnit = forSale ? "" : isEventHall ? " / day" : isDaily ? " / night" : " / month";
+  let priceUnit = forSale ? "" : isEventSpace ? " / day" : isDaily ? " / night" : " / month";
 
   // Price formatting — handles daily stays and rentals without ever defaulting to ₹0
   let rawPrice = null;
@@ -186,7 +187,7 @@ export function PropertyDetailsPage() {
     rawPrice = building.minPrice;
   } else if (building.minDailyPrice != null && building.minDailyPrice > 0) {
     rawPrice = building.minDailyPrice;
-    priceUnit = isEventHall ? " / day" : " / night";
+    priceUnit = isEventSpace ? " / day" : " / night";
   }
 
   const hasTieredRent = roomTypes.some((rt) => occupancyOptionsFromRoom(rt).length > 1);
@@ -229,6 +230,39 @@ export function PropertyDetailsPage() {
             </p>
             <div className="property-rating">
               <RatingStars rating={building.avgRating} reviewCount={building.reviewCount} />
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px" }}>
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  padding: "3px 10px",
+                  borderRadius: "999px",
+                  background: "var(--rd-accent, #38a3a5)",
+                  color: "#ffffff",
+                }}
+              >
+                {building.categoryIcon || "🏢"} {building.categoryName || building.type}
+              </span>
+              {(Array.isArray(building.subcategories) ? building.subcategories : [])
+                .filter((sub) => sub !== "All" && sub !== building.categoryName)
+                .map((sub) => (
+                  <span
+                    key={sub}
+                    style={{
+                      fontSize: "12px",
+                      padding: "3px 10px",
+                      borderRadius: "999px",
+                      background: "var(--rd-surface-soft, #f1f5f9)",
+                      color: "var(--rd-text, #22577a)",
+                      border: "1px solid var(--rd-border, #cbd5e1)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {sub}
+                  </span>
+                ))}
             </div>
           </div>
 
