@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Building2, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 import { PATHS } from "../../routes/paths.js";
 
@@ -46,96 +47,38 @@ export function GuestEngagementModal() {
   return (
     <div
       className="guest-prompt-overlay"
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-        backdropFilter: "blur(4px)",
-        display: "grid",
-        placeItems: "center",
-        zIndex: 10000,
-        padding: "16px",
-        animation: "fadeIn 0.25s ease-out",
-      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="guestPromptTitle"
     >
-      <div
-        className="guest-prompt-card"
-        style={{
-          background: "var(--rd-surface, #ffffff)",
-          borderRadius: "20px",
-          maxWidth: "440px",
-          width: "100%",
-          padding: "32px 28px",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.28)",
-          position: "relative",
-          textAlign: "center",
-          border: "1px solid var(--rd-border, #c6ead9)",
-        }}
-      >
+      <div className="guest-prompt-card">
         <button
           type="button"
           onClick={handleDismiss}
+          className="guest-prompt-close-btn"
           aria-label="Close dialog"
-          style={{
-            position: "absolute",
-            top: "16px",
-            right: "16px",
-            background: "none",
-            border: "none",
-            fontSize: "26px",
-            lineHeight: 1,
-            color: "var(--rd-muted, #3a6f86)",
-            cursor: "pointer",
-          }}
         >
-          ×
+          <X size={18} />
         </button>
 
-        <div style={{ fontSize: "44px", marginBottom: "14px" }}>🏡</div>
+        <div className="guest-prompt-icon-badge" aria-hidden="true">
+          <Building2 size={30} />
+        </div>
 
-        <h2
-          id="guestPromptTitle"
-          style={{
-            fontSize: "22px",
-            fontWeight: 800,
-            color: "var(--rd-text, #22577A)",
-            marginBottom: "10px",
-          }}
-        >
+        <h2 id="guestPromptTitle" className="guest-prompt-title">
           Welcome to Pg Dhundo!
         </h2>
 
-        <p
-          style={{
-            fontSize: "14px",
-            color: "var(--rd-muted, #3a6f86)",
-            lineHeight: 1.6,
-            marginBottom: "24px",
-          }}
-        >
+        <p className="guest-prompt-desc">
           Enjoying your search? Sign in or register in seconds to contact owners,
           book hotel stays, and save your favorite PGs and flats!
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div className="guest-prompt-actions">
           <Link
             to={`${PATHS.SIGNUP}?returnTo=${returnUrl}`}
             onClick={handleDismiss}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "12px",
-              background: "var(--rd-accent, #38A3A5)",
-              color: "#ffffff",
-              borderRadius: "10px",
-              fontWeight: 700,
-              fontSize: "15px",
-              textDecoration: "none",
-              boxShadow: "0 4px 12px rgba(56, 163, 165, 0.3)",
-            }}
+            className="guest-prompt-btn-primary"
           >
             Create Free Account
           </Link>
@@ -143,18 +86,7 @@ export function GuestEngagementModal() {
           <Link
             to={`${PATHS.LOGIN}?returnTo=${returnUrl}`}
             onClick={handleDismiss}
-            style={{
-              display: "block",
-              width: "100%",
-              padding: "12px",
-              background: "var(--rd-surface-card, #f4fbf7)",
-              color: "var(--rd-text, #22577A)",
-              border: "1px solid var(--rd-border, #c6ead9)",
-              borderRadius: "10px",
-              fontWeight: 600,
-              fontSize: "14px",
-              textDecoration: "none",
-            }}
+            className="guest-prompt-btn-secondary"
           >
             Sign In with Email or Google
           </Link>
@@ -163,15 +95,7 @@ export function GuestEngagementModal() {
         <button
           type="button"
           onClick={handleDismiss}
-          style={{
-            marginTop: "16px",
-            background: "none",
-            border: "none",
-            fontSize: "13px",
-            color: "var(--rd-muted, #3a6f86)",
-            cursor: "pointer",
-            textDecoration: "underline",
-          }}
+          className="guest-prompt-guest-link"
         >
           Continue browsing as guest
         </button>
