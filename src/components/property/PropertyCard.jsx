@@ -5,12 +5,14 @@ import {
   Hotel,
   Building2,
   PartyPopper,
+  Store,
   Sparkles,
   Star,
   Users,
   MapPin,
   ArrowRight,
   Heart,
+  Briefcase,
 } from "lucide-react";
 import {
   facilityPreviewBadges,
@@ -46,6 +48,14 @@ export function PropertyCard({
 
   const typeLower = String(type || "").trim().toLowerCase();
   const categoryId = building.category || "";
+  const isCommercial =
+    categoryId === "commercial" ||
+    typeLower.includes("commercial") ||
+    typeLower.includes("shop") ||
+    typeLower.includes("office") ||
+    typeLower.includes("showroom") ||
+    typeLower.includes("warehouse") ||
+    typeLower.includes("godown");
   const isEventSpace = categoryId === "event_spaces" || typeLower.includes("event") || typeLower.includes("banquet");
   const isHotel = categoryId === "hotels_stays" || typeLower === "hotel" || typeLower === "guest house" || typeLower === "resort" || typeLower === "lodge";
   const isFlat = categoryId === "flats_rentals" || typeLower === "flat" || typeLower === "apartment";
@@ -54,7 +64,9 @@ export function PropertyCard({
 
   // Type badge label & icon
   const typeLabel = building.primaryType || (
-    isFlat
+    isCommercial
+      ? "Commercial"
+      : isFlat
       ? "Flat"
       : isHotel
       ? typeLower === "guest house"
@@ -65,7 +77,9 @@ export function PropertyCard({
       : "PG / Hostel"
   );
   
-  const TypeIcon = isFlat
+  const TypeIcon = isCommercial
+    ? Store
+    : isFlat
     ? Building2
     : isHotel
     ? Hotel
@@ -213,12 +227,24 @@ export function PropertyCard({
           <span className="location-text">{location || "Location not listed"}</span>
         </p>
 
-        {/* Room Types Summary */}
-        {roomTypeSummary && (
-          <div className="property-room-types" title={roomTypeSummary}>
-            <BedDouble size={13} className="room-icon" />
-            <span className="room-text">{roomTypeSummary}</span>
-          </div>
+        {/* Room Types or Commercial Specs Summary */}
+        {isCommercial ? (
+          (building.category_details?.totalArea || building.category_details?.carpetArea || roomTypeSummary) && (
+            <div className="property-room-types" title={roomTypeSummary || "Commercial Specifications"}>
+              <Briefcase size={13} className="room-icon" />
+              <span className="room-text">
+                {building.category_details?.totalArea ? `${building.category_details.totalArea} sq.ft · ` : ""}
+                {building.category_details?.furnishingStatus || (building.subcategories && building.subcategories.filter((s) => s !== "All")[0]) || "Commercial Space"}
+              </span>
+            </div>
+          )
+        ) : (
+          roomTypeSummary && (
+            <div className="property-room-types" title={roomTypeSummary}>
+              <BedDouble size={13} className="room-icon" />
+              <span className="room-text">{roomTypeSummary}</span>
+            </div>
+          )
         )}
 
         {/* Amenities / Facilities Chips */}

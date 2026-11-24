@@ -184,6 +184,17 @@ export function AdminPropertiesPage() {
               <option value="Conference Hall">Conference Hall</option>
               <option value="Meeting Hall">Meeting Hall</option>
             </optgroup>
+            <optgroup label="Commercial">
+              <option value="Retail Shop">Retail Shop</option>
+              <option value="Showroom">Showroom</option>
+              <option value="Office Space">Office Space</option>
+              <option value="Coworking Space">Coworking Space</option>
+              <option value="Warehouse">Warehouse</option>
+              <option value="Godown">Godown</option>
+              <option value="Restaurant Space">Restaurant Space</option>
+              <option value="Industrial Space">Industrial Space</option>
+              <option value="Commercial Building">Commercial Building</option>
+            </optgroup>
           </select>
 
           <Link

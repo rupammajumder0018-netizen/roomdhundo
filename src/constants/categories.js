@@ -150,6 +150,45 @@ export const PROPERTY_CATEGORIES = [
       { id: "kitchen_area", label: "Large Cooking & Service Area", icon: "🍳" },
     ],
   },
+  {
+    id: "commercial",
+    name: "Commercial",
+    shortName: "Commercial",
+    icon: "🏬",
+    badgeColor: "#7c3aed",
+    description: "Shops, showrooms, offices, coworking spaces, warehouses, and industrial business properties for rent.",
+    pricingUnit: "/ month",
+    pricingLabel: "Monthly Rent",
+    subcategories: [
+      "All",
+      "Retail Shop",
+      "Showroom",
+      "Office Space",
+      "Coworking Space",
+      "Warehouse",
+      "Godown",
+      "Restaurant Space",
+      "Industrial Space",
+      "Commercial Building",
+    ],
+    amenities: [
+      { id: "parking", label: "Parking", icon: "🚗" },
+      { id: "water_supply", label: "24/7 Water Supply", icon: "🚰" },
+      { id: "electricity", label: "Electricity", icon: "⚡" },
+      { id: "power_backup", label: "Power Backup", icon: "🔋" },
+      { id: "lift", label: "Lift", icon: "🛗" },
+      { id: "washroom", label: "Washroom", icon: "🚻" },
+      { id: "ac", label: "Air Conditioning", icon: "❄️" },
+      { id: "internet", label: "Internet", icon: "🌐" },
+      { id: "security", label: "Security", icon: "🛡️" },
+      { id: "cctv", label: "CCTV", icon: "📹" },
+      { id: "fire_safety", label: "Fire Safety", icon: "🧯" },
+      { id: "loading_area", label: "Loading/Unloading Area", icon: "🚛" },
+      { id: "shutter", label: "Shutter", icon: "🚪" },
+      { id: "storage_space", label: "Storage Space", icon: "📦" },
+      { id: "reception_area", label: "Reception Area", icon: "🛋️" },
+    ],
+  },
 ];
 
 /**
@@ -303,6 +342,30 @@ export function resolveMainCategoryFromProperty(property) {
     const match = cat.subcategories.find(
       (s) => s.toLowerCase() === rawType || rawType.includes(s.toLowerCase())
     ) || "Flat";
+    return {
+      category: cat,
+      subcategories: [match],
+      primaryType: match,
+    };
+  }
+
+  // Commercial
+  if (
+    rawType.includes("commercial") ||
+    rawType.includes("shop") ||
+    rawType.includes("retail") ||
+    rawType.includes("showroom") ||
+    rawType.includes("office") ||
+    rawType.includes("coworking") ||
+    rawType.includes("warehouse") ||
+    rawType.includes("godown") ||
+    rawType.includes("restaurant space") ||
+    rawType.includes("industrial")
+  ) {
+    const cat = CATEGORY_MAP_BY_ID.commercial;
+    const match = cat.subcategories.find(
+      (s) => s.toLowerCase() === rawType || rawType.includes(s.toLowerCase())
+    ) || (rawType.includes("office") ? "Office Space" : rawType.includes("shop") ? "Retail Shop" : "Commercial Building");
     return {
       category: cat,
       subcategories: [match],

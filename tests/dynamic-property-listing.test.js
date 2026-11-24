@@ -12,8 +12,8 @@ import {
 
 import { isListingOwnerRole, accountKindFromRole } from "../src/services/auth/index.js";
 
-test("Property Categories — Exactly 4 main categories in strict order", () => {
-  assert.equal(PROPERTY_CATEGORIES.length, 4);
+test("Property Categories — Exactly 5 main categories in strict order", () => {
+  assert.equal(PROPERTY_CATEGORIES.length, 5);
 
   assert.equal(PROPERTY_CATEGORIES[0].id, "pg_hostels");
   assert.equal(PROPERTY_CATEGORIES[0].name, "PG & Hostels");
@@ -26,6 +26,9 @@ test("Property Categories — Exactly 4 main categories in strict order", () => 
 
   assert.equal(PROPERTY_CATEGORIES[3].id, "event_spaces");
   assert.equal(PROPERTY_CATEGORIES[3].name, "Event Spaces");
+
+  assert.equal(PROPERTY_CATEGORIES[4].id, "commercial");
+  assert.equal(PROPERTY_CATEGORIES[4].name, "Commercial");
 });
 
 test("Property Categories — Subcategory specifications match requirements", () => {
@@ -69,6 +72,20 @@ test("Property Categories — Subcategory specifications match requirements", ()
     "Wedding Venue",
     "Conference Hall",
     "Meeting Hall",
+  ]);
+
+  const commercial = CATEGORY_MAP_BY_ID.commercial;
+  assert.deepEqual(commercial.subcategories, [
+    "All",
+    "Retail Shop",
+    "Showroom",
+    "Office Space",
+    "Coworking Space",
+    "Warehouse",
+    "Godown",
+    "Restaurant Space",
+    "Industrial Space",
+    "Commercial Building",
   ]);
 });
 
@@ -115,6 +132,18 @@ test("Backward Compatibility — Resolves legacy property records correctly", ()
   const eventRes = resolveMainCategoryFromProperty({ type: "Event Hall" });
   assert.equal(eventRes.category.id, "event_spaces");
 
+  // Commercial Retail Shop
+  const shopRes = resolveMainCategoryFromProperty({ type: "Retail Shop" });
+  assert.equal(shopRes.category.id, "commercial");
+
+  // Commercial Office Space
+  const officeRes = resolveMainCategoryFromProperty({ type: "Office Space" });
+  assert.equal(officeRes.category.id, "commercial");
+
+  // Commercial Warehouse
+  const whRes = resolveMainCategoryFromProperty({ type: "Warehouse" });
+  assert.equal(whRes.category.id, "commercial");
+
   // Modern property with explicit category and subcategories
   const modern = resolveMainCategoryFromProperty({
     category: "event_spaces",
@@ -123,6 +152,15 @@ test("Backward Compatibility — Resolves legacy property records correctly", ()
   });
   assert.equal(modern.category.id, "event_spaces");
   assert.deepEqual(modern.subcategories, ["Banquet Hall", "Wedding Venue"]);
+
+  // Modern commercial property
+  const modernComm = resolveMainCategoryFromProperty({
+    category: "commercial",
+    subcategories: ["Retail Shop", "Showroom"],
+    type: "Retail Shop",
+  });
+  assert.equal(modernComm.category.id, "commercial");
+  assert.deepEqual(modernComm.subcategories, ["Retail Shop", "Showroom"]);
 });
 
 test("Category Filtering — matchesCategoryFilter respects main category and subcategories", () => {
@@ -142,12 +180,27 @@ test("Category Filtering — matchesCategoryFilter respects main category and su
 
   // Does not match different category
   assert.equal(matchesCategoryFilter(property, "hotels_stays", ["All"]), false);
+  assert.equal(matchesCategoryFilter(property, "commercial", ["All"]), false);
 
   // Matches specific subcategory
   assert.equal(matchesCategoryFilter(property, "pg_hostels", ["Only Boys PG"]), true);
 
   // Does not match unselected subcategory
   assert.equal(matchesCategoryFilter(property, "pg_hostels", ["Only Girls PG"]), false);
+
+  // Commercial property filtering
+  const commProp = {
+    id: "comm-456",
+    name: "Apex Business Center",
+    type: "Office Space",
+    category: "commercial",
+    subcategories: ["Office Space", "Coworking Space"],
+  };
+
+  assert.equal(matchesCategoryFilter(commProp, "commercial", ["All"]), true);
+  assert.equal(matchesCategoryFilter(commProp, "commercial", ["Office Space"]), true);
+  assert.equal(matchesCategoryFilter(commProp, "commercial", ["Retail Shop"]), false);
+  assert.equal(matchesCategoryFilter(commProp, "flats_rentals", ["All"]), false);
 });
 
 test("User Roles & Permissions — Authorization guards for property listing", () => {

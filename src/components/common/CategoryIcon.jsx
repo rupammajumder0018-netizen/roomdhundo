@@ -1,5 +1,5 @@
 import React from "react";
-import { BedDouble, Hotel, Building2, PartyPopper, LayoutGrid } from "lucide-react";
+import { BedDouble, Hotel, Building2, PartyPopper, Store, LayoutGrid } from "lucide-react";
 
 /**
  * Universal Category Icon component using Lucide icons.
@@ -18,6 +18,17 @@ export function CategoryIcon({ categoryId, size = 18, className = "" }) {
   }
   if (cid.includes("event") || cid.includes("hall") || cid.includes("banquet") || cid.includes("venue")) {
     return <PartyPopper size={size} className={className} />;
+  }
+  if (
+    cid.includes("commercial") ||
+    cid.includes("shop") ||
+    cid.includes("office") ||
+    cid.includes("warehouse") ||
+    cid.includes("godown") ||
+    cid.includes("showroom") ||
+    cid.includes("industrial")
+  ) {
+    return <Store size={size} className={className} />;
   }
   return <LayoutGrid size={size} className={className} />;
 }

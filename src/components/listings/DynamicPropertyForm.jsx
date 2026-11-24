@@ -125,6 +125,81 @@ export default function DynamicPropertyForm({
     decorPolicy: initialMeta.decorPolicy || "Outside Decorators Allowed",
   });
 
+  const [commercialSpecs, setCommercialSpecs] = useState({
+    // Basic Details & Ownership
+    ownershipType: initialMeta.ownershipType || "Freehold",
+    propertyCondition: initialMeta.propertyCondition || "Ready to Move",
+
+    // Specifications
+    totalArea: initialMeta.totalArea != null ? String(initialMeta.totalArea) : "",
+    carpetArea: initialMeta.carpetArea != null ? String(initialMeta.carpetArea) : "",
+    builtUpArea: initialMeta.builtUpArea != null ? String(initialMeta.builtUpArea) : "",
+    totalFloors: initialMeta.totalFloors != null ? String(initialMeta.totalFloors) : "",
+    floorNumber: initialMeta.floorNumber || "Ground Floor",
+    roomsCabins: initialMeta.roomsCabins != null ? String(initialMeta.roomsCabins) : "",
+    washrooms: initialMeta.washrooms != null ? String(initialMeta.washrooms) : "1",
+    washroomType: initialMeta.washroomType || "Private",
+    furnishingStatus: initialMeta.furnishingStatus || initialData?.furnishing || "Unfurnished",
+    frontage: initialMeta.frontage != null ? String(initialMeta.frontage) : "",
+    parking: initialMeta.parking || "Dedicated Parking Available",
+    lift: initialMeta.lift || "Passenger Lift Available",
+    roadAccess: initialMeta.roadAccess || "Main Road Facing",
+    powerBackup: initialMeta.powerBackup || "Full Power Backup",
+    powerCapacity: initialMeta.powerCapacity || "3-Phase Commercial Electric",
+
+    // Business Usage & Permissions
+    suitableBusinesses: initialMeta.suitableBusinesses || [
+      "Retail Shop / Store",
+      "Office Space / IT",
+      "Showroom",
+      "Clinic / Diagnostic",
+      "Bank / ATM",
+    ],
+    permittedActivities: initialMeta.permittedActivities || "All Standard Commercial & Business Activities",
+    previousUsage: initialMeta.previousUsage || "",
+    usageRestrictions: initialMeta.usageRestrictions || "No Hazardous or Inflammable Materials",
+    signboardPermission: initialMeta.signboardPermission || "Allowed on Building Facade",
+    operatingHours: initialMeta.operatingHours || "24x7 Access Permitted",
+
+    // Rental Pricing & Terms
+    monthlyRent: initialMeta.monthlyRent != null ? String(initialMeta.monthlyRent) : "",
+    securityDeposit: initialMeta.securityDeposit != null ? String(initialMeta.securityDeposit) : "",
+    advancePayment: initialMeta.advancePayment != null ? String(initialMeta.advancePayment) : "",
+    maintenanceCharges: initialMeta.maintenanceCharges != null ? String(initialMeta.maintenanceCharges) : "",
+    maintenanceFrequency: initialMeta.maintenanceFrequency || "Monthly",
+    electricityCharges: initialMeta.electricityCharges || "As per Commercial Meter",
+    waterCharges: initialMeta.waterCharges || "Included in Rent",
+    minRentalPeriod: initialMeta.minRentalPeriod || "11 Months",
+    preferredLease: initialMeta.preferredLease || "3 Years",
+    rentNegotiable: initialMeta.rentNegotiable !== false,
+    rentFrequency: initialMeta.rentFrequency || "Monthly",
+
+    // Subcategory-Specific Fields
+    shopFrontage: initialMeta.shopFrontage != null ? String(initialMeta.shopFrontage) : "",
+    shutterType: initialMeta.shutterType || "Motorized Rolling Shutter",
+    groundFloorAccess: initialMeta.groundFloorAccess !== false,
+    displayArea: initialMeta.displayArea != null ? String(initialMeta.displayArea) : "",
+    cabinsCount: initialMeta.cabinsCount != null ? String(initialMeta.cabinsCount) : "",
+    workstationsCount: initialMeta.workstationsCount != null ? String(initialMeta.workstationsCount) : "",
+    conferenceRoom: initialMeta.conferenceRoom !== false,
+    receptionArea: initialMeta.receptionArea !== false,
+    desksCount: initialMeta.desksCount != null ? String(initialMeta.desksCount) : "",
+    meetingRoomsCount: initialMeta.meetingRoomsCount != null ? String(initialMeta.meetingRoomsCount) : "",
+    pantryAvailable: initialMeta.pantryAvailable !== false,
+    storageArea: initialMeta.storageArea != null ? String(initialMeta.storageArea) : "",
+    loadingDock: initialMeta.loadingDock || "Dedicated Loading Dock with Bay",
+    truckAccess: initialMeta.truckAccess || "Heavy Truck & Trailer Accessible",
+    ceilingHeight: initialMeta.ceilingHeight != null ? String(initialMeta.ceilingHeight) : "18 ft",
+    floorLoadCapacity: initialMeta.floorLoadCapacity || "Heavy Duty (5 Tons/sqm)",
+    kitchenSpace: initialMeta.kitchenSpace !== false,
+    exhaustVentilation: initialMeta.exhaustVentilation || "Commercial Chimney & Exhaust Installed",
+    diningCapacity: initialMeta.diningCapacity != null ? String(initialMeta.diningCapacity) : "",
+    gasPipelinePermit: initialMeta.gasPipelinePermit || "Commercial Gas Line Permitted",
+    industrialZone: initialMeta.industrialZone || "Approved Industrial Zone",
+    transformerCapacity: initialMeta.transformerCapacity || "50 KVA Dedicated",
+    buildingUnitsCount: initialMeta.buildingUnitsCount != null ? String(initialMeta.buildingUnitsCount) : "",
+  });
+
   // 6. Facilities & Amenities State
   const currentCategoryDef = CATEGORY_MAP_BY_ID[selectedCategory] || PROPERTY_CATEGORIES[0];
   const [selectedAmenities, setSelectedAmenities] = useState(() => {
@@ -273,6 +348,23 @@ export default function DynamicPropertyForm({
           ac_available: false,
         },
       ];
+    } else if (selectedCategory === "commercial") {
+      return [
+        {
+          id: null,
+          room_type: "Commercial Space / Retail Unit",
+          sharing_type: "",
+          monthly_rent: "25000",
+          daily_price: "",
+          hourly_price: "",
+          room_people: 10,
+          available_rooms: 1,
+          total_rooms: 1,
+          attached_bath: true,
+          ac_available: true,
+          room_size: "800 sq.ft",
+        },
+      ];
     } else {
       return [
         {
@@ -367,6 +459,23 @@ export default function DynamicPropertyForm({
           ac_available: false,
         },
       ]);
+    } else if (newCategoryId === "commercial") {
+      setRooms([
+        {
+          id: null,
+          room_type: "Commercial Space / Retail Unit",
+          sharing_type: "",
+          monthly_rent: "25000",
+          daily_price: "",
+          hourly_price: "",
+          room_people: 10,
+          available_rooms: 1,
+          total_rooms: 1,
+          attached_bath: true,
+          ac_available: true,
+          room_size: "800 sq.ft",
+        },
+      ]);
     } else {
       setRooms([
         {
@@ -411,6 +520,7 @@ export default function DynamicPropertyForm({
   const handleAddRoom = () => {
     const isDaily = selectedCategory === "hotels_stays" || selectedCategory === "event_spaces";
     const isPg = selectedCategory === "pg_hostels";
+    const isCommercial = selectedCategory === "commercial";
     const newRoom = {
       id: null,
       room_type:
@@ -420,21 +530,24 @@ export default function DynamicPropertyForm({
           ? "Standard AC Room"
           : selectedCategory === "flats_rentals"
           ? "1 BHK Flat"
+          : isCommercial
+          ? "Commercial Unit / Shop / Cabin"
           : "Party Lawn",
       sharing_type: isPg ? "Single / Double Sharing" : "",
-      monthly_rent: isDaily ? "" : "5000",
+      monthly_rent: isDaily ? "" : isCommercial ? "25000" : "5000",
       daily_price: isDaily ? "2000" : "",
       hourly_price: "",
-      bed_capacity: isPg ? 2 : (selectedCategory === "event_spaces" ? 100 : 2),
+      bed_capacity: isPg ? 2 : (selectedCategory === "event_spaces" ? 100 : isCommercial ? 10 : 2),
       total_beds: isPg ? 2 : 1,
       available_beds: isPg ? 2 : 1,
       occupied_beds: 0,
       occupancy_options: isPg ? generateDefaultOccupancyOptions(2, 5000) : [],
-      room_people: selectedCategory === "event_spaces" ? 100 : 2,
+      room_people: selectedCategory === "event_spaces" ? 100 : isCommercial ? 10 : 2,
       available_rooms: isPg ? 2 : 1,
       total_rooms: isPg ? 2 : 1,
       attached_bath: true,
       ac_available: true,
+      room_size: isCommercial ? "600 sq.ft" : "",
     };
     setRooms([...rooms, newRoom]);
   };
@@ -586,6 +699,8 @@ export default function DynamicPropertyForm({
         categoryDetails = { ...flatSpecs };
       } else if (selectedCategory === "event_spaces") {
         categoryDetails = { ...eventSpecs };
+      } else if (selectedCategory === "commercial") {
+        categoryDetails = { ...commercialSpecs };
       }
 
       // Add WhatsApp to details
@@ -602,6 +717,8 @@ export default function DynamicPropertyForm({
           ? primarySub || "Hotel"
           : selectedCategory === "flats_rentals"
           ? primarySub || "Flat"
+          : selectedCategory === "commercial"
+          ? primarySub || "Retail Shop"
           : primarySub || "Banquet Hall";
 
       // 2. Prepare Building Payload
@@ -1299,6 +1416,667 @@ export default function DynamicPropertyForm({
             </div>
           </div>
         )}
+
+        {/* 3E: Commercial Property Specifications & Business Terms */}
+        {selectedCategory === "commercial" && (
+          <div className="category-specific-commercial">
+            {/* Subsection 1: Property Specifications */}
+            <div className="commercial-form-section-title" style={{ margin: "14px 0 10px", fontWeight: 700, fontSize: "15px", color: "var(--rd-text, #22577a)" }}>
+              📐 Property Dimensions & Specifications
+            </div>
+            <div className="form-fields-grid category-specific-grid">
+              <div className="form-field fourth-width">
+                <label>Total Area (sq. ft.) <span className="required-star">*</span></label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 1200"
+                  value={commercialSpecs.totalArea}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, totalArea: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Carpet Area (sq. ft.)</label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 950"
+                  value={commercialSpecs.carpetArea}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, carpetArea: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Built-Up Area (sq. ft.)</label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 1100"
+                  value={commercialSpecs.builtUpArea}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, builtUpArea: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Furnishing Status</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.furnishingStatus}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, furnishingStatus: e.target.value })}
+                >
+                  <option value="Unfurnished">Unfurnished / Bare Shell</option>
+                  <option value="Semi-Furnished">Semi-Furnished</option>
+                  <option value="Fully Furnished">Fully Furnished</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Located on Floor</label>
+                <input
+                  type="text"
+                  className="dynamic-input"
+                  placeholder="e.g. Ground Floor, 2nd Floor, Basement"
+                  value={commercialSpecs.floorNumber}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, floorNumber: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Total Floors in Building</label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 4"
+                  value={commercialSpecs.totalFloors}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, totalFloors: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Rooms / Cabins</label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 3"
+                  value={commercialSpecs.roomsCabins}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, roomsCabins: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Washrooms Count & Type</label>
+                <div className="dual-inputs">
+                  <input
+                    type="number"
+                    className="dynamic-input"
+                    placeholder="Count"
+                    value={commercialSpecs.washrooms}
+                    onChange={(e) => setCommercialSpecs({ ...commercialSpecs, washrooms: e.target.value })}
+                  />
+                  <select
+                    className="dynamic-select"
+                    value={commercialSpecs.washroomType}
+                    onChange={(e) => setCommercialSpecs({ ...commercialSpecs, washroomType: e.target.value })}
+                  >
+                    <option value="Private">Private</option>
+                    <option value="Common">Common</option>
+                    <option value="Both">Both</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Frontage / Road Width (ft)</label>
+                <input
+                  type="text"
+                  className="dynamic-input"
+                  placeholder="e.g. 25 ft frontage"
+                  value={commercialSpecs.frontage}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, frontage: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Property Condition</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.propertyCondition}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, propertyCondition: e.target.value })}
+                >
+                  <option value="Ready to Move">Ready to Move</option>
+                  <option value="Under Renovation">Under Renovation</option>
+                  <option value="Bare Shell">Bare Shell</option>
+                  <option value="Newly Constructed">Newly Constructed</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Road Access & Location</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.roadAccess}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, roadAccess: e.target.value })}
+                >
+                  <option value="Main Road Facing">Main Road Facing</option>
+                  <option value="Corner Property">Corner Property</option>
+                  <option value="High Street Commercial Hub">High Street Commercial Hub</option>
+                  <option value="Inside Commercial Complex">Inside Commercial Complex</option>
+                  <option value="Internal Arterial Road">Internal Arterial Road</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Parking Availability</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.parking}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, parking: e.target.value })}
+                >
+                  <option value="Dedicated Parking Available">Dedicated Parking Available</option>
+                  <option value="Covered Basement Parking">Covered Basement Parking</option>
+                  <option value="Visitor Parking Available">Visitor Parking Available</option>
+                  <option value="Public / On-Street Parking">Public / On-Street Parking</option>
+                  <option value="No Dedicated Parking">No Dedicated Parking</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Lift & Elevator</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.lift}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, lift: e.target.value })}
+                >
+                  <option value="Passenger + Service Lift">Passenger + Service Lift</option>
+                  <option value="Passenger Lift Available">Passenger Lift Available</option>
+                  <option value="Goods / Freight Lift">Goods / Freight Lift</option>
+                  <option value="No Lift">No Lift</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Power Backup & Electrical</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.powerBackup}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, powerBackup: e.target.value })}
+                >
+                  <option value="Full Power Backup">Full 24x7 Power Backup</option>
+                  <option value="Partial Backup">Partial Backup (Lights & Fans)</option>
+                  <option value="Dedicated Generator Provision">Dedicated Generator Provision</option>
+                  <option value="None">No Power Backup</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Power Load / Connection</label>
+                <input
+                  type="text"
+                  className="dynamic-input"
+                  placeholder="e.g. 15 KW 3-Phase Commercial"
+                  value={commercialSpecs.powerCapacity}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, powerCapacity: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Ownership / Title Type</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.ownershipType}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, ownershipType: e.target.value })}
+                >
+                  <option value="Freehold">Freehold</option>
+                  <option value="Leasehold">Leasehold</option>
+                  <option value="Power of Attorney">Power of Attorney</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Subsection 2: Subcategory-Specific Tailored Fields */}
+            <div className="commercial-form-section-title" style={{ margin: "22px 0 10px", fontWeight: 700, fontSize: "15px", color: "var(--rd-text, #22577a)" }}>
+              🏢 Subcategory-Specific Features (Tailored for {selectedSubcategories.filter(s => s !== "All").join(", ") || "Commercial Space"})
+            </div>
+            <div className="form-fields-grid category-specific-grid" style={{ background: "var(--rd-surface-soft, rgba(124, 58, 237, 0.04))", padding: "16px", borderRadius: "12px", border: "1px solid var(--rd-border, #e2e8f0)" }}>
+              {/* Retail Shop Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("shop") || s.toLowerCase().includes("retail")) && (
+                <>
+                  <div className="form-field third-width">
+                    <label>Shop Frontage (ft)</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. 15 ft"
+                      value={commercialSpecs.shopFrontage}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, shopFrontage: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field third-width">
+                    <label>Shutter Type</label>
+                    <select
+                      className="dynamic-select"
+                      value={commercialSpecs.shutterType}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, shutterType: e.target.value })}
+                    >
+                      <option value="Motorized Rolling Shutter">Motorized Rolling Shutter</option>
+                      <option value="Manual Rolling Shutter">Manual Rolling Shutter</option>
+                      <option value="Toughened Glass Front with Shutter">Toughened Glass Front with Shutter</option>
+                    </select>
+                  </div>
+                  <div className="form-field third-width" style={{ display: "flex", alignItems: "center", paddingTop: "24px" }}>
+                    <label className="checkbox-toggle">
+                      <input
+                        type="checkbox"
+                        checked={commercialSpecs.groundFloorAccess}
+                        onChange={(e) => setCommercialSpecs({ ...commercialSpecs, groundFloorAccess: e.target.checked })}
+                      />
+                      <span>Direct Ground Floor Entry</span>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* Showroom Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("showroom")) && (
+                <>
+                  <div className="form-field half-width">
+                    <label>Main Display / Showcase Area (sq. ft.)</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. 1800 sq ft"
+                      value={commercialSpecs.displayArea}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, displayArea: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field half-width">
+                    <label>Display Facade Road Visibility</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. 40 ft Clear Glass Frontage on Highway"
+                      value={commercialSpecs.roadAccess}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, roadAccess: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Office / Coworking Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("office") || s.toLowerCase().includes("coworking")) && (
+                <>
+                  <div className="form-field fourth-width">
+                    <label>Private Cabins</label>
+                    <input
+                      type="number"
+                      className="dynamic-input"
+                      placeholder="e.g. 4"
+                      value={commercialSpecs.cabinsCount}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, cabinsCount: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field fourth-width">
+                    <label>Workstations / Desks</label>
+                    <input
+                      type="number"
+                      className="dynamic-input"
+                      placeholder="e.g. 24"
+                      value={commercialSpecs.workstationsCount || commercialSpecs.desksCount}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, workstationsCount: e.target.value, desksCount: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field fourth-width" style={{ display: "flex", alignItems: "center", paddingTop: "24px" }}>
+                    <label className="checkbox-toggle">
+                      <input
+                        type="checkbox"
+                        checked={commercialSpecs.conferenceRoom}
+                        onChange={(e) => setCommercialSpecs({ ...commercialSpecs, conferenceRoom: e.target.checked })}
+                      />
+                      <span>Conference Room</span>
+                    </label>
+                  </div>
+                  <div className="form-field fourth-width" style={{ display: "flex", alignItems: "center", paddingTop: "24px" }}>
+                    <label className="checkbox-toggle">
+                      <input
+                        type="checkbox"
+                        checked={commercialSpecs.receptionArea}
+                        onChange={(e) => setCommercialSpecs({ ...commercialSpecs, receptionArea: e.target.checked })}
+                      />
+                      <span>Reception Desk</span>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* Warehouse / Godown Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("warehouse") || s.toLowerCase().includes("godown")) && (
+                <>
+                  <div className="form-field fourth-width">
+                    <label>Clear Ceiling Height</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. 22 ft"
+                      value={commercialSpecs.ceilingHeight}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, ceilingHeight: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field fourth-width">
+                    <label>Floor Load Capacity</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. 5 Ton / sq.m"
+                      value={commercialSpecs.floorLoadCapacity}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, floorLoadCapacity: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field fourth-width">
+                    <label>Loading Dock / Bay</label>
+                    <select
+                      className="dynamic-select"
+                      value={commercialSpecs.loadingDock}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, loadingDock: e.target.value })}
+                    >
+                      <option value="Dedicated Loading Dock with Bay">Dedicated Loading Dock with Bay</option>
+                      <option value="Shared Loading Bay">Shared Loading Bay</option>
+                      <option value="Ramp Access">Ramp Access for Forklifts</option>
+                      <option value="None">Direct Ground Access</option>
+                    </select>
+                  </div>
+                  <div className="form-field fourth-width">
+                    <label>Heavy Vehicle Access</label>
+                    <select
+                      className="dynamic-select"
+                      value={commercialSpecs.truckAccess}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, truckAccess: e.target.value })}
+                    >
+                      <option value="Heavy Truck & Trailer Accessible">Heavy Truck & Trailer Accessible</option>
+                      <option value="Medium Commercial Vehicle (MCV)">Medium Commercial Vehicle (MCV)</option>
+                      <option value="Small Commercial Vehicle (SCV)">Small Commercial Vehicle (SCV)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Restaurant / Food Space Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("restaurant")) && (
+                <>
+                  <div className="form-field third-width">
+                    <label>Seating / Dining Capacity</label>
+                    <input
+                      type="number"
+                      className="dynamic-input"
+                      placeholder="e.g. 80 persons"
+                      value={commercialSpecs.diningCapacity}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, diningCapacity: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field third-width">
+                    <label>Exhaust & Ventilation</label>
+                    <select
+                      className="dynamic-select"
+                      value={commercialSpecs.exhaustVentilation}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, exhaustVentilation: e.target.value })}
+                    >
+                      <option value="Commercial Chimney & Exhaust Installed">Commercial Chimney & Exhaust Installed</option>
+                      <option value="Provision for Chimney Ducting">Provision for Chimney Ducting</option>
+                      <option value="Standard Ventilation">Standard Ventilation</option>
+                    </select>
+                  </div>
+                  <div className="form-field third-width" style={{ display: "flex", alignItems: "center", paddingTop: "24px" }}>
+                    <label className="checkbox-toggle">
+                      <input
+                        type="checkbox"
+                        checked={commercialSpecs.kitchenSpace}
+                        onChange={(e) => setCommercialSpecs({ ...commercialSpecs, kitchenSpace: e.target.checked })}
+                      />
+                      <span>Dedicated Commercial Kitchen Space</span>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* Industrial Space Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("industrial")) && (
+                <>
+                  <div className="form-field half-width">
+                    <label>Industrial Zone / Approval Status</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. Approved MIDC / WBIIDC Industrial Park"
+                      value={commercialSpecs.industrialZone}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, industrialZone: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-field half-width">
+                    <label>Dedicated Substation / Transformer</label>
+                    <input
+                      type="text"
+                      className="dynamic-input"
+                      placeholder="e.g. 100 KVA Dedicated Transformer"
+                      value={commercialSpecs.transformerCapacity}
+                      onChange={(e) => setCommercialSpecs({ ...commercialSpecs, transformerCapacity: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Commercial Building Specifics */}
+              {selectedSubcategories.some(s => s.toLowerCase().includes("building")) && (
+                <div className="form-field half-width">
+                  <label>Total Commercial Units / Offices in Building</label>
+                  <input
+                    type="number"
+                    className="dynamic-input"
+                    placeholder="e.g. 16"
+                    value={commercialSpecs.buildingUnitsCount}
+                    onChange={(e) => setCommercialSpecs({ ...commercialSpecs, buildingUnitsCount: e.target.value })}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Subsection 3: Business Usage & Permissions */}
+            <div className="commercial-form-section-title" style={{ margin: "22px 0 10px", fontWeight: 700, fontSize: "15px", color: "var(--rd-text, #22577a)" }}>
+              💼 Business Usage & Permissions
+            </div>
+            <div className="form-fields-grid category-specific-grid">
+              <div className="form-field half-width">
+                <label>Permitted Business Activities</label>
+                <input
+                  type="text"
+                  className="dynamic-input"
+                  placeholder="e.g. Retail, Corporate Office, Pathology Lab, Clinic"
+                  value={commercialSpecs.permittedActivities}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, permittedActivities: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field half-width">
+                <label>Usage Restrictions</label>
+                <input
+                  type="text"
+                  className="dynamic-input"
+                  placeholder="e.g. No hazardous or inflammable chemical storage"
+                  value={commercialSpecs.usageRestrictions}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, usageRestrictions: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field third-width">
+                <label>Signboard / Branding Permission</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.signboardPermission}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, signboardPermission: e.target.value })}
+                >
+                  <option value="Allowed on Building Facade">Allowed on Building Facade</option>
+                  <option value="Allowed on Main Gate / Billboard">Allowed on Main Gate / Billboard</option>
+                  <option value="Allowed Inside Premises Only">Allowed Inside Premises Only</option>
+                  <option value="Subject to Society Approval">Subject to Society Approval</option>
+                </select>
+              </div>
+
+              <div className="form-field third-width">
+                <label>Permitted Operating Hours</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.operatingHours}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, operatingHours: e.target.value })}
+                >
+                  <option value="24x7 Access Permitted">24x7 Access Permitted</option>
+                  <option value="6:00 AM - 11:00 PM">6:00 AM - 11:00 PM</option>
+                  <option value="8:00 AM - 10:00 PM">8:00 AM - 10:00 PM</option>
+                  <option value="Standard Business Hours (9 AM - 7 PM)">Standard Business Hours (9 AM - 7 PM)</option>
+                </select>
+              </div>
+
+              <div className="form-field third-width">
+                <label>Previous Usage / History (Optional)</label>
+                <input
+                  type="text"
+                  className="dynamic-input"
+                  placeholder="e.g. Previously occupied by Nationalised Bank"
+                  value={commercialSpecs.previousUsage}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, previousUsage: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Subsection 4: Rental Pricing & Commercial Lease Terms */}
+            <div className="commercial-form-section-title" style={{ margin: "22px 0 10px", fontWeight: 700, fontSize: "15px", color: "var(--rd-text, #22577a)" }}>
+              💰 Commercial Rental Terms & Lease Agreement
+            </div>
+            <div className="form-fields-grid category-specific-grid">
+              <div className="form-field fourth-width">
+                <label>Monthly Rent (₹) <span className="required-star">*</span></label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 25000"
+                  value={commercialSpecs.monthlyRent}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, monthlyRent: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Security Deposit (₹)</label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 75000"
+                  value={commercialSpecs.securityDeposit}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, securityDeposit: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Advance Rent / Token (₹)</label>
+                <input
+                  type="number"
+                  className="dynamic-input"
+                  placeholder="e.g. 25000"
+                  value={commercialSpecs.advancePayment}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, advancePayment: e.target.value })}
+                />
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Maintenance Charges (₹)</label>
+                <div className="dual-inputs">
+                  <input
+                    type="number"
+                    className="dynamic-input"
+                    placeholder="Amount"
+                    value={commercialSpecs.maintenanceCharges}
+                    onChange={(e) => setCommercialSpecs({ ...commercialSpecs, maintenanceCharges: e.target.value })}
+                  />
+                  <select
+                    className="dynamic-select"
+                    value={commercialSpecs.maintenanceFrequency}
+                    onChange={(e) => setCommercialSpecs({ ...commercialSpecs, maintenanceFrequency: e.target.value })}
+                  >
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Annual">Annual</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Electricity Charges</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.electricityCharges}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, electricityCharges: e.target.value })}
+                >
+                  <option value="As per Commercial Meter">As per Commercial Meter</option>
+                  <option value="Fixed Commercial Unit Rate">Fixed Commercial Unit Rate</option>
+                  <option value="Included in Rent">Included in Rent</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Water Charges</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.waterCharges}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, waterCharges: e.target.value })}
+                >
+                  <option value="Included in Rent">Included in Rent</option>
+                  <option value="As per Meter">As per Meter</option>
+                  <option value="Fixed Monthly Charges">Fixed Monthly Charges</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Minimum Lock-in Period</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.minRentalPeriod}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, minRentalPeriod: e.target.value })}
+                >
+                  <option value="6 Months">6 Months</option>
+                  <option value="11 Months">11 Months</option>
+                  <option value="1 Year">1 Year</option>
+                  <option value="2 Years">2 Years</option>
+                  <option value="3 Years">3 Years</option>
+                  <option value="5 Years">5 Years</option>
+                </select>
+              </div>
+
+              <div className="form-field fourth-width">
+                <label>Preferred Lease Duration</label>
+                <select
+                  className="dynamic-select"
+                  value={commercialSpecs.preferredLease}
+                  onChange={(e) => setCommercialSpecs({ ...commercialSpecs, preferredLease: e.target.value })}
+                >
+                  <option value="11 Months (Standard Agreement)">11 Months (Standard Agreement)</option>
+                  <option value="3 Years (Commercial Lease)">3 Years (Commercial Lease)</option>
+                  <option value="5 Years (Long-Term Registered)">5 Years (Long-Term Registered)</option>
+                  <option value="9 Years (Corporate Lease)">9 Years (Corporate Lease)</option>
+                </select>
+              </div>
+
+              <div className="form-field half-width" style={{ display: "flex", alignItems: "center", paddingTop: "20px" }}>
+                <label className="checkbox-toggle">
+                  <input
+                    type="checkbox"
+                    checked={commercialSpecs.rentNegotiable}
+                    onChange={(e) => setCommercialSpecs({ ...commercialSpecs, rentNegotiable: e.target.checked })}
+                  />
+                  <span>🤝 Rent and Lease Terms are Negotiable</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* SECTION 4: FACILITIES & AMENITIES */}
@@ -1384,9 +2162,15 @@ export default function DynamicPropertyForm({
                 ? "Spaces, Halls & Pricing"
                 : selectedCategory === "flats_rentals"
                 ? "Units & Pricing"
+                : selectedCategory === "commercial"
+                ? "Rentable Commercial Units & Pricing"
                 : "Rooms & Pricing"}
             </h3>
-            <p>Configure room types, sharing options, and pricing rates.</p>
+            <p>
+              {selectedCategory === "commercial"
+                ? "Configure distinct rentable units, shops, floors, or cabins with individual area, monthly lease pricing, and availability."
+                : "Configure room types, sharing options, and pricing rates."}
+            </p>
           </div>
         </div>
 
@@ -1602,33 +2386,55 @@ export default function DynamicPropertyForm({
                   </div>
                 ) : (
                   <div className="form-fields-grid">
-                    <div className="form-field half-width">
+                    <div className={selectedCategory === "commercial" ? "form-field third-width" : "form-field half-width"}>
                       <label>
                         {selectedCategory === "event_spaces"
                           ? "Space / Hall Title"
+                          : selectedCategory === "commercial"
+                          ? "Commercial Unit / Space Title"
                           : "Room Type / Title"}{" "}
                         <span className="required-star">*</span>
                       </label>
                       <input
                         type="text"
                         className="dynamic-input"
-                        placeholder="e.g. Deluxe AC Room / 2 Sharing / Grand Lawn"
+                        placeholder={
+                          selectedCategory === "event_spaces"
+                            ? "e.g. Deluxe AC Room / Grand Lawn"
+                            : selectedCategory === "commercial"
+                            ? "e.g. Ground Floor Shop A / Executive Cabin 1"
+                            : "e.g. Deluxe AC Room / 2 Sharing Room"
+                        }
                         value={room.room_type}
                         onChange={(e) => handleUpdateRoom(index, "room_type", e.target.value)}
                         required
                       />
                     </div>
 
-                    {/* Pricing Input: Monthly for Flats; Daily for Hotels & Events */}
+                    {/* Unit Area for Commercial */}
+                    {selectedCategory === "commercial" && (
+                      <div className="form-field third-width">
+                        <label>Unit Area (sq. ft.)</label>
+                        <input
+                          type="text"
+                          className="dynamic-input"
+                          placeholder="e.g. 650 sq ft"
+                          value={room.room_size || ""}
+                          onChange={(e) => handleUpdateRoom(index, "room_size", e.target.value)}
+                        />
+                      </div>
+                    )}
+
+                    {/* Pricing Input: Monthly for Flats & Commercial; Daily for Hotels & Events */}
                     {!isDaily ? (
-                      <div className="form-field half-width">
+                      <div className={selectedCategory === "commercial" ? "form-field third-width" : "form-field half-width"}>
                         <label>
-                          Monthly Rent / Price (₹) <span className="required-star">*</span>
+                          Monthly Rent / Lease Rate (₹) <span className="required-star">*</span>
                         </label>
                         <input
                           type="number"
                           className="dynamic-input"
-                          placeholder="e.g. 5000"
+                          placeholder="e.g. 25000"
                           value={room.monthly_rent}
                           onChange={(e) => handleUpdateRoom(index, "monthly_rent", e.target.value)}
                           required
@@ -1658,6 +2464,8 @@ export default function DynamicPropertyForm({
                       <label>
                         {selectedCategory === "event_spaces"
                           ? "Available Slots"
+                          : selectedCategory === "commercial"
+                          ? "Available Units"
                           : "Available Rooms"}{" "}
                         <span className="required-star">*</span>
                       </label>
@@ -1674,7 +2482,11 @@ export default function DynamicPropertyForm({
                     {/* Max People / Guests */}
                     <div className="form-field fourth-width">
                       <label>
-                        {selectedCategory === "event_spaces" ? "Capacity" : "Max People"}
+                        {selectedCategory === "event_spaces"
+                          ? "Capacity"
+                          : selectedCategory === "commercial"
+                          ? "Workstations / Capacity"
+                          : "Max People"}
                       </label>
                       <input
                         type="number"
@@ -1693,7 +2505,7 @@ export default function DynamicPropertyForm({
                           checked={room.attached_bath}
                           onChange={(e) => handleUpdateRoom(index, "attached_bath", e.target.checked)}
                         />
-                        <span>🚿 Attached Bath</span>
+                        <span>{selectedCategory === "commercial" ? "🚽 Washroom Facility" : "🚿 Attached Bath"}</span>
                       </label>
 
                       <label className="checkbox-toggle">
@@ -1702,7 +2514,7 @@ export default function DynamicPropertyForm({
                           checked={room.ac_available}
                           onChange={(e) => handleUpdateRoom(index, "ac_available", e.target.checked)}
                         />
-                        <span>❄️ AC Available</span>
+                        <span>{selectedCategory === "commercial" ? "❄️ Air Conditioned" : "❄️ AC Available"}</span>
                       </label>
                     </div>
                   </div>
@@ -1716,7 +2528,7 @@ export default function DynamicPropertyForm({
             className="add-room-btn"
             onClick={handleAddRoom}
           >
-            <span>+</span> Add Another Room / Space Option
+            <span>+</span> {selectedCategory === "commercial" ? "Add Another Commercial Unit / Space" : "Add Another Room / Space Option"}
           </button>
         </div>
       </div>

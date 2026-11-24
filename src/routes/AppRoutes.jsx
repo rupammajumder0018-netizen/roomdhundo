@@ -157,6 +157,14 @@ export function AppRoutes() {
           }
         />
         <Route
+          path="/list-property/commercial"
+          element={
+            <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>
+              <PropertyListingFormPage defaultCategory="commercial" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path={PATHS.LIST_PG}
           element={
             <ProtectedRoute allowedRoles={["owner", "admin", "agent"]}>

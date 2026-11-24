@@ -13,6 +13,7 @@ import { PropertyMap } from "../components/property/PropertyMap.jsx";
 import { ContactOwnerModal } from "../components/property/ContactOwnerModal.jsx";
 import { HotelStayBooking } from "../components/property/HotelStayBooking.jsx";
 import { PgHostelRoomBooking } from "../components/property/PgHostelRoomBooking.jsx";
+import { CommercialPropertyRental } from "../components/property/CommercialPropertyRental.jsx";
 import { RatingStars } from "../components/common/RatingStars.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
@@ -170,6 +171,14 @@ export function PropertyDetailsPage() {
 
   const categoryId = building.category || "";
   const typeLower = String(building.type || "").trim().toLowerCase();
+  const isCommercial =
+    categoryId === "commercial" ||
+    typeLower.includes("commercial") ||
+    typeLower.includes("shop") ||
+    typeLower.includes("office") ||
+    typeLower.includes("showroom") ||
+    typeLower.includes("warehouse") ||
+    typeLower.includes("godown");
   const isEventSpace = categoryId === "event_spaces" || typeLower.includes("event") || typeLower.includes("banquet");
   const isHotel = categoryId === "hotels_stays" || typeLower === "hotel" || typeLower === "guest house" || typeLower === "resort" || typeLower === "lodge";
   const isDaily = isHotel || isEventSpace;
@@ -308,7 +317,7 @@ export function PropertyDetailsPage() {
               </div>
             </section>
 
-            {/* HOTEL STAYS & BOOKINGS OR PG OCCUPANCY ROOMS OR GENERAL ROOM TYPES */}
+            {/* HOTEL STAYS & BOOKINGS OR PG OCCUPANCY ROOMS OR COMMERCIAL RENTAL OR GENERAL ROOM TYPES */}
             {isHotel ? (
               <HotelStayBooking building={building} />
             ) : isPg ? (
@@ -337,6 +346,17 @@ export function PropertyDetailsPage() {
                       totalAvailable: nextTotal,
                     };
                   });
+                }}
+              />
+            ) : isCommercial ? (
+              <CommercialPropertyRental
+                building={building}
+                onEnquireUnit={(unit) => {
+                  if (!isAuthenticated) {
+                    navigate(`${PATHS.LOGIN}?returnTo=${encodeURIComponent(`/property/${id}`)}`);
+                  } else {
+                    setIsContactOpen(true);
+                  }
                 }}
               />
             ) : (
@@ -657,6 +677,31 @@ export function PropertyDetailsPage() {
                   }}
                 >
                   🛏️ Reserve Bed / Room
+                </button>
+              )}
+
+              {isCommercial && (
+                <button
+                  type="button"
+                  className="hotel-room-select"
+                  id="commercialStickyBook"
+                  style={{
+                    marginBottom: "12px",
+                    width: "100%",
+                    background: "linear-gradient(135deg, #7c3aed 0%, #38A3A5 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    fontWeight: 700,
+                  }}
+                  onClick={() => {
+                    const el = document.getElementById("commercialUnitsSection") || document.getElementById("commercialRentalSection");
+                    el?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
+                >
+                  🏬 View Available Units & Spaces
                 </button>
               )}
 
