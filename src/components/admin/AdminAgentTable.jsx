@@ -121,7 +121,7 @@ export function AdminAgentTable({
                     <button
                       type="button"
                       className="action-btn delete-btn"
-                      onClick={() => onDelete(app.id)}
+                      onClick={() => onDelete(app.id, app.user_id, fullName)}
                       title="Delete Application"
                     >
                       <Trash2 size={14} />

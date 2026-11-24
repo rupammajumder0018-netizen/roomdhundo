@@ -50,7 +50,8 @@ export function LoginPage() {
       }
 
       // Check role mismatch between selected role and actual registered profile role
-      const actualKind = accountKindFromRole(result.profile?.role || "user");
+      const actualRole = result.profile?.role || result.user?.user_metadata?.role || "user";
+      const actualKind = accountKindFromRole(actualRole);
       const wantedKind = accountKindFromRole(role);
 
       if (actualKind !== "admin" && wantedKind !== actualKind) {
@@ -65,10 +66,19 @@ export function LoginPage() {
       setMessage({ text: "Login successful! Redirecting...", type: "success" });
 
       // Navigate to previous destination or appropriate role destination
-      const destination =
-        actualKind === "admin"
-          ? "/admin"
-          : location.state?.from?.pathname || "/";
+      let destination = "/";
+      if (actualKind === "admin") {
+        destination = "/admin";
+      } else if (actualKind === "agent") {
+        destination =
+          actualRole === "agent"
+            ? (location.state?.from?.pathname || "/owner/dashboard")
+            : "/be-an-agent";
+      } else if (actualKind === "owner") {
+        destination = location.state?.from?.pathname || "/owner/dashboard";
+      } else {
+        destination = location.state?.from?.pathname || "/";
+      }
       
       // Navigate cleanly
       window.location.href = destination;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
+import { Clock, CheckCircle2, XCircle, X } from "lucide-react";
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import AdminAgentTable from "../../components/admin/AdminAgentTable.jsx";
 import {
@@ -85,8 +86,9 @@ export function AdminAgentsPage() {
             type="button"
             className="admin-alert-close"
             onClick={() => setActionMessage(null)}
+            aria-label="Close notification"
           >
-            ×
+            <X size={15} />
           </button>
         </div>
       )}
@@ -94,13 +96,19 @@ export function AdminAgentsPage() {
       {/* Status Counters */}
       <div className="agent-counts-row">
         <div className="agent-count-badge badge-pending">
-          Pending: <strong id="adminAgentsPendingCount">{pendingCount}</strong>
+          <Clock size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }} />
+          <span>Pending: </span>
+          <strong id="adminAgentsPendingCount">{pendingCount}</strong>
         </div>
         <div className="agent-count-badge badge-approved">
-          Approved: <strong id="adminAgentsApprovedCount">{approvedCount}</strong>
+          <CheckCircle2 size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }} />
+          <span>Approved: </span>
+          <strong id="adminAgentsApprovedCount">{approvedCount}</strong>
         </div>
         <div className="agent-count-badge badge-rejected">
-          Rejected: <strong id="adminAgentsRejectedCount">{rejectedCount}</strong>
+          <XCircle size={14} style={{ display: "inline-block", verticalAlign: "middle", marginRight: "6px" }} />
+          <span>Rejected: </span>
+          <strong id="adminAgentsRejectedCount">{rejectedCount}</strong>
         </div>
       </div>
 

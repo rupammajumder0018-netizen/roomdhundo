@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, useLocation, Outlet } from "react-router-dom";
+import { Clock } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth.js";
 
 /**
@@ -34,6 +35,11 @@ export function ProtectedRoute({
   }
 
   if (Array.isArray(allowedRoles) && allowedRoles.length > 0) {
+    // A pending agent must not access agent/owner features until approved by admin
+    if (role === "agent_pending" && !allowedRoles.includes("agent_pending")) {
+      return <Navigate to="/be-an-agent" replace />;
+    }
+
     const isAuthorized =
       allowedRoles.includes(role) || allowedRoles.includes(roleKind);
 
@@ -65,25 +71,40 @@ export function ProtectedRoute({
             style={{
               maxWidth: "600px",
               margin: "60px auto",
-              padding: "32px 24px",
+              padding: "36px 28px",
               textAlign: "center",
-              background: "#ffffff",
-              borderRadius: "12px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              background: "var(--rd-surface, #ffffff)",
+              border: "1px solid var(--rd-border, #c6ead9)",
+              borderRadius: "18px",
+              boxShadow: "var(--rd-shadow, 0 14px 34px rgba(34,87,122,0.08))",
             }}
           >
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>⏳</div>
-            <h2 style={{ fontSize: "22px", marginBottom: "12px", color: "#1a1a1a" }}>
+            <div
+              style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "rgba(245, 158, 11, 0.15)",
+                color: "#d97706",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <Clock size={32} />
+            </div>
+            <h2 style={{ fontSize: "22px", marginBottom: "12px", color: "var(--rd-text, #22577A)", fontWeight: 800 }}>
               Owner Account Awaiting Review
             </h2>
-            <p style={{ fontSize: "15px", color: "#666", lineHeight: 1.6, marginBottom: "20px" }}>
+            <p style={{ fontSize: "15px", color: "var(--rd-muted, #3a6f86)", lineHeight: 1.6, marginBottom: "20px" }}>
               Your account has registered as a property owner. To maintain listing quality and safety,
               a platform administrator will verify your profile before property listings and the owner
               dashboard can be accessed.
             </p>
-            <p style={{ fontSize: "14px", color: "#888", marginBottom: "24px" }}>
+            <p style={{ fontSize: "14px", color: "var(--rd-muted, #3a6f86)", marginBottom: "24px" }}>
               Current Status:{" "}
-              <strong style={{ color: approval === "rejected" ? "#c5221f" : "#b06000" }}>
+              <strong style={{ color: approval === "rejected" ? "#ef4444" : "#d97706" }}>
                 {approval === "rejected" ? "Application Rejected" : "Pending Approval"}
               </strong>
             </p>
@@ -92,10 +113,12 @@ export function ProtectedRoute({
               className="btn btn-primary"
               style={{
                 display: "inline-block",
-                padding: "10px 24px",
-                borderRadius: "6px",
+                padding: "12px 24px",
+                borderRadius: "12px",
                 textDecoration: "none",
-                fontWeight: 600,
+                fontWeight: 700,
+                background: "var(--rd-accent, #38A3A5)",
+                color: "#ffffff",
               }}
             >
               Return to Homepage

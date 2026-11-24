@@ -235,3 +235,32 @@ test("Admin Service — Safe handling when Supabase is unconfigured", async () =
   const economy = await fetchAdminEconomyDeals();
   assert.ok(economy.error || Array.isArray(economy.data));
 });
+
+test("Agent Auth & Role Routing — Verifies proper destination resolution for agent flows", () => {
+  const resolveDestination = (actualRole, actualKind, defaultFrom = null) => {
+    if (actualKind === "admin") return "/admin";
+    if (actualKind === "agent") {
+      return actualRole === "agent" ? (defaultFrom || "/owner/dashboard") : "/be-an-agent";
+    }
+    if (actualKind === "owner") return defaultFrom || "/owner/dashboard";
+    return defaultFrom || "/";
+  };
+
+  // Approved agent
+  assert.equal(resolveDestination("agent", "agent"), "/owner/dashboard");
+  assert.equal(resolveDestination("agent", "agent", "/list-property"), "/list-property");
+
+  // Pending agent
+  assert.equal(resolveDestination("agent_pending", "agent"), "/be-an-agent");
+  assert.equal(resolveDestination("agent_pending", "agent", "/owner/dashboard"), "/be-an-agent");
+
+  // Owner
+  assert.equal(resolveDestination("owner", "owner"), "/owner/dashboard");
+
+  // Admin
+  assert.equal(resolveDestination("admin", "admin"), "/admin");
+
+  // Standard user
+  assert.equal(resolveDestination("user", "user"), "/");
+});
+

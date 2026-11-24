@@ -350,6 +350,10 @@ export async function savePropertyListing({
 
     // Insert or update room types
     for (const room of roomTypeInputs) {
+      const roomAvailBeds = room.available_beds != null ? Number(room.available_beds) : Number(room.available_rooms != null ? room.available_rooms : room.available || 1);
+      const roomTotalBeds = room.total_beds != null ? Number(room.total_beds) : Number(room.total_rooms || room.totalRooms || room.available || 1);
+      const roomBedCap = Number(room.bed_capacity || room.room_details?.bed_capacity || room.room_people || room.people || 1);
+
       const roomPayload = {
         room_type: room.room_type || room.roomType,
         price_value: Number(room.price_value || room.rent || 0),
@@ -359,6 +363,10 @@ export async function savePropertyListing({
         extra_person_charge: room.extra_person_charge || room.extraPerson || null,
         room_rent: Number(room.room_rent || room.rent || 0),
         room_people: Number(room.room_people || room.people || 1),
+        bed_capacity: roomBedCap,
+        available_beds: roomAvailBeds,
+        total_beds: roomTotalBeds,
+        occupied_beds: Number(room.occupied_beds != null ? room.occupied_beds : Math.max(0, roomTotalBeds - roomAvailBeds)),
         available_rooms: Number(room.available_rooms != null ? room.available_rooms : room.available || 1),
         total_rooms: Number(room.total_rooms || room.totalRooms || room.available || 1),
         room_size: room.room_size || room.roomSize || null,
@@ -416,25 +424,35 @@ export async function savePropertyListing({
     }
 
     // Insert all room types
-    const roomTypeRows = roomTypeInputs.map((room) => ({
-      building_id: insertedRow.id,
-      room_type: room.room_type || room.roomType,
-      price_value: Number(room.price_value || room.rent || 0),
-      daily_price: room.daily_price || room.nightlyRent || null,
-      hourly_price: room.hourly_price || room.hourlyPrice || null,
-      weekend_price: room.weekend_price || room.weekendPrice || null,
-      extra_person_charge: room.extra_person_charge || room.extraPerson || null,
-      room_rent: Number(room.room_rent || room.rent || 0),
-      room_people: Number(room.room_people || room.people || 1),
-      available_rooms: Number(room.available_rooms != null ? room.available_rooms : room.available || 1),
-      total_rooms: Number(room.total_rooms || room.totalRooms || room.available || 1),
-      room_size: room.room_size || room.roomSize || null,
-      adults: room.adults || null,
-      children: room.children || null,
-      availability: "Just listed",
-      room_details: room.room_details || room.details || {},
-      ...(room.images ? { images: room.images } : {}),
-    }));
+    const roomTypeRows = roomTypeInputs.map((room) => {
+      const roomAvailBeds = room.available_beds != null ? Number(room.available_beds) : Number(room.available_rooms != null ? room.available_rooms : room.available || 1);
+      const roomTotalBeds = room.total_beds != null ? Number(room.total_beds) : Number(room.total_rooms || room.totalRooms || room.available || 1);
+      const roomBedCap = Number(room.bed_capacity || room.room_details?.bed_capacity || room.room_people || room.people || 1);
+
+      return {
+        building_id: insertedRow.id,
+        room_type: room.room_type || room.roomType,
+        price_value: Number(room.price_value || room.rent || 0),
+        daily_price: room.daily_price || room.nightlyRent || null,
+        hourly_price: room.hourly_price || room.hourlyPrice || null,
+        weekend_price: room.weekend_price || room.weekendPrice || null,
+        extra_person_charge: room.extra_person_charge || room.extraPerson || null,
+        room_rent: Number(room.room_rent || room.rent || 0),
+        room_people: Number(room.room_people || room.people || 1),
+        bed_capacity: roomBedCap,
+        available_beds: roomAvailBeds,
+        total_beds: roomTotalBeds,
+        occupied_beds: Number(room.occupied_beds != null ? room.occupied_beds : Math.max(0, roomTotalBeds - roomAvailBeds)),
+        available_rooms: Number(room.available_rooms != null ? room.available_rooms : room.available || 1),
+        total_rooms: Number(room.total_rooms || room.totalRooms || room.available || 1),
+        room_size: room.room_size || room.roomSize || null,
+        adults: room.adults || null,
+        children: room.children || null,
+        availability: "Just listed",
+        room_details: room.room_details || room.details || {},
+        ...(room.images ? { images: room.images } : {}),
+      };
+    });
 
     const { error: insertRoomsErr } = await executeSafeMutation({
       client: supabase,

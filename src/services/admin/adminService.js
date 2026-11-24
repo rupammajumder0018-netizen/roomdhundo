@@ -378,6 +378,11 @@ function adminRoomPayload(room) {
   );
   const images = Array.isArray(room.images) ? room.images : null;
 
+  const availBeds = toInt(room.available_beds ?? room.available_rooms, available);
+  const totalBeds = toInt(room.total_beds ?? room.total_rooms ?? room.bed_capacity, total);
+  const occBeds = toInt(room.occupied_beds, Math.max(0, totalBeds - availBeds));
+  const bedCap = toInt(room.bed_capacity ?? room.room_people, people);
+
   return {
     room_type: String(room.room_type || room.roomType || "Room").trim() || "Room",
     price_value: monthly,
@@ -388,6 +393,10 @@ function adminRoomPayload(room) {
     extra_person_charge: toInt(room.extra_person_charge ?? room.extraPerson, null),
     room_people: people,
     max_guests: people,
+    bed_capacity: bedCap,
+    available_beds: availBeds,
+    total_beds: totalBeds,
+    occupied_beds: occBeds,
     available_rooms: available,
     total_rooms: total,
     room_size: toInt(room.room_size ?? room.roomSize, null),

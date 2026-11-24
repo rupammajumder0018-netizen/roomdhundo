@@ -12,6 +12,7 @@ import { PropertyGallery } from "../components/property/PropertyGallery.jsx";
 import { PropertyMap } from "../components/property/PropertyMap.jsx";
 import { ContactOwnerModal } from "../components/property/ContactOwnerModal.jsx";
 import { HotelStayBooking } from "../components/property/HotelStayBooking.jsx";
+import { PgHostelRoomBooking } from "../components/property/PgHostelRoomBooking.jsx";
 import { RatingStars } from "../components/common/RatingStars.jsx";
 import { LoadingState } from "../components/common/LoadingState.jsx";
 import { EmptyState } from "../components/common/EmptyState.jsx";
@@ -173,6 +174,7 @@ export function PropertyDetailsPage() {
   const isHotel = categoryId === "hotels_stays" || typeLower === "hotel" || typeLower === "guest house" || typeLower === "resort" || typeLower === "lodge";
   const isDaily = isHotel || isEventSpace;
   const isFlat = categoryId === "flats_rentals" || typeLower === "flat" || typeLower === "apartment";
+  const isPg = categoryId === "pg_hostels" || typeLower.includes("pg") || typeLower.includes("hostel") || typeLower.includes("mess");
   const forSale = isFlat && String(building.flat_offer || "").toLowerCase() === "sale";
 
   let priceUnit = forSale ? "" : isEventSpace ? " / day" : isDaily ? " / night" : " / month";
@@ -306,9 +308,37 @@ export function PropertyDetailsPage() {
               </div>
             </section>
 
-            {/* HOTEL STAYS & BOOKINGS OR GENERAL ROOM TYPES */}
+            {/* HOTEL STAYS & BOOKINGS OR PG OCCUPANCY ROOMS OR GENERAL ROOM TYPES */}
             {isHotel ? (
               <HotelStayBooking building={building} />
+            ) : isPg ? (
+              <PgHostelRoomBooking
+                building={building}
+                onBookingSuccess={(roomId) => {
+                  setBuilding((prev) => {
+                    if (!prev) return prev;
+                    const nextRoomTypes = (prev.room_types || []).map((rt) => {
+                      if (rt.id === roomId) {
+                        const currBeds = Number(rt.available_beds != null ? rt.available_beds : rt.available_rooms || 1);
+                        const nextBeds = Math.max(0, currBeds - 1);
+                        return {
+                          ...rt,
+                          available_beds: nextBeds,
+                          available_rooms: nextBeds,
+                          availability: nextBeds > 0 ? "Available" : "Occupied",
+                        };
+                      }
+                      return rt;
+                    });
+                    const nextTotal = nextRoomTypes.reduce((sum, r) => sum + (Number(r.available_rooms) || 0), 0);
+                    return {
+                      ...prev,
+                      room_types: nextRoomTypes,
+                      totalAvailable: nextTotal,
+                    };
+                  });
+                }}
+              />
             ) : (
               roomTypes.length > 0 && (
                 <section className="property-section">
@@ -603,6 +633,30 @@ export function PropertyDetailsPage() {
                   }}
                 >
                   🏨 Reserve a Room
+                </button>
+              )}
+
+              {isPg && (
+                <button
+                  type="button"
+                  className="hotel-room-select"
+                  id="pgStickyBook"
+                  style={{
+                    marginBottom: "12px",
+                    width: "100%",
+                    background: "linear-gradient(135deg, #38A3A5 0%, #57CC99 100%)",
+                    color: "#ffffff",
+                    border: "none",
+                    fontWeight: 700,
+                  }}
+                  onClick={() => {
+                    document.getElementById("pgRoomsBookingSection")?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }}
+                >
+                  🛏️ Reserve Bed / Room
                 </button>
               )}
 

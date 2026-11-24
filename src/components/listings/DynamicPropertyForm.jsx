@@ -141,24 +141,80 @@ export default function DynamicPropertyForm({
   );
 
   // 8. Rooms / Units / Pricing State
+  const generateDefaultOccupancyOptions = (capacity, baseRent = 5000) => {
+    const cap = Math.max(1, Math.min(6, Number(capacity) || 1));
+    const tiers = [
+      { people: 1, label: "Single Occupancy", defaultRent: 8000, pricingType: "room" },
+      { people: 2, label: "Double Sharing", defaultRent: 5000, pricingType: "person" },
+      { people: 3, label: "Triple Sharing", defaultRent: 3500, pricingType: "person" },
+      { people: 4, label: "Four Sharing", defaultRent: 2800, pricingType: "person" },
+      { people: 5, label: "5 Sharing", defaultRent: 2400, pricingType: "person" },
+      { people: 6, label: "6 Sharing Dorm", defaultRent: 2000, pricingType: "person" },
+    ];
+
+    return tiers.slice(0, cap).map((t) => ({
+      people: t.people,
+      label: t.label,
+      enabled: true,
+      rent: String(t.defaultRent),
+      pricingType: t.pricingType,
+    }));
+  };
+
   const initRoomsFromData = () => {
     const rawRooms = Array.isArray(initialData?.room_types) ? initialData.room_types : [];
     if (rawRooms.length > 0) {
-      return rawRooms.map((r) => ({
-        id: r.id || null,
-        room_type: r.room_type || "",
-        sharing_type: r.room_details?.sharing_type || (r.room_people === 1 ? "Single Room" : `${r.room_people} Sharing`),
-        monthly_rent: r.price_value ?? r.room_rent ?? "",
-        daily_price: r.daily_price ?? "",
-        hourly_price: r.hourly_price ?? "",
-        weekend_price: r.weekend_price ?? "",
-        room_people: r.room_people || 1,
-        available_rooms: r.available_rooms ?? 1,
-        total_rooms: r.total_rooms ?? r.available_rooms ?? 1,
-        attached_bath: r.room_details?.attached_bath !== false,
-        ac_available: r.room_details?.ac_available || false,
-        room_size: r.room_size ?? "",
-      }));
+      return rawRooms.map((r) => {
+        const details = r.room_details && typeof r.room_details === "object" ? r.room_details : {};
+        const savedOptions = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
+        const cap = Number(r.bed_capacity || details.bed_capacity || r.room_people || 3);
+        const mRent = r.price_value ?? r.room_rent ?? 5000;
+
+        let occupancy_options = [];
+        if (savedOptions.length > 0) {
+          const defaultTiers = generateDefaultOccupancyOptions(cap, mRent);
+          occupancy_options = defaultTiers.map((tier) => {
+            const match = savedOptions.find((so) => Number(so.people) === tier.people);
+            if (match) {
+              return {
+                ...tier,
+                enabled: true,
+                rent: String(match.rent ?? tier.rent),
+                label: match.label || tier.label,
+                pricingType: match.pricingType || tier.pricingType,
+              };
+            }
+            return { ...tier, enabled: false };
+          });
+        } else {
+          occupancy_options = generateDefaultOccupancyOptions(cap, mRent);
+        }
+
+        const availBeds = r.available_beds != null ? Number(r.available_beds) : (r.available_rooms != null ? Number(r.available_rooms) : cap);
+        const totalBeds = r.total_beds != null ? Number(r.total_beds) : (r.total_rooms != null ? Number(r.total_rooms) : cap);
+        const occBeds = r.occupied_beds != null ? Number(r.occupied_beds) : Math.max(0, totalBeds - availBeds);
+
+        return {
+          id: r.id || null,
+          room_type: details.room_name || r.room_type || "",
+          bed_capacity: cap,
+          total_beds: totalBeds,
+          available_beds: availBeds,
+          occupied_beds: occBeds,
+          occupancy_options,
+          sharing_type: details.sharing_type || (r.room_people === 1 ? "Single Room" : `${r.room_people} Sharing`),
+          monthly_rent: r.price_value ?? r.room_rent ?? "",
+          daily_price: r.daily_price ?? "",
+          hourly_price: r.hourly_price ?? "",
+          weekend_price: r.weekend_price ?? "",
+          room_people: cap,
+          available_rooms: r.available_rooms ?? availBeds,
+          total_rooms: r.total_rooms ?? totalBeds,
+          attached_bath: details.attached_bath !== false,
+          ac_available: details.ac_available || false,
+          room_size: r.room_size ?? "",
+        };
+      });
     }
 
     // Default room template based on selected category
@@ -166,15 +222,24 @@ export default function DynamicPropertyForm({
       return [
         {
           id: null,
-          room_type: "Double Sharing Room",
-          sharing_type: "2 Sharing / Double",
-          monthly_rent: "5500",
+          room_type: "Standard AC Room",
+          bed_capacity: 3,
+          total_beds: 3,
+          available_beds: 3,
+          occupied_beds: 0,
+          occupancy_options: [
+            { people: 1, label: "Single Occupancy", enabled: true, rent: "8000", pricingType: "room" },
+            { people: 2, label: "Double Sharing", enabled: true, rent: "5000", pricingType: "person" },
+            { people: 3, label: "Triple Sharing", enabled: true, rent: "3500", pricingType: "person" },
+          ],
+          sharing_type: "Single / Double / Triple Sharing",
+          monthly_rent: "3500",
           daily_price: "",
-          room_people: 2,
-          available_rooms: 2,
-          total_rooms: 2,
+          room_people: 3,
+          available_rooms: 3,
+          total_rooms: 3,
           attached_bath: true,
-          ac_available: false,
+          ac_available: true,
         },
       ];
     } else if (selectedCategory === "hotels_stays") {
@@ -251,15 +316,24 @@ export default function DynamicPropertyForm({
       setRooms([
         {
           id: null,
-          room_type: "Double Sharing Room",
-          sharing_type: "2 Sharing / Double",
-          monthly_rent: "5500",
+          room_type: "Standard AC Room",
+          bed_capacity: 3,
+          total_beds: 3,
+          available_beds: 3,
+          occupied_beds: 0,
+          occupancy_options: [
+            { people: 1, label: "Single Occupancy", enabled: true, rent: "8000", pricingType: "room" },
+            { people: 2, label: "Double Sharing", enabled: true, rent: "5000", pricingType: "person" },
+            { people: 3, label: "Triple Sharing", enabled: true, rent: "3500", pricingType: "person" },
+          ],
+          sharing_type: "Single / Double / Triple Sharing",
+          monthly_rent: "3500",
           daily_price: "",
-          room_people: 2,
-          available_rooms: 2,
-          total_rooms: 2,
+          room_people: 3,
+          available_rooms: 3,
+          total_rooms: 3,
           attached_bath: true,
-          ac_available: false,
+          ac_available: true,
         },
       ]);
     } else if (newCategoryId === "hotels_stays") {
@@ -336,23 +410,29 @@ export default function DynamicPropertyForm({
   // Room operations
   const handleAddRoom = () => {
     const isDaily = selectedCategory === "hotels_stays" || selectedCategory === "event_spaces";
+    const isPg = selectedCategory === "pg_hostels";
     const newRoom = {
       id: null,
       room_type:
-        selectedCategory === "pg_hostels"
-          ? "Single Sharing Room"
+        isPg
+          ? "Double Sharing Room"
           : selectedCategory === "hotels_stays"
           ? "Standard AC Room"
           : selectedCategory === "flats_rentals"
           ? "1 BHK Flat"
           : "Party Lawn",
-      sharing_type: selectedCategory === "pg_hostels" ? "Single Room" : "",
-      monthly_rent: isDaily ? "" : "6000",
+      sharing_type: isPg ? "Single / Double Sharing" : "",
+      monthly_rent: isDaily ? "" : "5000",
       daily_price: isDaily ? "2000" : "",
       hourly_price: "",
+      bed_capacity: isPg ? 2 : (selectedCategory === "event_spaces" ? 100 : 2),
+      total_beds: isPg ? 2 : 1,
+      available_beds: isPg ? 2 : 1,
+      occupied_beds: 0,
+      occupancy_options: isPg ? generateDefaultOccupancyOptions(2, 5000) : [],
       room_people: selectedCategory === "event_spaces" ? 100 : 2,
-      available_rooms: 1,
-      total_rooms: 1,
+      available_rooms: isPg ? 2 : 1,
+      total_rooms: isPg ? 2 : 1,
       attached_bath: true,
       ac_available: true,
     };
@@ -362,6 +442,45 @@ export default function DynamicPropertyForm({
   const handleUpdateRoom = (index, field, value) => {
     setRooms((prev) =>
       prev.map((r, i) => (i === index ? { ...r, [field]: value } : r))
+    );
+  };
+
+  const handleUpdateOccupancyOption = (roomIndex, peopleCount, field, value) => {
+    setRooms((prev) =>
+      prev.map((room, rIdx) => {
+        if (rIdx !== roomIndex) return room;
+        const options = (room.occupancy_options || []).map((opt) =>
+          opt.people === peopleCount ? { ...opt, [field]: value } : opt
+        );
+        return { ...room, occupancy_options: options };
+      })
+    );
+  };
+
+  const handleUpdateBedCapacity = (roomIndex, newCapacity) => {
+    const cap = Math.max(1, Math.min(6, Number(newCapacity) || 1));
+    setRooms((prev) =>
+      prev.map((room, rIdx) => {
+        if (rIdx !== roomIndex) return room;
+        const existingOptions = room.occupancy_options || [];
+        const baseRent = Number(existingOptions[0]?.rent) || Number(room.monthly_rent) || 5000;
+        const newTemplate = generateDefaultOccupancyOptions(cap, baseRent);
+        const updatedOptions = newTemplate.map((tier) => {
+          const match = existingOptions.find((e) => e.people === tier.people);
+          return match ? { ...match } : tier;
+        });
+
+        const newAvail = Math.min(cap, Number(room.available_beds != null ? room.available_beds : cap));
+        return {
+          ...room,
+          bed_capacity: cap,
+          total_beds: cap,
+          available_beds: newAvail,
+          occupied_beds: Math.max(0, cap - newAvail),
+          room_people: cap,
+          occupancy_options: updatedOptions,
+        };
+      })
     );
   };
 
@@ -389,12 +508,31 @@ export default function DynamicPropertyForm({
     if (!rooms.length) return "Please add at least one room or space option.";
 
     const isDaily = selectedCategory === "hotels_stays" || selectedCategory === "event_spaces";
+    const isPg = selectedCategory === "pg_hostels";
+
     for (let i = 0; i < rooms.length; i++) {
       const r = rooms[i];
       if (!r.room_type?.trim()) {
         return `Please specify a name/title for option #${i + 1}.`;
       }
-      if (isDaily) {
+
+      if (isPg) {
+        const enabledOptions = (r.occupancy_options || []).filter((opt) => opt.enabled);
+        if (enabledOptions.length === 0) {
+          return `Please enable at least one occupancy option (e.g. Single, Double Sharing) for "${r.room_type}".`;
+        }
+        for (const opt of enabledOptions) {
+          const rentVal = Number(opt.rent);
+          if (!Number.isFinite(rentVal) || rentVal <= 0) {
+            return `Please enter a valid monthly rent for "${opt.label}" on "${r.room_type}".`;
+          }
+        }
+        const avail = Number(r.available_beds != null ? r.available_beds : r.available_rooms);
+        const total = Number(r.total_beds != null ? r.total_beds : r.bed_capacity || 1);
+        if (avail > total) {
+          return `Available beds (${avail}) cannot exceed total beds (${total}) on "${r.room_type}".`;
+        }
+      } else if (isDaily) {
         const dPrice = Number(r.daily_price);
         if (!Number.isFinite(dPrice) || dPrice <= 0) {
           return `Please enter a valid rate for "${r.room_type}".`;
@@ -506,9 +644,43 @@ export default function DynamicPropertyForm({
 
       // 3. Prepare Room Types Payload
       const isDaily = selectedCategory === "hotels_stays" || selectedCategory === "event_spaces";
+      const isPg = selectedCategory === "pg_hostels";
       const roomTypeInputs = rooms.map((r) => {
-        const mRent = isDaily ? 0 : Number(r.monthly_rent || 0);
-        const dRate = isDaily ? Number(r.daily_price || 0) : null;
+        let mRent = 0;
+        let dRate = null;
+        let maxPeople = Number(r.room_people) || 1;
+        let availRooms = Number(r.available_rooms) || 0;
+        let totalRooms = Number(r.total_rooms) || 1;
+        let availBeds = Number(r.available_beds != null ? r.available_beds : availRooms);
+        let totalBeds = Number(r.total_beds != null ? r.total_beds : totalRooms);
+        let occBeds = Math.max(0, totalBeds - availBeds);
+        let occupancyOptionsPayload = [];
+        let sharingSummary = r.sharing_type || "";
+
+        if (isPg) {
+          const enabledOpts = (r.occupancy_options || []).filter((o) => o.enabled && Number(o.rent) > 0);
+          occupancyOptionsPayload = enabledOpts.map((o) => ({
+            people: Number(o.people),
+            label: o.label,
+            rent: Number(o.rent),
+            pricingType: o.pricingType || (Number(o.people) === 1 ? "room" : "person"),
+          }));
+          const rents = occupancyOptionsPayload.map((o) => o.rent);
+          mRent = rents.length > 0 ? Math.min(...rents) : Number(r.monthly_rent || 0);
+          maxPeople = Number(r.bed_capacity || r.room_people || 1);
+          availRooms = availBeds;
+          totalRooms = totalBeds;
+          sharingSummary = occupancyOptionsPayload.map((o) => o.label).join(" / ");
+        } else if (isDaily) {
+          dRate = Number(r.daily_price || 0);
+          availRooms = Number(r.available_rooms) || 0;
+          totalRooms = Number(r.total_rooms) || 1;
+        } else {
+          mRent = Number(r.monthly_rent || 0);
+          availRooms = Number(r.available_rooms) || 0;
+          totalRooms = Number(r.total_rooms) || 1;
+        }
+
         return {
           id: r.id || null,
           room_type: r.room_type.trim(),
@@ -517,12 +689,22 @@ export default function DynamicPropertyForm({
           daily_price: dRate,
           hourly_price: r.hourly_price ? Number(r.hourly_price) : null,
           weekend_price: r.weekend_price ? Number(r.weekend_price) : null,
-          room_people: Number(r.room_people) || 1,
-          available_rooms: Number(r.available_rooms) || 0,
-          total_rooms: Number(r.total_rooms) || Number(r.available_rooms) || 1,
-          availability: Number(r.available_rooms) > 0 ? "Available" : "Occupied",
+          room_people: maxPeople,
+          available_rooms: availRooms,
+          total_rooms: totalRooms,
+          available_beds: isPg ? availBeds : undefined,
+          total_beds: isPg ? totalBeds : undefined,
+          occupied_beds: isPg ? occBeds : undefined,
+          bed_capacity: isPg ? maxPeople : undefined,
+          availability: availRooms > 0 ? "Available" : "Occupied",
           room_details: {
-            sharing_type: r.sharing_type || null,
+            room_name: r.room_type.trim(),
+            sharing_type: sharingSummary,
+            bed_capacity: isPg ? maxPeople : undefined,
+            available_beds: isPg ? availBeds : undefined,
+            total_beds: isPg ? totalBeds : undefined,
+            occupied_beds: isPg ? occBeds : undefined,
+            occupancy_options: isPg ? occupancyOptionsPayload : undefined,
             attached_bath: r.attached_bath,
             ac_available: r.ac_available,
             room_size: r.room_size || null,
@@ -1211,6 +1393,8 @@ export default function DynamicPropertyForm({
         <div className="rooms-container">
           {rooms.map((room, index) => {
             const isDaily = selectedCategory === "hotels_stays" || selectedCategory === "event_spaces";
+            const isPg = selectedCategory === "pg_hostels";
+
             return (
               <div key={index} className="room-config-card">
                 <div className="room-config-header">
@@ -1227,131 +1411,302 @@ export default function DynamicPropertyForm({
                   )}
                 </div>
 
-                <div className="form-fields-grid">
-                  <div className="form-field half-width">
-                    <label>
-                      {selectedCategory === "event_spaces"
-                        ? "Space / Hall Title"
-                        : "Room Type / Title"}{" "}
-                      <span className="required-star">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      className="dynamic-input"
-                      placeholder="e.g. Deluxe AC Room / 2 Sharing / Grand Lawn"
-                      value={room.room_type}
-                      onChange={(e) => handleUpdateRoom(index, "room_type", e.target.value)}
-                      required
-                    />
-                  </div>
+                {isPg ? (
+                  <div className="pg-room-config-body">
+                    <div className="form-fields-grid">
+                      <div className="form-field half-width">
+                        <label>
+                          Room Type / Title <span className="required-star">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="dynamic-input"
+                          placeholder="e.g. Deluxe AC Room / Room 101"
+                          value={room.room_type}
+                          onChange={(e) => handleUpdateRoom(index, "room_type", e.target.value)}
+                          required
+                        />
+                      </div>
 
-                  {/* PG Sharing Selector */}
-                  {selectedCategory === "pg_hostels" && (
-                    <div className="form-field half-width">
-                      <label>Sharing Type</label>
-                      <select
-                        className="dynamic-select"
-                        value={room.sharing_type}
-                        onChange={(e) => handleUpdateRoom(index, "sharing_type", e.target.value)}
-                      >
-                        <option value="Single Room">Single Room (1 Person)</option>
-                        <option value="2 Sharing / Double">2 Sharing / Double</option>
-                        <option value="3 Sharing / Triple">3 Sharing / Triple</option>
-                        <option value="4+ Sharing">4+ Sharing</option>
-                        <option value="Dormitory Bed">Dormitory Bed</option>
-                      </select>
+                      <div className="form-field fourth-width">
+                        <label>
+                          Bed Capacity <span className="required-star">*</span>
+                        </label>
+                        <select
+                          className="dynamic-select"
+                          value={room.bed_capacity || 3}
+                          onChange={(e) => handleUpdateBedCapacity(index, e.target.value)}
+                        >
+                          <option value="1">1 Bed (Single)</option>
+                          <option value="2">2 Beds (Double)</option>
+                          <option value="3">3 Beds (Triple)</option>
+                          <option value="4">4 Beds (Four)</option>
+                          <option value="5">5 Beds</option>
+                          <option value="6">6 Beds (Dorm)</option>
+                        </select>
+                      </div>
+
+                      <div className="form-field fourth-width">
+                        <label>
+                          Available Beds <span className="required-star">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max={room.bed_capacity || 6}
+                          className="dynamic-input"
+                          value={room.available_beds != null ? room.available_beds : room.bed_capacity || 1}
+                          onChange={(e) => {
+                            const avail = Math.max(0, Number(e.target.value) || 0);
+                            const total = Number(room.total_beds || room.bed_capacity || 1);
+                            handleUpdateRoom(index, "available_beds", avail);
+                            handleUpdateRoom(index, "occupied_beds", Math.max(0, total - avail));
+                            handleUpdateRoom(index, "available_rooms", avail);
+                          }}
+                          required
+                        />
+                      </div>
                     </div>
-                  )}
 
-                  {/* Pricing Input: Monthly for PG & Flats; Daily for Hotels & Events */}
-                  {!isDaily ? (
-                    <div className="form-field half-width">
-                      <label>
-                        Monthly Rent / Price (₹) <span className="required-star">*</span>
+                    {/* Bed Inventory Pill */}
+                    <div
+                      className="pg-inventory-summary-pill"
+                      style={{
+                        margin: "12px 0 16px",
+                        padding: "10px 16px",
+                        borderRadius: "10px",
+                        background: "var(--rd-surface, #ffffff)",
+                        border: "1px solid var(--rd-border, #c6ead9)",
+                        display: "flex",
+                        gap: "18px",
+                        flexWrap: "wrap",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <span>🛏️ Total Capacity: <strong>{room.bed_capacity || 1} beds</strong></span>
+                      <span>🟢 Available: <strong style={{ color: "#16a34a" }}>{room.available_beds != null ? room.available_beds : room.bed_capacity || 1} beds</strong></span>
+                      <span>🔴 Occupied: <strong style={{ color: "#dc2626" }}>{room.occupied_beds != null ? room.occupied_beds : Math.max(0, (room.bed_capacity || 1) - (room.available_beds || 0))} beds</strong></span>
+                    </div>
+
+                    {/* Occupancy-Based Independent Pricing Configuration */}
+                    <div
+                      className="pg-occupancy-pricing-box"
+                      style={{
+                        background: "var(--rd-surface, #ffffff)",
+                        border: "1px solid var(--rd-border, #c6ead9)",
+                        borderRadius: "12px",
+                        padding: "16px",
+                        margin: "14px 0",
+                      }}
+                    >
+                      <div style={{ marginBottom: "12px" }}>
+                        <strong style={{ fontSize: "14px", color: "var(--rd-text, #22577a)" }}>
+                          Occupancy Options & Independent Pricing
+                        </strong>
+                        <p style={{ fontSize: "12px", color: "var(--rd-muted, #3a6f86)", marginTop: "3px" }}>
+                          Select which sharing options you offer for this room and enter independent monthly prices. Prices do not calculate automatically.
+                        </p>
+                      </div>
+
+                      <div style={{ display: "grid", gap: "10px" }}>
+                        {(room.occupancy_options || []).map((opt) => (
+                          <div
+                            key={opt.people}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "12px",
+                              padding: "10px 14px",
+                              borderRadius: "10px",
+                              background: opt.enabled ? "var(--rd-surface-soft, #e6f7ef)" : "rgba(0,0,0,0.02)",
+                              border: `1px solid ${opt.enabled ? "var(--rd-accent, #38a3a5)" : "var(--rd-border, #c6ead9)"}`,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", minWidth: "180px" }}>
+                              <input
+                                type="checkbox"
+                                checked={!!opt.enabled}
+                                onChange={(e) => handleUpdateOccupancyOption(index, opt.people, "enabled", e.target.checked)}
+                              />
+                              <span style={{ fontWeight: opt.enabled ? 700 : 500, color: "var(--rd-text, #22577a)", fontSize: "13.5px" }}>
+                                {opt.label} ({opt.people} {opt.people === 1 ? "person" : "sharing"})
+                              </span>
+                            </label>
+
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ fontSize: "12.5px", color: "var(--rd-muted, #3a6f86)" }}>Monthly Rent (₹):</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  disabled={!opt.enabled}
+                                  style={{
+                                    width: "110px",
+                                    padding: "6px 10px",
+                                    borderRadius: "8px",
+                                    border: "1px solid var(--rd-border, #c6ead9)",
+                                    background: opt.enabled ? "#ffffff" : "#f1f5f9",
+                                    fontWeight: 700,
+                                    color: "var(--rd-text, #22577a)",
+                                  }}
+                                  value={opt.rent ?? ""}
+                                  placeholder="e.g. 5000"
+                                  onChange={(e) => handleUpdateOccupancyOption(index, opt.people, "rent", e.target.value)}
+                                />
+                              </div>
+
+                              <select
+                                disabled={!opt.enabled}
+                                value={opt.pricingType || (opt.people === 1 ? "room" : "person")}
+                                onChange={(e) => handleUpdateOccupancyOption(index, opt.people, "pricingType", e.target.value)}
+                                style={{
+                                  padding: "6px 10px",
+                                  borderRadius: "8px",
+                                  border: "1px solid var(--rd-border, #c6ead9)",
+                                  background: opt.enabled ? "#ffffff" : "#f1f5f9",
+                                  fontSize: "12.5px",
+                                  color: "var(--rd-text, #22577a)",
+                                }}
+                              >
+                                <option value="person">Per Person / Mo</option>
+                                <option value="room">Per Room / Mo</option>
+                              </select>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Room Switches */}
+                    <div className="form-field half-width room-switches" style={{ display: "flex", gap: "20px", marginTop: "10px" }}>
+                      <label className="checkbox-toggle">
+                        <input
+                          type="checkbox"
+                          checked={room.attached_bath}
+                          onChange={(e) => handleUpdateRoom(index, "attached_bath", e.target.checked)}
+                        />
+                        <span>🚿 Attached Bath</span>
                       </label>
-                      <input
-                        type="number"
-                        className="dynamic-input"
-                        placeholder="e.g. 5000"
-                        value={room.monthly_rent}
-                        onChange={(e) => handleUpdateRoom(index, "monthly_rent", e.target.value)}
-                        required
-                      />
+
+                      <label className="checkbox-toggle">
+                        <input
+                          type="checkbox"
+                          checked={room.ac_available}
+                          onChange={(e) => handleUpdateRoom(index, "ac_available", e.target.checked)}
+                        />
+                        <span>❄️ AC Available</span>
+                      </label>
                     </div>
-                  ) : (
+                  </div>
+                ) : (
+                  <div className="form-fields-grid">
                     <div className="form-field half-width">
                       <label>
                         {selectedCategory === "event_spaces"
-                          ? "Day / Event Rate (₹)"
-                          : "Nightly Rate (₹)"}{" "}
+                          ? "Space / Hall Title"
+                          : "Room Type / Title"}{" "}
+                        <span className="required-star">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="dynamic-input"
+                        placeholder="e.g. Deluxe AC Room / 2 Sharing / Grand Lawn"
+                        value={room.room_type}
+                        onChange={(e) => handleUpdateRoom(index, "room_type", e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    {/* Pricing Input: Monthly for Flats; Daily for Hotels & Events */}
+                    {!isDaily ? (
+                      <div className="form-field half-width">
+                        <label>
+                          Monthly Rent / Price (₹) <span className="required-star">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          className="dynamic-input"
+                          placeholder="e.g. 5000"
+                          value={room.monthly_rent}
+                          onChange={(e) => handleUpdateRoom(index, "monthly_rent", e.target.value)}
+                          required
+                        />
+                      </div>
+                    ) : (
+                      <div className="form-field half-width">
+                        <label>
+                          {selectedCategory === "event_spaces"
+                            ? "Day / Event Rate (₹)"
+                            : "Nightly Rate (₹)"}{" "}
+                          <span className="required-star">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          className="dynamic-input"
+                          placeholder={selectedCategory === "event_spaces" ? "e.g. 25000" : "e.g. 1800"}
+                          value={room.daily_price}
+                          onChange={(e) => handleUpdateRoom(index, "daily_price", e.target.value)}
+                          required
+                        />
+                      </div>
+                    )}
+
+                    {/* Available Units / Rooms */}
+                    <div className="form-field fourth-width">
+                      <label>
+                        {selectedCategory === "event_spaces"
+                          ? "Available Slots"
+                          : "Available Rooms"}{" "}
                         <span className="required-star">*</span>
                       </label>
                       <input
                         type="number"
+                        min="0"
                         className="dynamic-input"
-                        placeholder={selectedCategory === "event_spaces" ? "e.g. 25000" : "e.g. 1800"}
-                        value={room.daily_price}
-                        onChange={(e) => handleUpdateRoom(index, "daily_price", e.target.value)}
+                        value={room.available_rooms}
+                        onChange={(e) => handleUpdateRoom(index, "available_rooms", e.target.value)}
                         required
                       />
                     </div>
-                  )}
 
-                  {/* Available Units / Rooms */}
-                  <div className="form-field fourth-width">
-                    <label>
-                      {selectedCategory === "pg_hostels"
-                        ? "Available Beds"
-                        : selectedCategory === "event_spaces"
-                        ? "Available Slots"
-                        : "Available Rooms"}{" "}
-                      <span className="required-star">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      className="dynamic-input"
-                      value={room.available_rooms}
-                      onChange={(e) => handleUpdateRoom(index, "available_rooms", e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  {/* Max People / Guests */}
-                  <div className="form-field fourth-width">
-                    <label>
-                      {selectedCategory === "event_spaces" ? "Capacity" : "Max People"}
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      className="dynamic-input"
-                      value={room.room_people}
-                      onChange={(e) => handleUpdateRoom(index, "room_people", e.target.value)}
-                    />
-                  </div>
-
-                  {/* Extra Switches for Room */}
-                  <div className="form-field half-width room-switches">
-                    <label className="checkbox-toggle">
+                    {/* Max People / Guests */}
+                    <div className="form-field fourth-width">
+                      <label>
+                        {selectedCategory === "event_spaces" ? "Capacity" : "Max People"}
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={room.attached_bath}
-                        onChange={(e) => handleUpdateRoom(index, "attached_bath", e.target.checked)}
+                        type="number"
+                        min="1"
+                        className="dynamic-input"
+                        value={room.room_people}
+                        onChange={(e) => handleUpdateRoom(index, "room_people", e.target.value)}
                       />
-                      <span>🚿 Attached Bath</span>
-                    </label>
+                    </div>
 
-                    <label className="checkbox-toggle">
-                      <input
-                        type="checkbox"
-                        checked={room.ac_available}
-                        onChange={(e) => handleUpdateRoom(index, "ac_available", e.target.checked)}
-                      />
-                      <span>❄️ AC Available</span>
-                    </label>
+                    {/* Extra Switches for Room */}
+                    <div className="form-field half-width room-switches">
+                      <label className="checkbox-toggle">
+                        <input
+                          type="checkbox"
+                          checked={room.attached_bath}
+                          onChange={(e) => handleUpdateRoom(index, "attached_bath", e.target.checked)}
+                        />
+                        <span>🚿 Attached Bath</span>
+                      </label>
+
+                      <label className="checkbox-toggle">
+                        <input
+                          type="checkbox"
+                          checked={room.ac_available}
+                          onChange={(e) => handleUpdateRoom(index, "ac_available", e.target.checked)}
+                        />
+                        <span>❄️ AC Available</span>
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}

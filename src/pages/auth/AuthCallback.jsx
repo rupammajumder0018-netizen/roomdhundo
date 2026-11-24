@@ -104,7 +104,8 @@ export function AuthCallback() {
         }
 
         // Check for role mismatch
-        const actualKind = accountKindFromRole(profile?.role || "user");
+        const resolvedRole = profile?.role || session.user?.user_metadata?.role || pendingRole || "user";
+        const actualKind = accountKindFromRole(resolvedRole);
         const wantedKind = accountKindFromRole(pendingRole);
 
         if (actualKind !== "admin" && wantedKind !== actualKind && profile) {
@@ -120,7 +121,15 @@ export function AuthCallback() {
         setStatusMessage("Sign in complete! Redirecting...");
 
         // Determine destination
-        const destination = "/";
+        const destination =
+          actualKind === "admin"
+            ? "/admin"
+            : actualKind === "agent"
+            ? (resolvedRole === "agent" ? "/owner/dashboard" : "/be-an-agent")
+            : actualKind === "owner"
+            ? "/owner/dashboard"
+            : "/";
+
         setTimeout(() => {
           navigate(destination, { replace: true });
         }, 800);

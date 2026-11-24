@@ -1,4 +1,14 @@
 import React, { useState, useMemo } from "react";
+import {
+  occupancyOptionsFromRoom,
+  roomBedCapacity,
+  roomAvailableBeds,
+  roomOccupiedBeds,
+} from "../../services/properties/index.js";
+
+function formatMoney(amount) {
+  return `₹${Number(amount || 0).toLocaleString("en-IN")}`;
+}
 
 export default function RoomAvailabilityTable({
   properties = [],
@@ -15,6 +25,7 @@ export default function RoomAvailabilityTable({
           list.push({
             ...room,
             propertyName: prop.name,
+            propertyCategory: prop.category,
             buildingId: prop.id,
           });
         });
@@ -31,7 +42,7 @@ export default function RoomAvailabilityTable({
   return (
     <div className="room-table-container">
       <div className="room-table-filter-bar">
-        <strong>Manage Room Availability</strong>
+        <strong>Manage Room & Bed Availability</strong>
         <select
           className="room-table-filter-select"
           value={selectedPropertyId}
@@ -52,8 +63,8 @@ export default function RoomAvailabilityTable({
             <tr>
               <th>Property</th>
               <th>Room Type</th>
-              <th>Rent</th>
-              <th>Occupancy</th>
+              <th>Beds & Capacity</th>
+              <th>Occupancy Pricing</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
@@ -67,19 +78,48 @@ export default function RoomAvailabilityTable({
               </tr>
             ) : (
               filteredRooms.map((room) => {
-                const isAvail = (Number(room.available_rooms) || 0) > 0;
-                const rent = Number(room.price_monthly) || Number(room.price_per_night) || 0;
+                const availBeds = roomAvailableBeds(room);
+                const capBeds = roomBedCapacity(room);
+                const occBeds = roomOccupiedBeds(room);
+                const isAvail = availBeds > 0;
+                const options = occupancyOptionsFromRoom(room);
+                const roomName = room.room_details?.room_name || room.room_type || room.name || "Room";
+
                 return (
                   <tr key={room.id}>
                     <td>
                       <strong>{room.propertyName}</strong>
                     </td>
-                    <td>{room.name || "Standard Room"}</td>
-                    <td>{rent > 0 ? `₹${rent.toLocaleString()}` : "—"}</td>
-                    <td>{room.occupancy ? `${room.occupancy} Person` : "1 Person"}</td>
+                    <td>
+                      <div style={{ fontWeight: 700, color: "var(--rd-text, #22577a)" }}>{roomName}</div>
+                      {room.room_details?.sharing_type && (
+                        <small style={{ color: "var(--rd-muted, #3a6f86)" }}>{room.room_details.sharing_type}</small>
+                      )}
+                    </td>
+                    <td>
+                      <div>
+                        <strong>{availBeds} of {capBeds} Available</strong>
+                      </div>
+                      <small style={{ color: occBeds > 0 ? "#dc2626" : "var(--rd-muted, #3a6f86)" }}>
+                        {occBeds} bed{occBeds === 1 ? "" : "s"} occupied
+                      </small>
+                    </td>
+                    <td>
+                      {options.length > 0 ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "3px", fontSize: "12px" }}>
+                          {options.map((opt) => (
+                            <span key={opt.people}>
+                              <strong>{opt.label}:</strong> {formatMoney(opt.rent)}/{opt.pricingType === "room" ? "room" : "person"}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span>{formatMoney(room.price_value || room.room_rent || room.daily_price || 0)}</span>
+                      )}
+                    </td>
                     <td>
                       <span className={`room-status-pill ${isAvail ? "available" : "occupied"}`}>
-                        {isAvail ? "🟢 Available" : "🔴 Occupied"}
+                        {isAvail ? `🟢 Available (${availBeds} beds)` : "🔴 Full (0 beds)"}
                       </span>
                     </td>
                     <td>
@@ -88,7 +128,7 @@ export default function RoomAvailabilityTable({
                         className={`room-status-btn ${isAvail ? "to-occupied" : "to-available"}`}
                         onClick={() => onToggleRoom(room.id, room.buildingId, room.available_rooms)}
                       >
-                        {isAvail ? "Mark Occupied" : "Mark Available"}
+                        {isAvail ? "Mark Full" : "Mark Available"}
                       </button>
                     </td>
                   </tr>

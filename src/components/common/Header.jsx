@@ -225,7 +225,7 @@ export function Header() {
                         <Building size={18} />
                       </span>
                       <span className="nav-profile-menu-text">
-                        <strong>Owner Dashboard</strong>
+                        <strong>{isAgent ? "Agent Dashboard" : "Owner Dashboard"}</strong>
                         <span>Manage properties and rooms</span>
                       </span>
                     </button>
@@ -456,7 +456,7 @@ export function Header() {
               <span className="mobile-link-icon">
                 {isAdmin ? <ShieldCheck size={18} /> : <User size={18} />}
               </span>
-              <span>{isAdmin ? "Admin Console" : isOwner || isAgent ? "Owner Dashboard" : "My Dashboard"}</span>
+              <span>{isAdmin ? "Admin Console" : isAgent ? "Agent Dashboard" : isOwner ? "Owner Dashboard" : "My Dashboard"}</span>
             </Link>
 
             <Link

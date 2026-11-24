@@ -22,7 +22,9 @@ export default function OwnerSidebar({
   isOpen = false,
   onClose = () => {},
 }) {
-  const { logout } = useAuth();
+  const { logout, role, roleKind } = useAuth();
+  const isAgent = role === "agent" || roleKind === "agent";
+  const portalLabel = isAgent ? "Agent Portal" : "Owner Portal";
 
   const handleNavClick = (sectionId) => {
     setActiveSection(sectionId);
@@ -40,14 +42,14 @@ export default function OwnerSidebar({
         onClick={onClose}
         aria-hidden="true"
       />
-      <aside className={`owner-sidebar ${isOpen ? "open" : ""}`} aria-label="Owner navigation">
+      <aside className={`owner-sidebar ${isOpen ? "open" : ""}`} aria-label={portalLabel}>
         <Link to={ROUTE_PATHS.HOME} className="owner-sidebar-logo">
           <div className="owner-sidebar-logo-icon">
             <Building2 size={22} />
           </div>
           <div className="owner-sidebar-logo-text">
             <h2>Roomdhundo</h2>
-            <span>Owner Portal</span>
+            <span>{portalLabel}</span>
           </div>
         </Link>
 

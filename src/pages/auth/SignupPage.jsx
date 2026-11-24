@@ -86,7 +86,13 @@ export function SignupPage() {
 
       setMessage({ text: "Account created successfully! Redirecting...", type: "success" });
       setTimeout(() => {
-        navigate("/", { replace: true });
+        const destination =
+          role === "agent"
+            ? "/be-an-agent"
+            : role === "owner"
+            ? "/owner/dashboard"
+            : "/";
+        navigate(destination, { replace: true });
       }, 1500);
     } catch (err) {
       setMessage({

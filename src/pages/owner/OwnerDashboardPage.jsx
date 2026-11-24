@@ -13,7 +13,10 @@ import OwnerProfileSection from "../../components/owner/OwnerProfileSection";
 import OwnerHotelBookingsSection from "../../components/owner/OwnerHotelBookingsSection";
 
 export default function OwnerDashboardPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, role, roleKind } = useAuth();
+  const isAgent = role === "agent" || roleKind === "agent";
+  const portalTitle = isAgent ? "Agent Portal" : "Owner Portal";
+  const roleBadge = isAgent ? "Verified Agent" : "Property Owner";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -184,8 +187,8 @@ export default function OwnerDashboardPage() {
               ☰
             </button>
             <div className="owner-topbar-title">
-              <h1>Owner Portal</h1>
-              <p>Welcome back, {ownerName}</p>
+              <h1>{portalTitle}</h1>
+              <p>Welcome back, {ownerName} • {roleBadge}</p>
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import { UserDashboardHeader } from "../../components/user/UserDashboardHeader.j
 import { UserStatCards } from "../../components/user/UserStatCards.jsx";
 import { UserProfileSection } from "../../components/user/UserProfileSection.jsx";
 import { UserHotelBookingsSection } from "../../components/user/UserHotelBookingsSection.jsx";
+import { UserPgBookingsSection } from "../../components/user/UserPgBookingsSection.jsx";
 
 export function UserDashboardPage() {
   const { user, profile, roleKind, logout, refreshProfile } = useAuth();
@@ -189,6 +190,9 @@ export function UserDashboardPage() {
             Explore Properties →
           </Link>
         </div>
+
+        {/* MY PG & ROOM RESERVATIONS */}
+        {user?.id && <UserPgBookingsSection userId={user.id} />}
 
         {/* MY HOTEL BOOKINGS */}
         {user?.id && <UserHotelBookingsSection userId={user.id} />}

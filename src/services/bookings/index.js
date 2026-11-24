@@ -21,6 +21,7 @@
  */
 
 import { supabase } from "../supabase/client.js";
+import { executeSafeMutation } from "../supabase/mutationHelpers.js";
 
 export const HOTEL_BOOKING_STATUS = {
   PENDING: "pending",
@@ -736,6 +737,416 @@ export async function createBooking(booking) {
     .single();
 
   return { data, error };
+}
+
+// ============================================================
+// PG & HOSTEL OCCUPANCY-BASED BOOKINGS & INVENTORY MANAGEMENT
+// ============================================================
+
+/**
+ * Validates inputs for booking a PG/Hostel room with occupancy pricing.
+ *
+ * @param {Object} input
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+export function validatePgBookingInput(input) {
+  const errors = [];
+  if (!input) {
+    return { valid: false, errors: ["Booking details are required."] };
+  }
+
+  if (!input.userId) errors.push("User must be logged in to book.");
+  if (!input.buildingId) errors.push("Property ID is required.");
+  if (!input.roomTypeId) errors.push("Room selection is required.");
+  if (!input.buildingName?.trim()) errors.push("Property name is required.");
+
+  const name = String(input.guestName || "").trim();
+  if (!name || name.length < 2) {
+    errors.push("Full guest name is required (minimum 2 characters).");
+  }
+
+  const phone = String(input.guestPhone || "").replace(/[^0-9+]/g, "");
+  if (!phone || phone.length < 10 || phone.length > 15) {
+    errors.push("A valid 10 to 15 digit contact phone number is required.");
+  }
+
+  const rent = Number(input.monthlyRent);
+  if (!Number.isFinite(rent) || rent <= 0) {
+    errors.push("Monthly rent must be greater than zero.");
+  }
+
+  const duration = Number(input.durationMonths || 1);
+  if (!Number.isInteger(duration) || duration < 1) {
+    errors.push("Booking duration must be at least 1 month.");
+  }
+
+  const total = Number(input.totalAmount);
+  if (!Number.isFinite(total) || total <= 0) {
+    errors.push("Total amount must be greater than zero.");
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Creates a PG/Hostel room reservation, automatically decrementing available beds
+ * and preventing overbooking beyond room capacity.
+ *
+ * @param {Object} booking
+ * @returns {Promise<{ data: Object|null, error: Error|null }>}
+ */
+export async function createPgBooking(booking) {
+  if (!supabase) {
+    return {
+      data: null,
+      error: new Error("[Roomdhundo] Supabase client is not configured."),
+    };
+  }
+
+  const validation = validatePgBookingInput(booking);
+  if (!validation.valid) {
+    return {
+      data: null,
+      error: new Error(validation.errors.join(" ")),
+    };
+  }
+
+  // 1. Check room availability & prevent overbooking beyond capacity
+  const { data: room, error: roomError } = await supabase
+    .from("room_types")
+    .select("id, room_type, available_rooms, available_beds, occupied_beds, bed_capacity, availability, room_details")
+    .eq("id", booking.roomTypeId)
+    .single();
+
+  if (roomError || !room) {
+    return {
+      data: null,
+      error: new Error("Selected room was not found or is unavailable."),
+    };
+  }
+
+  const status = String(room.availability || "").toLowerCase();
+  const currentAvailBeds = Number(room.available_beds != null ? room.available_beds : room.available_rooms);
+  if (status === "occupied" || status === "unavailable" || currentAvailBeds <= 0) {
+    return {
+      data: null,
+      error: new Error("Sorry, this room has no available beds remaining (fully occupied)."),
+    };
+  }
+
+  // 2. Decrement available bed count and increment occupied bed count
+  const newAvailBeds = Math.max(0, currentAvailBeds - 1);
+  const currentOccBeds = Number(room.occupied_beds != null ? room.occupied_beds : 0);
+  const newOccBeds = currentOccBeds + 1;
+  const newAvailRooms = newAvailBeds > 0 ? Math.max(1, Number(room.available_rooms || 1)) : 0;
+  const newAvailability = newAvailBeds > 0 ? "Available" : "Occupied";
+
+  const roomPatch = {
+    available_rooms: newAvailRooms,
+    available_beds: newAvailBeds,
+    occupied_beds: newOccBeds,
+    availability: newAvailability,
+  };
+
+  await executeSafeMutation({
+    client: supabase,
+    table: "room_types",
+    mode: "update",
+    payload: roomPatch,
+    applyFilters: (q) => q.eq("id", room.id),
+    allowStripping: true,
+  });
+
+  // 3. Prepare Booking record
+  const duration = Math.max(1, Number(booking.durationMonths || 1));
+  const rent = Number(booking.monthlyRent);
+  const fee = Number(booking.platformFee != null ? booking.platformFee : Math.round(rent * PLATFORM_FEE_PERCENTAGE));
+  const total = Number(booking.totalAmount != null ? booking.totalAmount : (rent * duration) + fee);
+
+  const sharingLabel = booking.sharingType || (booking.occupancyPeople ? `${booking.occupancyPeople} Sharing` : "Standard");
+  const priceType = booking.pricingType || (booking.occupancyPeople === 1 ? "room" : "person");
+  const roomName = booking.roomName || room.room_type || "Room";
+  const compositeLabel = `${roomName} · ${sharingLabel} (₹${rent.toLocaleString("en-IN")}/${priceType}/mo · ${duration} mo)`;
+
+  const payload = {
+    user_id: booking.userId,
+    building_id: booking.buildingId,
+    room_type_id: booking.roomTypeId,
+    building_name: booking.buildingName.trim(),
+    room_type_label: compositeLabel,
+    monthly_rent: rent,
+    platform_fee: fee,
+    total_amount: total,
+    status: BOOKING_STATUS.PENDING,
+    sharing_type: sharingLabel,
+    occupancy_people: Number(booking.occupancyPeople || 1),
+    duration_months: duration,
+    pricing_type: priceType,
+    price_per_unit: rent,
+    check_in_date: booking.checkInDate || null,
+    booking_details: {
+      guest_name: booking.guestName?.trim(),
+      guest_phone: booking.guestPhone?.trim(),
+      guest_email: booking.guestEmail?.trim() || null,
+      gender_preference: booking.genderPreference || null,
+      move_in_date: booking.checkInDate || null,
+      duration_months: duration,
+      sharing_type: sharingLabel,
+      pricing_type: priceType,
+      monthly_rent: rent,
+      platform_fee: fee,
+      total_amount: total,
+      notes: booking.notes?.trim() || null,
+      booked_at: new Date().toISOString(),
+    },
+  };
+
+  const { data, error } = await executeSafeMutation({
+    client: supabase,
+    table: "bookings",
+    mode: "insert",
+    payload,
+    allowStripping: true,
+  });
+
+  if (error) {
+    // Rollback bed decrement if booking insert completely failed
+    await executeSafeMutation({
+      client: supabase,
+      table: "room_types",
+      mode: "update",
+      payload: {
+        available_rooms: room.available_rooms,
+        available_beds: room.available_beds,
+        occupied_beds: room.occupied_beds,
+        availability: room.availability,
+      },
+      applyFilters: (q) => q.eq("id", room.id),
+      allowStripping: true,
+    });
+    return { data: null, error };
+  }
+
+  const inserted = Array.isArray(data) ? data[0] : data;
+  return { data: inserted, error: null };
+}
+
+/**
+ * Cancels a PG room booking and automatically restores the bed to inventory.
+ *
+ * @param {Object} params
+ * @param {string} params.bookingId
+ * @param {string} [params.userId]
+ * @param {boolean} [params.isAdmin]
+ * @param {string} [params.cancelReason]
+ * @returns {Promise<{ success: boolean, error: Error|null }>}
+ */
+export async function cancelPgBooking({ bookingId, userId, isAdmin = false, cancelReason = "" }) {
+  if (!supabase) {
+    return { success: false, error: new Error("[Roomdhundo] Supabase client is not configured.") };
+  }
+  if (!bookingId) {
+    return { success: false, error: new Error("Booking ID is required.") };
+  }
+
+  // 1. Fetch booking
+  let query = supabase.from("bookings").select("*").eq("id", bookingId);
+  if (!isAdmin && userId) {
+    query = query.eq("user_id", userId);
+  }
+  const { data: booking, error: fetchErr } = await query.single();
+  if (fetchErr || !booking) {
+    return { success: false, error: fetchErr || new Error("Booking not found.") };
+  }
+
+  if (booking.status === BOOKING_STATUS.CANCELLED) {
+    return { success: true, message: "Booking is already cancelled." };
+  }
+
+  // 2. Mark booking as cancelled
+  const patch = {
+    status: BOOKING_STATUS.CANCELLED,
+    booking_details: {
+      ...(typeof booking.booking_details === "object" ? booking.booking_details : {}),
+      cancelled_at: new Date().toISOString(),
+      cancelled_by: userId || (isAdmin ? "admin" : "user"),
+      cancel_reason: cancelReason || null,
+    },
+  };
+
+  const { error: updateErr } = await executeSafeMutation({
+    client: supabase,
+    table: "bookings",
+    mode: "update",
+    payload: patch,
+    applyFilters: (q) => q.eq("id", bookingId),
+    allowStripping: true,
+  });
+
+  if (updateErr) {
+    return { success: false, error: updateErr };
+  }
+
+  // 3. Restore bed availability in room_types
+  if (booking.room_type_id) {
+    const { data: room } = await supabase
+      .from("room_types")
+      .select("id, available_rooms, available_beds, occupied_beds, bed_capacity")
+      .eq("id", booking.room_type_id)
+      .maybeSingle();
+
+    if (room) {
+      const cap = Number(room.bed_capacity || 1);
+      const currAvail = Number(room.available_beds != null ? room.available_beds : room.available_rooms);
+      const newAvail = Math.min(cap, currAvail + 1);
+      const currOcc = Number(room.occupied_beds != null ? room.occupied_beds : 0);
+      const newOcc = Math.max(0, currOcc - 1);
+
+      await executeSafeMutation({
+        client: supabase,
+        table: "room_types",
+        mode: "update",
+        payload: {
+          available_beds: newAvail,
+          occupied_beds: newOcc,
+          available_rooms: Math.max(1, newAvail),
+          availability: "Available",
+        },
+        applyFilters: (q) => q.eq("id", room.id),
+        allowStripping: true,
+      });
+    }
+  }
+
+  return { success: true, error: null };
+}
+
+/**
+ * Fetches PG room bookings requested by a specific user.
+ *
+ * @param {string} userId
+ * @returns {Promise<{ data: Array<Object>, error: Error|null }>}
+ */
+export async function fetchUserPgBookings(userId) {
+  if (!supabase) {
+    return { data: [], error: new Error("[Roomdhundo] Supabase client is not configured.") };
+  }
+  if (!userId) {
+    return { data: [], error: new Error("User ID is required.") };
+  }
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(`
+      *,
+      buildings (
+        id,
+        name,
+        location,
+        type,
+        images,
+        owner_name,
+        owner_phone
+      ),
+      room_types (
+        id,
+        room_type,
+        room_people,
+        available_rooms,
+        available_beds,
+        room_details
+      )
+    `)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  return { data: data || [], error };
+}
+
+/**
+ * Fetches PG room bookings for properties owned by a specific owner.
+ *
+ * @param {string} ownerId
+ * @returns {Promise<{ data: Array<Object>, error: Error|null }>}
+ */
+export async function fetchOwnerPgBookings(ownerId) {
+  if (!supabase) {
+    return { data: [], error: new Error("[Roomdhundo] Supabase client is not configured.") };
+  }
+  if (!ownerId) {
+    return { data: [], error: new Error("Owner ID is required.") };
+  }
+
+  const { data: buildings, error: bError } = await supabase
+    .from("buildings")
+    .select("id")
+    .eq("created_by", ownerId);
+
+  if (bError || !buildings?.length) {
+    return { data: [], error: bError };
+  }
+
+  const buildingIds = buildings.map((b) => b.id);
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(`
+      *,
+      buildings (
+        id,
+        name,
+        location
+      ),
+      room_types (
+        id,
+        room_type,
+        room_people,
+        available_rooms,
+        available_beds,
+        room_details
+      )
+    `)
+    .in("building_id", buildingIds)
+    .order("created_at", { ascending: false });
+
+  return { data: data || [], error };
+}
+
+/**
+ * Fetches all PG room bookings for admin management.
+ *
+ * @returns {Promise<{ data: Array<Object>, error: Error|null }>}
+ */
+export async function fetchAllPgBookings() {
+  if (!supabase) {
+    return { data: [], error: new Error("[Roomdhundo] Supabase client is not configured.") };
+  }
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(`
+      *,
+      buildings (
+        id,
+        name,
+        location,
+        owner_name,
+        owner_phone
+      ),
+      room_types (
+        id,
+        room_type,
+        room_people,
+        available_rooms,
+        available_beds,
+        room_details
+      )
+    `)
+    .order("created_at", { ascending: false });
+
+  return { data: data || [], error };
 }
 
 /**

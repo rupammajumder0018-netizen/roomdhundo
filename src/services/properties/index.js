@@ -74,7 +74,47 @@ export function isRoomAvailable(rt) {
   if (!rt) return false;
   const status = String(rt.availability || "").trim().toLowerCase();
   if (status === "occupied" || status === "unavailable") return false;
-  return Number(rt.available_rooms) > 0;
+  const availRooms = Number(rt.available_rooms);
+  if (Number.isFinite(availRooms) && availRooms <= 0) return false;
+  if (rt.available_beds != null) {
+    const availBeds = Number(rt.available_beds);
+    if (Number.isFinite(availBeds) && availBeds <= 0) return false;
+  }
+  return true;
+}
+
+/**
+ * Total bed capacity for a room type.
+ */
+export function roomBedCapacity(rt) {
+  if (!rt) return 1;
+  const details = rt.room_details && typeof rt.room_details === "object" ? rt.room_details : {};
+  const cap = Number(rt.bed_capacity || details.bed_capacity || rt.room_people);
+  return Number.isFinite(cap) && cap >= 1 ? cap : 1;
+}
+
+/**
+ * Real-time available beds for a room type.
+ */
+export function roomAvailableBeds(rt) {
+  if (!rt) return 0;
+  if (!isRoomAvailable(rt)) return 0;
+  const avail = Number(rt.available_beds != null ? rt.available_beds : rt.available_rooms);
+  return Number.isFinite(avail) && avail >= 0 ? avail : 0;
+}
+
+/**
+ * Real-time occupied beds for a room type.
+ */
+export function roomOccupiedBeds(rt) {
+  if (!rt) return 0;
+  if (rt.occupied_beds != null) {
+    const occ = Number(rt.occupied_beds);
+    if (Number.isFinite(occ) && occ >= 0) return occ;
+  }
+  const cap = roomBedCapacity(rt);
+  const avail = roomAvailableBeds(rt);
+  return Math.max(0, cap - avail);
 }
 
 /**
@@ -85,12 +125,32 @@ export function occupancyOptionsFromRoom(rt) {
   if (!rt) return [];
   const details = rt.room_details && typeof rt.room_details === "object" ? rt.room_details : {};
   const raw = Array.isArray(details.occupancy_options) ? details.occupancy_options : [];
-  return raw
-    .map((option) => ({
-      people: Number(option.people),
-      rent: Number(option.rent),
-    }))
-    .filter((option) => option.people >= 1 && Number.isFinite(option.rent) && option.rent > 0);
+  if (raw.length > 0) {
+    return raw
+      .map((option) => ({
+        people: Number(option.people),
+        rent: Number(option.rent),
+        label: option.label || sharingFilterLabel(option.people),
+        pricingType: option.pricingType || (Number(option.people) === 1 ? "room" : "person"),
+      }))
+      .filter((option) => option.people >= 1 && Number.isFinite(option.rent) && option.rent > 0);
+  }
+
+  // Fallback for legacy rooms without explicit occupancy_options
+  const people = Math.max(1, Number(rt.room_people) || 1);
+  const directPrice = Number(rt.price_value ?? rt.room_rent ?? rt.monthly_rent);
+  if (Number.isFinite(directPrice) && directPrice > 0) {
+    return [
+      {
+        people,
+        rent: directPrice,
+        label: rt.sharing_type || sharingFilterLabel(people),
+        pricingType: people === 1 ? "room" : "person",
+      },
+    ];
+  }
+
+  return [];
 }
 
 /** Labels used by the search "Room Sharing" filter. */

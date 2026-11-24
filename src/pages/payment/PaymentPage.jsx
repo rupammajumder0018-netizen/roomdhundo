@@ -191,14 +191,19 @@ export function PaymentPage() {
   const property = booking.buildings;
   const room = booking.room_types;
   const roomRent = booking.monthly_rent || booking.room_rent || 0;
-  const sharingCount = room?.room_people || 1;
+  const details = typeof booking.booking_details === "object" && booking.booking_details ? booking.booking_details : {};
+  const sharingLabel = booking.sharing_type || details.sharing_type || (booking.occupancy_people ? `${booking.occupancy_people} Sharing` : `${room?.room_people || 1} Person Sharing`);
+  const durationMonths = Number(booking.duration_months || details.duration_months || 1);
+  const pricingType = booking.pricing_type || details.pricing_type || "person";
+  const rentSubtotal = roomRent * durationMonths;
+  const moveInDate = booking.check_in_date || details.move_in_date || null;
 
   return (
     <main className="payment-page">
       <div className="payment-container">
         <div className="payment-header">
-          <h1>Complete Your Booking</h1>
-          <p>Review your booking before payment.</p>
+          <h1>Complete Your Room Reservation</h1>
+          <p>Review your room sharing arrangement and booking details.</p>
         </div>
 
         <div className="payment-card">
@@ -212,26 +217,39 @@ export function PaymentPage() {
               <div className="booking-room-name">
                 {room?.room_type || booking.room_type_label || "Room"}
               </div>
-              <div className="booking-room-type">
-                {sharingCount} {sharingCount === 1 ? "person" : "people"} sharing
+              <div className="booking-room-type" style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "4px" }}>
+                <span style={{ fontWeight: 700, color: "var(--rd-text, #22577a)" }}>{sharingLabel}</span>
+                <span>•</span>
+                <span style={{ textTransform: "capitalize", color: "var(--rd-muted, #3a6f86)" }}>{pricingType === "room" ? "Per Room" : "Per Person"}</span>
+                {durationMonths > 1 && (
+                  <>
+                    <span>•</span>
+                    <span style={{ color: "var(--rd-accent, #38a3a5)", fontWeight: 600 }}>{durationMonths} Months Stay</span>
+                  </>
+                )}
               </div>
+              {moveInDate && (
+                <div style={{ fontSize: "12px", color: "var(--rd-muted, #3a6f86)", marginTop: "4px" }}>
+                  Expected Move-in: <strong>{new Date(moveInDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</strong>
+                </div>
+              )}
             </div>
-            <strong>{formatPrice(roomRent)}</strong>
+            <strong>{formatPrice(roomRent)}<span style={{ fontSize: "12px", fontWeight: "normal", color: "var(--rd-muted)" }}>/mo</span></strong>
           </div>
 
           <div className="price-breakdown">
             <div className="price-row">
-              <span>Room rent</span>
-              <strong>{formatPrice(roomRent)}</strong>
+              <span>Monthly rent ({formatPrice(roomRent)} × {durationMonths} mo)</span>
+              <strong>{formatPrice(rentSubtotal)}</strong>
             </div>
 
             <div className="price-row">
-              <span>Platform / service fee (10%)</span>
+              <span>Platform & service fee (10% of 1st month)</span>
               <strong>{formatPrice(booking.platform_fee)}</strong>
             </div>
 
             <div className="price-row total">
-              <span>Total</span>
+              <span>Total Amount</span>
               <strong>{formatPrice(booking.total_amount)}</strong>
             </div>
           </div>
